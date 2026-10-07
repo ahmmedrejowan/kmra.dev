@@ -1,4 +1,9 @@
-import { useRef, type KeyboardEvent, type PointerEvent } from "react";
+import {
+  useRef,
+  type CSSProperties,
+  type KeyboardEvent,
+  type PointerEvent,
+} from "react";
 import type { Crop } from "../lib/settings";
 
 interface Props {
@@ -10,6 +15,8 @@ interface Props {
   srcW: number;
   srcH: number;
   onChange: (crop: Crop) => void;
+  /** Explicit image size when zoomed */
+  imgStyle?: CSSProperties;
 }
 
 type Mode = "move" | "nw" | "ne" | "sw" | "se";
@@ -26,6 +33,7 @@ export default function CropBox({
   srcW,
   srcH,
   onChange,
+  imgStyle,
 }: Props) {
   const wrapRef = useRef<HTMLDivElement>(null);
   const drag = useRef<{ mode: Mode; x: number; y: number; start: Crop } | null>(
@@ -111,7 +119,7 @@ export default function CropBox({
       onPointerUp={end}
       onPointerCancel={end}
     >
-      <img src={url} alt={alt} draggable={false} />
+      <img src={url} alt={alt} draggable={false} style={imgStyle} />
       <div
         className="crop-box"
         style={{

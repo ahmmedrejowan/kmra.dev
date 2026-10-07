@@ -13,6 +13,7 @@ import type { IconKey } from "@kmra/ui/lib/icons";
 import { downloadBlob, formatBytes } from "@kmra/ui/lib/files";
 import { takeFiles } from "@kmra/ui/lib/handoff";
 import { toast } from "@kmra/ui/lib/toast";
+import { formatKeys, matches, typing } from "@kmra/ui/lib/keys";
 import { engine, type EncodeResult } from "../lib/engine";
 import CropBox from "./CropBox";
 import {
@@ -90,6 +91,15 @@ export default function ImageTool({ tool, preset, tools }: Props) {
   const [advanced, setAdvanced] = useState(editor);
   const [focus, setFocus] = useState(tool);
   const [cut, setCut] = useState(50);
+  /** Zoom factor (1 = 100%, one image pixel per screen pixel), or null to fit the view */
+  const [zoom, setZoom] = useState<number | null>(null);
+  const shownRef = useRef<HTMLImageElement | null>(null);
+  /** Shortcut labels for this OS (⌘ on Apple devices, Ctrl elsewhere); set after mount */
+  const [keys, setKeys] = useState({ paste: "⌘V", mod: "⌘" });
+  useEffect(
+    () => setKeys({ paste: formatKeys("mod+V"), mod: formatKeys("mod") }),
+    [],
+  );
   const [zipping, setZipping] = useState(false);
   const [dragging, setDragging] = useState(false);
 
@@ -201,12 +211,74 @@ export default function ImageTool({ tool, preset, tools }: Props) {
     };
   }, [addFiles]);
 
+  // With a fixed ratio, switching files recentres the frame for the new file's shape.
+  const lastKey = useRef<string | undefined>(undefined);
+  useEffect(() => {
+    if (!item || item.key === lastKey.current) return;
+    const first = lastKey.current === undefined;
+    lastKey.current = item.key;
+    const r = RATIOS.find((x) => x.id === s.ratio);
+    if (r && !first)
+      setS((p) => ({ ...p, crop: centeredCrop(item.w, item.h, r.r) }));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [item?.key]);
+
   // A ratio preset (e.g. "Crop to square") becomes a centred crop once the image size is known.
   useEffect(() => {
     if (!item || !s.ratio || s.crop) return;
     const r = RATIOS.find((x) => x.id === s.ratio);
     if (r) setS((p) => ({ ...p, crop: centeredCrop(item.w, item.h, r.r) }));
   }, [item, s.ratio, s.crop]);
+
+  /* ---------- Zoom ---------- */
+  const ZOOMS = [0.1, 0.25, 0.5, 0.75, 1, 1.5, 2, 3, 4];
+  // Back to "fit" whenever another file is shown
+  useEffect(() => setZoom(null), [item?.key]);
+
+  /** Width in image pixels of what's on screen: the result when it's shown alone, else the original */
+  function shownWidth(): number {
+    if (!item) return 1;
+    const solo =
+      outRef.current &&
+      outRef.current.key === item.key &&
+      Math.abs(outRef.current.w / outRef.current.h - item.w / item.h) > 0.01;
+    return solo ? outRef.current!.w : item.w;
+  }
+  function zoomBy(dir: 1 | -1) {
+    const el =
+      shownRef.current ??
+      document.querySelector<HTMLImageElement>(".cropper img");
+    const current =
+      zoom ?? (el ? el.getBoundingClientRect().width / shownWidth() : 1);
+    const next =
+      dir > 0
+        ? (ZOOMS.find((z) => z > current + 0.001) ?? ZOOMS[ZOOMS.length - 1]!)
+        : ([...ZOOMS].reverse().find((z) => z < current - 0.001) ?? ZOOMS[0]!);
+    setZoom(next);
+  }
+  // Ctrl/⌘ + wheel (and trackpad pinch) zooms the image area
+  useEffect(() => {
+    const onWheel = (e: WheelEvent) => {
+      if (
+        !(e.ctrlKey || e.metaKey) ||
+        !(e.target as Element).closest?.(".stage")
+      )
+        return;
+      e.preventDefault();
+      zoomBy(e.deltaY < 0 ? 1 : -1);
+    };
+    window.addEventListener("wheel", onWheel, { passive: false });
+    return () => window.removeEventListener("wheel", onWheel);
+  });
+  const sized = (w: number): CSSProperties | undefined =>
+    zoom
+      ? {
+          width: Math.round(w * zoom),
+          maxWidth: "none",
+          maxHeight: "none",
+          height: "auto",
+        }
+      : undefined;
 
   /* ---------- Processing ---------- */
   useEffect(() => {
@@ -285,28 +357,100 @@ export default function ImageTool({ tool, preset, tools }: Props) {
     );
   }, [wantAdvanced, advanced]);
 
+  /* ---------- Keyboard shortcuts (listed in the "?" panel) ---------- */
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      // Leave keys alone while a dialog (search, shortcuts) is open
+      if (document.querySelector(".scrim")) return;
+      if (matches(e, "mod+o")) {
+        e.preventDefault();
+        pickRef.current?.click();
+        return;
+      }
+      if (matches(e, "mod+shift+s")) {
+        e.preventDefault();
+        if (items.length && !zipping) void downloadEach();
+        return;
+      }
+      if (matches(e, "mod+s")) {
+        e.preventDefault();
+        if (items.length && !zipping) void download();
+        return;
+      }
+      if (typing(e) || e.metaKey || e.ctrlKey || e.altKey) return;
+      const k = e.key;
+      if (k === "Escape" && advanced && !editor) closeAdvanced();
+      else if (k === "a" || k === "A")
+        (advanced || wantAdvanced ? closeAdvanced : openAdvanced)();
+      else if (!items.length) return;
+      else if (k === "ArrowRight" && !(e.target instanceof HTMLInputElement))
+        setCur((c) => (c + 1) % items.length);
+      else if (k === "ArrowLeft" && !(e.target instanceof HTMLInputElement))
+        setCur((c) => (c - 1 + items.length) % items.length);
+      else if (k === "+" || k === "=") zoomBy(1);
+      else if (k === "-" || k === "_") zoomBy(-1);
+      else if (k === "0") setZoom(null);
+      else if (k === "1") setZoom(1);
+      else return;
+      e.preventDefault();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  });
+
   /* ---------- Download ---------- */
-  async function download() {
-    if (!items.length) return;
-    if (items.length === 1) {
-      if (out && item && out.key === item.key)
-        downloadBlob(out.blob, outName(item.file, out.type));
+  /**
+   * Settings for one file in a batch. With a fixed crop ratio, files other than the one on screen
+   * get their own centred crop at that ratio, so different shapes all come out right.
+   */
+  function settingsFor(it: Item): Settings {
+    const r = RATIOS.find((x) => x.id === s.ratio);
+    if (!r || it.key === item?.key) return s;
+    return { ...s, crop: centeredCrop(it.w, it.h, r.r) };
+  }
+
+  /** Process every file with the current settings; file names are made unique. */
+  async function encodeAll(): Promise<{ name: string; blob: Blob }[]> {
+    const used = new Set<string>();
+    const outFiles: { name: string; blob: Blob }[] = [];
+    for (const it of items) {
+      const r = await engine.encode(it.key, it.file.type, settingsFor(it));
+      let name = outName(it.file, r.type);
+      for (let n = 2; used.has(name); n++)
+        name = outName(it.file, r.type).replace(/(\.\w+)$/, `-${n}$1`);
+      used.add(name);
+      outFiles.push({ name, blob: r.blob });
+    }
+    return outFiles;
+  }
+
+  /** One file: reuse the preview result when it's current, otherwise process it now. */
+  async function downloadOne(i = cur) {
+    const it = items[i];
+    if (!it) return;
+    if (out && out.key === it.key && i === cur) {
+      downloadBlob(out.blob, outName(it.file, out.type));
       return;
     }
+    const r = await engine.encode(it.key, it.file.type, settingsFor(it));
+    downloadBlob(r.blob, outName(it.file, r.type));
+  }
+
+  async function downloadZip() {
     setZipping(true);
     try {
-      const entries: Record<string, Uint8Array> = {};
-      for (const it of items) {
-        const r = await engine.encode(it.key, it.file.type, s);
-        let name = outName(it.file, r.type);
-        for (let n = 2; entries[name]; n++)
-          name = name.replace(/(\.\w+)$/, `-${n}$1`);
-        entries[name] = new Uint8Array(await r.blob.arrayBuffer());
-      }
+      const files = await encodeAll();
       // Images are already compressed, so store them without deflating again.
-      const zip = zipSync(entries, { level: 0 });
+      const entries = Object.fromEntries(
+        await Promise.all(
+          files.map(
+            async (f) =>
+              [f.name, new Uint8Array(await f.blob.arrayBuffer())] as const,
+          ),
+        ),
+      );
       downloadBlob(
-        new Blob([zip], { type: "application/zip" }),
+        new Blob([zipSync(entries, { level: 0 })], { type: "application/zip" }),
         "kmra-images.zip",
       );
     } catch {
@@ -315,6 +459,28 @@ export default function ImageTool({ tool, preset, tools }: Props) {
       setZipping(false);
     }
   }
+
+  async function downloadEach() {
+    setZipping(true);
+    try {
+      const files = await encodeAll();
+      for (const f of files) {
+        downloadBlob(f.blob, f.name);
+        // Browsers drop rapid back-to-back downloads; space them out a little.
+        await new Promise((r) => setTimeout(r, 300));
+      }
+      if (files.length > 1)
+        toast(
+          `Saved ${files.length} files. If some are missing, allow multiple downloads for this site.`,
+        );
+    } catch {
+      toast("Couldn't save the files. Try fewer or smaller images.");
+    } finally {
+      setZipping(false);
+    }
+  }
+
+  const download = () => (items.length > 1 ? downloadZip() : downloadOne());
 
   /* ---------- Shared pieces ---------- */
   const fileInput = (
@@ -343,8 +509,19 @@ export default function ImageTool({ tool, preset, tools }: Props) {
         className={`cmp${solo ? " solo" : ""}`}
         style={{ "--cut": `${cut}%` } as CSSProperties}
       >
-        <img src={it.url} alt={`Original: ${it.file.name}`} />
-        <img className="after" src={outForItem?.url ?? it.url} alt="Result" />
+        <img
+          src={it.url}
+          alt={`Original: ${it.file.name}`}
+          ref={solo ? undefined : shownRef}
+          style={solo ? undefined : sized(it.w)}
+        />
+        <img
+          className="after"
+          src={outForItem?.url ?? it.url}
+          alt="Result"
+          ref={solo ? shownRef : undefined}
+          style={solo && outForItem ? sized(outForItem.w) : undefined}
+        />
         <div className="line" />
         <span className="lab" style={{ left: 10 }}>
           Original
@@ -563,10 +740,12 @@ export default function ImageTool({ tool, preset, tools }: Props) {
     </div>
   );
 
+  // Functional updates so quick repeated clicks all count
   const turn = (by: 90 | -90) =>
-    set({
-      rotate: ((((s.rotate + by) % 360) + 360) % 360) as Settings["rotate"],
-    });
+    setS((p) => ({
+      ...p,
+      rotate: ((((p.rotate + by) % 360) + 360) % 360) as Settings["rotate"],
+    }));
   const rotateCtl = (
     <div className="ctl">
       <span className="lbl">
@@ -585,7 +764,7 @@ export default function ImageTool({ tool, preset, tools }: Props) {
           type="button"
           className="btn sm"
           aria-pressed={s.flipH}
-          onClick={() => set({ flipH: !s.flipH })}
+          onClick={() => setS((p) => ({ ...p, flipH: !p.flipH }))}
         >
           <Icon name="flipH" />
           Flip ↔
@@ -594,7 +773,7 @@ export default function ImageTool({ tool, preset, tools }: Props) {
           type="button"
           className="btn sm"
           aria-pressed={s.flipV}
-          onClick={() => set({ flipV: !s.flipV })}
+          onClick={() => setS((p) => ({ ...p, flipV: !p.flipV }))}
         >
           <Icon name="flipV" />
           Flip ↕
@@ -704,9 +883,8 @@ export default function ImageTool({ tool, preset, tools }: Props) {
       ? !advanced || focus === "crop"
       : advanced && focus === "crop";
   function stageContent(it: Item) {
-    if (!showCrop) return compare(it);
     const r = RATIOS.find((x) => x.id === s.ratio);
-    return (
+    const content = showCrop ? (
       <CropBox
         url={it.url}
         alt={`Crop ${it.file.name}`}
@@ -715,7 +893,50 @@ export default function ImageTool({ tool, preset, tools }: Props) {
         srcW={it.w}
         srcH={it.h}
         onChange={(crop) => set({ crop })}
+        imgStyle={sized(it.w)}
       />
+    ) : (
+      compare(it)
+    );
+    return (
+      <>
+        <div className={`viewport${zoom ? " zoomed" : ""}`}>{content}</div>
+        <div className="zoombar" role="group" aria-label="Zoom">
+          <button
+            type="button"
+            onClick={() => zoomBy(-1)}
+            aria-label="Zoom out"
+            title={`Zoom out (−, or ${keys.mod} + scroll)`}
+          >
+            <Icon name="minus" />
+          </button>
+          <button
+            type="button"
+            className="zl"
+            onClick={() => setZoom(zoom === 1 ? null : 1)}
+            title={zoom === 1 ? "Fit to view" : "Actual size (100%)"}
+          >
+            {zoom ? `${Math.round(zoom * 100)}%` : "Fit"}
+          </button>
+          <button
+            type="button"
+            onClick={() => zoomBy(1)}
+            aria-label="Zoom in"
+            title={`Zoom in (+, or ${keys.mod} + scroll)`}
+          >
+            <Icon name="plus" />
+          </button>
+          {zoom !== null && (
+            <button
+              type="button"
+              className="zfit"
+              onClick={() => setZoom(null)}
+            >
+              Fit
+            </button>
+          )}
+        </div>
+      </>
     );
   }
 
@@ -750,11 +971,8 @@ export default function ImageTool({ tool, preset, tools }: Props) {
     );
   }
 
-  const downloadLabel = zipping
-    ? "Preparing zip…"
-    : items.length > 1
-      ? `Download all ${items.length} as zip`
-      : "Download";
+  const many = items.length > 1;
+  const dlDisabled = busy || zipping || !outForItem;
 
   /* ---------- Empty state ---------- */
   const emptyState = (
@@ -767,7 +985,9 @@ export default function ImageTool({ tool, preset, tools }: Props) {
           <Icon name="upload" />
         </div>
         <strong>Drop images here</strong>
-        <span className="muted">or paste with ⌘V. Nothing is uploaded.</span>
+        <span className="muted">
+          or paste with {keys.paste}. Nothing is uploaded.
+        </span>
         <div className="row">
           <button
             className="btn acc lg"
@@ -834,11 +1054,35 @@ export default function ImageTool({ tool, preset, tools }: Props) {
               className="btn acc"
               type="button"
               onClick={() => void download()}
-              disabled={busy || zipping || !outForItem}
+              disabled={dlDisabled}
             >
               <Icon name="download" />
-              {downloadLabel}
+              {zipping
+                ? "Preparing…"
+                : many
+                  ? `Download all ${items.length} as zip`
+                  : "Download"}
             </button>
+            {many && (
+              <div className="dl-row">
+                <button
+                  className="btn sm"
+                  type="button"
+                  onClick={() => void downloadEach()}
+                  disabled={dlDisabled}
+                >
+                  Save each separately
+                </button>
+                <button
+                  className="btn sm"
+                  type="button"
+                  onClick={() => void downloadOne()}
+                  disabled={dlDisabled}
+                >
+                  Only this one
+                </button>
+              </div>
+            )}
             <button className="advlink" type="button" onClick={openAdvanced}>
               <Icon name="sliders" />
               More options in Advanced
@@ -920,17 +1164,29 @@ export default function ImageTool({ tool, preset, tools }: Props) {
               <Icon name="upload" />
               Add files
             </button>
+            {many && (
+              <button
+                className="btn sm hide-sm"
+                type="button"
+                onClick={() => void downloadEach()}
+                disabled={dlDisabled}
+                title="Save every file separately"
+              >
+                Save each
+              </button>
+            )}
             <button
               className="btn sm acc"
               type="button"
               onClick={() => void download()}
-              disabled={busy || zipping || !outForItem}
+              disabled={dlDisabled}
+              title={many ? "Download every file in one zip" : "Download"}
             >
               <Icon name="download" />
               {zipping
                 ? "Preparing…"
-                : items.length > 1
-                  ? `Download ${items.length}`
+                : many
+                  ? `Zip of ${items.length}`
                   : "Download"}
             </button>
           </span>
@@ -973,8 +1229,8 @@ export default function ImageTool({ tool, preset, tools }: Props) {
                   </span>
                   <strong>Drop images to start</strong>
                   <span className="muted">
-                    Or click to choose files, or paste with ⌘V. Settings apply
-                    to every file.
+                    Or click to choose files, or paste with {keys.paste}.
+                    Settings apply to every file.
                   </span>
                 </button>
               )}
@@ -1003,7 +1259,19 @@ export default function ImageTool({ tool, preset, tools }: Props) {
                     type="button"
                     className="iconbtn"
                     style={{ width: 28, height: 28 }}
+                    aria-label={`Download ${it.file.name}`}
+                    title="Download this file"
+                    disabled={zipping}
+                    onClick={() => void downloadOne(i)}
+                  >
+                    <Icon name="download" />
+                  </button>
+                  <button
+                    type="button"
+                    className="iconbtn"
+                    style={{ width: 28, height: 28 }}
                     aria-label={`Remove ${it.file.name}`}
+                    title="Remove"
                     onClick={() => removeItem(i)}
                   >
                     <Icon name="x" />

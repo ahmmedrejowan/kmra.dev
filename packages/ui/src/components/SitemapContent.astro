@@ -1,0 +1,72 @@
+---
+import { apps, linkTo, type AppId } from "@kmra/registry";
+
+interface Props {
+  appId: AppId;
+  /** Extra pages specific to this app, e.g. the image editor */
+  extra?: readonly { href: string; label: string }[];
+}
+
+const { appId, extra = [] } = Astro.props;
+const dev = import.meta.env.DEV;
+const app = apps.find((a) => a.id === appId)!;
+const others = apps.filter((a) => a.live && a.id !== appId);
+const pages = [
+  { href: "/", label: "Home" },
+  ...extra,
+  { href: "/how-it-works", label: "How it works" },
+  { href: "/privacy", label: "Privacy" },
+  { href: "/about", label: "About" },
+];
+const tools = app.tools.filter((t) => t.ready);
+---
+
+<div class="smap">
+  <section>
+    <h2>Pages</h2>
+    <ul>
+      {pages.map((p) => (
+        <li>
+          <a href={p.href}>{p.label}</a>
+        </li>
+      ))}
+    </ul>
+  </section>
+  {tools.length > 0 && (
+    <section>
+      <h2>Tools</h2>
+      <ul>
+        {tools.map((t) => (
+          <li>
+            <a href={`/${t.slug}`}>{t.title ?? t.name}</a>
+          </li>
+        ))}
+      </ul>
+    </section>
+  )}
+  {app.tasks.length > 0 && (
+    <section>
+      <h2>Use cases</h2>
+      <ul>
+        {app.tasks.map((t) => (
+          <li>
+            <a href={`/${t.slug}`}>{t.title}</a>
+          </li>
+        ))}
+      </ul>
+    </section>
+  )}
+  <section>
+    <h2>Other kmra apps</h2>
+    <ul>
+      {others.map((a) => (
+        <li>
+          <a href={linkTo(appId, a.id as AppId, "/", dev)}>{a.name}</a>
+        </li>
+      ))}
+    </ul>
+    <p class="muted">
+      For search engines: <a href="/sitemap-index.xml">XML sitemap</a>
+    </p>
+  </section>
+</div>

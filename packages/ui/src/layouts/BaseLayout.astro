@@ -13,6 +13,7 @@ import SiteHeader from "../components/SiteHeader.astro";
 import SiteFooter from "../components/SiteFooter.astro";
 import CommandPalette, { type PaletteItem } from "../components/CommandPalette";
 import MoreAppsCta from "../components/MoreAppsCta.astro";
+import Shortcuts from "../components/Shortcuts";
 // Cookieless page counts, served from the site's own domain on Vercel (allowed by the CSP)
 import Analytics from "@vercel/analytics/astro";
 
@@ -86,6 +87,17 @@ const paletteItems: PaletteItem[] = [
     href: linkTo(appId, p.app, `/${p.slug}`, dev),
     icon: p.icon,
   })),
+  ...(appId === "imgtool"
+    ? [
+        {
+          group: "Tools",
+          name: "Image editor",
+          hint: "All tools",
+          href: "/editor",
+          icon: "sliders" as const,
+        },
+      ]
+    : []),
   {
     group: "Help",
     name: "How it works",
@@ -101,6 +113,13 @@ const paletteItems: PaletteItem[] = [
     icon: "shield",
   },
   { group: "Help", name: "About", hint: brand, href: "/about", icon: "layers" },
+  {
+    group: "Help",
+    name: "Keyboard shortcuts",
+    hint: "?",
+    href: "#shortcuts",
+    icon: "sliders",
+  },
 ];
 ---
 
@@ -164,6 +183,14 @@ const paletteItems: PaletteItem[] = [
     </aside>
     <SiteFooter appId={appId} />
     <CommandPalette client:idle items={paletteItems} />
+    <Shortcuts client:idle />
     <Analytics />
+    <script>
+      // Show shortcut hints with the visitor's keys (⌘ on Apple devices, Ctrl elsewhere)
+      import { formatKeys } from "../lib/keys";
+      document.querySelectorAll<HTMLElement>("[data-keys]").forEach((el) => {
+        el.textContent = formatKeys(el.dataset.keys ?? "");
+      });
+    </script>
   </body>
 </html>

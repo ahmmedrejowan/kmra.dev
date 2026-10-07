@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { IconKey } from "../lib/icons";
+import { matches, typing } from "../lib/keys";
 import { Icon } from "./Icon";
 
 export interface PaletteItem {
@@ -20,7 +21,10 @@ export default function CommandPalette({ items }: { items: PaletteItem[] }) {
   useEffect(() => {
     const toggle = () => setOpen((o) => !o);
     const onKey = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
+      if (
+        matches(e, "mod+k") ||
+        (e.key === "/" && !typing(e) && !e.metaKey && !e.ctrlKey)
+      ) {
         e.preventDefault();
         toggle();
       }
@@ -53,7 +57,13 @@ export default function CommandPalette({ items }: { items: PaletteItem[] }) {
   if (!open) return null;
 
   const go = (item?: PaletteItem) => {
-    if (item) window.location.href = item.href;
+    if (!item) return;
+    if (item.href === "#shortcuts") {
+      setOpen(false);
+      window.dispatchEvent(new CustomEvent("kmra:shortcuts"));
+      return;
+    }
+    window.location.href = item.href;
   };
 
   let lastGroup = "";
