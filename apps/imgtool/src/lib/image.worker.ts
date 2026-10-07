@@ -193,7 +193,10 @@ async function isHeif(file: Blob): Promise<boolean> {
 async function decodeHeif(file: Blob): Promise<ImageBitmap> {
   // The bundle's default export is a factory that sets up the WebAssembly module
   const mod = (await import("libheif-js/libheif-wasm/libheif-bundle.mjs")) as {
-    default: () => { HeifDecoder: new () => { decode(buf: Uint8Array): HeifImage[] }; ready?: Promise<unknown> };
+    default: () => {
+      HeifDecoder: new () => { decode(buf: Uint8Array): HeifImage[] };
+      ready?: Promise<unknown>;
+    };
   };
   const libheif = mod.default();
   if (libheif.ready) await libheif.ready;

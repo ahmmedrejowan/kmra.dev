@@ -13,6 +13,8 @@ export default defineConfig({
   integrations: [react(), kmraBuild({ origin: appOrigin("imgtool") })],
   vite: {
     plugins: [tailwindcss()],
+    // ES-module workers can lazy-load heavy decoders (HEIC, AI models) as separate chunks
+    worker: { format: "es" },
     // Native image renderer used by build-time OG/icon routes
     ssr: { external: ["@resvg/resvg-js", "satori"] },
   },
