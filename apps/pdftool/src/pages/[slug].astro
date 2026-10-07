@@ -22,11 +22,7 @@ const dev = import.meta.env.DEV;
 const title = tool.title ?? tool.name;
 ---
 
-<BaseLayout
-  appId="pdftool"
-  title={`${title} · kmra`}
-  description={tool.description}
->
+<BaseLayout appId="pdftool" title={title} description={tool.description}>
   <div class="wrap">
     <Crumbs items={[{ label: app.name, href: "/" }, { label: tool.name }]} />
     <div class="ptitle">

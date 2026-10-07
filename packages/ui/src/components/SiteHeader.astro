@@ -8,6 +8,8 @@ import {
   type AppId,
 } from "@kmra/registry";
 import Icon from "./Icon.astro";
+import Wordmark from "./Wordmark.astro";
+import { markSvg } from "../lib/brand";
 
 interface Props {
   appId: AppId;
@@ -30,8 +32,12 @@ const appHref = (a: App) =>
 <header class="site">
   <div class="wrap">
     <div class="hd">
-      <a class="logo" href="/">
-        <b aria-hidden="true">k</b>kmra <span>{app.short.toLowerCase()}</span>
+      <a
+        class="logo"
+        href="/"
+        aria-label={`${app.brand.join("")} by kmra.dev, home`}
+      >
+        <Wordmark appId={appId} />
       </a>
 
       <nav aria-label="Main" style="display: contents">
@@ -108,38 +114,44 @@ const appHref = (a: App) =>
           <button type="button" aria-expanded="false" aria-controls="m-apps">
             Apps <Icon name="down" />
           </button>
-          <div class="mega single" id="m-apps" hidden>
+          <div class="mega apps-menu" id="m-apps" hidden>
+            <h6>kmra apps</h6>
             {liveApps.map((a) => {
-              const inner = (
-                <>
-                  <span
-                    class="tile solid"
-                    style={`background:${a.accent.light}`}
-                  >
-                    {a.short.slice(0, 1)}
-                  </span>
-                  <span>
-                    <strong>
-                      {a.name}
-                      {!a.live && <span class="soon">Soon</span>}
-                    </strong>
-                    <small>{a.id}.kmra.dev</small>
-                  </span>
-                </>
-              );
-              const href = appHref(a);
-              return href ? (
+              const ready = a.tools.filter((t) => t.ready).length;
+              const here = a.id === appId;
+              return (
                 <a
-                  class="mi"
-                  href={href}
-                  aria-current={a.id === appId ? "true" : undefined}
+                  class:list={["app-item", { here }]}
+                  href={appHref(a)}
+                  aria-current={here ? "true" : undefined}
+                  style={`--app:${a.accent.light}`}
                 >
-                  {inner}
+                  <span
+                    class="app-item-mark"
+                    set:html={markSvg(a.id, a.accent.light)}
+                    aria-hidden="true"
+                  />
+                  <span class="app-item-text">
+                    <span class="app-item-name">
+                      <span
+                        set:html={`<span style="color:var(--app)">${a.brand[0]}</span>${a.brand[1]}`}
+                      />
+                      {here && <span class="here-tag">You're here</span>}
+                    </span>
+                    <small>{a.tagline.split(".")[0]}.</small>
+                    <span class="app-item-meta">
+                      <span>
+                        {ready > 0 ? `${ready} tools` : "In progress"}
+                      </span>
+                      <span>{a.id}.kmra.dev</span>
+                    </span>
+                  </span>
                 </a>
-              ) : (
-                <div class="mi">{inner}</div>
               );
             })}
+            <a class="apps-more" href="/about">
+              About kmra and what's next
+            </a>
           </div>
         </div>
 
@@ -217,6 +229,8 @@ const appHref = (a: App) =>
       })}
       <h6>About</h6>
       <a href="/how-it-works">How it works</a>
+      <a href="/privacy">Privacy</a>
+      <a href="/about">About</a>
     </nav>
   </div>
 </header>

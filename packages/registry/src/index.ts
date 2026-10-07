@@ -71,6 +71,8 @@ export interface App {
   /** Also the subdomain and the folder name under apps/ */
   id: string;
   name: string;
+  /** Two-part wordmark, e.g. ["Img", "Tool"] → "ImgTool"; the first part takes the accent colour */
+  brand: readonly [string, string];
   /** Short label for nav, e.g. "Images" */
   short: string;
   tagline: string;
@@ -86,6 +88,7 @@ export const apps = [
   {
     id: "imgtool",
     name: "Image tools",
+    brand: ["Img", "Tool"],
     short: "Images",
     tagline:
       "Resize, compress and convert images in your browser. Nothing gets uploaded.",
@@ -296,6 +299,7 @@ export const apps = [
   {
     id: "pdftool",
     name: "PDF tools",
+    brand: ["PDF", "Tool"],
     short: "PDF",
     tagline: "Merge, split and sign PDFs without uploading them anywhere.",
     accent: {
@@ -373,6 +377,7 @@ export const apps = [
   {
     id: "vidtool",
     name: "Video tools",
+    brand: ["Vid", "Tool"],
     short: "Video",
     tagline: "Trim, convert and make GIFs.",
     accent: {
@@ -389,6 +394,7 @@ export const apps = [
   {
     id: "devtool",
     name: "Developer tools",
+    brand: ["Dev", "Tool"],
     short: "Dev",
     tagline: "JSON, Base64, hashes and more.",
     accent: {
@@ -405,6 +411,7 @@ export const apps = [
   {
     id: "qrtool",
     name: "QR tools",
+    brand: ["QR", "Tool"],
     short: "QR",
     tagline: "Generate and scan QR codes and barcodes.",
     accent: {
@@ -439,6 +446,11 @@ export function appOrigin(id: AppId, dev = false): string {
 /** Absolute URL to a page in any app. Use for cross-app links. */
 export function appUrl(id: AppId, path = "/", dev = false): string {
   return new URL(path, appOrigin(id, dev)).toString();
+}
+
+/** "ImgTool" */
+export function brandName(app: App): string {
+  return app.brand.join("");
 }
 
 /** Link to a page in `target`, relative when it's the current app. */

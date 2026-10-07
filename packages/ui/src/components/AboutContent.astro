@@ -1,0 +1,57 @@
+---
+import type { AppId } from "@kmra/registry";
+import AppCards from "./AppCards.astro";
+import Icon from "./Icon.astro";
+
+interface Props {
+  appId: AppId;
+}
+
+const { appId } = Astro.props;
+---
+
+<div class="about-lede">
+  <p>
+    kmra.dev is a family of small, focused tools for everyday files: images
+    today, PDFs next. Each one lives on its own subdomain and does its work in
+    your browser, so it's fast and your files stay private.
+  </p>
+</div>
+
+<div class="principles">
+  <div>
+    <span class="tile">
+      <Icon name="shield" />
+    </span>
+    <strong>Private by design</strong>
+    <p>No uploads, no accounts. The tool comes to your file.</p>
+  </div>
+  <div>
+    <span class="tile">
+      <Icon name="check" />
+    </span>
+    <strong>Only what works</strong>
+    <p>A tool appears here when it's finished, not before.</p>
+  </div>
+  <div>
+    <span class="tile">
+      <Icon name="zap" />
+    </span>
+    <strong>Fast and free</strong>
+    <p>No queues, no watermarks, no limits we set.</p>
+  </div>
+  <div>
+    <span class="tile">
+      <Icon name="sliders" />
+    </span>
+    <strong>Simple first</strong>
+    <p>Two or three controls by default. Advanced when you need it.</p>
+  </div>
+</div>
+
+<section class="block">
+  <div class="sechead primary">
+    <h2>kmra apps</h2>
+  </div>
+  <AppCards appId={appId} />
+</section>

@@ -1,25 +1,69 @@
 ---
 import "../styles.css";
-import { allPages, apps, getApp, linkTo, type AppId } from "@kmra/registry";
+import {
+  allPages,
+  appOrigin,
+  apps,
+  brandName,
+  getApp,
+  linkTo,
+  type AppId,
+} from "@kmra/registry";
 import SiteHeader from "../components/SiteHeader.astro";
 import SiteFooter from "../components/SiteFooter.astro";
 import CommandPalette, { type PaletteItem } from "../components/CommandPalette";
 
 interface Props {
   appId: AppId;
+  /** Page title without the brand; the brand is appended */
   title: string;
   description?: string;
+  /** OG image slug under /og/; defaults to the page path ("index" for /) */
+  og?: string;
+  /** Keep the page out of search results (e.g. 404) */
+  noindex?: boolean;
+  /** Extra JSON-LD objects for this page */
+  schema?: Record<string, unknown>[];
 }
 
-const { appId, title, description } = Astro.props;
+const {
+  appId,
+  title,
+  description,
+  og,
+  noindex = false,
+  schema = [],
+} = Astro.props;
 const app = getApp(appId);
+const brand = brandName(app);
 const dev = import.meta.env.DEV;
+const site = Astro.site ?? new URL(appOrigin(appId));
 const pageDescription = description ?? app.tagline;
 // Clean URL (no .html / trailing slash) to match Vercel cleanUrls + trailingSlash: false
 const path = Astro.url.pathname
   .replace(/(index)?\.html$/, "")
   .replace(/(.)\/$/, "$1");
+const canonical = new URL(path, site).toString();
+const ogSlug = og ?? (path === "/" ? "index" : path.slice(1));
+const ogImage = new URL(`/og/${ogSlug}.png`, site).toString();
+const fullTitle = `${title} · ${brand}`;
 const accentStyle = `--acc-l:${app.accent.light};--acc-d:${app.accent.dark};--acc-soft-l:${app.accent.softLight};--acc-soft-d:${app.accent.softDark}`;
+
+const jsonLd = [
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    name: `${brand} by kmra.dev`,
+    url: site.toString(),
+    description: app.tagline,
+    publisher: {
+      "@type": "Organization",
+      name: "kmra.dev",
+      url: "https://kmra.dev",
+    },
+  },
+  ...schema,
+];
 
 // Current app first, then other live apps.
 const appName = (id: AppId) => apps.find((a) => a.id === id)?.short ?? id;
@@ -46,6 +90,14 @@ const paletteItems: PaletteItem[] = [
     href: "/how-it-works",
     icon: "shield",
   },
+  {
+    group: "Help",
+    name: "Privacy",
+    hint: "What we store",
+    href: "/privacy",
+    icon: "shield",
+  },
+  { group: "Help", name: "About", hint: brand, href: "/about", icon: "layers" },
 ];
 ---
 
@@ -54,14 +106,40 @@ const paletteItems: PaletteItem[] = [
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>{title}</title>
+    <title>{fullTitle}</title>
     <meta name="description" content={pageDescription} />
+    <meta
+      name="robots"
+      content={noindex ? "noindex, follow" : "index, follow"}
+    />
+    {!noindex && <link rel="canonical" href={canonical} />}
+    <meta name="application-name" content={brand} />
+    <meta name="apple-mobile-web-app-title" content={brand} />
     <meta name="theme-color" content={app.accent.light} />
+    <meta name="color-scheme" content="light dark" />
+
+    <link rel="icon" href="/favicon.ico" sizes="48x48" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-    {Astro.site && <link rel="canonical" href={new URL(path, Astro.site)} />}
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="sitemap" href="/sitemap-index.xml" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={`${brand} by kmra.dev`} />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={pageDescription} />
-    <meta property="og:type" content="website" />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content={`${title}, ${brand} by kmra.dev`} />
+    <meta property="og:locale" content="en_US" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={pageDescription} />
+    <meta name="twitter:image" content={ogImage} />
+
+    <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
     <script is:inline>
       try {
         const t = localStorage.getItem("kmra-theme");

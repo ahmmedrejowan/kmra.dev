@@ -1,0 +1,23 @@
+---
+import { getApp, type AppId } from "@kmra/registry";
+import { markSvg } from "../lib/brand";
+
+interface Props {
+  appId: AppId;
+  /** Larger version for the footer */
+  large?: boolean;
+}
+
+const { appId, large = false } = Astro.props;
+const app = getApp(appId);
+const mark = markSvg(appId, app.accent.light);
+---
+
+<span class:list={["wm", { lg: large }]}>
+  <span class="wm-mark" set:html={mark} aria-hidden="true" />
+  <span
+    class="wm-text"
+    set:html={`<span class="wm-a">${app.brand[0]}</span><span class="wm-b">${app.brand[1]}</span>`}
+  />
+  <span class="wm-dom">kmra.dev</span>
+</span>

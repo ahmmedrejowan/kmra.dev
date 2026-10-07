@@ -228,27 +228,58 @@ header.site {
 .logo {
   display: flex;
   align-items: center;
-  gap: 9px;
-  font-size: 16px;
-  font-weight: 700;
-  letter-spacing: -0.02em;
   margin-right: 18px;
   white-space: nowrap;
 }
-.logo b {
-  width: 26px;
-  height: 26px;
-  border-radius: 8px;
-  background: var(--acc);
-  color: var(--on-acc);
-  display: grid;
-  place-items: center;
-  font-size: 14px;
-  box-shadow: 0 2px 8px -2px color-mix(in srgb, var(--acc) 60%, transparent);
+/* Wordmark: [mark] Img(accent)Tool(ink) kmra.dev(small) */
+.wm {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  line-height: 1;
 }
-.logo span {
-  color: var(--muted);
+.wm-mark {
+  display: block;
+  width: 28px;
+  height: 28px;
+  flex: none;
+  filter: drop-shadow(
+    0 3px 6px color-mix(in srgb, var(--acc) 35%, transparent)
+  );
+}
+.wm-mark svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.wm-text {
+  font-size: 19px;
+  font-weight: 750;
+  letter-spacing: -0.04em;
+}
+.wm-a {
+  color: var(--acc);
+}
+.wm-b {
+  color: var(--fg);
+}
+.wm-dom {
+  font-size: 12px;
   font-weight: 500;
+  color: var(--muted);
+  padding-left: 10px;
+  border-left: 1px solid var(--line);
+  letter-spacing: 0;
+}
+.wm.lg .wm-mark {
+  width: 36px;
+  height: 36px;
+}
+.wm.lg .wm-text {
+  font-size: 24px;
+}
+.wm.lg .wm-dom {
+  font-size: 13px;
 }
 .menu:has(.mega.single) {
   position: relative;
@@ -281,6 +312,94 @@ header.site {
 .menu > button[aria-expanded="true"] .ico {
   transform: rotate(180deg);
 }
+/* Apps menu: one card per live app */
+.mega.apps-menu {
+  left: auto;
+  right: -8px;
+  transform: none;
+  top: calc(100% + 18px);
+  grid-auto-flow: row;
+  grid-auto-columns: auto;
+  width: 380px;
+  gap: 6px;
+}
+.menu:has(.apps-menu) {
+  position: relative;
+}
+.app-item {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px solid transparent;
+}
+.app-item:hover {
+  background: var(--raise);
+}
+.app-item.here {
+  border-color: color-mix(in srgb, var(--app) 30%, var(--line));
+  background: color-mix(in srgb, var(--app) 6%, var(--card));
+}
+.app-item-mark {
+  width: 40px;
+  height: 40px;
+  flex: none;
+}
+.app-item-mark svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+.app-item-text {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+.app-item-name {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  font-size: 16px;
+}
+.here-tag {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0;
+  color: var(--app);
+  background: color-mix(in srgb, var(--app) 12%, transparent);
+  border-radius: 999px;
+  padding: 1px 8px;
+}
+.app-item small {
+  color: var(--muted);
+  font-size: 13px;
+}
+.app-item-meta {
+  display: flex;
+  gap: 10px;
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 4px;
+}
+.app-item-meta span:first-child {
+  color: var(--fg);
+  font-weight: 500;
+}
+.apps-more {
+  display: block;
+  margin-top: 4px;
+  padding: 10px 12px 2px;
+  border-top: 1px solid var(--line);
+  font-size: 13px;
+  color: var(--muted);
+}
+.apps-more:hover {
+  color: var(--fg);
+}
+
 /* Mega menus: equal 244px columns, one rhythm for every item */
 .mega {
   position: absolute;
@@ -877,13 +996,13 @@ a.appcard.live:hover {
 .app-mark {
   width: 40px;
   height: 40px;
-  border-radius: 11px;
-  background: var(--app);
-  color: #fff;
-  display: grid;
-  place-items: center;
-  font-weight: 700;
   flex: none;
+  display: block;
+}
+.app-mark svg {
+  display: block;
+  width: 100%;
+  height: 100%;
 }
 .app-text {
   flex: 1;
@@ -1443,8 +1562,6 @@ a:hover .feat-body > .ico.go {
 .cta-app .app-mark {
   width: 52px;
   height: 52px;
-  border-radius: 14px;
-  font-size: 20px;
 }
 .cta-text {
   flex: 1;
@@ -1571,6 +1688,179 @@ a:hover .feat-body > .ico.go {
   margin: 8px auto 18px;
 }
 
+/* ---------- Info pages (how it works, privacy, about, 404) ---------- */
+.page-body {
+  padding-block: 40px 0;
+}
+.flow {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+.flow li,
+.card-block,
+.principles > div,
+.doc-aside {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 24px;
+}
+.flow li {
+  position: relative;
+  display: grid;
+  gap: 6px;
+}
+.flow li b {
+  position: absolute;
+  top: 20px;
+  right: 22px;
+  font-size: 40px;
+  font-weight: 700;
+  line-height: 1;
+  color: color-mix(in srgb, var(--acc) 22%, transparent);
+}
+.flow .tile,
+.card-block .tile,
+.principles .tile {
+  margin-bottom: 10px;
+}
+.flow strong,
+.principles strong {
+  font-size: 17px;
+  letter-spacing: -0.02em;
+}
+.flow p,
+.principles p,
+.card-block p {
+  margin: 0;
+  color: var(--muted);
+}
+.duo {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-top: 16px;
+}
+.card-block h2 {
+  font-size: 20px;
+  margin: 0 0 8px;
+}
+.mini-steps {
+  margin: 0;
+  padding-left: 20px;
+  list-style: decimal;
+  color: var(--muted);
+  display: grid;
+  gap: 6px;
+}
+.doc {
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  gap: 40px;
+  align-items: start;
+}
+.doc-aside {
+  position: sticky;
+  top: 88px;
+}
+.doc-aside h2 {
+  font-size: 17px;
+  margin: 0 0 12px;
+}
+.doc-aside small {
+  display: block;
+  margin-top: 14px;
+  color: var(--muted);
+}
+.checks {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 10px;
+}
+.checks li {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+}
+.checks .ico {
+  color: var(--good);
+  margin-top: 2px;
+}
+.doc-main {
+  max-width: 44em;
+}
+.doc-main section + section {
+  margin-top: 32px;
+}
+.doc-main h2 {
+  font-size: 22px;
+  margin: 0 0 10px;
+}
+.doc-main p,
+.doc-main li {
+  color: var(--muted);
+}
+.doc-main p {
+  margin: 0 0 10px;
+}
+.doc-main ul {
+  margin: 0;
+  padding-left: 20px;
+  list-style: disc;
+  display: grid;
+  gap: 6px;
+}
+.doc-main strong {
+  color: var(--fg);
+  font-weight: 600;
+}
+.about-lede p {
+  margin: 0 0 32px;
+  font-size: 20px;
+  line-height: 1.55;
+  max-width: 40em;
+  letter-spacing: -0.01em;
+}
+.principles {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+.principles > div {
+  display: grid;
+  gap: 4px;
+  align-content: start;
+}
+.nf {
+  position: relative;
+  padding-block: 72px;
+  text-align: center;
+  display: grid;
+  justify-items: center;
+}
+.nf .nf-code {
+  margin: 0;
+  font-size: clamp(80px, 14vw, 140px);
+  font-weight: 750;
+  line-height: 1;
+  letter-spacing: -0.06em;
+  color: var(--acc);
+}
+.nf h1 {
+  margin: 8px 0 8px;
+  font-size: clamp(26px, 3.4vw, 36px);
+}
+.nf p {
+  margin: 0 0 24px;
+  color: var(--muted);
+}
+
 /* ---------- Footer ---------- */
 footer.site {
   margin-top: 80px;
@@ -1598,10 +1888,26 @@ footer.site {
 .fgrid a:hover {
   color: var(--fg);
 }
+.fhost {
+  display: block;
+  font-size: 12px;
+  color: var(--muted);
+}
+.fbrand p {
+  margin: 14px 0 0;
+  color: var(--muted);
+  max-width: 26em;
+}
 .fbottom {
-  margin-top: 28px;
+  margin-top: 32px;
+  padding-top: 20px;
+  border-top: 1px solid var(--line);
   font-size: 13px;
   color: var(--muted);
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 8px 24px;
 }
 
 /* ---------- Tool (simple mode) ---------- */
@@ -2280,8 +2586,20 @@ input[type="range"] {
   .dir-cols,
   .content,
   .info-steps,
-  .info-qa {
+  .info-qa,
+  .flow,
+  .duo,
+  .doc {
     grid-template-columns: 1fr;
+  }
+  .principles {
+    grid-template-columns: 1fr 1fr;
+  }
+  .doc-aside {
+    position: static;
+  }
+  .wm-dom {
+    display: none;
   }
   .info-steps li + li,
   .info-qa div + div {
@@ -2338,7 +2656,8 @@ input[type="range"] {
   .apps,
   .trio,
   .dir-cols,
-  .tool-cards {
+  .tool-cards,
+  .principles {
     grid-template-columns: 1fr;
   }
   .cta-app {

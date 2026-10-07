@@ -1,30 +1,61 @@
 ---
-import Trio from "./Trio.astro";
+import Icon from "./Icon.astro";
 ---
 
-<div class="content" style="padding-top: 8px">
-  <div class="prose">
+<ol class="flow">
+  <li>
+    <span class="tile">
+      <Icon name="download" />
+    </span>
+    <b>1</b>
+    <strong>You open a tool</strong>
+    <p>Your browser downloads the tool's code once, like any web page.</p>
+  </li>
+  <li>
+    <span class="tile">
+      <Icon name="zap" />
+    </span>
+    <b>2</b>
+    <strong>Your browser does the work</strong>
     <p>
-      When you open a kmra page, your browser downloads the code for that tool
-      once. Everything after that, from reading your file to saving the result,
-      happens in your browser's memory on your own device.
+      Your file is read and edited in your device's memory. It isn't sent
+      anywhere.
     </p>
-    <p id="privacy">
+  </li>
+  <li>
+    <span class="tile">
+      <Icon name="check" />
+    </span>
+    <b>3</b>
+    <strong>You save the result</strong>
+    <p>
+      The finished file goes straight to your downloads. Your original stays
+      untouched.
+    </p>
+  </li>
+</ol>
+
+<div class="duo">
+  <section class="card-block">
+    <span class="tile">
+      <Icon name="shield" />
+    </span>
+    <h2>Blocked by design</h2>
+    <p>
       Every kmra site sends a security policy that stops the page from
       contacting any other server. Even if there were a bug, your browser would
       refuse to send your file anywhere.
     </p>
-    <p>
-      To check for yourself, open your browser's developer tools, choose the
-      Network tab and use any tool. You'll see the page load, then nothing while
-      your file is processed.
-    </p>
-    <p>
-      There are no accounts and no tracking of your files. Settings you choose,
-      like dark mode or Advanced mode, are kept in your own browser.
-    </p>
-  </div>
-  <div>
-    <Trio />
-  </div>
+  </section>
+  <section class="card-block">
+    <span class="tile">
+      <Icon name="search" />
+    </span>
+    <h2>Check it yourself</h2>
+    <ol class="mini-steps">
+      <li>Open your browser's developer tools.</li>
+      <li>Choose the Network tab.</li>
+      <li>Use any tool. Nothing is sent while your file is processed.</li>
+    </ol>
+  </section>
 </div>

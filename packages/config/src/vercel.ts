@@ -42,6 +42,15 @@ export function appConfig(): VercelConfig {
         },
         { key: "Cross-Origin-Opener-Policy", value: "same-origin" },
       ]),
+      // Generated OG images and icons change only on deploy.
+      routes.cacheControl("/og/(.*)", { public: true, maxAge: "1 day" }),
+      routes.cacheControl(
+        "/(favicon.ico|favicon.svg|apple-touch-icon.png|icon-192.png|icon-512.png|icon-maskable-512.png)",
+        {
+          public: true,
+          maxAge: "1 day",
+        },
+      ),
       // Astro emits content-hashed assets here.
       routes.cacheControl("/_astro/(.*)", {
         public: true,

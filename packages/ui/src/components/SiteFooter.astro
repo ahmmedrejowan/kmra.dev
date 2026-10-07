@@ -1,5 +1,6 @@
 ---
 import { apps, getApp, linkTo, type AppId } from "@kmra/registry";
+import Wordmark from "./Wordmark.astro";
 
 interface Props {
   appId: AppId;
@@ -13,21 +14,22 @@ const liveApps = apps.filter((a) => a.live);
 const year = new Date().getFullYear();
 const readyTools = app.tools.filter((t) => t.ready);
 const toolList = readyTools.length ? readyTools : app.tools;
-const otherLive = apps.filter((a) => a.live && a.id !== appId);
 ---
 
 <footer class="site">
   <div class="wrap">
     <div class="fgrid">
-      <div>
-        <strong>kmra</strong>
-        <span class="muted">
+      <div class="fbrand">
+        <a href="/" aria-label={`${app.brand.join("")} home`}>
+          <Wordmark appId={appId} />
+        </a>
+        <p>
           Small tools for everyday files. Everything runs in your browser, so
           your files stay on your device.
-        </span>
+        </p>
       </div>
       <div>
-        <strong>{app.name}</strong>
+        <strong>Tools</strong>
         <ul>
           {toolList.map((t) => (
             <li>
@@ -36,66 +38,53 @@ const otherLive = apps.filter((a) => a.live && a.id !== appId);
           ))}
         </ul>
       </div>
-      {app.tasks.length > 0 ? (
-        <div>
-          <strong>Use cases</strong>
-          <ul>
-            {app.tasks.slice(0, 6).map((t) => (
-              <li>
-                <a href={`/${t.slug}`}>{t.name}</a>
-              </li>
-            ))}
-          </ul>
-        </div>
-      ) : (
-        otherLive.map((a) => (
-          <div>
-            <strong>{a.name}</strong>
-            <ul>
-              {a.tools
-                .filter((t) => t.ready)
-                .slice(0, 6)
-                .map((t) => (
-                  <li>
-                    <a href={linkTo(appId, a.id as AppId, `/${t.slug}`, dev)}>
-                      {t.name}
-                    </a>
-                  </li>
-                ))}
-            </ul>
-          </div>
-        ))
-      )}
       <div>
-        <strong>Apps</strong>
+        <strong>{app.tasks.length ? "Use cases" : "Apps"}</strong>
+        <ul>
+          {app.tasks.length
+            ? app.tasks.slice(0, 7).map((t) => (
+                <li>
+                  <a href={`/${t.slug}`}>{t.name}</a>
+                </li>
+              ))
+            : liveApps.map((a) => (
+                <li>
+                  <a href={linkTo(appId, a.id as AppId, "/", dev)}>{a.name}</a>
+                </li>
+              ))}
+        </ul>
+      </div>
+      <div>
+        <strong>kmra apps</strong>
         <ul>
           {liveApps.map((a) => (
             <li>
-              {a.live ? (
-                <a href={linkTo(appId, a.id as AppId, "/", dev)}>{a.name}</a>
-              ) : (
-                <span>
-                  {a.name} <span class="soon">Soon</span>
-                </span>
-              )}
+              <a href={linkTo(appId, a.id as AppId, "/", dev)}>
+                {a.brand.join("")}
+                <small class="fhost">{a.id}.kmra.dev</small>
+              </a>
             </li>
           ))}
         </ul>
       </div>
       <div>
-        <strong>About</strong>
+        <strong>Company</strong>
         <ul>
+          <li>
+            <a href="/about">About</a>
+          </li>
           <li>
             <a href="/how-it-works">How it works</a>
           </li>
           <li>
-            <a href="/how-it-works#privacy">Privacy</a>
+            <a href="/privacy">Privacy</a>
           </li>
         </ul>
       </div>
     </div>
-    <p class="fbottom">
-      © {year} kmra.dev. Files are processed on your device and never uploaded.
-    </p>
+    <div class="fbottom">
+      <span>© {year} kmra.dev</span>
+      <span>Files are processed on your device and never uploaded.</span>
+    </div>
   </div>
 </footer>

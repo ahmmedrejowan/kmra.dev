@@ -1,6 +1,7 @@
 ---
 import { apps, linkTo, type AppId } from "@kmra/registry";
 import Icon from "./Icon.astro";
+import { markSvg } from "../lib/brand";
 
 interface Props {
   appId: AppId;
@@ -17,7 +18,11 @@ const others = apps.filter((a) => a.live && a.id !== appId);
     href={linkTo(appId, a.id as AppId, "/", dev)}
     style={`--app:${a.accent.light}`}
   >
-    <span class="app-mark">{a.short.slice(0, 1)}</span>
+    <span
+      class="app-mark"
+      set:html={markSvg(a.id, a.accent.light)}
+      aria-hidden="true"
+    />
     <span class="cta-text">
       <small>More from kmra</small>
       <strong>{a.name}</strong>

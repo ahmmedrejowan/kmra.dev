@@ -7,7 +7,13 @@ import MoreAppsCta from "@kmra/ui/components/MoreAppsCta.astro";
 import TaskList from "@kmra/ui/components/TaskList.astro";
 import SoonBox from "@kmra/ui/components/SoonBox.astro";
 import Icon from "@kmra/ui/components/Icon.astro";
-import { getApp, type Task, type Tool } from "@kmra/registry";
+import {
+  appOrigin,
+  brandName,
+  getApp,
+  type Task,
+  type Tool,
+} from "@kmra/registry";
 import ImageTool from "../components/ImageTool";
 
 export function getStaticPaths() {
@@ -72,9 +78,53 @@ const baseFaq = [
 const info = task
   ? [{ q: "Good to know", a: task.about[0] ?? "" }, ...baseFaq].slice(0, 3)
   : baseFaq;
+
+// Structured data: the tool as a free web app, its breadcrumb trail and the always-visible Q&A.
+const origin = Astro.site?.toString() ?? appOrigin("imgtool");
+const pageUrl = new URL(`/${task?.slug ?? tool.slug}`, origin).toString();
+const schema = [
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    name: title,
+    url: pageUrl,
+    description: intro,
+    applicationCategory: "MultimediaApplication",
+    operatingSystem: "Any (runs in the browser)",
+    browserRequirements: "Requires a modern browser with JavaScript",
+    isAccessibleForFree: true,
+    offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
+    publisher: {
+      "@type": "Organization",
+      name: `${brandName(app)} by kmra.dev`,
+      url: origin,
+    },
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: crumbs.map((c, i) => ({
+      "@type": "ListItem",
+      position: i + 1,
+      name: c.label,
+      ...(c.href
+        ? { item: new URL(c.href, origin).toString() }
+        : { item: pageUrl }),
+    })),
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: info.map((it) => ({
+      "@type": "Question",
+      name: it.q,
+      acceptedAnswer: { "@type": "Answer", text: it.a },
+    })),
+  },
+];
 ---
 
-<BaseLayout appId="imgtool" title={`${title} · kmra`} description={intro}>
+<BaseLayout appId="imgtool" title={title} schema={schema} description={intro}>
   <section class="hero-band tool-head">
     <div class="wrap">
       <Crumbs items={crumbs} />

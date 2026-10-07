@@ -1,0 +1,32 @@
+---
+import type { IconName } from "@kmra/registry";
+import Crumbs from "./Crumbs.astro";
+import Icon from "./Icon.astro";
+
+interface Props {
+  crumbs: readonly { label: string; href?: string }[];
+  icon: IconName | "check";
+  title: string;
+  intro: string;
+}
+
+const { crumbs, icon, title, intro } = Astro.props;
+---
+
+<section class="hero-band tool-head">
+  <div class="wrap">
+    <Crumbs items={crumbs} />
+    <div class="ptitle">
+      <div class="ptitle-main">
+        <span class="tile">
+          <Icon name={icon} />
+        </span>
+        <div>
+          <h1>{title}</h1>
+          <p>{intro}</p>
+        </div>
+      </div>
+      <slot />
+    </div>
+  </div>
+</section>

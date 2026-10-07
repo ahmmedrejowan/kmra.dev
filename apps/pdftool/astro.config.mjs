@@ -13,5 +13,7 @@ export default defineConfig({
   integrations: [react(), sitemap()],
   vite: {
     plugins: [tailwindcss()],
+    // Native image renderer used by build-time OG/icon routes
+    ssr: { external: ["@resvg/resvg-js", "satori"] },
   },
 });
