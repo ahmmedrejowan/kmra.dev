@@ -3,8 +3,10 @@ import {
   colorMatrix,
   FONTS,
   GRADIENTS,
+  PHOTO_SPECS,
   SHEETS,
   type Frame,
+  type PhotoSpec,
   type Ink,
   type Redact,
   type TextLayer,
@@ -15,8 +17,10 @@ import {
   hasGeometry,
   outType,
   RATIOS,
+  type Crop,
   type Settings,
 } from "./settings";
+import type { Box } from "./ml";
 
 /**
  * The image pipeline, run in the worker:
@@ -32,6 +36,33 @@ export interface Extras {
   mask?: ImageBitmap | null;
   /** Decoded watermark logo */
   logo?: ImageBitmap | null;
+  /** Faces found in the original image (fractions), when a step needs them */
+  faces?: Box[];
+}
+
+/** Where to crop for an ID photo: head at the official size, centred, with room above. */
+export function passportCrop(
+  bmp: ImageBitmap,
+  face: Box,
+  spec: PhotoSpec,
+  zoom: number,
+): Crop {
+  const W = bmp.width;
+  const H = bmp.height;
+  // Calibrated on the detector: its box runs from the upper forehead to just below the chin.
+  // The crown (top of the hair) sits about a third of a box height above it.
+  const fx = face.x * W;
+  const fy = face.y * H;
+  const fw = face.w * W;
+  const fh = face.h * H;
+  const crown = fy - fh * 0.33;
+  const chin = fy + fh * 0.95;
+  const headH = chin - crown;
+  const cropH = (headH / spec.head) * (1 - zoom / 100);
+  const cropW = (cropH * spec.w) / spec.h;
+  const top = crown - spec.top * cropH;
+  const left = fx + fw / 2 - cropW / 2;
+  return { x: left / W, y: top / H, w: cropW / W, h: cropH / H };
 }
 
 function canvas(w: number, h: number): [OffscreenCanvas, Ctx] {
@@ -77,13 +108,24 @@ export function soften(
 
 /* ---------- Redact (on the original, so crop and rotate carry it along) ---------- */
 
-function redact(src: Src, r: Redact): Src {
-  if (!r.regions.length) return src;
+/** Face boxes grown to cover hair and chin, for blurring */
+function faceRegions(faces: Box[]): Crop[] {
+  return faces.map((f) => ({
+    x: f.x - f.w * 0.15,
+    y: f.y - f.h * 0.3,
+    w: f.w * 1.3,
+    h: f.h * 1.45,
+  }));
+}
+
+function redact(src: Src, r: Redact, faces: Box[] = []): Src {
+  const regions = [...r.regions, ...(r.faces ? faceRegions(faces) : [])];
+  if (!regions.length) return src;
   const W = src.width;
   const H = src.height;
   const [c, x] = canvas(W, H);
   x.drawImage(src, 0, 0);
-  for (const g of r.regions) {
+  for (const g of regions) {
     const rx = Math.max(0, Math.round(g.x * W));
     const ry = Math.max(0, Math.round(g.y * H));
     const rw = Math.max(1, Math.min(W - rx, Math.round(g.w * W)));
@@ -545,7 +587,24 @@ export function render(
   extras: Extras = {},
 ): OffscreenCanvas {
   let src: Src = bmp;
-  if (s.redact) src = redact(src, s.redact);
+  // ID photo: frame the biggest face at the official size (falls back to a centred crop)
+  if (s.passport) {
+    const spec =
+      PHOTO_SPECS.find((p) => p.id === s.passport!.spec) ?? PHOTO_SPECS[0]!;
+    const face = [...(extras.faces ?? [])].sort(
+      (a, b) => b.w * b.h - a.w * a.h,
+    )[0];
+    s = {
+      ...s,
+      crop: face ? passportCrop(bmp, face, spec, s.passport.zoom) : s.crop,
+      ratio: null,
+      w: spec.w,
+      h: spec.h,
+      lock: false,
+      size: null,
+    };
+  }
+  if (s.redact) src = redact(src, s.redact, extras.faces);
   let g = geometry(src, s);
   if (s.ink) g = inkify(g, s.ink);
   const [w, h] = fitDims(g.width, g.height, s);

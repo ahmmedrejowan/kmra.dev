@@ -10,8 +10,10 @@ import {
   GRADIENTS,
   NO_ADJUST,
   NO_FRAME,
+  PHOTO_SPECS,
   SHEETS,
   type Adjust,
+  type Bg,
   type Frame,
   type Ink,
   type Redact,
@@ -588,6 +590,11 @@ export function RedactCtl({ s, setS, extra }: P & { extra?: ReactNode }) {
     setS((p) => ({ ...p, redact: { ...p.redact!, ...patch } }));
   return (
     <>
+      <Toggle
+        label="Find and cover faces automatically"
+        on={r.faces}
+        onChange={(v) => put({ faces: v })}
+      />
       {extra}
       <Seg<Redact["mode"]>
         label="Effect"
@@ -637,7 +644,9 @@ export function RedactCtl({ s, setS, extra }: P & { extra?: ReactNode }) {
           </button>
         ) : (
           <small className="muted">
-            Drag on the image to cover a face, name or number.
+            {r.faces
+              ? "Faces are covered in every image. Drag on the image to cover anything else."
+              : "Drag on the image to cover a face, name or number."}
           </small>
         )}
       </div>
@@ -691,5 +700,152 @@ export function SheetCtl({ s, setS }: P) {
       value={s.sheet ?? ""}
       onPick={(v) => setS((p) => ({ ...p, sheet: v || null }))}
     />
+  );
+}
+
+/* ---------- Background ---------- */
+
+export function BgCtl({ s, setS, lockMode }: P & { lockMode?: boolean }) {
+  const b = s.bg!;
+  const put = (patch: Partial<Bg>) =>
+    setS((p) => ({ ...p, bg: { ...p.bg!, ...patch } }));
+  return (
+    <>
+      {!lockMode && (
+        <Seg<Bg["mode"]>
+          label="Background"
+          options={[
+            ["remove", "Transparent"],
+            ["color", "Colour"],
+            ["blur", "Blurred"],
+          ]}
+          value={b.mode}
+          onPick={(v) =>
+            setS((p) => ({
+              ...p,
+              bg: { ...p.bg!, mode: v },
+              // Transparency needs PNG or WebP
+              ...(v === "remove" && p.type === "image/jpeg" && !p.keepFormat
+                ? { type: "image/png" as const }
+                : {}),
+            }))
+          }
+        />
+      )}
+      {b.mode === "color" && (
+        <Colors
+          label="Colour"
+          value={b.color}
+          onPick={(v) => put({ color: v })}
+          list={[
+            "#ffffff",
+            "#f2f2f2",
+            "#dbe9ff",
+            "#4a90e2",
+            "#000000",
+            "#30a46c",
+            "#e5484d",
+            "#f5a524",
+          ]}
+        />
+      )}
+      <Seg<Bg["model"]>
+        label="Subject"
+        options={[
+          ["auto", "Auto"],
+          ["person", "Person"],
+          ["object", "Object"],
+        ]}
+        value={b.model}
+        onPick={(v) => put({ model: v })}
+      />
+      <small className="muted">
+        Runs on your device. The first time, the AI engine and model download
+        from this site (about 10 MB) and are then cached.
+      </small>
+    </>
+  );
+}
+
+/* ---------- ID / passport photo ---------- */
+
+const ID_BACKS: [string, string][] = [
+  ["#ffffff", "White"],
+  ["#f0f0f0", "Light grey"],
+  ["#dbe9ff", "Light blue"],
+  ["keep", "Keep"],
+];
+
+export function PassportCtl({ s, setS }: P) {
+  const pp = s.passport!;
+  const spec = PHOTO_SPECS.find((x) => x.id === pp.spec)!;
+  return (
+    <>
+      <div className="ctl">
+        <span className="lbl">Photo size</span>
+        <div className="presets one">
+          {PHOTO_SPECS.map((x) => (
+            <button
+              key={x.id}
+              type="button"
+              aria-pressed={pp.spec === x.id}
+              onClick={() =>
+                setS((p) => ({
+                  ...p,
+                  passport: { ...p.passport!, spec: x.id },
+                  target: x.target && p.target ? x.target : null,
+                }))
+              }
+            >
+              <strong>{x.label}</strong>
+              <small>{x.hint}</small>
+            </button>
+          ))}
+        </div>
+      </div>
+      <Seg<string>
+        label="Background"
+        options={ID_BACKS}
+        value={s.bg ? s.bg.color : "keep"}
+        onPick={(v) =>
+          setS((p) => ({
+            ...p,
+            bg:
+              v === "keep"
+                ? null
+                : { mode: "color", color: v, model: "person" },
+          }))
+        }
+      />
+      <Slider
+        label="Head size"
+        value={pp.zoom}
+        min={-20}
+        max={20}
+        unit="%"
+        reset={0}
+        onChange={(v) =>
+          setS((p) => ({ ...p, passport: { ...p.passport!, zoom: v } }))
+        }
+      />
+      <SheetCtl s={s} setS={setS} />
+      {spec.target && !s.sheet && (
+        <label className="toggle">
+          <input
+            type="checkbox"
+            checked={s.target === spec.target}
+            onChange={(e) =>
+              setS((p) => ({
+                ...p,
+                target: e.target.checked ? spec.target! : null,
+                type: "image/jpeg",
+                keepFormat: false,
+              }))
+            }
+          />
+          <span>Under {spec.target} KB for online forms</span>
+        </label>
+      )}
+    </>
   );
 }

@@ -1,14 +1,62 @@
 /// <reference lib="webworker" />
 import { isLossy, outType, type Settings } from "./settings";
 import { render, type Extras } from "./render";
+import { faces, mask, type Box, type MaskModel } from "./ml";
 
 /**
  * Decoding and encoding run here so the page stays responsive.
  * Decoded images are cached by key; nothing leaves this device.
  */
 const bitmaps = new Map<string, ImageBitmap>();
-/** Subject masks for background changes, by image key */
-const masks = new Map<string, ImageBitmap>();
+/** Subject masks for background changes, by "key:model" */
+const masks = new Map<string, Promise<ImageBitmap>>();
+/** Faces found per image key */
+const faceCache = new Map<string, Promise<Box[]>>();
+
+function facesFor(key: string, bmp: ImageBitmap): Promise<Box[]> {
+  let f = faceCache.get(key);
+  if (!f) {
+    f = faces(bmp);
+    f.catch(() => faceCache.delete(key));
+    faceCache.set(key, f);
+  }
+  return f;
+}
+
+function maskFor(key: string, bmp: ImageBitmap, model: MaskModel) {
+  const id = `${key}:${model}`;
+  let m = masks.get(id);
+  if (!m) {
+    m = mask(bmp, model);
+    m.catch(() => masks.delete(id));
+    masks.set(id, m);
+  }
+  return m;
+}
+
+/** Everything a render needs besides the image: logo, faces, subject mask. */
+async function extrasFor(
+  key: string,
+  bmp: ImageBitmap,
+  s: Settings,
+): Promise<Extras & { found?: number }> {
+  const ex: Extras & { found?: number } = { logo: await logoFor(s) };
+  const needFaces = s.redact?.faces || !!s.passport || s.bg?.model === "auto";
+  if (needFaces) {
+    ex.faces = await facesFor(key, bmp);
+    ex.found = ex.faces.length;
+  }
+  if (s.bg) {
+    const model: MaskModel =
+      s.bg.model === "auto"
+        ? ex.faces!.length
+          ? "person"
+          : "object"
+        : s.bg.model;
+    ex.mask = await maskFor(key, bmp, model);
+  }
+  return ex;
+}
 
 export type WorkerRequest =
   | { id: number; kind: "load"; key: string; file: Blob }
@@ -20,7 +68,8 @@ export type WorkerRequest =
       srcType: string;
       settings: Settings;
     }
-  | { id: number; kind: "sample" };
+  | { id: number; kind: "sample" }
+  | { id: number; kind: "faces"; key: string };
 
 export interface EncodeResult {
   blob: Blob;
@@ -30,6 +79,8 @@ export interface EncodeResult {
   q: number;
   /** Target size couldn't be reached even at the lowest quality */
   over: boolean;
+  /** Faces found, when a step looked for them */
+  faces?: number;
 }
 
 /** Render once, then encode; with a target size, binary-search the best quality that fits. */
@@ -212,8 +263,12 @@ self.onmessage = async ({ data }: MessageEvent<WorkerRequest>) => {
     } else if (data.kind === "drop") {
       bitmaps.get(data.key)?.close();
       bitmaps.delete(data.key);
-      masks.get(data.key)?.close();
-      masks.delete(data.key);
+      for (const [id, m] of masks)
+        if (id.startsWith(`${data.key}:`)) {
+          void m.then((b) => b.close()).catch(() => {});
+          masks.delete(id);
+        }
+      faceCache.delete(data.key);
       self.postMessage({ id: data.id, ok: true });
     } else if (data.kind === "encode") {
       const bmp = bitmaps.get(data.key);
@@ -221,10 +276,19 @@ self.onmessage = async ({ data }: MessageEvent<WorkerRequest>) => {
       self.postMessage({
         id: data.id,
         ok: true,
-        value: await encode(bmp, data.settings, data.srcType, {
-          logo: await logoFor(data.settings),
-          mask: data.settings.bg ? (masks.get(data.key) ?? null) : null,
-        }),
+        value: await (async () => {
+          const ex = await extrasFor(data.key, bmp, data.settings);
+          const r = await encode(bmp, data.settings, data.srcType, ex);
+          return ex.found === undefined ? r : { ...r, faces: ex.found };
+        })(),
+      });
+    } else if (data.kind === "faces") {
+      const bmp = bitmaps.get(data.key);
+      if (!bmp) throw new Error("Image is no longer loaded");
+      self.postMessage({
+        id: data.id,
+        ok: true,
+        value: await facesFor(data.key, bmp),
       });
     } else if (data.kind === "sample") {
       self.postMessage({ id: data.id, ok: true, value: await sample() });

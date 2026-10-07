@@ -2461,6 +2461,9 @@ input[type="range"] {
   grid-template-columns: 1fr 1fr;
   gap: 6px;
 }
+.presets.one {
+  grid-template-columns: 1fr;
+}
 .presets button {
   display: grid;
   gap: 1px;

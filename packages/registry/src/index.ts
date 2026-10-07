@@ -380,6 +380,70 @@ export const apps = [
         ],
       },
       {
+        slug: "remove-bg",
+        title: "Remove the background from a photo",
+        name: "Remove background",
+        description:
+          "Cut out people and products automatically, with AI that runs on your device.",
+        blurb: "Transparent PNG cut-outs",
+        icon: "eraser",
+        group: "Background",
+        ready: true,
+        steps: [
+          "Drop one or more photos of people or products.",
+          "The subject is found on your device; pick Person or Object if Auto gets it wrong.",
+          "Download transparent PNGs, one or all at once.",
+        ],
+      },
+      {
+        slug: "change-bg",
+        title: "Change a photo's background colour",
+        name: "Change background",
+        description:
+          "Swap the background for white, a colour or a blur. Great for profile and product photos.",
+        blurb: "White, colour or blur",
+        icon: "droplet",
+        group: "Background",
+        ready: true,
+        steps: [
+          "Drop a photo.",
+          "Pick white, any colour, or a blurred background.",
+          "Download the new photo.",
+        ],
+      },
+      {
+        slug: "passport-photo",
+        title: "Passport and ID photo maker",
+        name: "Passport photo",
+        description:
+          "Official sizes framed around your face, a plain background and a 4 × 6 print sheet.",
+        blurb: "Sized, framed, printable",
+        icon: "idCard",
+        group: "Forms",
+        ready: true,
+        steps: [
+          "Drop a clear, front-facing photo against any background.",
+          "Pick the size your country needs and a background colour. The head is framed for you.",
+          "Download the photo, or a 4 × 6 sheet to print at any photo shop.",
+        ],
+      },
+      {
+        slug: "face-blur",
+        title: "Blur faces in photos automatically",
+        name: "Blur faces",
+        description:
+          "Find and blur every face in a photo or a whole batch, on your device.",
+        blurb: "Every face, automatically",
+        icon: "scanFace",
+        group: "Privacy",
+        ready: true,
+        steps: [
+          "Drop one or more photos.",
+          "Faces are found and blurred. Drag boxes to cover anything that was missed.",
+          "Download. The blur can't be undone from the file.",
+        ],
+      },
+      {
         slug: "collage",
         title: "Photo collage maker",
         name: "Collage",

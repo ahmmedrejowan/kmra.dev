@@ -43,6 +43,12 @@ export const engine = {
   drop: (key: string) => call<void>({ kind: "drop", key }),
   encode: (key: string, srcType: string, settings: Settings) =>
     call<EncodeResult>({ kind: "encode", key, srcType, settings }),
+  /** Face boxes as fractions of the image */
+  faces: (key: string) =>
+    call<{ x: number; y: number; w: number; h: number; score: number }[]>({
+      kind: "faces",
+      key,
+    }),
   sample: async () =>
     new File([await call<Blob>({ kind: "sample" })], "sample-sunset.jpg", {
       type: "image/jpeg",

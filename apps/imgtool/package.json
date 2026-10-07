@@ -20,6 +20,7 @@
     "fflate": "^0.8.3",
     "gifuct-js": "^2.1.2",
     "libheif-js": "^1.23.5",
+    "onnxruntime-web": "^1.30.0",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
     "satori": "^0.35.1",

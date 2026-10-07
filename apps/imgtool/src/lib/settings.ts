@@ -6,6 +6,7 @@ import {
   type Bg,
   type Frame,
   type Ink,
+  type Passport,
   type Redact,
   type TextLayer,
   type Watermark,
@@ -62,6 +63,8 @@ export interface Settings {
   frame: Frame | null;
   /** Print sheet id from SHEETS */
   sheet: string | null;
+  /** ID photo: framed around the face at an official size */
+  passport: Passport | null;
 }
 
 export interface Crop {
@@ -223,6 +226,7 @@ export function defaults(tool: string): Settings {
     mark: null,
     frame: null,
     sheet: null,
+    passport: null,
   };
   const keep = { ...base, keepFormat: true, quality: 92 };
   const png = { ...base, type: "image/png" as Format };
@@ -280,6 +284,7 @@ export function defaults(tool: string): Settings {
       return {
         ...keep,
         redact: {
+          faces: false,
           mode: "pixelate",
           strength: 50,
           color: "#000000",
@@ -291,6 +296,7 @@ export function defaults(tool: string): Settings {
       return {
         ...keep,
         redact: {
+          faces: true,
           mode: "blur",
           strength: 60,
           color: "#000000",
@@ -301,9 +307,23 @@ export function defaults(tool: string): Settings {
     case "signature":
       return { ...png, ink: { threshold: 50, color: "keep", trim: true } };
     case "remove-bg":
-      return { ...png, bg: { mode: "remove", color: "#ffffff" } };
+      return {
+        ...png,
+        bg: { mode: "remove", color: "#ffffff", model: "auto" },
+      };
     case "change-bg":
-      return { ...base, quality: 92, bg: { mode: "color", color: "#ffffff" } };
+      return {
+        ...base,
+        quality: 92,
+        bg: { mode: "color", color: "#ffffff", model: "auto" },
+      };
+    case "passport-photo":
+      return {
+        ...base,
+        quality: 95,
+        passport: { spec: "35x45", zoom: 0 },
+        bg: { mode: "color", color: "#ffffff", model: "person" },
+      };
   }
   if (tool === "resize") return { ...base, keepFormat: true, quality: 90 };
   if (tool === "form-size") return applyForm(base, "job-photo");

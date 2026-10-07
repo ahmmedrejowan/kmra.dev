@@ -30,10 +30,12 @@ import CropBox from "./CropBox";
 import RegionBox from "./RegionBox";
 import {
   AdjustCtl,
+  BgCtl,
   FilterCtl,
   FrameCtl,
   InkCtl,
   MarkCtl,
+  PassportCtl,
   RedactCtl,
   Seg,
   SheetCtl,
@@ -107,7 +109,11 @@ const SECTION: Record<string, string> = {
   "extend-canvas": "frame",
   beautify: "frame",
   blur: "redact",
+  "face-blur": "redact",
   signature: "signature",
+  "remove-bg": "background",
+  "change-bg": "background",
+  "passport-photo": "passport",
 };
 const FRAME_MODE: Record<string, "border" | "extend" | "beautify"> = {
   border: "border",
@@ -330,7 +336,7 @@ export default function ImageTool({ tool, preset, tools }: Props) {
       outRef.current &&
       outRef.current.key === item.key &&
       (Math.abs(outRef.current.w / outRef.current.h - item.w / item.h) > 0.01 ||
-        !!(s.text || s.mark || s.frame || s.ink || s.sheet));
+        !!(s.text || s.mark || s.frame || s.ink || s.sheet || s.passport));
     return solo ? outRef.current!.w : item.w;
   }
   function zoomBy(dir: 1 | -1) {
@@ -594,7 +600,7 @@ export default function ImageTool({ tool, preset, tools }: Props) {
     // that a before/after split would only cut in half.
     const solo = outForItem
       ? Math.abs(outForItem.w / outForItem.h - it.w / it.h) > 0.01 ||
-        !!(s.text || s.mark || s.frame || s.ink || s.sheet)
+        !!(s.text || s.mark || s.frame || s.ink || s.sheet || s.passport)
       : false;
     return (
       <div
@@ -900,6 +906,24 @@ export default function ImageTool({ tool, preset, tools }: Props) {
     </div>
   );
 
+  // How many faces the last render found (face blur, passport framing, auto background)
+  const found = outForItem?.faces;
+  const facesNote =
+    found === undefined ? null : tool === "passport-photo" ? (
+      found ? null : (
+        <small className="warn">
+          No face found, so the photo is centred instead. Use a clear,
+          front-facing photo.
+        </small>
+      )
+    ) : (
+      <small className={found ? "muted" : "warn"}>
+        {found
+          ? `${found} face${found > 1 ? "s" : ""} covered in this image.`
+          : "No faces found in this image. Drag on it to cover areas yourself."}
+      </small>
+    );
+
   const sigForm = s.form === "job-signature";
   const signatureSizeCtl = (
     <>
@@ -1069,10 +1093,45 @@ export default function ImageTool({ tool, preset, tools }: Props) {
           </>
         );
       case "blur":
+      case "face-blur":
         return (
           <>
             <RedactCtl s={s} setS={setS} />
+            {facesNote}
             {saveAsCtl}
+          </>
+        );
+      case "remove-bg":
+        return (
+          <>
+            <BgCtl s={s} setS={setS} />
+            {s.bg?.mode === "remove" ? (
+              <Seg<string>
+                label="Save as"
+                options={[
+                  ["image/png", "PNG"],
+                  ["image/webp", "WebP"],
+                ]}
+                value={s.type === "image/webp" ? "image/webp" : "image/png"}
+                onPick={(v) => set({ type: v as Format, keepFormat: false })}
+              />
+            ) : (
+              saveAsCtl
+            )}
+          </>
+        );
+      case "change-bg":
+        return (
+          <>
+            <BgCtl s={s} setS={setS} />
+            {saveAsCtl}
+          </>
+        );
+      case "passport-photo":
+        return (
+          <>
+            <PassportCtl s={s} setS={setS} />
+            {facesNote}
           </>
         );
       case "signature":
@@ -1367,6 +1426,15 @@ export default function ImageTool({ tool, preset, tools }: Props) {
         ? `Fit ≤ ${s.target} KB`
         : `Quality ${s.quality}`
       : null,
+    s.passport ? "ID photo framing" : null,
+    s.bg
+      ? s.bg.mode === "remove"
+        ? "Remove background"
+        : s.bg.mode === "blur"
+          ? "Blur background"
+          : "New background"
+      : null,
+    s.redact?.faces ? "Cover faces" : null,
     s.ink ? "Clean signature" : null,
     s.redact?.regions.length
       ? `Blur ${s.redact.regions.length} area${s.redact.regions.length > 1 ? "s" : ""}`
@@ -1629,6 +1697,31 @@ export default function ImageTool({ tool, preset, tools }: Props) {
               !!s.frame,
               (on) => set({ frame: on ? { ...NO_FRAME, border: 3 } : null }),
               s.frame && <FrameCtl s={s} setS={setS} mode="all" />,
+            )}
+            {fxSection(
+              "background",
+              "Background",
+              "eraser",
+              !!s.bg,
+              (on) => set({ bg: on ? fromTool("change-bg").bg : null }),
+              s.bg && <BgCtl s={s} setS={setS} />,
+            )}
+            {fxSection(
+              "passport",
+              "ID photo",
+              "idCard",
+              !!s.passport,
+              (on) =>
+                setS((p) =>
+                  on
+                    ? {
+                        ...p,
+                        passport: fromTool("passport-photo").passport,
+                        bg: p.bg ?? fromTool("passport-photo").bg,
+                      }
+                    : { ...p, passport: null },
+                ),
+              s.passport && <PassportCtl s={s} setS={setS} />,
             )}
             {fxSection(
               "signature",

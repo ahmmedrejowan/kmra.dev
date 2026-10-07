@@ -208,6 +208,8 @@ export function colorMatrix(
 
 /** Blur or pixelate parts of the image. Regions are fractions of the original image. */
 export interface Redact {
+  /** Also find faces in each image and cover them */
+  faces: boolean;
   mode: "blur" | "pixelate" | "fill";
   /** 1..100 */
   strength: number;
@@ -230,6 +232,78 @@ export interface Ink {
 export interface Bg {
   mode: "remove" | "color" | "blur";
   color: string;
+  /** Which model finds the subject; auto picks "person" when there's a face */
+  model: "auto" | "person" | "object";
+}
+
+/** Official photo sizes at 300 dpi, with how much of the height the head should fill. */
+export interface PhotoSpec {
+  id: string;
+  label: string;
+  hint: string;
+  w: number;
+  h: number;
+  /** Chin-to-crown height as a share of the photo height */
+  head: number;
+  /** Space above the head as a share of the photo height */
+  top: number;
+  /** KB limit some online forms set */
+  target?: number;
+}
+
+export const PHOTO_SPECS: PhotoSpec[] = [
+  {
+    id: "35x45",
+    label: "35 × 45 mm",
+    hint: "UK, EU, Schengen, India, Bangladesh, Australia and most passports",
+    w: 413,
+    h: 531,
+    head: 0.74,
+    top: 0.08,
+  },
+  {
+    id: "2x2",
+    label: "2 × 2 in",
+    hint: "US passport, US visa and DV lottery (600 × 600)",
+    w: 600,
+    h: 600,
+    head: 0.6,
+    top: 0.12,
+    target: 240,
+  },
+  {
+    id: "50x70",
+    label: "50 × 70 mm",
+    hint: "Canada passport",
+    w: 591,
+    h: 827,
+    head: 0.48,
+    top: 0.12,
+  },
+  {
+    id: "33x48",
+    label: "33 × 48 mm",
+    hint: "China visa",
+    w: 390,
+    h: 567,
+    head: 0.64,
+    top: 0.08,
+  },
+  {
+    id: "35x50",
+    label: "35 × 50 mm",
+    hint: "Malaysia and some ID cards",
+    w: 413,
+    h: 591,
+    head: 0.68,
+    top: 0.1,
+  },
+];
+
+export interface Passport {
+  spec: string;
+  /** Head size nudge, -20..20 (%) */
+  zoom: number;
 }
 
 export interface TextLayer {
