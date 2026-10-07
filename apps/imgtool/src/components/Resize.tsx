@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Dropzone } from "@kmra/ui/components/Dropzone";
+import { takeFiles } from "@kmra/ui/lib/handoff";
 import {
   decodeImage,
   encodeImage,
@@ -25,6 +26,11 @@ export default function Resize() {
 
   useEffect(() => () => bitmap?.close(), [bitmap]);
 
+  // Pick up an image dropped on the landing page.
+  useEffect(() => {
+    void takeFiles().then(([f]) => f && load(f));
+  }, []);
+
   async function load(f: File) {
     setError(null);
     try {
@@ -34,7 +40,7 @@ export default function Resize() {
       setWidth(bmp.width);
       setHeight(bmp.height);
     } catch {
-      setError("Couldn't read that image.");
+      setError(`${f.name} couldn't be opened. Try a JPEG, PNG, WebP or GIF.`);
     }
   }
 
@@ -74,7 +80,9 @@ export default function Resize() {
         replaceExtension(file.name, `${width}x${height}.${FORMAT_EXT[type]}`),
       );
     } catch {
-      setError("Resizing failed. The image may be too large for this device.");
+      setError(
+        "Resizing failed. The image may be too large for this device's memory. Try a smaller size.",
+      );
     } finally {
       setBusy(false);
     }
@@ -88,17 +96,19 @@ export default function Resize() {
           label="Drop an image or click to choose"
           onFiles={([f]) => f && load(f)}
         />
-        {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
+        {error && (
+          <p className="mt-3 text-sm text-red-700 dark:text-red-400">{error}</p>
+        )}
       </div>
     );
   }
 
   return (
-    <div className="space-y-6 rounded-lg border border-border bg-surface p-6">
+    <div className="space-y-6 rounded-lg border border-line bg-surface p-6">
       <div className="flex flex-wrap items-center justify-between gap-2 text-sm">
         <span className="truncate font-medium">{file.name}</span>
         <span className="text-muted">
-          {bitmap.width} × {bitmap.height} · {formatBytes(file.size)}
+          {bitmap.width} × {bitmap.height}, {formatBytes(file.size)}
         </span>
       </div>
 
@@ -121,21 +131,23 @@ export default function Resize() {
             key={pct}
             type="button"
             onClick={() => scale(pct)}
-            className="rounded-md border border-border px-3 py-1 text-sm hover:border-accent"
+            className="rounded-md border border-line px-3 py-1 text-sm hover:border-ink"
           >
             {pct}%
           </button>
         ))}
       </div>
 
-      {error && <p className="text-sm text-red-600">{error}</p>}
+      {error && (
+        <p className="text-sm text-red-700 dark:text-red-400">{error}</p>
+      )}
 
       <div className="flex gap-3">
         <button
           type="button"
           onClick={run}
           disabled={busy}
-          className="rounded-md bg-accent px-4 py-2 font-medium text-accent-fg disabled:opacity-50"
+          className="rounded-md bg-marker px-4 py-2 font-semibold text-[#16201c] hover:brightness-95 disabled:opacity-50"
         >
           {busy ? "Resizing…" : "Resize & download"}
         </button>
@@ -145,7 +157,7 @@ export default function Resize() {
             setFile(null);
             setBitmap(null);
           }}
-          className="rounded-md border border-border px-4 py-2"
+          className="rounded-md border border-line px-4 py-2"
         >
           Choose another
         </button>
@@ -171,7 +183,7 @@ function NumberField({
         min={1}
         value={value || ""}
         onChange={(e) => onChange(Number(e.target.value))}
-        className="w-32 rounded-md border border-border bg-bg px-3 py-2"
+        className="w-32 rounded-md border border-line bg-paper px-3 py-2"
       />
     </label>
   );

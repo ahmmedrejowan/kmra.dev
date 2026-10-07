@@ -38,7 +38,7 @@ export function Dropzone({
       onDragLeave={() => setOver(false)}
       onDrop={onDrop}
       className={`flex w-full flex-col items-center justify-center rounded-lg border-2 border-dashed px-4 py-12 text-center transition ${
-        over ? "border-accent bg-surface" : "border-border hover:border-accent"
+        over ? "border-ink bg-surface" : "border-line hover:border-ink"
       }`}
     >
       <span className="font-medium">{label}</span>

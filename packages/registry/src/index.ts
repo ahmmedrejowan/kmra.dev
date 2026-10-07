@@ -13,13 +13,19 @@ export interface Tool {
   description: string;
   /** false = page exists but shows "coming soon" */
   ready: boolean;
+  /** How-to steps shown on the tool page (ready tools only) */
+  steps?: readonly string[];
 }
 
 export interface App {
   /** Also the subdomain and the folder name under apps/ */
   id: string;
   name: string;
+  /** Short noun for nav, e.g. "Images" */
+  short: string;
   tagline: string;
+  /** Cutting-mat colour that identifies this app across kmra.dev */
+  mat: string;
   devPort: number;
   tools: Tool[];
 }
@@ -27,8 +33,10 @@ export interface App {
 export const apps = [
   {
     id: "imgtool",
-    name: "Image Tools",
+    name: "Image tools",
+    short: "Images",
     tagline: "Resize, crop, compress and convert images in your browser.",
+    mat: "#1F5A48",
     devPort: 4321,
     tools: [
       {
@@ -36,12 +44,22 @@ export const apps = [
         name: "Resize",
         description: "Change image dimensions by pixels or percentage.",
         ready: true,
+        steps: [
+          "Drop an image or choose one from your device.",
+          "Type a new width or height, or pick a percentage. The aspect ratio stays locked unless you turn it off.",
+          "Select Resize & download. The resized copy is saved and your original is untouched.",
+        ],
       },
       {
         slug: "convert",
         name: "Convert",
         description: "Convert between JPEG, PNG and WebP.",
         ready: true,
+        steps: [
+          "Pick the format you want: JPEG, PNG or WebP.",
+          "Add one or more images.",
+          "Select Convert & download. Each image is saved in the new format.",
+        ],
       },
       {
         slug: "compress",
@@ -65,8 +83,10 @@ export const apps = [
   },
   {
     id: "pdftool",
-    name: "PDF Tools",
+    name: "PDF tools",
+    short: "PDFs",
     tagline: "Merge, split and edit PDFs without uploading them anywhere.",
+    mat: "#1D3E63",
     devPort: 4322,
     tools: [
       {

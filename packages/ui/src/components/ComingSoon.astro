@@ -1,3 +1,35 @@
-<div class="rounded-lg border border-dashed border-border p-10 text-center text-muted">
-  This tool is coming soon.
+---
+import { apps, appUrl } from "@kmra/registry";
+
+const dev = import.meta.env.DEV;
+const readyElsewhere = apps.flatMap((a) =>
+  a.tools.filter((t) => t.ready).map((t) => ({ app: a, tool: t })),
+);
+---
+
+<div class="rounded-lg border border-dashed border-line bg-surface p-8 sm:p-10">
+  <p class="font-wide text-xl font-bold tracking-tight">
+    This tool isn't ready yet
+  </p>
+  <p class="mt-2 max-w-prose text-muted">
+    It's being built and will run in your browser like the others. In the
+    meantime, these are ready to use:
+  </p>
+  <ul class="mt-5 flex flex-wrap gap-2">
+    {readyElsewhere.map(({ app, tool }) => (
+      <li>
+        <a
+          href={appUrl(app.id, `/${tool.slug}`, dev)}
+          class="flex items-center gap-2 rounded-md px-3 py-1.5 text-sm font-medium ring-1 ring-line hover:bg-paper"
+        >
+          <span
+            class="size-2.5 rounded-sm"
+            style={`background:${app.mat}`}
+            aria-hidden="true"
+          />
+          {tool.name} {app.short.toLowerCase()}
+        </a>
+      </li>
+    ))}
+  </ul>
 </div>

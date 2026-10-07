@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Dropzone } from "@kmra/ui/components/Dropzone";
+import { takeFiles } from "@kmra/ui/lib/handoff";
 import {
   decodeImage,
   encodeImage,
@@ -30,6 +31,12 @@ export default function Convert() {
   const [busy, setBusy] = useState(false);
   const [results, setResults] = useState<Result[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [queue, setQueue] = useState<File[]>([]);
+
+  // Pick up images dropped on the landing page.
+  useEffect(() => {
+    void takeFiles().then((files) => files.length && setQueue(files));
+  }, []);
 
   async function convert(files: File[]) {
     setBusy(true);
@@ -49,10 +56,13 @@ export default function Convert() {
         downloadBlob(blob, name);
         done.push({ name, before: file.size, after: blob.size });
       } catch {
-        setError(`Couldn't convert ${file.name}.`);
+        setError(
+          `${file.name} couldn't be converted. It may be damaged or in an unsupported format.`,
+        );
       }
     }
     setResults(done);
+    setQueue([]);
     setBusy(false);
   }
 
@@ -68,8 +78,8 @@ export default function Convert() {
               onClick={() => setTarget(f.type)}
               className={`rounded-md border px-3 py-1.5 text-sm ${
                 target === f.type
-                  ? "border-accent bg-accent text-accent-fg"
-                  : "border-border hover:border-accent"
+                  ? "border-ink bg-ink text-paper"
+                  : "border-line hover:border-ink"
               }`}
             >
               {f.label}
@@ -93,14 +103,56 @@ export default function Convert() {
       <Dropzone
         accept="image/*"
         multiple
-        label={busy ? "Converting…" : "Drop images or click to choose"}
-        onFiles={convert}
+        label="Drop images or click to choose"
+        onFiles={(files) => {
+          setResults([]);
+          setQueue((q) => [...q, ...files]);
+        }}
       />
 
-      {error && <p className="text-sm text-red-600">{error}</p>}
+      {queue.length > 0 && (
+        <div className="rounded-lg border border-line bg-surface">
+          <ul className="divide-y divide-line text-sm">
+            {queue.map((f, i) => (
+              <li
+                key={`${f.name}-${i}`}
+                className="flex justify-between gap-4 px-4 py-2"
+              >
+                <span className="truncate">{f.name}</span>
+                <span className="shrink-0 text-muted">
+                  {formatBytes(f.size)}
+                </span>
+              </li>
+            ))}
+          </ul>
+          <div className="flex gap-3 border-t border-line p-4">
+            <button
+              type="button"
+              onClick={() => void convert(queue)}
+              disabled={busy}
+              className="rounded-md bg-marker px-4 py-2 font-semibold text-[#16201c] hover:brightness-95 disabled:opacity-50"
+            >
+              {busy
+                ? "Converting…"
+                : `Convert & download ${queue.length > 1 ? `${queue.length} images` : ""}`.trim()}
+            </button>
+            <button
+              type="button"
+              onClick={() => setQueue([])}
+              className="rounded-md border border-line px-4 py-2"
+            >
+              Clear
+            </button>
+          </div>
+        </div>
+      )}
+
+      {error && (
+        <p className="text-sm text-red-700 dark:text-red-400">{error}</p>
+      )}
 
       {results.length > 0 && (
-        <ul className="divide-y divide-border rounded-lg border border-border bg-surface text-sm">
+        <ul className="divide-y divide-line rounded-lg border border-line bg-surface text-sm">
           {results.map((r) => (
             <li key={r.name} className="flex justify-between gap-4 px-4 py-2">
               <span className="truncate">{r.name}</span>

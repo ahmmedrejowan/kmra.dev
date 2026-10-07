@@ -1,0 +1,61 @@
+---
+import { apps, appUrl, type AppId } from "@kmra/registry";
+
+interface Props {
+  appId: AppId;
+}
+
+const { appId } = Astro.props;
+const dev = import.meta.env.DEV;
+const year = new Date().getFullYear();
+---
+
+<footer class="mt-24 border-t border-line bg-[#16201c] text-[#f2f4f1]">
+  <div class="mx-auto grid max-w-6xl gap-10 px-4 py-14 sm:px-6 md:grid-cols-[1.4fr_repeat(2,1fr)]">
+    <div class="max-w-xs">
+      <p class="font-wide text-2xl font-extrabold tracking-tight">kmra</p>
+      <p class="mt-3 text-sm leading-relaxed opacity-70">
+        Small tools for everyday files. Everything runs in your browser, so your
+        files stay on your device.
+      </p>
+    </div>
+
+    {apps.map((a) => (
+      <div>
+        <a
+          href={a.id === appId ? "/" : appUrl(a.id, "/", dev)}
+          class="flex items-center gap-2 font-semibold hover:underline"
+        >
+          <span
+            class="size-2.5 rounded-sm"
+            style={`background:${a.mat}`}
+            aria-hidden="true"
+          />
+          {a.name}
+        </a>
+        <ul class="mt-3 space-y-2 text-sm opacity-70">
+          {a.tools.map((t) => (
+            <li>
+              <a
+                href={
+                  a.id === appId
+                    ? `/${t.slug}`
+                    : appUrl(a.id, `/${t.slug}`, dev)
+                }
+                class="hover:underline"
+              >
+                {t.name}
+                {!t.ready && <span class="opacity-60"> (soon)</span>}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </div>
+    ))}
+  </div>
+  <div class="border-t border-white/10">
+    <p class="mx-auto max-w-6xl px-4 py-5 text-xs opacity-60 sm:px-6">
+      © {year} kmra.dev. No uploads, no accounts, no tracking of your files.
+    </p>
+  </div>
+</footer>

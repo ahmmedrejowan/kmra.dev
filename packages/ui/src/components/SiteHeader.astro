@@ -1,0 +1,86 @@
+---
+import { apps, appUrl, getApp, type AppId } from "@kmra/registry";
+
+interface Props {
+  appId: AppId;
+  /** Current tool slug, highlighted in the nav */
+  current?: string;
+}
+
+const { appId, current } = Astro.props;
+const app = getApp(appId);
+const dev = import.meta.env.DEV;
+---
+
+<header class="border-b border-line bg-paper">
+  <div class="mx-auto flex max-w-6xl items-center gap-6 px-4 py-3 sm:px-6">
+    <a href="/" class="flex items-baseline gap-2 whitespace-nowrap">
+      <span class="font-wide text-lg font-extrabold tracking-tight">kmra</span>
+      <span class="text-muted">{app.name}</span>
+    </a>
+
+    <nav
+      aria-label={app.name}
+      class="hidden flex-1 items-center gap-5 text-sm md:flex"
+    >
+      {app.tools.map((t) => (
+        <a
+          href={`/${t.slug}`}
+          aria-current={t.slug === current ? "page" : undefined}
+          class:list={[
+            "hover:text-ink",
+            t.slug === current
+              ? "font-semibold text-ink underline decoration-marker decoration-2 underline-offset-8"
+              : "text-muted",
+          ]}
+        >
+          {t.name}
+        </a>
+      ))}
+    </nav>
+
+    <nav
+      aria-label="Switch tool set"
+      class="ml-auto flex items-center gap-1 text-sm md:ml-0"
+    >
+      {apps.map((a) => (
+        <a
+          href={a.id === appId ? "/" : appUrl(a.id, "/", dev)}
+          aria-current={a.id === appId ? "true" : undefined}
+          class:list={[
+            "flex items-center gap-2 rounded-full px-3 py-1.5",
+            a.id === appId
+              ? "bg-surface font-medium ring-1 ring-line"
+              : "text-muted hover:text-ink",
+          ]}
+        >
+          <span
+            class="size-2.5 rounded-sm"
+            style={`background:${a.mat}`}
+            aria-hidden="true"
+          />
+          {a.short}
+        </a>
+      ))}
+    </nav>
+  </div>
+
+  <nav
+    aria-label={`${app.name} (mobile)`}
+    class="border-t border-line md:hidden"
+  >
+    <div class="flex gap-5 overflow-x-auto px-4 py-2.5 text-sm whitespace-nowrap">
+      {app.tools.map((t) => (
+        <a
+          href={`/${t.slug}`}
+          aria-current={t.slug === current ? "page" : undefined}
+          class:list={[
+            t.slug === current ? "font-semibold text-ink" : "text-muted",
+          ]}
+        >
+          {t.name}
+        </a>
+      ))}
+    </div>
+  </nav>
+</header>

@@ -1,0 +1,26 @@
+---
+import type { App, Tool } from "@kmra/registry";
+
+interface Props {
+  app: App;
+  tool: Tool;
+}
+
+const { app, tool } = Astro.props;
+---
+
+<section class="mat ruler">
+  <div class="mx-auto max-w-6xl px-4 pt-12 pb-10 sm:px-6">
+    <nav aria-label="Breadcrumb" class="text-sm text-on-mat-muted">
+      <a href="/" class="hover:text-on-mat hover:underline">
+        {app.name}
+      </a>
+      <span aria-hidden="true"> / </span>
+      <span aria-current="page">{tool.name}</span>
+    </nav>
+    <h1 class="font-wide mt-3 text-4xl font-extrabold tracking-tight sm:text-5xl">
+      {tool.name}
+    </h1>
+    <p class="mt-3 max-w-xl text-lg text-on-mat-muted">{tool.description}</p>
+  </div>
+</section>

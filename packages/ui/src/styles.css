@@ -1,47 +1,132 @@
+@import "@fontsource-variable/archivo/wdth.css";
 @import "tailwindcss";
 
 /* Scan shared components too — apps scan their own src automatically. */
 @source "./";
 
 @theme {
-  --font-sans:
-    "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
-  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  --font-sans: "Archivo Variable", ui-sans-serif, system-ui, sans-serif;
 
-  --color-bg: var(--bg);
+  --color-paper: var(--paper);
   --color-surface: var(--surface);
-  --color-border: var(--border);
-  --color-fg: var(--fg);
+  --color-line: var(--line);
+  --color-ink: var(--ink);
   --color-muted: var(--muted);
-  --color-accent: var(--accent);
-  --color-accent-fg: var(--accent-fg);
+  --color-marker: var(--marker);
+  --color-mat: var(--mat);
+  --color-on-mat: var(--on-mat);
+  --color-on-mat-muted: var(--on-mat-muted);
 }
 
+/*
+ * Palette
+ *   paper   cool off-white work surface
+ *   ink     deep green-black text
+ *   mat     per-app cutting-mat colour, set on <html> from @kmra/registry
+ *   marker  yellow highlighter, used only for the primary action
+ */
 :root {
-  --bg: #fafaf9;
+  --paper: #f2f4f1;
   --surface: #ffffff;
-  --border: #e7e5e4;
-  --fg: #1c1917;
-  --muted: #78716c;
-  --accent: #4f46e5;
-  --accent-fg: #ffffff;
+  --line: #d6dcd8;
+  --ink: #16201c;
+  --muted: #56645e;
+  --marker: #f2c230;
+  --mat: #1f5a48;
+  --on-mat: #f2f4f1;
+  --on-mat-muted: color-mix(in oklab, var(--on-mat) 72%, var(--mat));
+  --mat-line: color-mix(in oklab, white 9%, var(--mat));
+  --mat-line-strong: color-mix(in oklab, white 20%, var(--mat));
   color-scheme: light;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg: #0c0a09;
-    --surface: #1c1917;
-    --border: #292524;
-    --fg: #f5f5f4;
-    --muted: #a8a29e;
-    --accent: #818cf8;
-    --accent-fg: #0c0a09;
+    --paper: #101513;
+    --surface: #171f1c;
+    --line: #29332f;
+    --ink: #e6ece9;
+    --muted: #9aa8a2;
     color-scheme: dark;
   }
 }
 
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
 body {
-  background: var(--bg);
-  color: var(--fg);
+  background: var(--paper);
+  color: var(--ink);
+  font-feature-settings: "kern", "tnum";
+}
+
+/* Expanded width is the display voice: labels stamped on a tool. */
+.font-wide {
+  font-stretch: 125%;
+}
+.font-narrow {
+  font-stretch: 75%;
+}
+
+:focus-visible {
+  outline: 2px solid var(--marker);
+  outline-offset: 2px;
+}
+
+/* Self-healing cutting mat: 12px minor grid, 60px major grid. */
+.mat {
+  background-color: var(--mat);
+  background-image:
+    linear-gradient(var(--mat-line-strong) 1px, transparent 1px),
+    linear-gradient(90deg, var(--mat-line-strong) 1px, transparent 1px),
+    linear-gradient(var(--mat-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--mat-line) 1px, transparent 1px);
+  background-size:
+    60px 60px,
+    60px 60px,
+    12px 12px,
+    12px 12px;
+  background-position: -1px -1px;
+  color: var(--on-mat);
+}
+
+/* Ruler ticks along the top edge of a mat. */
+.ruler {
+  position: relative;
+}
+.ruler::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 14px;
+  pointer-events: none;
+  background-image:
+    linear-gradient(90deg, var(--on-mat-muted) 1px, transparent 1px),
+    linear-gradient(90deg, var(--on-mat-muted) 1px, transparent 1px);
+  background-size:
+    60px 14px,
+    12px 6px;
+  background-repeat: repeat-x;
+  background-position: -1px 0;
+  opacity: 0.55;
+}
+
+@keyframes land {
+  from {
+    transform: translateY(-10px) scale(1.03);
+    box-shadow: 0 28px 40px -12px rgb(0 0 0 / 0.45);
+  }
+  to {
+    transform: none;
+    box-shadow: 0 6px 14px -6px rgb(0 0 0 / 0.4);
+  }
+}
+.animate-land {
+  animation: land 420ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .animate-land {
+    animation: none;
+  }
 }
