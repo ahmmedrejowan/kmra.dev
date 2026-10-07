@@ -465,20 +465,22 @@ a.mi:hover {
 }
 /*
  * Page rhythm: homepages are three equal full-width "screens": hero, tool showcase, and one block
- * holding tasks, privacy and other apps. Content is centred vertically. On small screens they fit
- * their content.
+ * holding tasks, privacy and other apps. <main> becomes a grid whose rows all match the tallest
+ * block, so heights stay equal without padding shorter blocks with extra space. On small screens
+ * each block fits its content.
  */
+main:has(> .screen) {
+  display: grid;
+  grid-auto-rows: 1fr;
+}
 .screen {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  padding-block: 72px;
+  padding-block: 36px;
 }
 .screen > .wrap {
   width: 100%;
-}
-.screen.tall {
-  min-height: clamp(640px, calc(100svh - 64px), 820px);
 }
 .screen + .screen {
   border-top: 1px solid var(--line);
@@ -1957,11 +1959,11 @@ input[type="range"] {
   .pair {
     grid-template-columns: 1fr;
   }
-  .screen.tall {
-    min-height: 0;
+  main:has(> .screen) {
+    grid-auto-rows: auto;
   }
   .screen {
-    padding-block: 56px;
+    padding-block: 32px;
   }
   .toolcard {
     grid-template-columns: 1fr;
