@@ -316,10 +316,11 @@ header.site {
 }
 /* Apps menu: one card per live app */
 .mega.apps-menu {
-  left: auto;
-  right: -8px;
+  /* Opens under the Apps button, level with the other menus */
+  left: -8px;
+  right: auto;
   transform: none;
-  top: calc(100% + 18px);
+  top: calc(100% + 19px);
   grid-auto-flow: row;
   grid-auto-columns: auto;
   width: 380px;
@@ -1698,9 +1699,8 @@ a:hover .feat-body > .ico.go {
 /* How it works: steps one after another on a vertical line */
 .timeline {
   list-style: none;
-  margin: 0 auto;
+  margin: 0;
   padding: 0;
-  max-width: 760px;
   display: grid;
   gap: 0;
 }
@@ -1756,8 +1756,7 @@ a:hover .feat-body > .ico.go {
   color: var(--muted);
 }
 .card-block,
-.principles > div,
-.doc-aside {
+.principles > div {
   background: var(--card);
   border: 1px solid var(--line);
   border-radius: 16px;
@@ -1782,7 +1781,7 @@ a:hover .feat-body > .ico.go {
   color: var(--muted);
 }
 .page-note a,
-.doc-main a {
+.policy a {
   color: var(--acc);
   font-weight: 500;
 }
@@ -1804,74 +1803,10 @@ a:hover .feat-body > .ico.go {
   display: grid;
   gap: 6px;
 }
-.doc {
-  display: grid;
-  grid-template-columns: 300px 1fr;
-  gap: 40px;
-  align-items: start;
-}
-.doc-aside {
-  position: sticky;
-  top: 88px;
-}
-.doc-aside h2 {
-  font-size: 17px;
-  margin: 0 0 12px;
-}
-.doc-aside small {
-  display: block;
-  margin-top: 14px;
-  color: var(--muted);
-}
-.checks {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: grid;
-  gap: 10px;
-}
-.checks li {
-  display: flex;
-  gap: 8px;
-  align-items: flex-start;
-}
-.checks .ico {
-  color: var(--good);
-  margin-top: 2px;
-}
-.doc-main {
-  max-width: 44em;
-}
-.doc-main section + section {
-  margin-top: 32px;
-}
-.doc-main h2 {
-  font-size: 22px;
-  margin: 0 0 10px;
-}
-.doc-main p,
-.doc-main li {
-  color: var(--muted);
-}
-.doc-main p {
-  margin: 0 0 10px;
-}
-.doc-main ul {
-  margin: 0;
-  padding-left: 20px;
-  list-style: disc;
-  display: grid;
-  gap: 6px;
-}
-.doc-main strong {
-  color: var(--fg);
-  font-weight: 600;
-}
 .about-lede p {
   margin: 0 0 32px;
   font-size: 20px;
   line-height: 1.55;
-  max-width: 40em;
   letter-spacing: -0.01em;
 }
 .principles {
@@ -1883,6 +1818,69 @@ a:hover .feat-body > .ico.go {
   display: grid;
   gap: 4px;
   align-content: start;
+}
+/* Privacy: summary cards, then policy sections as cards */
+.psum {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+.psum > div {
+  display: grid;
+  gap: 4px;
+  align-content: start;
+  padding: 22px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+}
+.psum .tile {
+  margin-bottom: 10px;
+}
+.psum strong {
+  font-size: 16.5px;
+  letter-spacing: -0.02em;
+}
+.psum span:last-child {
+  color: var(--muted);
+  font-size: 14px;
+}
+.policy {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-top: 16px;
+}
+.policy section {
+  padding: 24px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+}
+.policy h2 {
+  font-size: 19px;
+  margin: 0 0 8px;
+}
+.policy p,
+.policy li {
+  color: var(--muted);
+}
+.policy p {
+  margin: 0 0 8px;
+}
+.policy p:last-child {
+  margin-bottom: 0;
+}
+.policy ul {
+  margin: 0;
+  padding-left: 20px;
+  list-style: disc;
+  display: grid;
+  gap: 4px;
+}
+.policy strong {
+  color: var(--fg);
+  font-weight: 600;
 }
 .maker {
   display: flex;
@@ -2523,6 +2521,51 @@ input[type="range"] {
 .ws .cmp img {
   max-height: calc(100dvh - 230px);
 }
+.mode-note {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 10px;
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: var(--acc-soft);
+  color: var(--acc);
+  font-size: 13px;
+  font-weight: 500;
+}
+.mode-note .ico {
+  width: 15px;
+  height: 15px;
+}
+.ws-empty {
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  max-width: 420px;
+  padding: 48px 32px;
+  text-align: center;
+  border: 2px dashed var(--line);
+  border-radius: 16px;
+  background: var(--card);
+  cursor: pointer;
+}
+.ws-empty:hover {
+  border-color: color-mix(in srgb, var(--acc) 50%, var(--line));
+}
+.ws-empty .big {
+  width: 56px;
+  height: 56px;
+  border-radius: 16px;
+  background: var(--acc-soft);
+  color: var(--acc);
+  display: grid;
+  place-items: center;
+  margin-bottom: 6px;
+}
+.ws-empty strong {
+  font-size: 19px;
+  letter-spacing: -0.02em;
+}
 .queue {
   border-top: 1px solid var(--line);
   background: var(--card);
@@ -2708,14 +2751,14 @@ input[type="range"] {
   .info-steps,
   .info-qa,
   .duo,
-  .doc {
+  .policy {
     grid-template-columns: 1fr;
+  }
+  .psum {
+    grid-template-columns: 1fr 1fr;
   }
   .principles {
     grid-template-columns: 1fr 1fr;
-  }
-  .doc-aside {
-    position: static;
   }
   .wm-dom {
     display: none;
@@ -2776,7 +2819,8 @@ input[type="range"] {
   .trio,
   .dir-cols,
   .tool-cards,
-  .principles {
+  .principles,
+  .psum {
     grid-template-columns: 1fr;
   }
   .cta-app {

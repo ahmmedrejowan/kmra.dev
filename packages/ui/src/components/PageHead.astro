@@ -1,11 +1,11 @@
 ---
-import type { IconName } from "@kmra/registry";
+import type { IconKey } from "../lib/icons";
 import Crumbs from "./Crumbs.astro";
 import Icon from "./Icon.astro";
 
 interface Props {
   crumbs: readonly { label: string; href?: string }[];
-  icon: IconName | "check";
+  icon: IconKey;
   title: string;
   intro: string;
 }

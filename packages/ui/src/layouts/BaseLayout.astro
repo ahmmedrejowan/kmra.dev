@@ -13,6 +13,8 @@ import SiteHeader from "../components/SiteHeader.astro";
 import SiteFooter from "../components/SiteFooter.astro";
 import CommandPalette, { type PaletteItem } from "../components/CommandPalette";
 import MoreAppsCta from "../components/MoreAppsCta.astro";
+// Cookieless page counts, served from the site's own domain on Vercel (allowed by the CSP)
+import Analytics from "@vercel/analytics/astro";
 
 interface Props {
   appId: AppId;
@@ -162,5 +164,6 @@ const paletteItems: PaletteItem[] = [
     </aside>
     <SiteFooter appId={appId} />
     <CommandPalette client:idle items={paletteItems} />
+    <Analytics />
   </body>
 </html>

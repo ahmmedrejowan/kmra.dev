@@ -41,6 +41,7 @@ export interface ToolMeta {
 }
 
 interface Props {
+  /** Tool slug, or "editor" for the all-in-one editor page (workspace only) */
   tool: string;
   preset?: Preset;
   /** All tools of this app, for the workspace rail */
@@ -77,6 +78,7 @@ function outName(file: File, type: string): string {
 }
 
 export default function ImageTool({ tool, preset, tools }: Props) {
+  const editor = tool === "editor";
   const [items, setItems] = useState<Item[]>([]);
   const [cur, setCur] = useState(0);
   const [s, setS] = useState<Settings>(() =>
@@ -85,7 +87,7 @@ export default function ImageTool({ tool, preset, tools }: Props) {
   const [out, setOut] = useState<Out | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [advanced, setAdvanced] = useState(false);
+  const [advanced, setAdvanced] = useState(editor);
   const [focus, setFocus] = useState(tool);
   const [cut, setCut] = useState(50);
   const [zipping, setZipping] = useState(false);
@@ -144,7 +146,7 @@ export default function ImageTool({ tool, preset, tools }: Props) {
   // Files handed over from the landing page, or ?sample
   useEffect(() => {
     try {
-      if (localStorage.getItem(MODE_KEY) === "advanced") {
+      if (!editor && localStorage.getItem(MODE_KEY) === "advanced") {
         setWantAdvanced(true);
         // Reopen the workspace by itself only on wide screens; on phones Simple fits better.
         openOnFiles.current = matchMedia("(min-width: 981px)").matches;
@@ -239,13 +241,16 @@ export default function ImageTool({ tool, preset, tools }: Props) {
     try {
       localStorage.setItem(MODE_KEY, "advanced");
     } catch {}
+    // With files, switch now; without, the choice is remembered and applied when files arrive.
     if (items.length) setAdvanced(true);
-    else {
-      openOnFiles.current = true;
-      toast("Advanced is on. Add images to open the workspace.");
-    }
+    else openOnFiles.current = true;
   }
   function closeAdvanced() {
+    // The editor page is the workspace itself; leaving it goes home.
+    if (editor) {
+      window.location.href = "/";
+      return;
+    }
     setAdvanced(false);
     setWantAdvanced(false);
     openOnFiles.current = false;
@@ -716,7 +721,8 @@ export default function ImageTool({ tool, preset, tools }: Props) {
 
   function resultSummary() {
     if (error) return <small className="warn">{error}</small>;
-    if (!item || !outForItem) return <small>Working…</small>;
+    if (!item) return <small>Add an image to see the result.</small>;
+    if (!outForItem) return <small>Working…</small>;
     const pct = Math.round((1 - outForItem.blob.size / item.file.size) * 100);
     return (
       <>
@@ -751,41 +757,46 @@ export default function ImageTool({ tool, preset, tools }: Props) {
       : "Download";
 
   /* ---------- Empty state ---------- */
-  if (!items.length) {
-    return (
-      <div className="dropcard lg">
-        <div
-          className={`dropzone${dragging ? " over" : ""}`}
-          onClick={() => pickRef.current?.click()}
-        >
-          <div className="big">
-            <Icon name="upload" />
-          </div>
-          <strong>Drop images here</strong>
-          <span className="muted">or paste with ⌘V. Nothing is uploaded.</span>
-          <div className="row">
-            <button
-              className="btn acc lg"
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                pickRef.current?.click();
-              }}
-            >
-              <Icon name="upload" />
-              Choose images
-            </button>
-          </div>
-          <div className="formats">
-            {["JPG", "PNG", "WebP", "GIF", "AVIF"].map((f) => (
-              <span key={f}>{f}</span>
-            ))}
-          </div>
-          {fileInput}
+  const emptyState = (
+    <div className="dropcard lg">
+      <div
+        className={`dropzone${dragging ? " over" : ""}`}
+        onClick={() => pickRef.current?.click()}
+      >
+        <div className="big">
+          <Icon name="upload" />
         </div>
+        <strong>Drop images here</strong>
+        <span className="muted">or paste with ⌘V. Nothing is uploaded.</span>
+        <div className="row">
+          <button
+            className="btn acc lg"
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              pickRef.current?.click();
+            }}
+          >
+            <Icon name="upload" />
+            Choose images
+          </button>
+        </div>
+        <div className="formats">
+          {["JPG", "PNG", "WebP", "GIF", "AVIF"].map((f) => (
+            <span key={f}>{f}</span>
+          ))}
+        </div>
+        {wantAdvanced && (
+          <span className="mode-note">
+            <Icon name="sliders" />
+            Opens in the Advanced workspace
+          </span>
+        )}
+        {fileInput}
       </div>
-    );
-  }
+    </div>
+  );
+  if (!items.length && !advanced) return emptyState;
 
   /* ---------- Simple mode ---------- */
   const simple = (
@@ -880,7 +891,7 @@ export default function ImageTool({ tool, preset, tools }: Props) {
 
   return (
     <>
-      {simple}
+      {items.length ? simple : emptyState}
       <div
         className="ws"
         role="dialog"
@@ -890,12 +901,14 @@ export default function ImageTool({ tool, preset, tools }: Props) {
         <div className="ws-top">
           <button className="btn sm" type="button" onClick={closeAdvanced}>
             <Icon name="back" />
-            <span className="hide-sm">Simple mode</span>
+            <span className="hide-sm">{editor ? "Home" : "Simple mode"}</span>
           </button>
           <span className="title">
-            Workspace{" "}
+            {editor ? "Image editor" : "Workspace"}{" "}
             <small>
-              {items.length} file{items.length > 1 ? "s" : ""}
+              {items.length
+                ? `${items.length} file${items.length > 1 ? "s" : ""}`
+                : "No files yet"}
             </small>
           </span>
           <span className="right">
@@ -947,7 +960,24 @@ export default function ImageTool({ tool, preset, tools }: Props) {
 
           <div className="ws-center">
             <div className={`stage${dragging ? " over" : ""}`}>
-              {item && stageContent(item)}
+              {item ? (
+                stageContent(item)
+              ) : (
+                <button
+                  type="button"
+                  className="ws-empty"
+                  onClick={() => pickRef.current?.click()}
+                >
+                  <span className="big">
+                    <Icon name="upload" />
+                  </span>
+                  <strong>Drop images to start</strong>
+                  <span className="muted">
+                    Or click to choose files, or paste with ⌘V. Settings apply
+                    to every file.
+                  </span>
+                </button>
+              )}
             </div>
             <div className="queue">
               {items.map((it, i) => (

@@ -1,13 +1,6 @@
 ---
-import { CONTACT, type AppId } from "@kmra/registry";
-import AppCards from "./AppCards.astro";
+import { CONTACT } from "@kmra/registry";
 import Icon from "./Icon.astro";
-
-interface Props {
-  appId: AppId;
-}
-
-const { appId } = Astro.props;
 ---
 
 <div class="about-lede">
@@ -48,13 +41,6 @@ const { appId } = Astro.props;
     <p>Two or three controls by default. Advanced when you need it.</p>
   </div>
 </div>
-
-<section class="block">
-  <div class="sechead primary">
-    <h2>kmra apps</h2>
-  </div>
-  <AppCards appId={appId} />
-</section>
 
 <section class="block">
   <div class="maker">

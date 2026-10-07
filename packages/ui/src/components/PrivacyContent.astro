@@ -10,85 +10,92 @@ const { brand } = Astro.props;
 const updated = "8 October 2026";
 ---
 
-<div class="doc">
-  <aside class="doc-aside">
-    <h2>In short</h2>
-    <ul class="checks">
+<div class="psum">
+  <div>
+    <span class="tile">
+      <Icon name="shield" />
+    </span>
+    <strong>Files stay on your device</strong>
+    <span>Never uploaded, by us or anyone.</span>
+  </div>
+  <div>
+    <span class="tile">
+      <Icon name="check" />
+    </span>
+    <strong>No accounts</strong>
+    <span>Nothing to sign up for.</span>
+  </div>
+  <div>
+    <span class="tile">
+      <Icon name="lock" />
+    </span>
+    <strong>No cookies</strong>
+    <span>No ads, no tracking scripts.</span>
+  </div>
+  <div>
+    <span class="tile">
+      <Icon name="layers" />
+    </span>
+    <strong>Anonymous page counts</strong>
+    <span>Visits only, never your files.</span>
+  </div>
+</div>
+
+<div class="policy">
+  <section>
+    <h2>Your files</h2>
+    <p>
+      {brand} processes files in your browser. Images you open are read, edited
+      and saved on your device. They're never uploaded, and the site's security
+      policy blocks it from sending your data to other servers.
+    </p>
+  </section>
+  <section>
+    <h2>What your browser keeps</h2>
+    <p>
+      A few settings are saved in your own browser so the site remembers them.
+      We can't see them.
+    </p>
+    <ul>
       <li>
-        <Icon name="check" />
-        Your files never leave your device
+        <strong>Theme</strong>: light or dark.
       </li>
       <li>
-        <Icon name="check" />
-        No accounts
+        <strong>Mode</strong>: Simple or Advanced.
       </li>
       <li>
-        <Icon name="check" />
-        No analytics or ad trackers
-      </li>
-      <li>
-        <Icon name="check" />
-        No cookies
+        <strong>Dropped files</strong>: kept briefly so the tool page can open
+        them, then deleted.
       </li>
     </ul>
-    <small>Last updated {updated}</small>
-  </aside>
-  <div class="doc-main">
-    <section>
-      <h2>Your files</h2>
-      <p>
-        {brand} processes files in your browser. Images you open are read,
-        edited and saved on your device. They are never uploaded to us or anyone
-        else, and the site's security policy blocks it from sending data to
-        other servers.
-      </p>
-    </section>
-    <section>
-      <h2>What your browser keeps</h2>
-      <p>
-        A few settings are saved in your own browser so the site remembers them.
-        We can't see them.
-      </p>
-      <ul>
-        <li>
-          <strong>Theme</strong>: light or dark.
-        </li>
-        <li>
-          <strong>Mode</strong>: whether you prefer Simple or Advanced.
-        </li>
-        <li>
-          <strong>Files you drop on the homepage</strong>: kept briefly in your
-          browser's storage so the tool page can open them, then deleted as soon
-          as it does.
-        </li>
-      </ul>
-    </section>
-    <section>
-      <h2>Hosting</h2>
-      <p>
-        The site is hosted on Vercel. Like any web host, it may keep standard
-        request logs (such as IP address, browser and the page requested) to
-        keep the service running and secure. These logs never include your
-        files, and we don't use them to track you.
-      </p>
-    </section>
-    <section>
-      <h2>Analytics and cookies</h2>
-      <p>
-        There are no analytics, advertising or tracking scripts, and the site
-        sets no cookies.
-      </p>
-    </section>
-    <section>
-      <h2>Changes</h2>
-      <p>If this changes, we'll update this page and the date above.</p>
-    </section>
-    <section>
-      <h2>Contact</h2>
-      <p>
-        Questions about privacy? Email{" "}
-        <a href={`mailto:${CONTACT.email}`}>{CONTACT.email}</a>.
-      </p>
-    </section>
-  </div>
+  </section>
+  <section>
+    <h2>Analytics</h2>
+    <p>
+      We use Vercel Web Analytics to count visits: which pages are viewed, the
+      referring site, and the country, browser and device type. It sets no
+      cookies, doesn't identify you, and never sees your files or their names.
+    </p>
+  </section>
+  <section>
+    <h2>Hosting</h2>
+    <p>
+      The site is hosted on Vercel. Like any web host, it may keep standard
+      request logs (such as IP address, browser and page) to keep the service
+      running and secure. These never include your files.
+    </p>
+  </section>
+  <section>
+    <h2>Changes</h2>
+    <p>
+      If anything here changes, we'll update this page. Last updated {updated}.
+    </p>
+  </section>
+  <section>
+    <h2>Contact</h2>
+    <p>
+      Questions about privacy? Email{" "}
+      <a href={`mailto:${CONTACT.email}`}>{CONTACT.email}</a>.
+    </p>
+  </section>
 </div>

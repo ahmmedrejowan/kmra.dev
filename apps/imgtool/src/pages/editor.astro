@@ -1,0 +1,31 @@
+---
+import BaseLayout from "@kmra/ui/layouts/BaseLayout.astro";
+import PageHead from "@kmra/ui/components/PageHead.astro";
+import { getApp } from "@kmra/registry";
+import ImageTool from "../components/ImageTool";
+
+const app = getApp("imgtool");
+const railTools = app.tools.map(({ slug, name, icon, ready }) => ({
+  slug,
+  name,
+  icon,
+  ready,
+}));
+---
+
+<BaseLayout
+  appId="imgtool"
+  title="Image editor"
+  description="Resize, crop, rotate, compress and convert many images at once, all in your browser."
+  og="index"
+>
+  <PageHead
+    crumbs={[{ label: app.name, href: "/" }, { label: "Editor" }]}
+    icon="sliders"
+    title="Image editor"
+    intro="Every tool in one workspace. Drop images to start."
+  />
+  <div class="wrap tool-area">
+    <ImageTool client:load tool="editor" tools={railTools} />
+  </div>
+</BaseLayout>

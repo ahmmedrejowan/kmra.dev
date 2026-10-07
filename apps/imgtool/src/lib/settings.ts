@@ -113,7 +113,12 @@ export function defaults(tool: string): Settings {
     ratio: null,
   };
   if (tool === "resize") return { ...base, keepFormat: true, quality: 90 };
-  if (tool === "strip-metadata" || tool === "crop" || tool === "rotate")
+  if (
+    tool === "strip-metadata" ||
+    tool === "crop" ||
+    tool === "rotate" ||
+    tool === "editor"
+  )
     return { ...base, keepFormat: true, quality: 92 };
   return base;
 }
