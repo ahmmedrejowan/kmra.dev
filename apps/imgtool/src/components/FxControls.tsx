@@ -71,7 +71,7 @@ export function Slider({
   );
 }
 
-export function Seg<T extends string | boolean>({
+export function Seg<T extends string | number | boolean>({
   label,
   options,
   value,

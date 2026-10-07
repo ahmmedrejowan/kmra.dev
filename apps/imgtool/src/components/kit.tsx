@@ -1,0 +1,251 @@
+import { useEffect, useRef, useState, type ReactNode } from "react";
+import { zipSync } from "fflate";
+import { Icon } from "@kmra/ui/components/Icon";
+import { downloadBlob, IMAGE_ACCEPT, isImageFile } from "@kmra/ui/lib/files";
+import { takeFiles } from "@kmra/ui/lib/handoff";
+import { pasteHint } from "@kmra/ui/lib/keys";
+import { toast } from "@kmra/ui/lib/toast";
+
+/**
+ * Shared pieces for the tools that aren't a single-image pipeline (analyze, collage, split,
+ * favicon, Base64, GIF frames): file intake, the empty drop card, copy and zip helpers.
+ */
+
+/** Files dropped anywhere on the page, pasted, picked, or handed over from another page. */
+export function useFiles(opts: {
+  onFiles: (files: File[]) => void;
+  accept?: (f: File) => boolean;
+  /** Message when nothing usable was dropped */
+  reject?: string;
+}) {
+  const [dragging, setDragging] = useState(false);
+  const pickRef = useRef<HTMLInputElement>(null);
+  const cb = useRef(opts);
+  cb.current = opts;
+
+  const take = (list: FileList | File[]) => {
+    const ok = [...list].filter(cb.current.accept ?? isImageFile);
+    if (!ok.length) {
+      toast(
+        cb.current.reject ??
+          "That isn't an image. Try JPEG, PNG, WebP, GIF or AVIF.",
+      );
+      return;
+    }
+    cb.current.onFiles(ok);
+  };
+
+  useEffect(() => {
+    void takeFiles().then((f) => f.length && take(f));
+    const over = (e: DragEvent) => {
+      if (!e.dataTransfer?.types.includes("Files")) return;
+      e.preventDefault();
+      setDragging(true);
+    };
+    const leave = (e: DragEvent) => !e.relatedTarget && setDragging(false);
+    const drop = (e: DragEvent) => {
+      if (!e.dataTransfer?.files.length) return;
+      e.preventDefault();
+      setDragging(false);
+      take(e.dataTransfer.files);
+    };
+    const paste = (e: ClipboardEvent) => {
+      const files = [...(e.clipboardData?.files ?? [])];
+      if (files.length) take(files);
+    };
+    window.addEventListener("dragover", over);
+    window.addEventListener("dragleave", leave);
+    window.addEventListener("drop", drop);
+    window.addEventListener("paste", paste);
+    return () => {
+      window.removeEventListener("dragover", over);
+      window.removeEventListener("dragleave", leave);
+      window.removeEventListener("drop", drop);
+      window.removeEventListener("paste", paste);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  return { dragging, pickRef, pick: () => pickRef.current?.click(), take };
+}
+
+export function FileInput({
+  inputRef,
+  onFiles,
+  multiple = true,
+  accept = IMAGE_ACCEPT,
+}: {
+  inputRef: React.RefObject<HTMLInputElement | null>;
+  onFiles: (f: FileList) => void;
+  multiple?: boolean;
+  accept?: string;
+}) {
+  return (
+    <input
+      ref={inputRef}
+      type="file"
+      accept={accept}
+      multiple={multiple}
+      hidden
+      onChange={(e) => {
+        if (e.target.files?.length) onFiles(e.target.files);
+        e.target.value = "";
+      }}
+    />
+  );
+}
+
+/** The big empty-state drop card used by every tool. */
+export function DropCard({
+  title = "Drop images here",
+  button = "Choose images",
+  formats = ["JPG", "PNG", "WebP", "GIF", "AVIF"],
+  dragging,
+  onPick,
+  children,
+}: {
+  title?: string;
+  button?: string;
+  formats?: string[];
+  dragging: boolean;
+  onPick: () => void;
+  children?: ReactNode;
+}) {
+  const [hint, setHint] = useState("or paste with ⌘V. Nothing is uploaded.");
+  useEffect(() => setHint(pasteHint()), []);
+  return (
+    <div className="dropcard lg">
+      <div className={`dropzone${dragging ? " over" : ""}`} onClick={onPick}>
+        <div className="big">
+          <Icon name="upload" />
+        </div>
+        <strong>{title}</strong>
+        <span className="muted">{hint}</span>
+        <div className="row">
+          <button
+            className="btn acc lg"
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              onPick();
+            }}
+          >
+            <Icon name="upload" />
+            {button}
+          </button>
+        </div>
+        <div className="formats">
+          {formats.map((f) => (
+            <span key={f}>{f}</span>
+          ))}
+        </div>
+        {children}
+      </div>
+    </div>
+  );
+}
+
+export async function copyText(text: string, what = "Copied") {
+  try {
+    await navigator.clipboard.writeText(text);
+    toast(`${what} to the clipboard.`);
+  } catch {
+    toast("Couldn't copy. Select the text and copy it yourself.");
+  }
+}
+
+export function CopyBtn({
+  text,
+  label = "Copy",
+  what,
+  className = "btn sm",
+}: {
+  text: string;
+  label?: string;
+  what?: string;
+  className?: string;
+}) {
+  return (
+    <button
+      type="button"
+      className={className}
+      onClick={() => void copyText(text, what)}
+    >
+      <Icon name="copy" />
+      {label}
+    </button>
+  );
+}
+
+/** Zip files without re-compressing (images are already compressed). */
+export async function downloadZip(
+  files: { name: string; blob: Blob }[],
+  zipName: string,
+) {
+  const entries = Object.fromEntries(
+    await Promise.all(
+      files.map(
+        async (f) =>
+          [f.name, new Uint8Array(await f.blob.arrayBuffer())] as const,
+      ),
+    ),
+  );
+  downloadBlob(
+    new Blob([zipSync(entries, { level: 0 })], { type: "application/zip" }),
+    zipName,
+  );
+}
+
+export function canvasBlob(
+  c: HTMLCanvasElement | OffscreenCanvas,
+  type = "image/png",
+  quality = 0.92,
+): Promise<Blob> {
+  if (c instanceof OffscreenCanvas) return c.convertToBlob({ type, quality });
+  return new Promise((res, rej) =>
+    c.toBlob((b) => (b ? res(b) : rej(new Error("encode"))), type, quality),
+  );
+}
+
+/** Decode any image the browser can show (SVG included) to a bitmap. */
+export async function decode(file: Blob): Promise<ImageBitmap> {
+  try {
+    return await createImageBitmap(file, { imageOrientation: "from-image" });
+  } catch {
+    // SVG and a few others only decode through an <img>
+    const url = URL.createObjectURL(file);
+    try {
+      const img = new Image();
+      img.src = url;
+      await img.decode();
+      return await createImageBitmap(img);
+    } finally {
+      URL.revokeObjectURL(url);
+    }
+  }
+}
+
+export function baseName(name: string) {
+  return name.replace(/\.[^.]+$/, "") || "image";
+}
+
+/** Card layout shared by the standalone tools: stage on the left, panel on the right. */
+export function ToolCard({
+  stage,
+  panel,
+  dragging,
+  wide,
+}: {
+  stage: ReactNode;
+  panel: ReactNode;
+  dragging?: boolean;
+  /** Give the panel more room (tables, code) */
+  wide?: boolean;
+}) {
+  return (
+    <div className={`toolcard${wide ? " wide-panel" : ""}`}>
+      <div className={`stage${dragging ? " over" : ""}`}>{stage}</div>
+      <div className="controls">{panel}</div>
+    </div>
+  );
+}

@@ -14,6 +14,13 @@ import {
   type Tool,
 } from "@kmra/registry";
 import ImageTool from "../components/ImageTool";
+import Inspect from "../components/Inspect";
+import Colors from "../components/Colors";
+import Collage from "../components/Collage";
+import Split from "../components/Split";
+import Favicon from "../components/Favicon";
+import Base64 from "../components/Base64";
+import GifFrames from "../components/GifFrames";
 
 export function getStaticPaths() {
   const app = getApp("imgtool");
@@ -35,6 +42,20 @@ interface Props {
 }
 
 const { tool, task } = Astro.props;
+// Tools with their own interface (no Simple/Advanced switch); everything else uses ImageTool.
+const STANDALONE = [
+  "image-info",
+  "exif",
+  "histogram",
+  "palette",
+  "color-picker",
+  "collage",
+  "split",
+  "favicon",
+  "base64",
+  "gif-frames",
+];
+const standalone = STANDALONE.includes(tool.slug);
 const app = getApp("imgtool");
 const title = task?.title ?? tool.title ?? tool.name;
 const intro = task?.intro ?? tool.description;
@@ -64,10 +85,15 @@ const baseFaq = [
     q: "Is my image uploaded?",
     a: "No. It's processed in your browser and never leaves your device.",
   },
-  {
-    q: "What does Advanced add?",
-    a: "Every option at once, many files in one go, and a single zip download.",
-  },
+  standalone
+    ? {
+        q: "Does it work offline?",
+        a: "Yes. Once this page has loaded, it keeps working without an internet connection.",
+      }
+    : {
+        q: "What does Advanced add?",
+        a: "Every option at once, many files in one go, and a single zip download.",
+      },
   {
     q: "Is there a limit?",
     a: "No limits from us. Very large images can be slow on phones because the work uses your device's memory.",
@@ -137,7 +163,7 @@ const schema = [
             <p>{intro}</p>
           </div>
         </div>
-        {tool.ready && (
+        {tool.ready && !standalone && (
           <div class="modes" role="group" aria-label="Mode">
             <button type="button" aria-pressed="true" data-mode="simple">
               Simple
@@ -153,7 +179,17 @@ const schema = [
   </section>
 
   <div class="wrap tool-area">
-    {tool.ready ? (
+    {tool.slug === "image-info" && <Inspect client:load mode="info" />}
+    {tool.slug === "exif" && <Inspect client:load mode="exif" />}
+    {tool.slug === "histogram" && <Inspect client:load mode="histogram" />}
+    {tool.slug === "palette" && <Colors client:load mode="palette" />}
+    {tool.slug === "color-picker" && <Colors client:load mode="picker" />}
+    {tool.slug === "collage" && <Collage client:load />}
+    {tool.slug === "split" && <Split client:load />}
+    {tool.slug === "favicon" && <Favicon client:load />}
+    {tool.slug === "base64" && <Base64 client:load />}
+    {tool.slug === "gif-frames" && <GifFrames client:load />}
+    {standalone ? null : tool.ready ? (
       <ImageTool
         client:load
         tool={tool.slug}
