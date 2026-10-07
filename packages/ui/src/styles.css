@@ -4569,3 +4569,157 @@ footer.site .fmore {
   overflow-wrap: anywhere;
   text-align: center;
 }
+/* PDF and QR card art */
+.art-pdf {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--muted);
+}
+.art-pdf.grid6 {
+  display: grid;
+  grid-template-columns: repeat(3, 40px);
+  gap: 8px;
+}
+.art-pdf .pg {
+  position: relative;
+  width: 50px;
+  height: 66px;
+  background: #fff;
+  border-radius: 4px;
+  box-shadow: 0 4px 12px -6px rgb(0 0 0 / 0.4);
+  display: grid;
+  align-content: start;
+  gap: 5px;
+  padding: 9px 8px;
+}
+.art-pdf.grid6 .pg {
+  width: 40px;
+  height: 50px;
+  padding: 7px 6px;
+}
+.art-pdf .pg i {
+  display: block;
+  height: 3px;
+  border-radius: 2px;
+  background: #d9dce1;
+}
+.art-pdf .pg i:first-child {
+  background: color-mix(in srgb, var(--acc) 70%, #fff);
+  width: 70%;
+}
+.art-pdf .pg.b {
+  margin-left: -36px;
+  margin-top: 14px;
+}
+.art-pdf .pg.stack {
+  box-shadow:
+    4px 4px 0 -1px #fff,
+    4px 4px 0 0 #d9dce1,
+    8px 8px 0 -1px #fff,
+    8px 8px 0 0 #d9dce1,
+    0 4px 12px -6px rgb(0 0 0 / 0.4);
+}
+.art-pdf .pg.lift {
+  transform: translateY(-8px) rotate(-6deg);
+  outline: 2px solid var(--acc);
+}
+.art-pdf .pg.gone {
+  opacity: 0.35;
+}
+.art-pdf .pg.big {
+  width: 96px;
+  height: 124px;
+}
+.art-pdf .pg .sig {
+  position: absolute;
+  right: 8px;
+  bottom: 8px;
+  width: 54px;
+  height: 34px;
+  color: #1a3d9c;
+}
+.art-pdf .pg.num b {
+  position: absolute;
+  bottom: 5px;
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-size: 9px;
+  color: #6b7280;
+}
+.art-pdf .photo {
+  width: 58px;
+  height: 44px;
+  border-radius: 5px;
+  background: linear-gradient(135deg, #ffb37a, #ff7e7e 55%, #7a5cff);
+}
+.art-pdf .aa {
+  font-size: 30px;
+  font-weight: 700;
+  color: var(--fg);
+}
+.art-qr {
+  display: flex;
+  gap: 10px;
+}
+.art-qr span {
+  display: block;
+  width: 84px;
+  height: 84px;
+  padding: 8px;
+  background: #fff;
+  border-radius: 10px;
+  color: #111;
+  box-shadow: 0 8px 20px -12px rgb(0 0 0 / 0.5);
+}
+.art-qr span + span {
+  width: 64px;
+  height: 64px;
+  align-self: center;
+}
+.art-qr svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+.art-scan {
+  position: relative;
+  width: 110px;
+  height: 110px;
+}
+.art-scan .frame {
+  position: absolute;
+  inset: 0;
+  border-radius: 14px;
+  background:
+    linear-gradient(var(--acc), var(--acc)) top left / 22px 3px no-repeat,
+    linear-gradient(var(--acc), var(--acc)) top left / 3px 22px no-repeat,
+    linear-gradient(var(--acc), var(--acc)) top right / 22px 3px no-repeat,
+    linear-gradient(var(--acc), var(--acc)) top right / 3px 22px no-repeat,
+    linear-gradient(var(--acc), var(--acc)) bottom left / 22px 3px no-repeat,
+    linear-gradient(var(--acc), var(--acc)) bottom left / 3px 22px no-repeat,
+    linear-gradient(var(--acc), var(--acc)) bottom right / 22px 3px no-repeat,
+    linear-gradient(var(--acc), var(--acc)) bottom right / 3px 22px no-repeat;
+}
+.art-scan .line {
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  top: 50%;
+  height: 2px;
+  background: var(--acc);
+  box-shadow: 0 0 12px var(--acc);
+}
+.art-bars-code {
+  display: flex;
+  gap: 3px;
+  height: 80px;
+  padding: 10px 14px;
+  background: #fff;
+  border-radius: 8px;
+}
+.art-bars-code i {
+  display: block;
+  background: #111;
+}

@@ -9,6 +9,9 @@ interface Props {
 }
 
 const { tool, hidden = false } = Astro.props;
+// Each app is built with its own site URL (imgtool.kmra.dev, pdftool.kmra.dev, ...)
+const app = Astro.site?.hostname.split(".")[0] ?? "imgtool";
+const page = (lines = 3) => Array.from({ length: lines });
 ---
 
 <a
@@ -18,7 +21,126 @@ const { tool, hidden = false } = Astro.props;
   tabindex={hidden ? -1 : undefined}
 >
   <div class="feat-art" aria-hidden="true">
-    {tool.slug === "compress" ? (
+    {app === "pdftool" && tool.slug === "merge" ? (
+      <div class="art-pdf">
+        <span class="pg a">
+          {page().map(() => (
+            <i />
+          ))}
+        </span>
+        <span class="pg b">
+          {page().map(() => (
+            <i />
+          ))}
+        </span>
+        <Icon name="right" />
+        <span class="pg stack">
+          {page(4).map(() => (
+            <i />
+          ))}
+        </span>
+      </div>
+    ) : app === "pdftool" && tool.slug === "split" ? (
+      <div class="art-pdf">
+        <span class="pg stack">
+          {page(4).map(() => (
+            <i />
+          ))}
+        </span>
+        <Icon name="right" />
+        <span class="pg a">
+          {page().map(() => (
+            <i />
+          ))}
+        </span>
+        <span class="pg b">
+          {page().map(() => (
+            <i />
+          ))}
+        </span>
+      </div>
+    ) : app === "pdftool" &&
+      (tool.slug === "organize" || tool.slug === "remove-pages") ? (
+      <div class="art-pdf grid6">
+        {Array.from({ length: 6 }, (_, i) => (
+          <span
+            class:list={[
+              "pg",
+              { lift: i === 2, gone: tool.slug === "remove-pages" && i === 4 },
+            ]}
+          >
+            {page(2).map(() => (
+              <i />
+            ))}
+          </span>
+        ))}
+      </div>
+    ) : app === "pdftool" && tool.slug === "sign" ? (
+      <div class="art-pdf">
+        <span class="pg big">
+          {page(4).map(() => (
+            <i />
+          ))}
+          <Icon name="signature" class="ico sig" />
+        </span>
+      </div>
+    ) : app === "pdftool" && tool.slug === "page-numbers" ? (
+      <div class="art-pdf">
+        {[1, 2, 3].map((n) => (
+          <span class="pg num">
+            {page(3).map(() => (
+              <i />
+            ))}
+            <b>{n} / 3</b>
+          </span>
+        ))}
+      </div>
+    ) : app === "pdftool" &&
+      (tool.slug === "to-image" || tool.slug === "from-image") ? (
+      <div class="art-pdf">
+        {tool.slug === "from-image" && <span class="photo" />}
+        {tool.slug === "from-image" && <Icon name="right" />}
+        <span class="pg">
+          {page().map(() => (
+            <i />
+          ))}
+        </span>
+        {tool.slug === "to-image" && <Icon name="right" />}
+        {tool.slug === "to-image" && <span class="photo" />}
+      </div>
+    ) : app === "pdftool" && tool.slug === "to-text" ? (
+      <div class="art-pdf">
+        <span class="pg">
+          {page(4).map(() => (
+            <i />
+          ))}
+        </span>
+        <Icon name="right" />
+        <span class="aa">Aa</span>
+      </div>
+    ) : app === "qrtool" &&
+      (tool.slug === "generator" || tool.slug === "bulk") ? (
+      <div class="art-qr">
+        {(tool.slug === "bulk" ? [0, 1, 2] : [0]).map(() => (
+          <span
+            set:html={`<svg viewBox="0 0 21 21"><path fill="currentColor" fill-rule="evenodd" d="M0 0h7v7H0zM1 1v5h5V1zM2 2h3v3H2zM14 0h7v7h-7zM15 1v5h5V1zM16 2h3v3h-3zM0 14h7v7H0zM1 15v5h5v-5zM2 16h3v3H2zM9 1h2v2H9zM9 5h1v3H9zM12 9h3v1h-3zM9 9h2v2H9zM17 9h3v2h-3zM9 13h3v2H9zM14 14h2v3h-2zM18 16h3v2h-3zM10 18h3v3h-3zM16 19h2v2h-2zM1 9h3v2H1zM5 10h2v1H5z"/></svg>`}
+          />
+        ))}
+      </div>
+    ) : app === "qrtool" && tool.slug === "scanner" ? (
+      <div class="art-scan">
+        <span class="frame" />
+        <span class="line" />
+      </div>
+    ) : app === "qrtool" && tool.slug === "barcode" ? (
+      <div class="art-bars-code">
+        {[3, 1, 2, 1, 1, 3, 1, 2, 2, 1, 3, 1, 1, 2, 1, 3, 2, 1, 1, 2, 3, 1].map(
+          (w) => (
+            <i style={`width:${w * 2}px`} />
+          ),
+        )}
+      </div>
+    ) : tool.slug === "compress" ? (
       <div class="art-bars">
         <div>
           <span>Before</span>
