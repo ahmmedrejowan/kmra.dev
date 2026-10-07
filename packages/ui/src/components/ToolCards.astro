@@ -1,0 +1,31 @@
+---
+import type { Tool } from "@kmra/registry";
+import ToolCard from "./ToolCard.astro";
+import Icon from "./Icon.astro";
+
+interface Props {
+  tools: readonly Tool[];
+  /** Fill the last row with a link to the full tool list */
+  allHref?: string;
+  allLabel?: string;
+}
+
+const { tools, allHref, allLabel = "All tools" } = Astro.props;
+const COLS = 3;
+const showAll = allHref && tools.length % COLS !== 0;
+---
+
+<div class="tool-cards">
+  {tools.map((t) => (
+    <ToolCard tool={t} />
+  ))}
+  {showAll && (
+    <a class="feat feat-all" href={allHref}>
+      <span class="tile">
+        <Icon name="layers" />
+      </span>
+      <strong>{allLabel}</strong>
+      <span class="muted">See everything on one page</span>
+    </a>
+  )}
+</div>

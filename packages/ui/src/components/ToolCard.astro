@@ -1,0 +1,90 @@
+---
+import type { Tool } from "@kmra/registry";
+import Icon from "./Icon.astro";
+
+interface Props {
+  tool: Tool;
+  /** Duplicate copy in a scrolling row: hidden from assistive tech and keyboard */
+  hidden?: boolean;
+}
+
+const { tool, hidden = false } = Astro.props;
+---
+
+<a
+  class="feat"
+  href={`/${tool.slug}`}
+  aria-hidden={hidden ? "true" : undefined}
+  tabindex={hidden ? -1 : undefined}
+>
+  <div class="feat-art" aria-hidden="true">
+    {tool.slug === "compress" ? (
+      <div class="art-bars">
+        <div>
+          <span>Before</span>
+          <i style="width:100%" />
+          <b>4.2 MB</b>
+        </div>
+        <div>
+          <span>After</span>
+          <i class="acc" style="width:15%" />
+          <b>612 KB</b>
+        </div>
+      </div>
+    ) : tool.slug === "resize" ? (
+      <div class="art-frames">
+        <div class="outer">
+          <span>2400 × 1600</span>
+          <div class="inner">
+            <span>1080 × 720</span>
+          </div>
+        </div>
+      </div>
+    ) : tool.slug === "convert" ? (
+      <div class="art-formats">
+        <span>HEIC</span>
+        <span>PNG</span>
+        <Icon name="right" />
+        <span class="acc">JPG</span>
+        <span class="acc">WebP</span>
+      </div>
+    ) : tool.slug === "strip-metadata" ? (
+      <ul class="art-meta">
+        <li>
+          <span>Location</span>
+          <s>23.81°N 90.41°E</s>
+        </li>
+        <li>
+          <span>Camera</span>
+          <s>iPhone 15 Pro</s>
+        </li>
+      </ul>
+    ) : tool.slug === "crop" ? (
+      <div class="art-crop">
+        <div class="frame">
+          <span>1:1</span>
+        </div>
+      </div>
+    ) : tool.slug === "rotate" ? (
+      <div class="art-rotate">
+        <span class="card a" />
+        <Icon name="rotateRight" />
+        <span class="card b" />
+      </div>
+    ) : (
+      <span class="tile">
+        <Icon name={tool.icon} />
+      </span>
+    )}
+  </div>
+  <div class="feat-body">
+    <span class="tile">
+      <Icon name={tool.icon} />
+    </span>
+    <div>
+      <strong>{tool.name}</strong>
+      <p>{tool.blurb}</p>
+    </div>
+    <Icon name="right" class="ico go" />
+  </div>
+</a>

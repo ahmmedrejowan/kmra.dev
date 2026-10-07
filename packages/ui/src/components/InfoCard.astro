@@ -1,0 +1,27 @@
+---
+interface Props {
+  steps: readonly string[];
+  items: readonly { q: string; a: string }[];
+}
+
+const { steps, items } = Astro.props;
+---
+
+<section class="infocard" aria-label="How it works and common questions">
+  <ol class="info-steps">
+    {steps.map((s, i) => (
+      <li>
+        <b>{i + 1}</b>
+        <span>{s}</span>
+      </li>
+    ))}
+  </ol>
+  <dl class="info-qa">
+    {items.map((it) => (
+      <div>
+        <dt>{it.q}</dt>
+        <dd>{it.a}</dd>
+      </div>
+    ))}
+  </dl>
+</section>

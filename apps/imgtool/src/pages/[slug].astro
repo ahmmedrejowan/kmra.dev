@@ -1,10 +1,10 @@
 ---
 import BaseLayout from "@kmra/ui/layouts/BaseLayout.astro";
 import Crumbs from "@kmra/ui/components/Crumbs.astro";
-import ToolGrid from "@kmra/ui/components/ToolGrid.astro";
+import ToolCards from "@kmra/ui/components/ToolCards.astro";
+import InfoCard from "@kmra/ui/components/InfoCard.astro";
+import MoreAppsCta from "@kmra/ui/components/MoreAppsCta.astro";
 import TaskList from "@kmra/ui/components/TaskList.astro";
-import Steps from "@kmra/ui/components/Steps.astro";
-import Faq from "@kmra/ui/components/Faq.astro";
 import SoonBox from "@kmra/ui/components/SoonBox.astro";
 import Icon from "@kmra/ui/components/Icon.astro";
 import { getApp, type Task, type Tool } from "@kmra/registry";
@@ -40,9 +40,11 @@ const crumbs = task
       { label: task.name },
     ]
   : [{ label: app.name, href: "/" }, { label: tool.name }];
-const related = app.tasks.filter(
-  (t) => t.tool === tool.slug && t.slug !== task?.slug,
-);
+// Always three related tasks: this tool's own first, then other popular tasks.
+const related = [
+  ...app.tasks.filter((t) => t.tool === tool.slug && t.slug !== task?.slug),
+  ...app.tasks.filter((t) => t.tool !== tool.slug && t.slug !== task?.slug),
+].slice(0, 3);
 const others = app.tools.filter((t) => t.slug !== tool.slug && t.ready);
 const icons = Object.fromEntries(app.tools.map((t) => [t.slug, t.icon]));
 const railTools = app.tools.map(({ slug, name, icon, ready }) => ({
@@ -52,20 +54,24 @@ const railTools = app.tools.map(({ slug, name, icon, ready }) => ({
   ready,
 }));
 
-const faq = [
+const baseFaq = [
   {
     q: "Is my image uploaded?",
     a: "No. It's processed in your browser and never leaves your device.",
   },
   {
     q: "What does Advanced add?",
-    a: "Every option at once (size, format, quality, target size), a batch list for many files, and the steps applied to all of them. Your choice is remembered next time.",
+    a: "Every option at once, many files in one go, and a single zip download.",
   },
   {
     q: "Is there a limit?",
     a: "No limits from us. Very large images can be slow on phones because the work uses your device's memory.",
   },
 ];
+// Task pages lead with their own note, then the general answers; always three items.
+const info = task
+  ? [{ q: "Good to know", a: task.about[0] ?? "" }, ...baseFaq].slice(0, 3)
+  : baseFaq;
 ---
 
 <BaseLayout appId="imgtool" title={`${title} · kmra`} description={intro}>
@@ -109,46 +115,26 @@ const faq = [
       <SoonBox tool={tool} cta={{ label: "Try Compress", href: "/compress" }} />
     )}
 
-    {tool.ready && (
-      <div class="info">
-        <section class="panel">
-          <h2>How to use it</h2>
-          {tool.steps && <Steps steps={tool.steps} />}
-        </section>
-        {task ? (
-          <section class="panel">
-            <h2>Good to know</h2>
-            <div class="prose">
-              {task.about.map((p) => (
-                <p>{p}</p>
-              ))}
-            </div>
-          </section>
-        ) : (
-          <section class="panel">
-            <h2>Questions</h2>
-            <Faq items={faq} />
-          </section>
-        )}
-      </div>
-    )}
+    {tool.ready && tool.steps && <InfoCard steps={tool.steps} items={info} />}
 
-    {related.length > 0 && (
-      <section class="block">
-        <div class="sechead primary">
-          <h2>Related tasks</h2>
-          <p>Same tool, ready-made settings.</p>
-        </div>
-        <TaskList tasks={related} icons={icons} />
-      </section>
-    )}
+    <section class="block">
+      <div class="sechead primary">
+        <h2>Related tasks</h2>
+        <p>Ready-made settings for common jobs.</p>
+      </div>
+      <TaskList tasks={related} icons={icons} />
+    </section>
 
     <section class="block">
       <div class="sechead primary">
         <h2>Other tools</h2>
         <p>More ways to edit your images.</p>
       </div>
-      <ToolGrid tools={others} />
+      <ToolCards tools={others} allHref="/" allLabel="All image tools" />
+    </section>
+
+    <section class="block">
+      <MoreAppsCta appId="imgtool" />
     </section>
   </div>
 </BaseLayout>

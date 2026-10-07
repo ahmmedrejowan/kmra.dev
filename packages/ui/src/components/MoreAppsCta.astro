@@ -1,0 +1,30 @@
+---
+import { apps, linkTo, type AppId } from "@kmra/registry";
+import Icon from "./Icon.astro";
+
+interface Props {
+  appId: AppId;
+}
+
+const { appId } = Astro.props;
+const dev = import.meta.env.DEV;
+const others = apps.filter((a) => a.live && a.id !== appId);
+---
+
+{others.map((a) => (
+  <a
+    class="cta-app"
+    href={linkTo(appId, a.id as AppId, "/", dev)}
+    style={`--app:${a.accent.light}`}
+  >
+    <span class="app-mark">{a.short.slice(0, 1)}</span>
+    <span class="cta-text">
+      <small>More from kmra</small>
+      <strong>{a.name}</strong>
+      <span>{a.tagline}</span>
+    </span>
+    <span class="btn cta-btn">
+      Open {a.name} <Icon name="right" />
+    </span>
+  </a>
+))}

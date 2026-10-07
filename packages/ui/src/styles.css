@@ -805,26 +805,36 @@ a.tcard:hover {
 .task {
   border: 1px solid var(--line);
   background: var(--card);
-  border-radius: 12px;
-  padding: 14px 16px;
+  border-radius: 14px;
+  padding: 18px;
   display: flex;
   gap: 14px;
   align-items: center;
+  min-height: 84px;
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s;
 }
 .task:hover {
-  border-color: var(--acc);
+  border-color: color-mix(in srgb, var(--acc) 45%, var(--line));
+  box-shadow: 0 16px 32px -24px color-mix(in srgb, var(--acc) 55%, transparent);
 }
-.task > span:nth-child(2) {
+.task .tile {
+  width: 42px;
+  height: 42px;
+}
+.task-text {
   flex: 1;
   min-width: 0;
 }
-.task small {
+.task-text strong {
+  display: block;
+  font-weight: 600;
+}
+.task-text small {
   display: block;
   color: var(--muted);
-  font-size: 13px;
-}
-.task > .ico {
-  color: var(--muted);
+  font-size: 13.5px;
 }
 .trio {
   display: grid;
@@ -1324,23 +1334,147 @@ a:hover .feat-body > .ico.go {
   font-size: 22px;
   margin: 0 0 14px;
 }
-/* How-to and questions, side by side */
-.info {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
-  margin-top: 56px;
-}
-.panel {
+/* Always-open info card: steps across the top, answers below */
+.infocard {
+  margin-top: 40px;
   background: var(--card);
   border: 1px solid var(--line);
-  border-radius: 16px;
+  border-radius: 18px;
+  overflow: hidden;
+}
+.info-steps {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  background: color-mix(in srgb, var(--acc-soft) 55%, var(--card));
+  border-bottom: 1px solid var(--line);
+}
+.info-steps li {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 22px 24px;
+}
+.info-steps li + li {
+  border-left: 1px solid var(--line);
+}
+.info-steps b {
+  flex: none;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--acc);
+  color: var(--on-acc);
+  display: grid;
+  place-items: center;
+  font-size: 13px;
+  font-weight: 600;
+}
+.info-steps span {
+  padding-top: 3px;
+  font-weight: 500;
+}
+.info-qa {
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+}
+.info-qa div {
+  padding: 22px 24px;
+}
+.info-qa div + div {
+  border-left: 1px solid var(--line);
+}
+.info-qa dt {
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+.info-qa dd {
+  margin: 0;
+  color: var(--muted);
+  font-size: 14.5px;
+}
+
+/* Fixed grid of homepage-style tool cards */
+.tool-cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+.tool-cards .feat {
+  width: auto;
+}
+.feat-all {
+  align-content: center;
+  justify-items: center;
+  gap: 6px;
   padding: 24px;
+  text-align: center;
+  border-style: dashed;
+  background: transparent;
 }
-.panel h2 {
+.feat-all .tile {
+  width: 46px;
+  height: 46px;
+  margin-bottom: 6px;
+}
+.feat-all strong {
+  font-size: 17px;
+}
+
+/* More-apps call to action */
+.cta-app {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 24px 28px;
+  border-radius: 18px;
+  border: 1px solid color-mix(in srgb, var(--app) 30%, var(--line));
+  background:
+    radial-gradient(
+      60% 140% at 100% 50%,
+      color-mix(in srgb, var(--app) 16%, transparent),
+      transparent 70%
+    ),
+    var(--card);
+}
+.cta-app .app-mark {
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
   font-size: 20px;
-  margin: 0 0 16px;
 }
+.cta-text {
+  flex: 1;
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+}
+.cta-text small {
+  color: var(--muted);
+  font-size: 13px;
+}
+.cta-text strong {
+  font-size: 20px;
+  letter-spacing: -0.02em;
+}
+.cta-text span {
+  color: var(--muted);
+}
+.cta-btn {
+  background: var(--app);
+  border-color: var(--app);
+  color: #fff;
+}
+.cta-app:hover .cta-btn .ico {
+  transform: translateX(3px);
+}
+.cta-btn .ico {
+  transition: transform 0.15s;
+}
+
 .steps {
   list-style: none;
   margin: 0;
@@ -2134,7 +2268,8 @@ input[type="range"] {
   .content {
     grid-template-columns: 1fr;
   }
-  .tgrid {
+  .tgrid,
+  .tool-cards {
     grid-template-columns: repeat(2, 1fr);
   }
   .tasks,
@@ -2143,9 +2278,15 @@ input[type="range"] {
     grid-template-columns: 1fr 1fr;
   }
   .dir-cols,
-  .info,
-  .content {
+  .content,
+  .info-steps,
+  .info-qa {
     grid-template-columns: 1fr;
+  }
+  .info-steps li + li,
+  .info-qa div + div {
+    border-left: 0;
+    border-top: 1px solid var(--line);
   }
   main:has(> .screen) {
     grid-template-rows: none;
@@ -2196,8 +2337,12 @@ input[type="range"] {
   .tasks,
   .apps,
   .trio,
-  .dir-cols {
+  .dir-cols,
+  .tool-cards {
     grid-template-columns: 1fr;
+  }
+  .cta-app {
+    flex-wrap: wrap;
   }
   .stage {
     min-height: 300px;

@@ -1,6 +1,6 @@
 ---
 import type { Tool } from "@kmra/registry";
-import Icon from "./Icon.astro";
+import ToolCard from "./ToolCard.astro";
 
 interface Props {
   tools: readonly Tool[];
@@ -19,85 +19,7 @@ const REPEAT = 4;
     <div class:list={["mq-row", { rev: ri % 2 === 1 }]}>
       <div class="mq-track">
         {Array.from({ length: REPEAT }, (_, copy) =>
-          row.map((t) => (
-            <a
-              class="feat"
-              href={`/${t.slug}`}
-              aria-hidden={copy > 0 ? "true" : undefined}
-              tabindex={copy > 0 ? -1 : undefined}
-            >
-              <div class="feat-art" aria-hidden="true">
-                {t.slug === "compress" ? (
-                  <div class="art-bars">
-                    <div>
-                      <span>Before</span>
-                      <i style="width:100%" />
-                      <b>4.2 MB</b>
-                    </div>
-                    <div>
-                      <span>After</span>
-                      <i class="acc" style="width:15%" />
-                      <b>612 KB</b>
-                    </div>
-                  </div>
-                ) : t.slug === "resize" ? (
-                  <div class="art-frames">
-                    <div class="outer">
-                      <span>2400 × 1600</span>
-                      <div class="inner">
-                        <span>1080 × 720</span>
-                      </div>
-                    </div>
-                  </div>
-                ) : t.slug === "convert" ? (
-                  <div class="art-formats">
-                    <span>HEIC</span>
-                    <span>PNG</span>
-                    <Icon name="right" />
-                    <span class="acc">JPG</span>
-                    <span class="acc">WebP</span>
-                  </div>
-                ) : t.slug === "strip-metadata" ? (
-                  <ul class="art-meta">
-                    <li>
-                      <span>Location</span>
-                      <s>23.81°N 90.41°E</s>
-                    </li>
-                    <li>
-                      <span>Camera</span>
-                      <s>iPhone 15 Pro</s>
-                    </li>
-                  </ul>
-                ) : t.slug === "crop" ? (
-                  <div class="art-crop">
-                    <div class="frame">
-                      <span>1:1</span>
-                    </div>
-                  </div>
-                ) : t.slug === "rotate" ? (
-                  <div class="art-rotate">
-                    <span class="card a" />
-                    <Icon name="rotateRight" />
-                    <span class="card b" />
-                  </div>
-                ) : (
-                  <span class="tile">
-                    <Icon name={t.icon} />
-                  </span>
-                )}
-              </div>
-              <div class="feat-body">
-                <span class="tile">
-                  <Icon name={t.icon} />
-                </span>
-                <div>
-                  <strong>{t.name}</strong>
-                  <p>{t.blurb}</p>
-                </div>
-                <Icon name="right" class="ico go" />
-              </div>
-            </a>
-          )),
+          row.map((t) => <ToolCard tool={t} hidden={copy > 0} />),
         )}
       </div>
     </div>

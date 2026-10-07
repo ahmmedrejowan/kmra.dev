@@ -17,11 +17,11 @@ const { tasks, icons } = Astro.props;
       <span class="tile">
         <Icon name={icons[t.tool] ?? "file"} />
       </span>
-      <span>
+      <span class="task-text">
         <strong>{t.name}</strong>
         <small>{t.short}</small>
       </span>
-      <Icon name="right" />
+      <Icon name="right" class="ico go" />
     </a>
   ))}
 </div>
