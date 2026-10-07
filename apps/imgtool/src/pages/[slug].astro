@@ -43,9 +43,7 @@ const crumbs = task
 const related = app.tasks.filter(
   (t) => t.tool === tool.slug && t.slug !== task?.slug,
 );
-const others = app.tools
-  .filter((t) => t.slug !== tool.slug && t.ready)
-  .slice(0, 4);
+const others = app.tools.filter((t) => t.slug !== tool.slug && t.ready);
 const icons = Object.fromEntries(app.tools.map((t) => [t.slug, t.icon]));
 const railTools = app.tools.map(({ slug, name, icon, ready }) => ({
   slug,
@@ -71,26 +69,35 @@ const faq = [
 ---
 
 <BaseLayout appId="imgtool" title={`${title} · kmra`} description={intro}>
-  <div class="wrap">
-    <Crumbs items={crumbs} />
-    <div class="ptitle">
-      <div>
-        <h1>{title}</h1>
-        <p>{intro}</p>
-      </div>
-      {tool.ready && (
-        <div class="modes" role="group" aria-label="Mode">
-          <button type="button" aria-pressed="true">
-            Simple
-          </button>
-          <button type="button" aria-pressed="false" data-advanced>
-            <Icon name="sliders" />
-            Advanced
-          </button>
+  <section class="hero-band tool-head">
+    <div class="wrap">
+      <Crumbs items={crumbs} />
+      <div class="ptitle">
+        <div class="ptitle-main">
+          <span class="tile">
+            <Icon name={tool.icon} />
+          </span>
+          <div>
+            <h1>{title}</h1>
+            <p>{intro}</p>
+          </div>
         </div>
-      )}
+        {tool.ready && (
+          <div class="modes" role="group" aria-label="Mode">
+            <button type="button" aria-pressed="true">
+              Simple
+            </button>
+            <button type="button" aria-pressed="false" data-advanced>
+              <Icon name="sliders" />
+              Advanced
+            </button>
+          </div>
+        )}
+      </div>
     </div>
+  </section>
 
+  <div class="wrap tool-area">
     {tool.ready ? (
       <ImageTool
         client:load
@@ -103,41 +110,43 @@ const faq = [
     )}
 
     {tool.ready && (
-      <div class="content">
-        <div>
+      <div class="info">
+        <section class="panel">
           <h2>How to use it</h2>
           {tool.steps && <Steps steps={tool.steps} />}
-        </div>
+        </section>
         {task ? (
-          <div>
+          <section class="panel">
             <h2>Good to know</h2>
             <div class="prose">
               {task.about.map((p) => (
                 <p>{p}</p>
               ))}
             </div>
-          </div>
+          </section>
         ) : (
-          <div>
+          <section class="panel">
             <h2>Questions</h2>
             <Faq items={faq} />
-          </div>
+          </section>
         )}
       </div>
     )}
 
     {related.length > 0 && (
       <section class="block">
-        <div class="sechead">
+        <div class="sechead primary">
           <h2>Related tasks</h2>
+          <p>Same tool, ready-made settings.</p>
         </div>
         <TaskList tasks={related} icons={icons} />
       </section>
     )}
 
     <section class="block">
-      <div class="sechead">
-        <h2>{tool.ready ? "Other tools" : "Ready now"}</h2>
+      <div class="sechead primary">
+        <h2>Other tools</h2>
+        <p>More ways to edit your images.</p>
       </div>
       <ToolGrid tools={others} />
     </section>

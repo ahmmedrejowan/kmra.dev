@@ -733,8 +733,11 @@ export default function ImageTool({ tool, preset, tools }: Props) {
   /* ---------- Empty state ---------- */
   if (!items.length) {
     return (
-      <div className="dropcard">
-        <div className={`dropzone${dragging ? " over" : ""}`}>
+      <div className="dropcard lg">
+        <div
+          className={`dropzone${dragging ? " over" : ""}`}
+          onClick={() => pickRef.current?.click()}
+        >
           <div className="big">
             <Icon name="upload" />
           </div>
@@ -742,10 +745,14 @@ export default function ImageTool({ tool, preset, tools }: Props) {
           <span className="muted">or paste with ⌘V. Nothing is uploaded.</span>
           <div className="row">
             <button
-              className="btn acc"
+              className="btn acc lg"
               type="button"
-              onClick={() => pickRef.current?.click()}
+              onClick={(e) => {
+                e.stopPropagation();
+                pickRef.current?.click();
+              }}
             >
+              <Icon name="upload" />
               Choose images
             </button>
           </div>

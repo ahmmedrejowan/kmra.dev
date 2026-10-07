@@ -109,7 +109,7 @@ export const apps = [
         group: "Optimize",
         ready: true,
         steps: [
-          "Drop an image, or try the sample.",
+          "Drop or paste an image.",
           "Choose a format and drag Quality, or pick an exact size in KB.",
           "Compare before and after, then download.",
         ],
