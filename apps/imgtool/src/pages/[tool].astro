@@ -1,0 +1,36 @@
+---
+import BaseLayout from "@kmra/ui/layouts/BaseLayout.astro";
+import ToolGrid from "@kmra/ui/components/ToolGrid.astro";
+import ComingSoon from "@kmra/ui/components/ComingSoon.astro";
+import { getApp, type Tool } from "@kmra/registry";
+import Resize from "../components/Resize";
+import Convert from "../components/Convert";
+
+export function getStaticPaths() {
+  return getApp("imgtool").tools.map((tool) => ({
+    params: { tool: tool.slug },
+    props: { tool },
+  }));
+}
+
+interface Props {
+  tool: Tool;
+}
+
+const { tool } = Astro.props;
+const app = getApp("imgtool");
+---
+
+<BaseLayout appId="imgtool" title={tool.name} description={tool.description}>
+  <h1 class="text-3xl font-semibold tracking-tight">{tool.name}</h1>
+  <p class="mt-2 mb-8 text-muted">{tool.description}</p>
+
+  {tool.slug === "resize" && <Resize client:load />}
+  {tool.slug === "convert" && <Convert client:load />}
+  {!tool.ready && <ComingSoon />}
+
+  <h2 class="mt-16 mb-4 text-lg font-semibold">
+    More {app.name.toLowerCase()}
+  </h2>
+  <ToolGrid tools={app.tools} exclude={tool.slug} />
+</BaseLayout>

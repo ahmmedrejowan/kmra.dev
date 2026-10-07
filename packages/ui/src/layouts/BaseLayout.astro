@@ -1,0 +1,62 @@
+---
+import "../styles.css";
+import { apps, appUrl, getApp, type AppId } from "@kmra/registry";
+
+interface Props {
+  appId: AppId;
+  title?: string;
+  description?: string;
+}
+
+const { appId, title, description } = Astro.props;
+const app = getApp(appId);
+const dev = import.meta.env.DEV;
+const pageTitle = title ? `${title} · ${app.name}` : `${app.name} · kmra.dev`;
+const pageDescription = description ?? app.tagline;
+const otherApps = apps.filter((a) => a.id !== appId);
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{pageTitle}</title>
+    <meta name="description" content={pageDescription} />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    {Astro.site && (
+      <link rel="canonical" href={new URL(Astro.url.pathname, Astro.site)} />
+    )}
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={pageDescription} />
+  </head>
+  <body class="flex min-h-dvh flex-col font-sans antialiased">
+    <header class="border-b border-border">
+      <div class="mx-auto flex max-w-5xl items-center justify-between gap-4 px-4 py-3">
+        <a href="/" class="font-semibold tracking-tight">
+          {app.name}
+        </a>
+        <nav
+          aria-label="Other tools"
+          class="flex items-center gap-4 text-sm text-muted"
+        >
+          {otherApps.map((a) => (
+            <a href={appUrl(a.id, "/", dev)} class="hover:text-fg">
+              {a.name}
+            </a>
+          ))}
+        </nav>
+      </div>
+    </header>
+
+    <main class="mx-auto w-full max-w-5xl flex-1 px-4 py-8">
+      <slot />
+    </main>
+
+    <footer class="border-t border-border">
+      <div class="mx-auto max-w-5xl px-4 py-4 text-sm text-muted">
+        Files are processed in your browser and never uploaded.
+      </div>
+    </footer>
+  </body>
+</html>

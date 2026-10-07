@@ -1,0 +1,15 @@
+---
+import BaseLayout from "@kmra/ui/layouts/BaseLayout.astro";
+import ToolGrid from "@kmra/ui/components/ToolGrid.astro";
+import { getApp } from "@kmra/registry";
+
+const app = getApp("pdftool");
+---
+
+<BaseLayout appId="pdftool">
+  <h1 class="text-3xl font-semibold tracking-tight">{app.name}</h1>
+  <p class="mt-2 text-muted">{app.tagline}</p>
+  <div class="mt-8">
+    <ToolGrid tools={app.tools} />
+  </div>
+</BaseLayout>
