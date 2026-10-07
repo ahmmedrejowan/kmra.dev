@@ -14,15 +14,19 @@ import { downloadBlob, formatBytes } from "@kmra/ui/lib/files";
 import { takeFiles } from "@kmra/ui/lib/handoff";
 import { toast } from "@kmra/ui/lib/toast";
 import { engine, type EncodeResult } from "../lib/engine";
+import CropBox from "./CropBox";
 import {
   applyPreset,
   applySize,
+  baseDims,
+  centeredCrop,
   defaults,
   EXT,
   FORMATS,
   isLossy,
   outDims,
   outType,
+  RATIOS,
   SIZES,
   TARGETS,
   type Format,
@@ -62,6 +66,8 @@ const SECTION: Record<string, string> = {
   compress: "compress",
   convert: "format",
   resize: "resize",
+  crop: "crop",
+  rotate: "rotate",
   "strip-metadata": "privacy",
 };
 
@@ -188,6 +194,13 @@ export default function ImageTool({ tool, preset, tools }: Props) {
       window.removeEventListener("paste", onPaste);
     };
   }, [addFiles]);
+
+  // A ratio preset (e.g. "Crop to square") becomes a centred crop once the image size is known.
+  useEffect(() => {
+    if (!item || !s.ratio || s.crop) return;
+    const r = RATIOS.find((x) => x.id === s.ratio);
+    if (r) setS((p) => ({ ...p, crop: centeredCrop(item.w, item.h, r.r) }));
+  }, [item, s.ratio, s.crop]);
 
   /* ---------- Processing ---------- */
   useEffect(() => {
@@ -481,6 +494,97 @@ export default function ImageTool({ tool, preset, tools }: Props) {
       ? set({ keepFormat: true })
       : set({ keepFormat: false, type: v as Format });
 
+  function pickRatio(id: string | null) {
+    const r = RATIOS.find((x) => x.id === id);
+    set({
+      ratio: id,
+      crop: r && item ? centeredCrop(item.w, item.h, r.r) : null,
+    });
+  }
+
+  const cropCtl = (
+    <div className="ctl">
+      <span className="lbl">Aspect ratio</span>
+      <div className="chips">
+        <button
+          type="button"
+          aria-pressed={s.ratio === null}
+          onClick={() => pickRatio(null)}
+        >
+          Free
+        </button>
+        {RATIOS.map((r) => (
+          <button
+            key={r.id}
+            type="button"
+            aria-pressed={s.ratio === r.id}
+            onClick={() => pickRatio(r.id)}
+          >
+            {r.label}
+          </button>
+        ))}
+        {s.crop && (
+          <button
+            type="button"
+            onClick={() => set({ crop: null, ratio: null })}
+          >
+            Reset
+          </button>
+        )}
+      </div>
+      <small className="muted" style={{ display: "block", marginTop: 8 }}>
+        Drag the frame on the image, or use the corners to resize.
+      </small>
+    </div>
+  );
+
+  const turn = (by: 90 | -90) =>
+    set({
+      rotate: ((((s.rotate + by) % 360) + 360) % 360) as Settings["rotate"],
+    });
+  const rotateCtl = (
+    <div className="ctl">
+      <span className="lbl">
+        Rotate and flip <span>{s.rotate}°</span>
+      </span>
+      <div className="tbtns">
+        <button type="button" className="btn sm" onClick={() => turn(-90)}>
+          <Icon name="rotate" />
+          Left
+        </button>
+        <button type="button" className="btn sm" onClick={() => turn(90)}>
+          <Icon name="rotateRight" />
+          Right
+        </button>
+        <button
+          type="button"
+          className="btn sm"
+          aria-pressed={s.flipH}
+          onClick={() => set({ flipH: !s.flipH })}
+        >
+          <Icon name="flipH" />
+          Flip ↔
+        </button>
+        <button
+          type="button"
+          className="btn sm"
+          aria-pressed={s.flipV}
+          onClick={() => set({ flipV: !s.flipV })}
+        >
+          <Icon name="flipV" />
+          Flip ↕
+        </button>
+      </div>
+    </div>
+  );
+
+  const saveAsCtl = (
+    <div className="ctl">
+      <span className="lbl">Save as</span>
+      {seg<string>(formatOpts(true), formatValue, pickFormat, "Save as")}
+    </div>
+  );
+
   function simpleControls(): ReactNode {
     switch (tool) {
       case "compress":
@@ -550,9 +654,44 @@ export default function ImageTool({ tool, preset, tools }: Props) {
             </div>
           </>
         );
+      case "crop":
+        return (
+          <>
+            {cropCtl}
+            {saveAsCtl}
+          </>
+        );
+      case "rotate":
+        return (
+          <>
+            {rotateCtl}
+            {saveAsCtl}
+          </>
+        );
       default:
         return null;
     }
+  }
+
+  /** Crop tool (or Crop focused in the workspace) shows the crop frame instead of the comparison. */
+  const showCrop =
+    tool === "crop"
+      ? !advanced || focus === "crop"
+      : advanced && focus === "crop";
+  function stageContent(it: Item) {
+    if (!showCrop) return compare(it);
+    const r = RATIOS.find((x) => x.id === s.ratio);
+    return (
+      <CropBox
+        url={it.url}
+        alt={`Crop ${it.file.name}`}
+        crop={s.crop}
+        ratio={r ? r.r : null}
+        srcW={it.w}
+        srcH={it.h}
+        onChange={(crop) => set({ crop })}
+      />
+    );
   }
 
   function resultSummary() {
@@ -625,7 +764,7 @@ export default function ImageTool({ tool, preset, tools }: Props) {
   const simple = (
     <div className="toolcard">
       <div className={`stage${dragging ? " over" : ""}`}>
-        {item && compare(item)}
+        {item && stageContent(item)}
         <div className="filebar">
           {items.map((it, i) => (
             <button
@@ -695,8 +834,14 @@ export default function ImageTool({ tool, preset, tools }: Props) {
   );
 
   const [ow, oh] = item ? outDims(item.w, item.h, s) : [0, 0];
+  const [bw, bh] = item ? baseDims(item.w, item.h, s) : [0, 0];
   const recipe = [
-    item && (ow !== item.w || oh !== item.h) ? `Resize ${ow} × ${oh}` : null,
+    s.crop
+      ? `Crop ${Math.round(s.crop.w * (item?.w ?? 0))} × ${Math.round(s.crop.h * (item?.h ?? 0))}`
+      : null,
+    s.rotate ? `Rotate ${s.rotate}°` : null,
+    s.flipH || s.flipV ? "Flip" : null,
+    item && (ow !== bw || oh !== bh) ? `Resize ${ow} × ${oh}` : null,
     isLossy(type)
       ? s.target
         ? `Fit ≤ ${s.target} KB`
@@ -775,7 +920,7 @@ export default function ImageTool({ tool, preset, tools }: Props) {
 
           <div className="ws-center">
             <div className={`stage${dragging ? " over" : ""}`}>
-              {item && compare(item)}
+              {item && stageContent(item)}
             </div>
             <div className="queue">
               {items.map((it, i) => (
@@ -819,6 +964,8 @@ export default function ImageTool({ tool, preset, tools }: Props) {
           </div>
 
           <div className="insp">
+            {section("crop", "Crop", "crop", cropCtl)}
+            {section("rotate", "Rotate & flip", "rotate", rotateCtl)}
             {section("resize", "Resize", "resize", dimsCtl)}
             {section(
               "format",

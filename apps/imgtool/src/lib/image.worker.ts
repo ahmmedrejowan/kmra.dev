@@ -1,5 +1,12 @@
 /// <reference lib="webworker" />
-import { isLossy, outDims, outType, type Settings } from "./settings";
+import {
+  baseDims,
+  hasGeometry,
+  isLossy,
+  outDims,
+  outType,
+  type Settings,
+} from "./settings";
 
 /**
  * Decoding and encoding run here so the page stays responsive.
@@ -29,12 +36,33 @@ export interface EncodeResult {
   over: boolean;
 }
 
+/** Apply crop, rotation and flips. Returns the bitmap itself when there's nothing to do. */
+function geometry(
+  bmp: ImageBitmap,
+  s: Settings,
+): CanvasImageSource & { width: number; height: number } {
+  if (!hasGeometry(s)) return bmp;
+  const [bw, bh] = baseDims(bmp.width, bmp.height, s);
+  const sx = s.crop ? s.crop.x * bmp.width : 0;
+  const sy = s.crop ? s.crop.y * bmp.height : 0;
+  const sw = s.crop ? s.crop.w * bmp.width : bmp.width;
+  const sh = s.crop ? s.crop.h * bmp.height : bmp.height;
+  const c = new OffscreenCanvas(bw, bh);
+  const ctx = c.getContext("2d")!;
+  ctx.translate(bw / 2, bh / 2);
+  ctx.rotate((s.rotate * Math.PI) / 180);
+  ctx.scale(s.flipH ? -1 : 1, s.flipV ? -1 : 1);
+  ctx.drawImage(bmp, sx, sy, sw, sh, -sw / 2, -sh / 2, sw, sh);
+  return c;
+}
+
 async function encodeAt(
   bmp: ImageBitmap,
   s: Settings,
   srcType: string,
   quality: number,
 ) {
+  const src = geometry(bmp, s);
   const [w, h] = outDims(bmp.width, bmp.height, s);
   const type = outType(srcType, s);
   const canvas = new OffscreenCanvas(w, h);
@@ -48,12 +76,12 @@ async function encodeAt(
   }
   if (s.w && s.h && !s.lock) {
     // Fixed frame (social presets): scale to cover and crop the overflow evenly.
-    const scale = Math.max(w / bmp.width, h / bmp.height);
-    const dw = bmp.width * scale;
-    const dh = bmp.height * scale;
-    ctx.drawImage(bmp, (w - dw) / 2, (h - dh) / 2, dw, dh);
+    const scale = Math.max(w / src.width, h / src.height);
+    const dw = src.width * scale;
+    const dh = src.height * scale;
+    ctx.drawImage(src, (w - dw) / 2, (h - dh) / 2, dw, dh);
   } else {
-    ctx.drawImage(bmp, 0, 0, w, h);
+    ctx.drawImage(src, 0, 0, w, h);
   }
   const blob = await canvas.convertToBlob({ type, quality: quality / 100 });
   return { blob, w, h, type };

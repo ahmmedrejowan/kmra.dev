@@ -2,7 +2,7 @@
 import BaseLayout from "@kmra/ui/layouts/BaseLayout.astro";
 import ToolShowcase from "@kmra/ui/components/ToolShowcase.astro";
 import TaskDirectory from "@kmra/ui/components/TaskDirectory.astro";
-import PrivacyBand from "@kmra/ui/components/PrivacyBand.astro";
+import PrivacyStrip from "@kmra/ui/components/PrivacyStrip.astro";
 import AppCards from "@kmra/ui/components/AppCards.astro";
 import Promises from "@kmra/ui/components/Promises.astro";
 import Icon from "@kmra/ui/components/Icon.astro";
@@ -53,30 +53,31 @@ const icons = Object.fromEntries(app.tools.map((t) => [t.slug, t.icon]));
       </div>
       <ToolShowcase tools={app.tools} />
     </section>
-  </div>
 
-  <TaskDirectory
-    tasks={app.tasks}
-    icons={icons}
-    title="Popular tasks"
-    intro="Ready-made settings for jobs people do every day."
-  />
-
-  <PrivacyBand
-    file="beach-sunset.jpg"
-    page="compress"
-    engine="image.worker.js"
-  />
-
-  <div class="wrap">
     <section class="block">
-      <div class="sechead quiet">
-        <h2>More from kmra</h2>
-        <p>Same privacy, different files.</p>
+      <div class="sechead primary">
+        <h2>Popular tasks</h2>
+        <p>Ready-made settings for everyday jobs.</p>
       </div>
-      <AppCards appId="imgtool" others />
+      <TaskDirectory tasks={app.tasks} icons={icons} />
+    </section>
+
+    <section class="block">
+      <PrivacyStrip />
     </section>
   </div>
+
+  <section class="band-alt">
+    <div class="wrap">
+      <section class="block">
+        <div class="sechead quiet">
+          <h2>More from kmra</h2>
+          <p>Same privacy, different files.</p>
+        </div>
+        <AppCards appId="imgtool" others />
+      </section>
+    </div>
+  </section>
 </BaseLayout>
 
 <script>

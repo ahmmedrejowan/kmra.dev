@@ -27,6 +27,55 @@ export interface Settings {
   size: string | null;
   /** Save in the original format instead of `type` */
   keepFormat: boolean;
+  /** Clockwise rotation in degrees */
+  rotate: 0 | 90 | 180 | 270;
+  flipH: boolean;
+  flipV: boolean;
+  /** Crop area as fractions of the original image (before rotation), or null for the whole image */
+  crop: Crop | null;
+  /** Locked crop aspect ratio id from RATIOS, or null for free */
+  ratio: string | null;
+}
+
+export interface Crop {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}
+
+export const RATIOS: { id: string; label: string; r: number }[] = [
+  { id: "1:1", label: "1:1", r: 1 },
+  { id: "4:5", label: "4:5", r: 4 / 5 },
+  { id: "3:2", label: "3:2", r: 3 / 2 },
+  { id: "16:9", label: "16:9", r: 16 / 9 },
+  { id: "9:16", label: "9:16", r: 9 / 16 },
+];
+
+/** Largest centred crop with the given pixel aspect ratio. */
+export function centeredCrop(srcW: number, srcH: number, ratio: number): Crop {
+  const imgRatio = srcW / srcH;
+  if (ratio > imgRatio) {
+    const h = imgRatio / ratio;
+    return { x: 0, y: (1 - h) / 2, w: 1, h };
+  }
+  const w = ratio / imgRatio;
+  return { x: (1 - w) / 2, y: 0, w, h: 1 };
+}
+
+/** Size after crop and rotation, before any resize. */
+export function baseDims(
+  srcW: number,
+  srcH: number,
+  s: Settings,
+): [number, number] {
+  const w = s.crop ? Math.max(1, Math.round(srcW * s.crop.w)) : srcW;
+  const h = s.crop ? Math.max(1, Math.round(srcH * s.crop.h)) : srcH;
+  return s.rotate === 90 || s.rotate === 270 ? [h, w] : [w, h];
+}
+
+export function hasGeometry(s: Settings): boolean {
+  return !!s.crop || s.rotate !== 0 || s.flipH || s.flipV;
 }
 
 export interface SizePreset {
@@ -57,9 +106,14 @@ export function defaults(tool: string): Settings {
     lock: true,
     size: null,
     keepFormat: false,
+    rotate: 0,
+    flipH: false,
+    flipV: false,
+    crop: null,
+    ratio: null,
   };
   if (tool === "resize") return { ...base, keepFormat: true, quality: 90 };
-  if (tool === "strip-metadata")
+  if (tool === "strip-metadata" || tool === "crop" || tool === "rotate")
     return { ...base, keepFormat: true, quality: 92 };
   return base;
 }
@@ -82,11 +136,13 @@ export function applyPreset(s: Settings, preset?: Preset): Settings {
   return out;
 }
 
+/** Final output size: crop and rotation first, then any resize. */
 export function outDims(
-  srcW: number,
-  srcH: number,
+  origW: number,
+  origH: number,
   s: Settings,
 ): [number, number] {
+  const [srcW, srcH] = baseDims(origW, origH, s);
   const p = s.size ? SIZES.find((x) => x.id === s.size) : undefined;
   if (p?.pct)
     return [

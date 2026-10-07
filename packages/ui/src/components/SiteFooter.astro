@@ -8,6 +8,8 @@ interface Props {
 const { appId } = Astro.props;
 const app = getApp(appId);
 const dev = import.meta.env.DEV;
+// Only apps that are live are listed; others appear once they launch.
+const liveApps = apps.filter((a) => a.live);
 const year = new Date().getFullYear();
 const readyTools = app.tools.filter((t) => t.ready);
 const toolList = readyTools.length ? readyTools : app.tools;
@@ -67,7 +69,7 @@ const otherLive = apps.filter((a) => a.live && a.id !== appId);
       <div>
         <strong>Apps</strong>
         <ul>
-          {apps.map((a) => (
+          {liveApps.map((a) => (
             <li>
               {a.live ? (
                 <a href={linkTo(appId, a.id as AppId, "/", dev)}>{a.name}</a>

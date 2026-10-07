@@ -167,7 +167,12 @@ export const apps = [
         blurb: "Free or fixed ratio",
         icon: "crop",
         group: "Edit",
-        ready: false,
+        ready: true,
+        steps: [
+          "Drop an image.",
+          "Pick a ratio like 1:1 or 16:9, or keep it free, then drag the frame.",
+          "Download the cropped image.",
+        ],
       },
       {
         slug: "rotate",
@@ -177,27 +182,12 @@ export const apps = [
         blurb: "Fix sideways photos",
         icon: "rotate",
         group: "Edit",
-        ready: false,
-      },
-      {
-        slug: "remove-background",
-        title: "Remove image backgrounds",
-        name: "Remove background",
-        description: "Cut out the subject. The AI model runs on your device.",
-        blurb: "AI cut-out on device",
-        icon: "magic",
-        group: "AI on your device",
-        ready: false,
-      },
-      {
-        slug: "upscale",
-        title: "Upscale images",
-        name: "Upscale",
-        description: "Enlarge small images while keeping detail.",
-        blurb: "Enlarge with detail",
-        icon: "zap",
-        group: "AI on your device",
-        ready: false,
+        ready: true,
+        steps: [
+          "Drop an image.",
+          "Rotate left or right, or flip it.",
+          "Download the fixed image.",
+        ],
       },
     ],
     tasks: [
@@ -272,6 +262,20 @@ export const apps = [
           "Instagram shows posts at 1080 pixels wide. Portrait (1080 × 1350) takes up the most space in the feed.",
         ],
         preset: { size: "ig-portrait" },
+      },
+      {
+        slug: "crop-to-square",
+        tool: "crop",
+        name: "Crop to square",
+        short: "Profile pictures, 1:1",
+        group: "For social",
+        title: "Crop an image to a square",
+        intro:
+          "Make a 1:1 square for profile pictures and posts. Drag the frame to choose what stays.",
+        about: [
+          "Most profile pictures are shown as squares or circles, so a centred 1:1 crop avoids awkward automatic cropping.",
+        ],
+        preset: { ratio: "1:1" },
       },
       {
         slug: "youtube-thumbnail",

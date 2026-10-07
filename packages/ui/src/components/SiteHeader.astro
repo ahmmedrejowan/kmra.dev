@@ -16,6 +16,8 @@ interface Props {
 const { appId } = Astro.props;
 const app = getApp(appId);
 const dev = import.meta.env.DEV;
+// Only apps that are live are listed; others appear once they launch.
+const liveApps = apps.filter((a) => a.live);
 const toolGroups = groupBy(app.tools);
 const taskGroups = groupBy(app.tasks);
 const popular = app.tasks.slice(0, 3);
@@ -107,7 +109,7 @@ const appHref = (a: App) =>
             Apps <Icon name="down" />
           </button>
           <div class="mega single" id="m-apps" hidden>
-            {apps.map((a) => {
+            {liveApps.map((a) => {
               const inner = (
                 <>
                   <span
@@ -196,7 +198,7 @@ const appHref = (a: App) =>
         </>
       )}
       <h6>Apps</h6>
-      {apps.map((a) => {
+      {liveApps.map((a) => {
         const href = appHref(a);
         return href ? (
           <a href={href}>

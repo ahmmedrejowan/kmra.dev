@@ -5,40 +5,35 @@ import Icon from "./Icon.astro";
 interface Props {
   tasks: readonly Task[];
   icons: Record<string, IconName>;
-  title: string;
-  intro: string;
 }
 
-const { tasks, icons, title, intro } = Astro.props;
+const { tasks, icons } = Astro.props;
 const groups = groupBy(tasks);
 ---
 
-<section class="band-soft">
-  <div class="wrap dir">
-    <div class="dir-head">
-      <h2>{title}</h2>
-      <p>{intro}</p>
-    </div>
-    <div class="dir-cols">
-      {groups.map(([group, list]) => (
-        <div>
-          <h3>{group}</h3>
-          <ul>
-            {list.map((t) => (
-              <li>
-                <a href={`/${t.slug}`}>
-                  <Icon name={icons[t.tool] ?? "file"} />
-                  <span>
-                    <strong>{t.name}</strong>
-                    <small>{t.short}</small>
-                  </span>
-                  <Icon name="right" class="ico go" />
-                </a>
-              </li>
-            ))}
-          </ul>
-        </div>
-      ))}
-    </div>
-  </div>
-</section>
+<div class="dir-cols">
+  {groups.map(([group, list]) => (
+    <section class="dir-panel">
+      <header>
+        <span class="tile">
+          <Icon name={icons[list[0]!.tool] ?? "file"} />
+        </span>
+        <h3>{group}</h3>
+        <small>{list.length}</small>
+      </header>
+      <ul>
+        {list.map((t) => (
+          <li>
+            <a href={`/${t.slug}`}>
+              <span>
+                <strong>{t.name}</strong>
+                <small>{t.short}</small>
+              </span>
+              <Icon name="right" class="ico go" />
+            </a>
+          </li>
+        ))}
+      </ul>
+    </section>
+  ))}
+</div>
