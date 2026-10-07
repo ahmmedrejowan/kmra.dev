@@ -572,7 +572,7 @@ main:has(> .screen:last-child) + footer.site {
 /* Last homepage block: tasks, then the privacy card, then other apps */
 .stack {
   display: grid;
-  gap: 28px;
+  gap: 48px;
 }
 .safe {
   display: grid;
