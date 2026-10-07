@@ -13,16 +13,24 @@ import type { IconKey } from "@kmra/ui/lib/icons";
 import { downloadBlob, formatBytes } from "@kmra/ui/lib/files";
 import { takeFiles } from "@kmra/ui/lib/handoff";
 import { toast } from "@kmra/ui/lib/toast";
-import { formatKeys, matches, typing } from "@kmra/ui/lib/keys";
+import {
+  formatKeys,
+  isTouch,
+  matches,
+  pasteHint,
+  typing,
+} from "@kmra/ui/lib/keys";
 import { engine, type EncodeResult } from "../lib/engine";
 import CropBox from "./CropBox";
 import {
+  applyForm,
   applyPreset,
   applySize,
   baseDims,
   centeredCrop,
   defaults,
   EXT,
+  FORM_PRESETS,
   FORMATS,
   isLossy,
   outDims,
@@ -71,6 +79,7 @@ const SECTION: Record<string, string> = {
   crop: "crop",
   rotate: "rotate",
   "strip-metadata": "privacy",
+  "form-size": "resize",
 };
 
 function outName(file: File, type: string): string {
@@ -95,9 +104,20 @@ export default function ImageTool({ tool, preset, tools }: Props) {
   const [zoom, setZoom] = useState<number | null>(null);
   const shownRef = useRef<HTMLImageElement | null>(null);
   /** Shortcut labels for this OS (⌘ on Apple devices, Ctrl elsewhere); set after mount */
-  const [keys, setKeys] = useState({ paste: "⌘V", mod: "⌘" });
+  const [keys, setKeys] = useState({
+    paste: "⌘V",
+    mod: "⌘",
+    hint: "or paste with ⌘V. Nothing is uploaded.",
+    touch: false,
+  });
   useEffect(
-    () => setKeys({ paste: formatKeys("mod+V"), mod: formatKeys("mod") }),
+    () =>
+      setKeys({
+        paste: formatKeys("mod+V"),
+        mod: formatKeys("mod"),
+        hint: pasteHint(),
+        touch: isTouch(),
+      }),
     [],
   );
   const [zipping, setZipping] = useState(false);
@@ -597,7 +617,7 @@ export default function ImageTool({ tool, preset, tools }: Props) {
             key={String(v)}
             type="button"
             aria-pressed={s.target === v}
-            onClick={() => set({ target: v })}
+            onClick={() => set({ target: v, form: null })}
           >
             {v
               ? `${short ? "≤" : "Under"} ${v} KB`
@@ -612,7 +632,7 @@ export default function ImageTool({ tool, preset, tools }: Props) {
 
   function setDim(k: "w" | "h", raw: string) {
     const v = raw ? Math.max(1, Math.round(+raw)) : null;
-    const patch: Partial<Settings> = { [k]: v, size: null };
+    const patch: Partial<Settings> = { [k]: v, size: null, form: null };
     if (s.lock && v && item) {
       const other = k === "w" ? "h" : "w";
       patch[other] =
@@ -789,6 +809,25 @@ export default function ImageTool({ tool, preset, tools }: Props) {
     </div>
   );
 
+  const formCtl = (
+    <div className="ctl">
+      <span className="lbl">Form presets</span>
+      <div className="presets">
+        {FORM_PRESETS.map((f) => (
+          <button
+            key={f.id}
+            type="button"
+            aria-pressed={s.form === f.id}
+            onClick={() => setS((p) => applyForm(p, f.id))}
+          >
+            <strong>{f.label}</strong>
+            <small>{f.hint}</small>
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+
   function simpleControls(): ReactNode {
     switch (tool) {
       case "compress":
@@ -856,6 +895,14 @@ export default function ImageTool({ tool, preset, tools }: Props) {
                 "Save as",
               )}
             </div>
+          </>
+        );
+      case "form-size":
+        return (
+          <>
+            {formCtl}
+            {dimsCtl}
+            {targetCtl()}
           </>
         );
       case "crop":
@@ -985,9 +1032,7 @@ export default function ImageTool({ tool, preset, tools }: Props) {
           <Icon name="upload" />
         </div>
         <strong>Drop images here</strong>
-        <span className="muted">
-          or paste with {keys.paste}. Nothing is uploaded.
-        </span>
+        <span className="muted">{keys.hint}</span>
         <div className="row">
           <button
             className="btn acc lg"
@@ -1229,8 +1274,9 @@ export default function ImageTool({ tool, preset, tools }: Props) {
                   </span>
                   <strong>Drop images to start</strong>
                   <span className="muted">
-                    Or click to choose files, or paste with {keys.paste}.
-                    Settings apply to every file.
+                    {keys.touch
+                      ? "Or tap to choose files. Settings apply to every file."
+                      : `Or click to choose files, or paste with ${keys.paste}. Settings apply to every file.`}
                   </span>
                 </button>
               )}
@@ -1291,7 +1337,15 @@ export default function ImageTool({ tool, preset, tools }: Props) {
           <div className="insp">
             {section("crop", "Crop", "crop", cropCtl)}
             {section("rotate", "Rotate & flip", "rotate", rotateCtl)}
-            {section("resize", "Resize", "resize", dimsCtl)}
+            {section(
+              "resize",
+              "Resize",
+              "resize",
+              <>
+                {dimsCtl}
+                {formCtl}
+              </>,
+            )}
             {section(
               "format",
               "Format",

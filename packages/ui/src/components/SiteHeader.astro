@@ -22,7 +22,6 @@ const dev = import.meta.env.DEV;
 const liveApps = apps.filter((a) => a.live);
 const toolGroups = groupBy(app.tools);
 const taskGroups = groupBy(app.tasks);
-const popular = app.tasks.slice(0, 3);
 const toolIcon = (slug: string) =>
   app.tools.find((t) => t.slug === slug)?.icon ?? "file";
 const appHref = (a: App) =>
@@ -65,22 +64,6 @@ const appHref = (a: App) =>
                 ))}
               </div>
             ))}
-            {popular.length > 0 && (
-              <div class="feature">
-                <h6>Popular tasks</h6>
-                {popular.map((t) => (
-                  <a class="mi" href={`/${t.slug}`}>
-                    <span class="tile">
-                      <Icon name={toolIcon(t.tool)} />
-                    </span>
-                    <span>
-                      <strong>{t.name}</strong>
-                      <small>{t.short}</small>
-                    </span>
-                  </a>
-                ))}
-              </div>
-            )}
           </div>
         </div>
 

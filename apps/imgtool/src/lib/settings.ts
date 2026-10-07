@@ -35,6 +35,8 @@ export interface Settings {
   crop: Crop | null;
   /** Locked crop aspect ratio id from RATIOS, or null for free */
   ratio: string | null;
+  /** Selected form preset id (FORM_PRESETS), or null */
+  form: string | null;
 }
 
 export interface Crop {
@@ -96,6 +98,80 @@ export const SIZES: SizePreset[] = [
 
 export const TARGETS = [50, 100, 200, 500];
 
+/**
+ * Exact pixel size + file size limits that online forms ask for (BD job portals such as Teletalk,
+ * BPSC, bank jobs and university admissions use 300×300 ≤100 KB photos and 300×80 ≤60 KB signatures).
+ */
+export interface FormPreset {
+  id: string;
+  label: string;
+  hint: string;
+  w: number;
+  h: number;
+  /** KB */
+  target: number;
+}
+
+export const FORM_PRESETS: FormPreset[] = [
+  {
+    id: "job-photo",
+    label: "Job photo",
+    hint: "300 × 300, under 100 KB",
+    w: 300,
+    h: 300,
+    target: 100,
+  },
+  {
+    id: "job-signature",
+    label: "Signature",
+    hint: "300 × 80, under 60 KB",
+    w: 300,
+    h: 80,
+    target: 60,
+  },
+  {
+    id: "passport",
+    label: "Passport / visa",
+    hint: "35 × 45 mm (413 × 531), under 200 KB",
+    w: 413,
+    h: 531,
+    target: 200,
+  },
+  {
+    id: "us-visa",
+    label: "US visa / DV",
+    hint: "600 × 600, under 240 KB",
+    w: 600,
+    h: 600,
+    target: 240,
+  },
+  {
+    id: "admission-photo",
+    label: "Admission photo",
+    hint: "300 × 400, under 100 KB",
+    w: 300,
+    h: 400,
+    target: 100,
+  },
+];
+
+/** Apply a form preset: exact size (cover-cropped to fill), JPEG, best quality under the limit. */
+export function applyForm(s: Settings, id: string): Settings {
+  const f = FORM_PRESETS.find((x) => x.id === id);
+  if (!f) return s;
+  return {
+    ...s,
+    form: id,
+    w: f.w,
+    h: f.h,
+    lock: false,
+    size: null,
+    target: f.target,
+    type: "image/jpeg",
+    keepFormat: false,
+  };
+}
+
 export function defaults(tool: string): Settings {
   const base: Settings = {
     type: "image/jpeg",
@@ -111,8 +187,10 @@ export function defaults(tool: string): Settings {
     flipV: false,
     crop: null,
     ratio: null,
+    form: null,
   };
   if (tool === "resize") return { ...base, keepFormat: true, quality: 90 };
+  if (tool === "form-size") return applyForm(base, "job-photo");
   if (
     tool === "strip-metadata" ||
     tool === "crop" ||
@@ -136,6 +214,7 @@ export function applyPreset(s: Settings, preset?: Preset): Settings {
   let out = { ...s };
   for (const [k, v] of Object.entries(preset)) {
     if (k === "size" && typeof v === "string") out = applySize(out, v);
+    else if (k === "form" && typeof v === "string") out = applyForm(out, v);
     else (out as Record<string, unknown>)[k] = v;
   }
   return out;

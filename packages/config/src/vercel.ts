@@ -42,6 +42,12 @@ export function appConfig(): VercelConfig {
         },
         { key: "Cross-Origin-Opener-Policy", value: "same-origin" },
       ]),
+      // The service worker must always be re-checked so new deploys reach offline users.
+      routes.cacheControl("/sw.js", {
+        public: true,
+        maxAge: "0s",
+        mustRevalidate: true,
+      }),
       // Generated OG images and icons change only on deploy.
       routes.cacheControl("/og/(.*)", { public: true, maxAge: "1 day" }),
       routes.cacheControl(

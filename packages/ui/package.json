@@ -9,7 +9,8 @@
     "./components/*.astro": "./src/components/*.astro",
     "./components/*": "./src/components/*.tsx",
     "./lib/*": "./src/lib/*.ts",
-    "./package.json": "./package.json"
+    "./package.json": "./package.json",
+    "./integration": "./src/integration.ts"
   },
   "scripts": {
     "check": "tsc --noEmit"

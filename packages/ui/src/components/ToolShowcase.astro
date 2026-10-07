@@ -10,18 +10,45 @@ const { tools } = Astro.props;
 const live = tools.filter((t) => t.ready);
 const half = Math.ceil(live.length / 2);
 const rows = [live.slice(0, half), live.slice(half)].filter((r) => r.length);
-// Each row is repeated so the track is at least twice the viewport; it then scrolls by half its width.
-const REPEAT = 4;
 ---
 
+<!--
+  Each tool appears once in the HTML. The scrolling copies are added in the browser (below),
+  hidden from assistive tech and the keyboard, so crawlers and screen readers see every tool once.
+-->
 <div class="marquee">
   {rows.map((row, ri) => (
     <div class:list={["mq-row", { rev: ri % 2 === 1 }]}>
       <div class="mq-track">
-        {Array.from({ length: REPEAT }, (_, copy) =>
-          row.map((t) => <ToolCard tool={t} hidden={copy > 0} />),
-        )}
+        {row.map((t) => (
+          <ToolCard tool={t} />
+        ))}
       </div>
     </div>
   ))}
 </div>
+
+<script>
+  if (!matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    document.querySelectorAll<HTMLElement>(".mq-track").forEach((track) => {
+      const originals = [...track.children];
+      // Enough copies that the track is at least twice the screen width, then it loops by half
+      const copies = Math.max(
+        1,
+        Math.ceil((window.innerWidth * 2) / Math.max(track.scrollWidth, 1)),
+      );
+      for (let i = 0; i < copies * 2 - 1; i++) {
+        for (const el of originals) {
+          const clone = el.cloneNode(true) as HTMLElement;
+          clone.setAttribute("aria-hidden", "true");
+          clone.setAttribute("tabindex", "-1");
+          clone
+            .querySelectorAll("a, button")
+            .forEach((n) => n.setAttribute("tabindex", "-1"));
+          track.appendChild(clone);
+        }
+      }
+      track.classList.add("looping");
+    });
+  }
+</script>

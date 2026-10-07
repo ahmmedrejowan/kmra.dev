@@ -14,6 +14,21 @@ export function isApple(): boolean {
   );
 }
 
+/** Phones and tablets without a keyboard: shortcut hints are hidden there. */
+export function isTouch(): boolean {
+  return (
+    typeof matchMedia !== "undefined" &&
+    matchMedia("(hover: none) and (pointer: coarse)").matches
+  );
+}
+
+/** "or paste with ⌘V. Nothing is uploaded." on desktop, "Nothing is uploaded." on touch devices. */
+export function pasteHint(): string {
+  return isTouch()
+    ? "Nothing is uploaded."
+    : `or paste with ${formatKeys("mod+V")}. Nothing is uploaded.`;
+}
+
 const NAMES: Record<string, [apple: string, other: string]> = {
   mod: ["⌘", "Ctrl"],
   shift: ["⇧", "Shift"],

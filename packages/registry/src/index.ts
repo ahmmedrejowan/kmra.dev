@@ -171,6 +171,22 @@ export const apps = [
         ],
       },
       {
+        slug: "form-size",
+        title: "Exact size for online forms",
+        name: "Exact size for forms",
+        description:
+          "Exact pixel size and file size for job, exam, passport and visa forms.",
+        blurb: "Pixels + KB in one click",
+        icon: "file",
+        group: "Forms",
+        ready: true,
+        steps: [
+          "Drop your photo or signature.",
+          "Pick the form preset, or type the size and KB limit the form asks for.",
+          "Download. The image is cropped to fill the size and kept just under the limit.",
+        ],
+      },
+      {
         slug: "crop",
         title: "Crop images",
         name: "Crop",
@@ -230,6 +246,62 @@ export const apps = [
           "Signature fields often need tiny files. A plain signature on white paper fits easily under 50 KB as a JPEG.",
         ],
         preset: { type: "image/jpeg", target: 50 },
+      },
+      {
+        slug: "photo-300x300-100kb",
+        tool: "form-size",
+        name: "Photo 300×300, 100 KB",
+        short: "Job and exam applications",
+        group: "For forms",
+        title: "Resize a photo to 300×300 under 100 KB",
+        intro:
+          "Most Bangladeshi job portals (Teletalk, BPSC, bank jobs) want a 300×300 photo under 100 KB. Drop your photo and download one that's accepted.",
+        about: [
+          "The photo is cropped to a centred square, resized to exactly 300×300 pixels and saved as a JPEG at the best quality that stays under 100 KB.",
+        ],
+        preset: { form: "job-photo" },
+      },
+      {
+        slug: "signature-300x80-60kb",
+        tool: "form-size",
+        name: "Signature 300×80, 60 KB",
+        short: "Signature upload size",
+        group: "For forms",
+        title: "Resize a signature to 300×80 under 60 KB",
+        intro:
+          "Make a scanned or photographed signature exactly 300×80 pixels and under 60 KB, as most job and admission forms require.",
+        about: [
+          "Crop close to your signature first for the best result. For a cleaner white background, use the signature cleaner.",
+        ],
+        preset: { form: "job-signature" },
+      },
+      {
+        slug: "passport-photo-size",
+        tool: "form-size",
+        name: "Passport photo size",
+        short: "35×45 mm at 300 dpi",
+        group: "For forms",
+        title: "Resize a photo to passport size (35×45 mm)",
+        intro:
+          "Get a 35×45 mm photo at print quality (413×531 pixels) for passport and visa forms.",
+        about: [
+          "35×45 mm is the standard for most passports and visas. Keep your head centred with some space above it.",
+        ],
+        preset: { form: "passport" },
+      },
+      {
+        slug: "us-visa-photo",
+        tool: "form-size",
+        name: "US visa / DV photo",
+        short: "600×600, under 240 KB",
+        group: "For forms",
+        title: "Make a US visa or DV lottery photo (600×600)",
+        intro:
+          "The US visa and DV lottery forms need a square photo of 600×600 pixels under 240 KB. This makes one in a click.",
+        about: [
+          "The photo is cropped to a centred square. Use a plain light background, as the rules require.",
+        ],
+        preset: { form: "us-visa" },
       },
       {
         slug: "png-to-jpg",

@@ -10,3 +10,6 @@ dist/
 !.env.example
 .DS_Store
 
+
+# Local test images (downloaded, never committed)
+apps/*/public/test-fixtures/

@@ -144,7 +144,7 @@ const paletteItems: PaletteItem[] = [
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <link rel="manifest" href="/manifest.webmanifest" />
-    <link rel="sitemap" href="/sitemap-index.xml" />
+    <link rel="sitemap" type="application/xml" href="/sitemap.xml" />
 
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content={`${brand} by kmra.dev`} />
@@ -185,6 +185,17 @@ const paletteItems: PaletteItem[] = [
     <CommandPalette client:idle items={paletteItems} />
     <Shortcuts client:idle />
     <Analytics />
+    <script is:inline>
+      // Offline support: the service worker caches every page and tool (production only)
+      if (
+        "serviceWorker" in navigator &&
+        !/^(localhost|127\.0\.0\.1)$/.test(location.hostname)
+      ) {
+        addEventListener("load", () =>
+          navigator.serviceWorker.register("/sw.js").catch(() => {}),
+        );
+      }
+    </script>
     <script>
       // Show shortcut hints with the visitor's keys (⌘ on Apple devices, Ctrl elsewhere)
       import { formatKeys } from "../lib/keys";

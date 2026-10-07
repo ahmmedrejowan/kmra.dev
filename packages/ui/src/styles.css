@@ -1066,9 +1066,12 @@ a:hover .feat-body > .ico.go {
   gap: 14px;
   width: max-content;
   padding-block: 4px;
+}
+/* Animates only once the copies exist, so a single set never jumps */
+.mq-track.looping {
   animation: mq 60s linear infinite;
 }
-.mq-row.rev .mq-track {
+.mq-row.rev .mq-track.looping {
   animation-duration: 72s;
   animation-direction: reverse;
 }
@@ -2451,6 +2454,36 @@ input[type="range"] {
   color: var(--acc);
   background: var(--acc-soft);
 }
+.presets {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+.presets button {
+  display: grid;
+  gap: 1px;
+  text-align: left;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--card);
+  cursor: pointer;
+}
+.presets button:hover {
+  border-color: color-mix(in srgb, var(--acc) 45%, var(--line));
+}
+.presets button[aria-pressed="true"] {
+  border-color: var(--acc);
+  background: var(--acc-soft);
+}
+.presets strong {
+  font-size: 13.5px;
+  font-weight: 600;
+}
+.presets small {
+  font-size: 12px;
+  color: var(--muted);
+}
 .result {
   margin-top: auto;
   border-top: 1px solid var(--line);
@@ -2990,6 +3023,13 @@ input[type="range"] {
     padding: 14px 14px 60px;
   }
   .ws-top .hide-sm {
+    display: none;
+  }
+}
+/* Touch devices: no keyboard, so no shortcut hints */
+@media (hover: none) and (pointer: coarse) {
+  kbd[data-keys],
+  .kbtn kbd {
     display: none;
   }
 }

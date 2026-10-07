@@ -51,7 +51,7 @@ export function manifest(appId: AppId) {
 export function robots(appId: AppId) {
   const origin = appOrigin(appId);
   return new Response(
-    `User-agent: *\nAllow: /\n\nSitemap: ${origin}/sitemap-index.xml\n`,
+    `User-agent: *\nAllow: /\n\nSitemap: ${origin}/sitemap.xml\n`,
     {
       headers: { "Content-Type": "text/plain" },
     },

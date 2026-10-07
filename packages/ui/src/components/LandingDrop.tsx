@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { stashFiles } from "../lib/handoff";
 import { toast } from "../lib/toast";
-import { formatKeys } from "../lib/keys";
+import { pasteHint } from "../lib/keys";
 import { Icon } from "./Icon";
 
 interface Props {
@@ -31,8 +31,8 @@ export default function LandingDrop({
 }: Props) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [over, setOver] = useState(false);
-  const [pasteKeys, setPasteKeys] = useState("⌘V");
-  useEffect(() => setPasteKeys(formatKeys("mod+V")), []);
+  const [hint, setHint] = useState("or paste with ⌘V. Nothing is uploaded.");
+  useEffect(() => setHint(pasteHint()), []);
   const takeRef = useRef<(list: FileList | File[] | null) => Promise<void>>(
     async () => {},
   );
@@ -100,9 +100,7 @@ export default function LandingDrop({
           <Icon name="upload" />
         </div>
         <strong>{over ? "Drop to start" : label}</strong>
-        <span className="muted">
-          or paste with {pasteKeys}. Nothing is uploaded.
-        </span>
+        <span className="muted">{hint}</span>
         <div className="row">
           <button
             className={`btn acc${large ? " lg" : ""}`}
