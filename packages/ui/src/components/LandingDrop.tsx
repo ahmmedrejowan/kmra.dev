@@ -12,8 +12,6 @@ interface Props {
   target?: string;
   /** Shown instead of opening a tool when `target` is missing */
   unavailable?: string;
-  /** Offer a built-in sample */
-  sample?: boolean;
 }
 
 /** Landing-page drop area: files are handed to the tool page through IndexedDB, never uploaded. */
@@ -23,7 +21,6 @@ export default function LandingDrop({
   formats,
   target,
   unavailable,
-  sample,
 }: Props) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [over, setOver] = useState(false);
@@ -46,6 +43,13 @@ export default function LandingDrop({
     await stashFiles(files);
     window.location.href = target;
   }
+
+  // "Upload" buttons elsewhere on the page open this picker.
+  useEffect(() => {
+    const open = () => inputRef.current?.click();
+    window.addEventListener("kmra:upload", open);
+    return () => window.removeEventListener("kmra:upload", open);
+  }, []);
 
   // Paste anywhere on the landing page.
   useEffect(() => {
@@ -87,11 +91,6 @@ export default function LandingDrop({
           >
             Choose files
           </button>
-          {sample && target && (
-            <a className="btn" href={`${target}?sample`}>
-              Try a sample
-            </a>
-          )}
         </div>
         <div className="formats">
           {formats.map((f) => (

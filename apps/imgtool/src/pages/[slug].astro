@@ -46,6 +46,7 @@ const related = app.tasks.filter(
 const others = app.tools
   .filter((t) => t.slug !== tool.slug && t.ready)
   .slice(0, 4);
+const icons = Object.fromEntries(app.tools.map((t) => [t.slug, t.icon]));
 const railTools = app.tools.map(({ slug, name, icon, ready }) => ({
   slug,
   name,
@@ -130,7 +131,7 @@ const faq = [
         <div class="sechead">
           <h2>Related tasks</h2>
         </div>
-        <TaskList tasks={related} />
+        <TaskList tasks={related} icons={icons} />
       </section>
     )}
 

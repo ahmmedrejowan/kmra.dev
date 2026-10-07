@@ -30,6 +30,8 @@ export interface Tool {
   /** Page H1; defaults to `name` */
   title?: string;
   description: string;
+  /** Short line for menus (about 3–5 words) */
+  blurb: string;
   icon: IconName;
   /** Menu group, e.g. "Optimize" */
   group: string;
@@ -102,6 +104,7 @@ export const apps = [
         name: "Compress",
         description:
           "Smaller files at the quality you choose, or an exact size.",
+        blurb: "Smaller files, same look",
         icon: "compress",
         group: "Optimize",
         ready: true,
@@ -116,6 +119,7 @@ export const apps = [
         title: "Convert images",
         name: "Convert",
         description: "Switch between JPEG, PNG and WebP.",
+        blurb: "JPEG, PNG and WebP",
         icon: "convert",
         group: "Optimize",
         ready: true,
@@ -130,6 +134,7 @@ export const apps = [
         title: "Remove metadata from photos",
         name: "Strip metadata",
         description: "Remove location, camera and date info from photos.",
+        blurb: "Remove location data",
         icon: "shield",
         group: "Optimize",
         ready: true,
@@ -144,6 +149,7 @@ export const apps = [
         title: "Resize images",
         name: "Resize",
         description: "Exact pixels, percentages or social media presets.",
+        blurb: "Pixels or presets",
         icon: "resize",
         group: "Edit",
         ready: true,
@@ -158,6 +164,7 @@ export const apps = [
         title: "Crop images",
         name: "Crop",
         description: "Free crop or fixed ratios like 1:1 and 16:9.",
+        blurb: "Free or fixed ratio",
         icon: "crop",
         group: "Edit",
         ready: false,
@@ -167,6 +174,7 @@ export const apps = [
         title: "Rotate and flip images",
         name: "Rotate & flip",
         description: "Fix sideways photos in one click.",
+        blurb: "Fix sideways photos",
         icon: "rotate",
         group: "Edit",
         ready: false,
@@ -176,6 +184,7 @@ export const apps = [
         title: "Remove image backgrounds",
         name: "Remove background",
         description: "Cut out the subject. The AI model runs on your device.",
+        blurb: "AI cut-out on device",
         icon: "magic",
         group: "AI on your device",
         ready: false,
@@ -185,6 +194,7 @@ export const apps = [
         title: "Upscale images",
         name: "Upscale",
         description: "Enlarge small images while keeping detail.",
+        blurb: "Enlarge with detail",
         icon: "zap",
         group: "AI on your device",
         ready: false,
@@ -210,7 +220,7 @@ export const apps = [
         slug: "compress-to-50kb",
         tool: "compress",
         name: "Compress to 50 KB",
-        short: "Signatures and small photos",
+        short: "Signatures, ID photos",
         group: "For forms",
         title: "Compress an image to 50 KB",
         intro:
@@ -298,6 +308,7 @@ export const apps = [
         title: "Merge PDF files",
         name: "Merge",
         description: "Combine PDFs and reorder their pages.",
+        blurb: "Combine files",
         icon: "layers",
         group: "Organize",
         ready: false,
@@ -307,6 +318,7 @@ export const apps = [
         title: "Split a PDF",
         name: "Split",
         description: "Extract pages or split by range.",
+        blurb: "Extract pages",
         icon: "split",
         group: "Organize",
         ready: false,
@@ -316,6 +328,7 @@ export const apps = [
         title: "Rotate PDF pages",
         name: "Rotate pages",
         description: "Rotate single pages or the whole file.",
+        blurb: "Turn pages",
         icon: "rotate",
         group: "Organize",
         ready: false,
@@ -325,6 +338,7 @@ export const apps = [
         title: "Sign a PDF",
         name: "Sign",
         description: "Draw or type a signature and place it.",
+        blurb: "Add your signature",
         icon: "signature",
         group: "Edit",
         ready: false,
@@ -334,6 +348,7 @@ export const apps = [
         title: "Convert PDF to images",
         name: "PDF to image",
         description: "Save pages as JPG or PNG.",
+        blurb: "Pages as JPG or PNG",
         icon: "image",
         group: "Convert",
         ready: false,
@@ -343,6 +358,7 @@ export const apps = [
         title: "Convert images to PDF",
         name: "Image to PDF",
         description: "Turn photos and scans into one PDF.",
+        blurb: "Photos into one PDF",
         icon: "file",
         group: "Convert",
         ready: false,

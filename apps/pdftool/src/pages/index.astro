@@ -5,6 +5,7 @@ import Trio from "@kmra/ui/components/Trio.astro";
 import AppCards from "@kmra/ui/components/AppCards.astro";
 import Faq from "@kmra/ui/components/Faq.astro";
 import LandingDrop from "@kmra/ui/components/LandingDrop";
+import Promises from "@kmra/ui/components/Promises.astro";
 import { appUrl, getApp } from "@kmra/registry";
 
 const app = getApp("pdftool");
@@ -29,8 +30,8 @@ const faq = [
   appId="pdftool"
   title="Free PDF tools that run in your browser · kmra"
 >
-  <div class="wrap">
-    <div class="hero">
+  <div class="hero-band">
+    <div class="wrap hero">
       <div>
         <span class="pill">
           <i>Soon</i> PDF tools are being built
@@ -43,13 +44,14 @@ const faq = [
           just like the image tools, with simple and advanced modes.
         </p>
         <div class="ctas">
-          <a class="btn primary" href={appUrl("imgtool", "/", dev)}>
+          <a class="btn acc lg" href={appUrl("imgtool", "/", dev)}>
             Use image tools now
           </a>
-          <a class="btn" href="/how-it-works">
+          <a class="btn lg" href="/how-it-works">
             How it works
           </a>
         </div>
+        <Promises />
       </div>
       <LandingDrop
         client:load
@@ -59,7 +61,9 @@ const faq = [
         unavailable="PDF tools aren't ready yet. Your file wasn't opened or uploaded."
       />
     </div>
+  </div>
 
+  <div class="wrap">
     <section class="block">
       <div class="sechead">
         <h2>PDF tools</h2>

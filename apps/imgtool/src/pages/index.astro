@@ -4,18 +4,21 @@ import ToolGrid from "@kmra/ui/components/ToolGrid.astro";
 import TaskList from "@kmra/ui/components/TaskList.astro";
 import Trio from "@kmra/ui/components/Trio.astro";
 import AppCards from "@kmra/ui/components/AppCards.astro";
-import LandingDrop from "@kmra/ui/components/LandingDrop";
+import Promises from "@kmra/ui/components/Promises.astro";
+import Icon from "@kmra/ui/components/Icon.astro";
 import { getApp } from "@kmra/registry";
+import HeroPreview from "../components/HeroPreview";
 
 const app = getApp("imgtool");
+const icons = Object.fromEntries(app.tools.map((t) => [t.slug, t.icon]));
 ---
 
 <BaseLayout
   appId="imgtool"
   title="Free image tools that run in your browser · kmra"
 >
-  <div class="wrap">
-    <div class="hero">
+  <div class="hero-band">
+    <div class="wrap hero">
       <div>
         <a class="pill" href="/compress-to-100kb">
           <i>New</i> Compress to an exact file size
@@ -28,24 +31,21 @@ const app = getApp("imgtool");
           batches. Switch to Advanced when you need every option.
         </p>
         <div class="ctas">
-          <a class="btn primary" href="/compress">
-            Start compressing
-          </a>
-          <a class="btn" href="/how-it-works">
+          <button class="btn acc lg" type="button" data-upload>
+            <Icon name="upload" />
+            Upload images
+          </button>
+          <a class="btn lg" href="/how-it-works">
             How it works
           </a>
         </div>
+        <Promises />
       </div>
-      <LandingDrop
-        client:load
-        accept="image/"
-        label="Drop images here"
-        formats={["JPG", "PNG", "WebP", "GIF", "AVIF"]}
-        target="/compress"
-        sample
-      />
+      <HeroPreview client:load />
     </div>
+  </div>
 
+  <div class="wrap">
     <section class="block">
       <div class="sechead">
         <h2>Image tools</h2>
@@ -59,7 +59,7 @@ const app = getApp("imgtool");
         <h2>Popular tasks</h2>
         <p>Ready-made settings for common jobs.</p>
       </div>
-      <TaskList tasks={app.tasks} />
+      <TaskList tasks={app.tasks} icons={icons} />
     </section>
 
     <section class="block">
@@ -75,3 +75,13 @@ const app = getApp("imgtool");
     </section>
   </div>
 </BaseLayout>
+
+<script>
+  document
+    .querySelectorAll("[data-upload]")
+    .forEach((b) =>
+      b.addEventListener("click", () =>
+        window.dispatchEvent(new CustomEvent("kmra:upload")),
+      ),
+    );
+</script>

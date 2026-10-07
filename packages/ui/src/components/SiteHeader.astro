@@ -43,13 +43,15 @@ const appHref = (a: App) =>
                 <h6>{group}</h6>
                 {tools.map((t) => (
                   <a class="mi" href={`/${t.slug}`}>
-                    <Icon name={t.icon} />
+                    <span class="tile">
+                      <Icon name={t.icon} />
+                    </span>
                     <span>
                       <strong>
                         {t.name}
                         {!t.ready && <span class="soon">Soon</span>}
                       </strong>
-                      <small>{t.description}</small>
+                      <small>{t.blurb}</small>
                     </span>
                   </a>
                 ))}
@@ -60,7 +62,9 @@ const appHref = (a: App) =>
                 <h6>Popular tasks</h6>
                 {popular.map((t) => (
                   <a class="mi" href={`/${t.slug}`}>
-                    <Icon name={toolIcon(t.tool)} />
+                    <span class="tile">
+                      <Icon name={toolIcon(t.tool)} />
+                    </span>
                     <span>
                       <strong>{t.name}</strong>
                       <small>{t.short}</small>
@@ -83,7 +87,9 @@ const appHref = (a: App) =>
                   <h6>{group}</h6>
                   {tasks.map((t) => (
                     <a class="mi" href={`/${t.slug}`}>
-                      <Icon name={toolIcon(t.tool)} />
+                      <span class="tile">
+                        <Icon name={toolIcon(t.tool)} />
+                      </span>
                       <span>
                         <strong>{t.name}</strong>
                         <small>{t.short}</small>
@@ -104,13 +110,18 @@ const appHref = (a: App) =>
             {apps.map((a) => {
               const inner = (
                 <>
-                  <span class="appdot" style={`background:${a.accent.light}`} />
+                  <span
+                    class="tile solid"
+                    style={`background:${a.accent.light}`}
+                  >
+                    {a.short.slice(0, 1)}
+                  </span>
                   <span>
                     <strong>
                       {a.name}
                       {!a.live && <span class="soon">Soon</span>}
                     </strong>
-                    <small>{a.tagline}</small>
+                    <small>{a.id}.kmra.dev</small>
                   </span>
                 </>
               );

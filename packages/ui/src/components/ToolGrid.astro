@@ -12,7 +12,9 @@ const { tools } = Astro.props;
 <div class="tgrid">
   {tools.map((t) => (
     <a class="tcard" href={`/${t.slug}`}>
-      <Icon name={t.icon} />
+      <span class="tile">
+        <Icon name={t.icon} />
+      </span>
       <strong>
         {t.name}
         {!t.ready && <span class="soon">Soon</span>}

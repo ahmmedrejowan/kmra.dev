@@ -219,7 +219,7 @@ export default function ImageTool({ tool, preset, tools }: Props) {
   /* ---------- Mode ---------- */
   function openAdvanced() {
     if (!items.length) {
-      toast("Add an image first, or try the sample.");
+      toast("Add an image first.");
       return;
     }
     setAdvanced(true);
@@ -608,13 +608,6 @@ export default function ImageTool({ tool, preset, tools }: Props) {
               onClick={() => pickRef.current?.click()}
             >
               Choose images
-            </button>
-            <button
-              className="btn"
-              type="button"
-              onClick={() => void addSample()}
-            >
-              Try a sample
             </button>
           </div>
           <div className="formats">

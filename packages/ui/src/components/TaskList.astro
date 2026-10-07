@@ -1,17 +1,22 @@
 ---
-import type { Task } from "@kmra/registry";
+import type { IconName, Task } from "@kmra/registry";
 import Icon from "./Icon.astro";
 
 interface Props {
   tasks: readonly Task[];
+  /** Icon for each task's tool */
+  icons: Record<string, IconName>;
 }
 
-const { tasks } = Astro.props;
+const { tasks, icons } = Astro.props;
 ---
 
 <div class="tasks">
   {tasks.map((t) => (
     <a class="task" href={`/${t.slug}`}>
+      <span class="tile">
+        <Icon name={icons[t.tool] ?? "file"} />
+      </span>
       <span>
         <strong>{t.name}</strong>
         <small>{t.short}</small>
