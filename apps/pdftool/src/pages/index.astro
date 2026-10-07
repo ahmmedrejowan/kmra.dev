@@ -1,15 +1,20 @@
 ---
 import BaseLayout from "@kmra/ui/layouts/BaseLayout.astro";
 import ToolGrid from "@kmra/ui/components/ToolGrid.astro";
-import PrivacyStrip from "@kmra/ui/components/PrivacyStrip.astro";
+import PrivacySection from "@kmra/ui/components/PrivacySection.astro";
+import HeroChips from "@kmra/ui/components/HeroChips.astro";
 import AppCards from "@kmra/ui/components/AppCards.astro";
 import Faq from "@kmra/ui/components/Faq.astro";
 import LandingDrop from "@kmra/ui/components/LandingDrop";
-import Promises from "@kmra/ui/components/Promises.astro";
 import { appUrl, getApp } from "@kmra/registry";
 
 const app = getApp("pdftool");
 const dev = import.meta.env.DEV;
+const chips = app.tools.map((t) => ({
+  href: `/${t.slug}`,
+  label: t.name,
+  icon: t.icon,
+}));
 const faq = [
   {
     q: "Will my PDFs be uploaded?",
@@ -30,71 +35,55 @@ const faq = [
   appId="pdftool"
   title="Free PDF tools that run in your browser · kmra"
 >
-  <div class="hero-band">
-    <div class="wrap hero">
-      <div>
-        <span class="pill">
-          <i>Soon</i> PDF tools are being built
-        </span>
-        <h1 class="display">
-          Merge, split and sign PDFs without uploading them.
-        </h1>
-        <p class="lede">
-          Contracts, statements and IDs stay on your device. PDF tools will work
-          just like the image tools, with simple and advanced modes.
-        </p>
-        <div class="ctas">
-          <a class="btn acc lg" href={appUrl("imgtool", "/", dev)}>
-            Use image tools now
-          </a>
-          <a class="btn lg" href="/how-it-works">
-            How it works
-          </a>
-        </div>
-        <Promises />
-      </div>
+  <section class="hero-band screen tall">
+    <div class="wrap hero-center">
+      <a class="pill" href={appUrl("imgtool", "/", dev)}>
+        <i>Soon</i> PDF tools are being built. Image tools are ready.
+      </a>
+      <h1 class="display">Work on PDFs in your browser</h1>
+      <p class="lede">
+        Merge, split and sign PDFs. Contracts, statements and IDs never leave
+        your device.
+      </p>
       <LandingDrop
         client:load
+        large
         accept="application/pdf"
         label="Drop PDFs here"
         formats={["PDF"]}
         unavailable="PDF tools aren't ready yet. Your file wasn't opened or uploaded."
       />
+      <HeroChips items={chips} />
     </div>
-  </div>
+  </section>
 
-  <div class="wrap">
-    <section class="block">
-      <div class="sechead primary">
-        <h2>PDF tools</h2>
-        <p>Each one gets simple and advanced modes.</p>
+  <section class="screen tall">
+    <div class="wrap stack">
+      <div>
+        <div class="sechead primary">
+          <h2>PDF tools</h2>
+          <p>Each one gets simple and advanced modes.</p>
+        </div>
+        <ToolGrid tools={app.tools} />
       </div>
-      <ToolGrid tools={app.tools} />
-    </section>
+      <div class="pair">
+        <PrivacySection />
+        <div class="more">
+          <h2>More from kmra</h2>
+          <AppCards appId="pdftool" others />
+        </div>
+      </div>
+    </div>
+  </section>
 
-    <section class="block">
-      <PrivacyStrip />
-    </section>
-
-    <section class="block">
+  <section class="screen">
+    <div class="wrap">
       <div class="content" style="padding-top: 0">
         <div class="sechead primary">
           <h2>Questions</h2>
         </div>
         <Faq items={faq} />
       </div>
-    </section>
-  </div>
-
-  <section class="band-alt">
-    <div class="wrap">
-      <section class="block">
-        <div class="sechead quiet">
-          <h2>More from kmra</h2>
-          <p>Same privacy, different files.</p>
-        </div>
-        <AppCards appId="pdftool" others />
-      </section>
     </div>
   </section>
 </BaseLayout>

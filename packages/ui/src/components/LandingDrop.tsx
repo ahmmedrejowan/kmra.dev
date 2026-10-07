@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type DragEvent } from "react";
+import { useEffect, useRef, useState } from "react";
 import { stashFiles } from "../lib/handoff";
 import { toast } from "../lib/toast";
 import { Icon } from "./Icon";
@@ -12,20 +12,29 @@ interface Props {
   target?: string;
   /** Shown instead of opening a tool when `target` is missing */
   unavailable?: string;
+  /** Large hero version */
+  large?: boolean;
 }
 
-/** Landing-page drop area: files are handed to the tool page through IndexedDB, never uploaded. */
+/**
+ * Landing-page drop area. Files dropped or pasted anywhere on the page are handed to the tool page
+ * through IndexedDB; nothing is uploaded.
+ */
 export default function LandingDrop({
   accept,
   label,
   formats,
   target,
   unavailable,
+  large,
 }: Props) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [over, setOver] = useState(false);
+  const takeRef = useRef<(list: FileList | File[] | null) => Promise<void>>(
+    async () => {},
+  );
 
-  async function take(list: FileList | File[] | null) {
+  takeRef.current = async (list) => {
     const files = [...(list ?? [])].filter(
       (f) => f.type.startsWith(accept) || f.type === accept,
     );
@@ -42,53 +51,63 @@ export default function LandingDrop({
     }
     await stashFiles(files);
     window.location.href = target;
-  }
-
-  // "Upload" buttons elsewhere on the page open this picker.
-  useEffect(() => {
-    const open = () => inputRef.current?.click();
-    window.addEventListener("kmra:upload", open);
-    return () => window.removeEventListener("kmra:upload", open);
-  }, []);
-
-  // Paste anywhere on the landing page.
-  useEffect(() => {
-    const onPaste = (e: ClipboardEvent) => {
-      const files = [...(e.clipboardData?.files ?? [])];
-      if (files.length) void take(files);
-    };
-    window.addEventListener("paste", onPaste);
-    return () => window.removeEventListener("paste", onPaste);
-  });
-
-  const onDrop = (e: DragEvent) => {
-    e.preventDefault();
-    setOver(false);
-    void take(e.dataTransfer.files);
   };
 
+  useEffect(() => {
+    const open = () => inputRef.current?.click();
+    const onPaste = (e: ClipboardEvent) => {
+      const files = [...(e.clipboardData?.files ?? [])];
+      if (files.length) void takeRef.current(files);
+    };
+    const onOver = (e: DragEvent) => {
+      if (!e.dataTransfer?.types.includes("Files")) return;
+      e.preventDefault();
+      setOver(true);
+    };
+    const onLeave = (e: DragEvent) => {
+      if (!e.relatedTarget) setOver(false);
+    };
+    const onDrop = (e: DragEvent) => {
+      if (!e.dataTransfer?.files.length) return;
+      e.preventDefault();
+      setOver(false);
+      void takeRef.current(e.dataTransfer.files);
+    };
+    window.addEventListener("kmra:upload", open);
+    window.addEventListener("paste", onPaste);
+    window.addEventListener("dragover", onOver);
+    window.addEventListener("dragleave", onLeave);
+    window.addEventListener("drop", onDrop);
+    return () => {
+      window.removeEventListener("kmra:upload", open);
+      window.removeEventListener("paste", onPaste);
+      window.removeEventListener("dragover", onOver);
+      window.removeEventListener("dragleave", onLeave);
+      window.removeEventListener("drop", onDrop);
+    };
+  }, []);
+
   return (
-    <div className="dropcard">
+    <div className={`dropcard${large ? " lg" : ""}`}>
       <div
         className={`dropzone${over ? " over" : ""}`}
-        onDragOver={(e) => {
-          e.preventDefault();
-          setOver(true);
-        }}
-        onDragLeave={() => setOver(false)}
-        onDrop={onDrop}
+        onClick={() => inputRef.current?.click()}
       >
         <div className="big">
           <Icon name="upload" />
         </div>
-        <strong>{label}</strong>
+        <strong>{over ? "Drop to start" : label}</strong>
         <span className="muted">or paste with ⌘V. Nothing is uploaded.</span>
         <div className="row">
           <button
-            className="btn acc"
+            className={`btn acc${large ? " lg" : ""}`}
             type="button"
-            onClick={() => inputRef.current?.click()}
+            onClick={(e) => {
+              e.stopPropagation();
+              inputRef.current?.click();
+            }}
           >
+            <Icon name="upload" />
             Choose files
           </button>
         </div>
@@ -104,7 +123,7 @@ export default function LandingDrop({
           multiple
           hidden
           onChange={(e) => {
-            void take(e.target.files);
+            void takeRef.current(e.target.files);
             e.target.value = "";
           }}
         />

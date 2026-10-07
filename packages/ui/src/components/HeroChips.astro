@@ -1,0 +1,19 @@
+---
+import type { IconName } from "@kmra/registry";
+import Icon from "./Icon.astro";
+
+interface Props {
+  items: readonly { href: string; label: string; icon: IconName }[];
+}
+
+const { items } = Astro.props;
+---
+
+<nav class="hero-chips" aria-label="Start with a tool">
+  {items.map((i) => (
+    <a href={i.href}>
+      <Icon name={i.icon} />
+      {i.label}
+    </a>
+  ))}
+</nav>

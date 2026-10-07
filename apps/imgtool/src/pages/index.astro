@@ -2,90 +2,78 @@
 import BaseLayout from "@kmra/ui/layouts/BaseLayout.astro";
 import ToolShowcase from "@kmra/ui/components/ToolShowcase.astro";
 import TaskDirectory from "@kmra/ui/components/TaskDirectory.astro";
-import PrivacyStrip from "@kmra/ui/components/PrivacyStrip.astro";
+import PrivacySection from "@kmra/ui/components/PrivacySection.astro";
 import AppCards from "@kmra/ui/components/AppCards.astro";
-import Promises from "@kmra/ui/components/Promises.astro";
-import Icon from "@kmra/ui/components/Icon.astro";
+import HeroChips from "@kmra/ui/components/HeroChips.astro";
+import LandingDrop from "@kmra/ui/components/LandingDrop";
 import { getApp } from "@kmra/registry";
-import HeroPreview from "../components/HeroPreview";
 
 const app = getApp("imgtool");
 const icons = Object.fromEntries(app.tools.map((t) => [t.slug, t.icon]));
+const chips = [
+  ...app.tools
+    .filter((t) => t.ready)
+    .map((t) => ({ href: `/${t.slug}`, label: t.name, icon: t.icon })),
+  ...["compress-to-100kb", "png-to-jpg"]
+    .map((slug) => app.tasks.find((t) => t.slug === slug))
+    .filter((t) => t !== undefined)
+    .map((t) => ({
+      href: `/${t.slug}`,
+      label: t.name,
+      icon: icons[t.tool] ?? "file",
+    })),
+];
 ---
 
 <BaseLayout
   appId="imgtool"
   title="Free image tools that run in your browser · kmra"
 >
-  <div class="hero-band">
-    <div class="wrap hero">
-      <div>
-        <a class="pill" href="/compress-to-100kb">
-          <i>New</i> Compress to an exact file size
-        </a>
-        <h1 class="display">
-          Edit images in your browser. Nothing gets uploaded.
-        </h1>
-        <p class="lede">
-          Resize, compress and convert photos in seconds, one at a time or in
-          batches. Switch to Advanced when you need every option.
-        </p>
-        <div class="ctas">
-          <button class="btn acc lg" type="button" data-upload>
-            <Icon name="upload" />
-            Upload images
-          </button>
-          <a class="btn lg" href="/how-it-works">
-            How it works
-          </a>
-        </div>
-        <Promises />
-      </div>
-      <HeroPreview client:load />
+  <section class="hero-band screen tall">
+    <div class="wrap hero-center">
+      <h1 class="display">Edit images in your browser</h1>
+      <p class="lede">
+        Compress, resize, convert and crop. Free, fast, and nothing gets
+        uploaded.
+      </p>
+      <LandingDrop
+        client:load
+        large
+        accept="image/"
+        label="Drop images here"
+        formats={["JPG", "PNG", "WebP", "GIF", "AVIF"]}
+        target="/compress"
+      />
+      <HeroChips items={chips} />
     </div>
-  </div>
+  </section>
 
-  <div class="wrap">
-    <section class="block">
+  <section class="screen tall">
+    <div class="wrap">
       <div class="sechead primary">
         <h2>Image tools</h2>
         <p>Every tool opens simple. Advanced is one click away.</p>
       </div>
-      <ToolShowcase tools={app.tools} />
-    </section>
+    </div>
+    <ToolShowcase tools={app.tools} />
+  </section>
 
-    <section class="block">
-      <div class="sechead primary">
-        <h2>Popular tasks</h2>
-        <p>Ready-made settings for everyday jobs.</p>
-      </div>
-      <TaskDirectory tasks={app.tasks} icons={icons} />
-    </section>
-
-    <section class="block">
-      <PrivacyStrip />
-    </section>
-  </div>
-
-  <section class="band-alt">
-    <div class="wrap">
-      <section class="block">
-        <div class="sechead quiet">
-          <h2>More from kmra</h2>
-          <p>Same privacy, different files.</p>
+  <section class="screen tall">
+    <div class="wrap stack">
+      <div>
+        <div class="sechead primary">
+          <h2>Popular tasks</h2>
+          <p>Ready-made settings for everyday jobs.</p>
         </div>
-        <AppCards appId="imgtool" others />
-      </section>
+        <TaskDirectory tasks={app.tasks} icons={icons} />
+      </div>
+      <div class="pair">
+        <PrivacySection />
+        <div class="more">
+          <h2>More from kmra</h2>
+          <AppCards appId="imgtool" others />
+        </div>
+      </div>
     </div>
   </section>
 </BaseLayout>
-
-<script>
-  document
-    .querySelectorAll("[data-upload]")
-    .forEach((b) =>
-      b.addEventListener("click", () =>
-        window.dispatchEvent(new CustomEvent("kmra:upload")),
-      ),
-    );
-</script>
