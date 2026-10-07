@@ -179,17 +179,69 @@ async function sample(): Promise<Blob> {
   return c.convertToBlob({ type: "image/jpeg", quality: 0.95 });
 }
 
+/** HEIF/HEIC files start with an "ftyp" box naming a HEIF brand. */
+async function isHeif(file: Blob): Promise<boolean> {
+  const head = new Uint8Array(await file.slice(0, 32).arrayBuffer());
+  const text = String.fromCharCode(...head);
+  return (
+    text.slice(4, 8) === "ftyp" &&
+    /heic|heix|hevc|heim|heis|mif1|msf1|avci/.test(text.slice(8))
+  );
+}
+
+/** Decode a HEIC/HEIF file with libheif (loaded only when needed, about 2 MB). */
+async function decodeHeif(file: Blob): Promise<ImageBitmap> {
+  // The bundle's default export is a factory that sets up the WebAssembly module
+  const mod = (await import("libheif-js/libheif-wasm/libheif-bundle.mjs")) as {
+    default: () => { HeifDecoder: new () => { decode(buf: Uint8Array): HeifImage[] }; ready?: Promise<unknown> };
+  };
+  const libheif = mod.default();
+  if (libheif.ready) await libheif.ready;
+  const images = new libheif.HeifDecoder().decode(
+    new Uint8Array(await file.arrayBuffer()),
+  );
+  const image = images[0];
+  if (!image) throw new Error("No image found in this HEIC file");
+  const w = image.get_width();
+  const h = image.get_height();
+  const pixels = new ImageData(w, h);
+  await new Promise<void>((resolve, reject) =>
+    image.display(pixels, (out) =>
+      out ? resolve() : reject(new Error("Couldn't decode this HEIC file")),
+    ),
+  );
+  return createImageBitmap(pixels);
+}
+
+interface HeifImage {
+  get_width(): number;
+  get_height(): number;
+  display(target: ImageData, done: (out: ImageData | null) => void): void;
+}
+
 self.onmessage = async ({ data }: MessageEvent<WorkerRequest>) => {
   try {
     if (data.kind === "load") {
-      const bmp = await createImageBitmap(data.file, {
-        imageOrientation: "from-image",
-      });
+      let bmp: ImageBitmap;
+      let preview: Blob | undefined;
+      try {
+        bmp = await createImageBitmap(data.file, {
+          imageOrientation: "from-image",
+        });
+      } catch (err) {
+        // Most browsers can't decode HEIC/HEIF (iPhone photos); decode those with libheif.
+        if (!(await isHeif(data.file))) throw err;
+        bmp = await decodeHeif(data.file);
+        // The browser can't show the original either, so send back a preview it can display.
+        const c = new OffscreenCanvas(bmp.width, bmp.height);
+        c.getContext("2d")!.drawImage(bmp, 0, 0);
+        preview = await c.convertToBlob({ type: "image/jpeg", quality: 0.9 });
+      }
       bitmaps.set(data.key, bmp);
       self.postMessage({
         id: data.id,
         ok: true,
-        value: { w: bmp.width, h: bmp.height },
+        value: { w: bmp.width, h: bmp.height, preview },
       });
     } else if (data.kind === "drop") {
       bitmaps.get(data.key)?.close();

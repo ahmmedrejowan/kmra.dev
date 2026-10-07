@@ -29,6 +29,7 @@ function cleanUrl(file: string): string {
 
 // Not precached: social images, AI models and anything big (cached on first use instead)
 const SKIP = [
+  /^test-fixtures\//,
   /^og\//,
   /^models\//,
   /\.(onnx|wasm|map)$/,

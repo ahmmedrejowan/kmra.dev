@@ -10,7 +10,12 @@ import { zipSync } from "fflate";
 import type { Preset } from "@kmra/registry";
 import { Icon } from "@kmra/ui/components/Icon";
 import type { IconKey } from "@kmra/ui/lib/icons";
-import { downloadBlob, formatBytes } from "@kmra/ui/lib/files";
+import {
+  downloadBlob,
+  formatBytes,
+  IMAGE_ACCEPT,
+  isImageFile,
+} from "@kmra/ui/lib/files";
 import { takeFiles } from "@kmra/ui/lib/handoff";
 import { toast } from "@kmra/ui/lib/toast";
 import {
@@ -138,17 +143,23 @@ export default function ImageTool({ tool, preset, tools }: Props) {
 
   /* ---------- Files ---------- */
   const addFiles = useCallback(async (list: FileList | File[]) => {
-    const files = [...list].filter((f) => f.type.startsWith("image/"));
+    const files = [...list].filter(isImageFile);
     if (!files.length) {
-      toast("That isn't an image. Try JPEG, PNG, WebP, GIF or AVIF.");
+      toast("That isn't an image. Try JPEG, PNG, WebP, HEIC, GIF or AVIF.");
       return;
     }
     const added: Item[] = [];
     for (const file of files) {
       const key = crypto.randomUUID();
       try {
-        const { w, h } = await engine.load(key, file);
-        added.push({ key, file, url: URL.createObjectURL(file), w, h });
+        const { w, h, preview } = await engine.load(key, file);
+        added.push({
+          key,
+          file,
+          url: URL.createObjectURL(preview ?? file),
+          w,
+          h,
+        });
       } catch {
         toast(
           `${file.name} couldn't be opened. It may be damaged or in a format your browser can't read.`,
@@ -507,7 +518,7 @@ export default function ImageTool({ tool, preset, tools }: Props) {
     <input
       ref={pickRef}
       type="file"
-      accept="image/*"
+      accept={IMAGE_ACCEPT}
       multiple
       hidden
       onChange={(e) => {
@@ -1047,7 +1058,7 @@ export default function ImageTool({ tool, preset, tools }: Props) {
           </button>
         </div>
         <div className="formats">
-          {["JPG", "PNG", "WebP", "GIF", "AVIF"].map((f) => (
+          {["JPG", "PNG", "WebP", "HEIC", "GIF", "AVIF"].map((f) => (
             <span key={f}>{f}</span>
           ))}
         </div>

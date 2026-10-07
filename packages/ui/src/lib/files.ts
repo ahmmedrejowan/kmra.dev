@@ -24,3 +24,11 @@ export function replaceExtension(filename: string, ext: string): string {
   const base = filename.replace(/\.[^.]+$/, "");
   return `${base}.${ext}`;
 }
+
+/** Image files, including HEIC/HEIF which browsers often report with no MIME type. */
+export function isImageFile(f: File): boolean {
+  return f.type.startsWith("image/") || /\.(heic|heif)$/i.test(f.name);
+}
+
+/** File picker filter for images, with HEIC listed explicitly for Windows. */
+export const IMAGE_ACCEPT = "image/*,.heic,.heif";

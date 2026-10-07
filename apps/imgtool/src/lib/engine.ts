@@ -37,8 +37,9 @@ function call<T>(body: Body): Promise<T> {
 }
 
 export const engine = {
+  /** `preview` is set when the browser can't display the original (HEIC). */
   load: (key: string, file: Blob) =>
-    call<{ w: number; h: number }>({ kind: "load", key, file }),
+    call<{ w: number; h: number; preview?: Blob }>({ kind: "load", key, file }),
   drop: (key: string) => call<void>({ kind: "drop", key }),
   encode: (key: string, srcType: string, settings: Settings) =>
     call<EncodeResult>({ kind: "encode", key, srcType, settings }),

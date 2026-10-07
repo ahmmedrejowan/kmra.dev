@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { stashFiles } from "../lib/handoff";
 import { toast } from "../lib/toast";
 import { pasteHint } from "../lib/keys";
+import { IMAGE_ACCEPT, isImageFile } from "../lib/files";
 import { Icon } from "./Icon";
 
 interface Props {
@@ -39,7 +40,10 @@ export default function LandingDrop({
 
   takeRef.current = async (list) => {
     const files = [...(list ?? [])].filter(
-      (f) => f.type.startsWith(accept) || f.type === accept,
+      (f) =>
+        f.type.startsWith(accept) ||
+        f.type === accept ||
+        (accept === "image/" && isImageFile(f)),
     );
     if (!files.length) {
       if (list && [...list].length)
@@ -122,7 +126,13 @@ export default function LandingDrop({
         <input
           ref={inputRef}
           type="file"
-          accept={accept.endsWith("/") ? `${accept}*` : accept}
+          accept={
+            accept === "image/"
+              ? IMAGE_ACCEPT
+              : accept.endsWith("/")
+                ? `${accept}*`
+                : accept
+          }
           multiple
           hidden
           onChange={(e) => {

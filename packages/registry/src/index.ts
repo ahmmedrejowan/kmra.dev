@@ -144,13 +144,13 @@ export const apps = [
         slug: "convert",
         title: "Convert images",
         name: "Convert",
-        description: "Switch between JPEG, PNG and WebP.",
-        blurb: "JPEG, PNG and WebP",
+        description: "Convert HEIC, PNG, WebP and more to JPEG, PNG or WebP.",
+        blurb: "HEIC, PNG, WebP to JPG",
         icon: "convert",
         group: "Optimize",
         ready: true,
         steps: [
-          "Drop one or more images.",
+          "Drop one or more images, including iPhone HEIC photos.",
           "Pick JPEG, PNG or WebP.",
           "Download. Your originals stay untouched.",
         ],
@@ -302,6 +302,20 @@ export const apps = [
           "The photo is cropped to a centred square. Use a plain light background, as the rules require.",
         ],
         preset: { form: "us-visa" },
+      },
+      {
+        slug: "heic-to-jpg",
+        tool: "convert",
+        name: "HEIC to JPG",
+        short: "iPhone photos that open anywhere",
+        group: "Formats",
+        title: "Convert HEIC to JPG",
+        intro:
+          "iPhone photos are saved as HEIC, which many sites and Windows apps can't open. Turn them into JPGs right in your browser.",
+        about: [
+          "The HEIC file is decoded on your device, so private photos never leave it. Batches of photos convert in one go.",
+        ],
+        preset: { type: "image/jpeg", quality: 90 },
       },
       {
         slug: "png-to-jpg",
