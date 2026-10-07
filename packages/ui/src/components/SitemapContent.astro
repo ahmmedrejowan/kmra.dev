@@ -1,5 +1,5 @@
 ---
-import { apps, linkTo, type AppId } from "@kmra/registry";
+import { apps, groupBy, linkTo, type AppId } from "@kmra/registry";
 
 interface Props {
   appId: AppId;
@@ -19,6 +19,7 @@ const pages = [
   { href: "/about", label: "About" },
 ];
 const tools = app.tools.filter((t) => t.ready);
+const toolGroups = groupBy(tools, app.toolGroups);
 ---
 
 <div class="smap">
@@ -32,20 +33,20 @@ const tools = app.tools.filter((t) => t.ready);
       ))}
     </ul>
   </section>
-  {tools.length > 0 && (
+  {toolGroups.map(([group, list]) => (
     <section>
-      <h2>Tools</h2>
+      <h2>{toolGroups.length > 1 ? `Tools: ${group}` : "Tools"}</h2>
       <ul>
-        {tools.map((t) => (
+        {list.map((t) => (
           <li>
             <a href={`/${t.slug}`}>{t.title ?? t.name}</a>
           </li>
         ))}
       </ul>
     </section>
-  )}
+  ))}
   {app.tasks.length > 0 && (
-    <section>
+    <section id="use-cases">
       <h2>Use cases</h2>
       <ul>
         {app.tasks.map((t) => (

@@ -20,7 +20,10 @@ const app = getApp(appId);
 const dev = import.meta.env.DEV;
 // Only apps that are live are listed; others appear once they launch.
 const liveApps = apps.filter((a) => a.live);
-const toolGroups = groupBy(app.tools);
+const toolGroups = groupBy(
+  app.tools.filter((t) => t.ready),
+  app.toolGroups,
+);
 const taskGroups = groupBy(app.tasks);
 const toolIcon = (slug: string) =>
   app.tools.find((t) => t.slug === slug)?.icon ?? "file";
@@ -44,9 +47,9 @@ const appHref = (a: App) =>
           <button type="button" aria-expanded="false" aria-controls="m-tools">
             Tools <Icon name="down" />
           </button>
-          <div class="mega" id="m-tools" hidden>
+          <div class="mega cols" id="m-tools" hidden>
             {toolGroups.map(([group, tools]) => (
-              <div>
+              <div class="mgrp">
                 <h6>{group}</h6>
                 {tools.map((t) => (
                   <a class="mi" href={`/${t.slug}`}>
@@ -72,9 +75,9 @@ const appHref = (a: App) =>
             <button type="button" aria-expanded="false" aria-controls="m-tasks">
               Use cases <Icon name="down" />
             </button>
-            <div class="mega" id="m-tasks" hidden>
+            <div class="mega cols" id="m-tasks" hidden>
               {taskGroups.map(([group, tasks]) => (
-                <div>
+                <div class="mgrp">
                   <h6>{group}</h6>
                   {tasks.map((t) => (
                     <a class="mi" href={`/${t.slug}`}>

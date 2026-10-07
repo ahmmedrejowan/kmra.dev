@@ -14,7 +14,16 @@ const dev = import.meta.env.DEV;
 const liveApps = apps.filter((a) => a.live);
 const year = new Date().getFullYear();
 const readyTools = app.tools.filter((t) => t.ready);
-const toolList = readyTools.length ? readyTools : app.tools;
+// Popular tools first, then the rest, seven in all; the sitemap page has everything
+const popular = app.popular ?? [];
+const toolList = (readyTools.length ? readyTools : app.tools)
+  .slice()
+  .sort(
+    (a, b) =>
+      (popular.includes(a.slug) ? popular.indexOf(a.slug) : 99) -
+      (popular.includes(b.slug) ? popular.indexOf(b.slug) : 99),
+  )
+  .slice(0, 7);
 ---
 
 <footer class="site">
@@ -40,6 +49,13 @@ const toolList = readyTools.length ? readyTools : app.tools;
               <a href={`/${t.slug}`}>{t.name}</a>
             </li>
           ))}
+          {readyTools.length > toolList.length && (
+            <li>
+              <a class="fmore" href="/sitemap">
+                All {readyTools.length} tools
+              </a>
+            </li>
+          )}
         </ul>
       </div>
       {app.tasks.length > 0 && (
@@ -51,6 +67,13 @@ const toolList = readyTools.length ? readyTools : app.tools;
                 <a href={`/${t.slug}`}>{t.name}</a>
               </li>
             ))}
+            {app.tasks.length > 7 && (
+              <li>
+                <a class="fmore" href="/sitemap#use-cases">
+                  All {app.tasks.length} use cases
+                </a>
+              </li>
+            )}
           </ul>
         </div>
       )}

@@ -71,6 +71,145 @@ const { tool, hidden = false } = Astro.props;
         <Icon name="rotateRight" />
         <span class="card b" />
       </div>
+    ) : tool.slug === "remove-bg" || tool.slug === "change-bg" ? (
+      <div class:list={["art-cut", { color: tool.slug === "change-bg" }]}>
+        <span class="person" />
+      </div>
+    ) : tool.slug === "passport-photo" ? (
+      <div class="art-id">
+        <div class="photo">
+          <span class="person" />
+        </div>
+        <div class="lines">
+          <b>35 × 45 mm</b>
+          <i />
+          <i />
+          <small>4 × 6 sheet</small>
+        </div>
+      </div>
+    ) : tool.slug === "watermark" ? (
+      <div class="art-mark">
+        <span>© your name</span>
+        <span>© your name</span>
+      </div>
+    ) : tool.slug === "filters" ? (
+      <div class="art-looks">
+        <i style="filter:grayscale(1)" />
+        <i style="filter:sepia(.8)" />
+        <i style="filter:saturate(1.8)" />
+        <i style="filter:hue-rotate(160deg)" />
+      </div>
+    ) : tool.slug === "adjust" ? (
+      <div class="art-sliders">
+        <span style="--v:70%">Brightness</span>
+        <span style="--v:40%">Contrast</span>
+        <span style="--v:85%">Saturation</span>
+      </div>
+    ) : tool.slug === "add-text" ? (
+      <div class="art-meme">
+        <b>Top text</b>
+        <b>Bottom text</b>
+      </div>
+    ) : tool.slug === "blur" || tool.slug === "face-blur" ? (
+      <div class="art-pixel">
+        <span class="px" />
+      </div>
+    ) : tool.slug === "collage" ? (
+      <div class="art-collage">
+        <i />
+        <i />
+        <i />
+      </div>
+    ) : tool.slug === "split" ? (
+      <div class="art-split">
+        {Array.from({ length: 9 }, () => (
+          <i />
+        ))}
+      </div>
+    ) : tool.slug === "palette" ? (
+      <div class="art-palette">
+        {["#ff7e7e", "#ffb37a", "#ffe08a", "#7a5cff", "#2a2160"].map((c) => (
+          <i style={`background:${c}`} />
+        ))}
+      </div>
+    ) : tool.slug === "beautify" ? (
+      <div class="art-window">
+        <div class="win">
+          <span class="bar">
+            <i />
+            <i />
+            <i />
+          </span>
+        </div>
+      </div>
+    ) : tool.slug === "favicon" ? (
+      <div class="art-tab">
+        <span class="tab">
+          <Icon name="star" />
+          My site
+        </span>
+        <span class="sizes">
+          <i style="width:16px;height:16px" />
+          <i style="width:32px;height:32px" />
+          <i style="width:48px;height:48px" />
+        </span>
+      </div>
+    ) : tool.slug === "histogram" ? (
+      <div class="art-hist">
+        {[18, 30, 46, 64, 80, 72, 58, 66, 88, 70, 44, 30, 20, 12].map((h) => (
+          <i style={`height:${h}%`} />
+        ))}
+      </div>
+    ) : tool.slug === "extend-canvas" ? (
+      <div class="art-extend">
+        <i />
+      </div>
+    ) : tool.slug === "form-size" ? (
+      <div class="art-form">
+        <span class="ph" />
+        <span>
+          <b>300 × 300 px</b>
+          <small>Under 100 KB</small>
+        </span>
+      </div>
+    ) : tool.slug === "base64" ? (
+      <code class="art-code">
+        data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAA…
+      </code>
+    ) : tool.slug === "gif-frames" ? (
+      <div class="art-frames-strip">
+        {[0, 1, 2, 3].map((i) => (
+          <i style={`--r:${i * 25}deg`} />
+        ))}
+      </div>
+    ) : tool.slug === "image-info" || tool.slug === "exif" ? (
+      <ul class="art-meta plain">
+        <li>
+          <span>{tool.slug === "exif" ? "Camera" : "Format"}</span>
+          <b>{tool.slug === "exif" ? "iPhone 15 Pro" : "JPEG"}</b>
+        </li>
+        <li>
+          <span>{tool.slug === "exif" ? "Taken" : "Size"}</span>
+          <b>{tool.slug === "exif" ? "12 Mar 2026" : "4032 × 3024"}</b>
+        </li>
+        <li>
+          <span>{tool.slug === "exif" ? "Location" : "Ratio"}</span>
+          <b>{tool.slug === "exif" ? "23.81°N 90.41°E" : "4:3"}</b>
+        </li>
+      </ul>
+    ) : tool.slug === "color-picker" ? (
+      <div class="art-picker">
+        <i />
+        <span>#ff7e7e</span>
+      </div>
+    ) : tool.slug === "border" ? (
+      <div class="art-border">
+        <i />
+      </div>
+    ) : tool.slug === "signature" ? (
+      <div class="art-sign">
+        <Icon name="signature" />
+      </div>
     ) : (
       <span class="tile">
         <Icon name={tool.icon} />

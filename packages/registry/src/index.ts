@@ -111,6 +111,10 @@ export interface App {
   devPort: number;
   tools: readonly Tool[];
   tasks: readonly Task[];
+  /** Order of tool groups in menus and directories */
+  toolGroups?: readonly string[];
+  /** Short list for the homepage chips: tool or task slugs */
+  popular?: readonly string[];
 }
 
 export const apps = [
@@ -120,7 +124,7 @@ export const apps = [
     brand: ["Img", "Tool"],
     short: "Images",
     tagline:
-      "Resize, compress and convert images in your browser. Nothing gets uploaded.",
+      "Compress, resize, convert, cut out backgrounds and more in your browser. Nothing gets uploaded.",
     accent: {
       light: "#0057ff",
       dark: "#4d8bff",
@@ -129,6 +133,27 @@ export const apps = [
     },
     live: true,
     devPort: 4321,
+    toolGroups: [
+      "Optimize",
+      "Edit",
+      "Background",
+      "Create",
+      "Forms",
+      "Privacy",
+      "Analyze",
+      "Web & dev",
+    ],
+    popular: [
+      "compress",
+      "resize",
+      "remove-bg",
+      "passport-photo",
+      "heic-to-jpg",
+      "compress-to-100kb",
+      "watermark",
+      "face-blur",
+      "collage",
+    ],
     tools: [
       {
         slug: "compress",
@@ -663,31 +688,89 @@ export const apps = [
       },
       {
         slug: "passport-photo-size",
-        tool: "form-size",
-        name: "Passport photo size",
-        short: "35×45 mm at 300 dpi",
+        tool: "passport-photo",
+        name: "Passport photo 35×45",
+        short: "Framed, white background",
         group: "For forms",
-        title: "Resize a photo to passport size (35×45 mm)",
+        title: "Make a 35 × 45 mm passport photo",
         intro:
-          "Get a 35×45 mm photo at print quality (413×531 pixels) for passport and visa forms.",
+          "Drop any front-facing photo. Your head is framed to the official size, the background turns white, and you get a print-quality 413 × 531 photo.",
         about: [
-          "35×45 mm is the standard for most passports and visas. Keep your head centred with some space above it.",
+          "35 × 45 mm is used by the UK, the EU and Schengen visas, India, Bangladesh, Australia and many more. The head should fill about three quarters of the height, which is set for you.",
+          "Need prints? Choose a 4 × 6 sheet and any photo shop can print it for a few cents.",
         ],
-        preset: { form: "passport" },
+        preset: { spec: "35x45" },
       },
       {
         slug: "us-visa-photo",
-        tool: "form-size",
+        tool: "passport-photo",
         name: "US visa / DV photo",
-        short: "600×600, under 240 KB",
+        short: "2 × 2 in, under 240 KB",
         group: "For forms",
         title: "Make a US visa or DV lottery photo (600×600)",
         intro:
-          "The US visa and DV lottery forms need a square photo of 600×600 pixels under 240 KB. This makes one in a click.",
+          "The US visa and DV lottery forms need a square 600 × 600 photo under 240 KB with a plain white background. Drop your photo and get one that fits.",
         about: [
-          "The photo is cropped to a centred square. Use a plain light background, as the rules require.",
+          "Your head is framed to fill about 60% of the height, as the rules ask, and the background is replaced with white.",
+          "Use a recent photo facing the camera, with no glasses and a neutral expression.",
         ],
-        preset: { form: "us-visa" },
+        preset: { spec: "2x2", target: 240 },
+      },
+      {
+        slug: "passport-photo-4x6",
+        tool: "passport-photo",
+        name: "Passport photos on 4×6",
+        short: "Print 8 at any photo shop",
+        group: "For forms",
+        title: "Print passport photos on a 4 × 6 sheet",
+        intro:
+          "Get a 4 × 6 inch sheet of passport photos, ready to print at any photo shop or at home. Much cheaper than a photo studio.",
+        about: [
+          "The sheet is 1800 × 1200 pixels at 300 dpi, with thin grey cut lines. Print it at actual size (no scaling) so each photo comes out 35 × 45 mm.",
+        ],
+        preset: { spec: "35x45", sheet: "4x6" },
+      },
+      {
+        slug: "compress-to-200kb",
+        tool: "compress",
+        name: "Compress to 200 KB",
+        short: "Visa and university forms",
+        group: "For forms",
+        title: "Compress an image to 200 KB",
+        intro:
+          "For forms that accept photos and scans up to 200 KB. Get the best quality that fits.",
+        about: [
+          "200 KB is plenty for a sharp photo. If your image is a document scan, it stays readable at this size.",
+        ],
+        preset: { type: "image/jpeg", target: 200 },
+      },
+      {
+        slug: "compress-to-20kb",
+        tool: "compress",
+        name: "Compress to 20 KB",
+        short: "Tiny signature uploads",
+        group: "For forms",
+        title: "Compress an image to 20 KB",
+        intro:
+          "Some forms only accept signatures and thumbnails under 20 KB. This finds the best quality that fits.",
+        about: [
+          "At 20 KB, keep the image small: crop close to the signature first, or set a smaller size in Advanced.",
+        ],
+        preset: { type: "image/jpeg", target: 20 },
+      },
+      {
+        slug: "transparent-signature",
+        tool: "signature",
+        name: "Transparent signature",
+        short: "PNG for documents",
+        group: "For forms",
+        title: "Make a transparent signature PNG",
+        intro:
+          "Photograph your signature on white paper and get clean ink on a transparent background, ready to place on documents and PDFs.",
+        about: [
+          "Shadows and paper texture are removed by comparing each pixel with the paper around it, so even a phone photo in uneven light comes out clean.",
+        ],
+        preset: { type: "image/png" },
       },
       {
         slug: "heic-to-jpg",
@@ -773,6 +856,146 @@ export const apps = [
           "16:9 at 1280 × 720 looks sharp on TVs and phones. Keep text large so it reads at small sizes.",
         ],
         preset: { size: "yt" },
+      },
+      {
+        slug: "instagram-no-crop",
+        tool: "extend-canvas",
+        name: "Instagram without cropping",
+        short: "Fit any photo in 4:5",
+        group: "For social",
+        title: "Post a full photo on Instagram without cropping",
+        intro:
+          "Instagram crops wide and tall photos. Add a blurred or coloured background so the whole photo fits a 4:5 post.",
+        about: [
+          "4:5 portrait posts take up the most room in the feed. Nothing is cut off: the space around your photo is filled instead.",
+        ],
+        preset: { frameRatio: "4:5" },
+      },
+      {
+        slug: "story-no-crop",
+        tool: "extend-canvas",
+        name: "Story without cropping",
+        short: "Fit any photo in 9:16",
+        group: "For social",
+        title: "Fit a photo in a 9:16 story without cropping",
+        intro:
+          "Turn a landscape or square photo into a full-screen 9:16 story with a blurred background, for Instagram, WhatsApp and TikTok.",
+        about: [
+          "Stories are 1080 × 1920. A blurred copy of your photo fills the top and bottom so it looks intentional.",
+        ],
+        preset: { frameRatio: "9:16" },
+      },
+      {
+        slug: "meme-generator",
+        tool: "add-text",
+        name: "Meme generator",
+        short: "Top and bottom text",
+        group: "For social",
+        title: "Meme generator",
+        intro:
+          "Classic white text with a black outline, at the top and bottom of any picture.",
+        about: [
+          "Text wraps to fit and gets an outline so it reads on any background. Switch to Clean for a modern caption look.",
+        ],
+        preset: {},
+      },
+      {
+        slug: "white-background",
+        tool: "change-bg",
+        name: "White background",
+        short: "Product and profile photos",
+        group: "Photos",
+        title: "Make a photo's background white",
+        intro:
+          "Marketplaces and job sites prefer a clean white background. Swap yours out in one step, on your device.",
+        about: [
+          "The subject is found automatically: people with a portrait model, products with an object model. Switch Subject if it picks the wrong one.",
+        ],
+        preset: {},
+      },
+      {
+        slug: "transparent-png",
+        tool: "remove-bg",
+        name: "Transparent PNG",
+        short: "Cut-out for designs",
+        group: "Photos",
+        title: "Make a transparent PNG from a photo",
+        intro:
+          "Remove the background and keep only the subject, ready to drop into slides, designs and stickers.",
+        about: [
+          "PNG keeps the transparency. WebP does too and makes smaller files for websites.",
+        ],
+        preset: {},
+      },
+      {
+        slug: "black-and-white",
+        tool: "filters",
+        name: "Black and white",
+        short: "Mono or high-contrast noir",
+        group: "Photos",
+        title: "Make a photo black and white",
+        intro:
+          "Turn colour photos into black and white, one photo or a whole batch.",
+        about: [
+          "Mono keeps every tone. Try Noir for deeper blacks and more drama.",
+        ],
+        preset: { filter: "mono" },
+      },
+      {
+        slug: "hide-personal-info",
+        tool: "blur",
+        name: "Hide personal info",
+        short: "Card numbers, names, plates",
+        group: "Photos",
+        title: "Hide personal info in a screenshot or photo",
+        intro:
+          "Cover card numbers, addresses, names and number plates before you share a screenshot or photo.",
+        about: [
+          "Solid boxes are the safest: unlike light blur, they can't be reversed. Pixelate with a high strength is also safe for text.",
+        ],
+        preset: {},
+      },
+      {
+        slug: "svg-to-png",
+        tool: "resize",
+        name: "SVG to PNG",
+        short: "Any size, sharp edges",
+        group: "Formats",
+        title: "Convert SVG to PNG",
+        intro:
+          "Turn SVG icons and logos into PNG at the size you need, with a transparent background.",
+        about: [
+          "The SVG is drawn at 2048 pixels on its longest side, so any smaller size you pick stays sharp.",
+        ],
+        preset: { type: "image/png", keepFormat: false },
+      },
+      {
+        slug: "jpg-to-png",
+        tool: "convert",
+        name: "JPG to PNG",
+        short: "Lossless copies",
+        group: "Formats",
+        title: "Convert JPG to PNG",
+        intro:
+          "Save a JPG as PNG, for apps and sites that ask for PNG or before editing it further.",
+        about: [
+          "Converting doesn't bring back detail the JPG already lost, but nothing more is lost from here on.",
+        ],
+        preset: { type: "image/png" },
+      },
+      {
+        slug: "webp-to-jpg",
+        tool: "convert",
+        name: "WebP to JPG",
+        short: "Open saved web images anywhere",
+        group: "Formats",
+        title: "Convert WebP to JPG",
+        intro:
+          "Images saved from websites are often WebP, which some apps can't open. Turn them into JPGs.",
+        about: [
+          "Transparent areas become white, because JPG has no transparency.",
+        ],
+        preset: { type: "image/jpeg", quality: 90 },
       },
     ],
   },
@@ -944,8 +1167,10 @@ export function linkTo(
 }
 
 /** Group items by their `group` field, keeping first-seen order. */
+/** Items grouped by `group`, in `order` when given (unknown groups go last), else first-seen order. */
 export function groupBy<T extends { group: string }>(
   items: readonly T[],
+  order?: readonly string[],
 ): [string, T[]][] {
   const map = new Map<string, T[]>();
   for (const item of items) {
@@ -953,7 +1178,11 @@ export function groupBy<T extends { group: string }>(
     list.push(item);
     map.set(item.group, list);
   }
-  return [...map.entries()];
+  const entries = [...map.entries()];
+  if (!order) return entries;
+  const rank = (g: string) =>
+    order.includes(g) ? order.indexOf(g) : order.length;
+  return entries.sort((a, b) => rank(a[0]) - rank(b[0]));
 }
 
 /** Every page a header, footer or palette may link to: tools and tasks of every live app. */

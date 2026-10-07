@@ -9,6 +9,8 @@ interface Props {
 
 const { tasks, icons } = Astro.props;
 const groups = groupBy(tasks);
+// Panels show six each so they line up; the rest open in place
+const SHOW = 6;
 ---
 
 <div class="dir-cols">
@@ -22,7 +24,7 @@ const groups = groupBy(tasks);
         <small>{list.length}</small>
       </header>
       <ul>
-        {list.map((t) => (
+        {list.slice(0, SHOW).map((t) => (
           <li>
             <a href={`/${t.slug}`}>
               <span>
@@ -34,6 +36,24 @@ const groups = groupBy(tasks);
           </li>
         ))}
       </ul>
+      {list.length > SHOW && (
+        <details class="dir-more">
+          <summary>{list.length - SHOW} more</summary>
+          <ul>
+            {list.slice(SHOW).map((t) => (
+              <li>
+                <a href={`/${t.slug}`}>
+                  <span>
+                    <strong>{t.name}</strong>
+                    <small>{t.short}</small>
+                  </span>
+                  <Icon name="right" class="ico go" />
+                </a>
+              </li>
+            ))}
+          </ul>
+        </details>
+      )}
     </section>
   ))}
 </div>

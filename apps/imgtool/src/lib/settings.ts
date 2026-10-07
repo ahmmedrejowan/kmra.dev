@@ -351,6 +351,11 @@ export function applyPreset(s: Settings, preset?: Preset): Settings {
   for (const [k, v] of Object.entries(preset)) {
     if (k === "size" && typeof v === "string") out = applySize(out, v);
     else if (k === "form" && typeof v === "string") out = applyForm(out, v);
+    // Nested settings that a flat task preset can't spell out directly
+    else if (k === "spec" && typeof v === "string")
+      out = { ...out, passport: { zoom: 0, ...out.passport, spec: v } };
+    else if (k === "frameRatio" && typeof v === "string")
+      out = { ...out, frame: { ...(out.frame ?? NO_FRAME), ratio: v } };
     else (out as Record<string, unknown>)[k] = v;
   }
   return out;

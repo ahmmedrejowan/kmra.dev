@@ -71,7 +71,22 @@ const related = [
   ...app.tasks.filter((t) => t.tool === tool.slug && t.slug !== task?.slug),
   ...app.tasks.filter((t) => t.tool !== tool.slug && t.slug !== task?.slug),
 ].slice(0, 3);
-const others = app.tools.filter((t) => t.slug !== tool.slug && t.ready);
+// Eight other tools: same group first, then the popular ones, then the rest
+const popular = app.popular ?? [];
+const others = app.tools
+  .filter((t) => t.slug !== tool.slug && t.ready)
+  .map((t) => ({
+    t,
+    rank:
+      t.group === tool.group
+        ? 0
+        : popular.includes(t.slug)
+          ? 1 + popular.indexOf(t.slug) / 100
+          : 2,
+  }))
+  .sort((a, b) => a.rank - b.rank)
+  .slice(0, 8)
+  .map((x) => x.t);
 const icons = Object.fromEntries(app.tools.map((t) => [t.slug, t.icon]));
 const railTools = app.tools.map(({ slug, name, icon, ready }) => ({
   slug,
@@ -215,7 +230,11 @@ const schema = [
         <h2>Other tools</h2>
         <p>More ways to edit your images.</p>
       </div>
-      <ToolCards tools={others} allHref="/" allLabel="All image tools" />
+      <ToolCards
+        tools={others}
+        allHref="/sitemap"
+        allLabel={`All ${app.tools.filter((t) => t.ready).length} image tools`}
+      />
     </section>
   </div>
 </BaseLayout>
