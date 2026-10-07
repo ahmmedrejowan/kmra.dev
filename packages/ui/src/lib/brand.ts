@@ -10,6 +10,9 @@ export function markInner(appId: string): string {
     case "pdftool":
       // A page with a folded corner and text lines
       return `<path d="M20 12h17l10 10v30H20z" fill="#fff"/><path d="M37 12v10h10" fill="none" stroke-opacity=".35" stroke="#000" stroke-width="2"/><path d="M26 32h15M26 38h15M26 44h10" stroke="#e5484d" stroke-width="3" stroke-linecap="round"/>`;
+    case "qrtool":
+      // Three QR finder squares and a few modules
+      return `<g fill="#fff"><path fill-rule="evenodd" d="M13 13h14v14H13zM16.5 16.5v7h7v-7zM37 13h14v14H37zM40.5 16.5v7h7v-7zM13 37h14v14H13zM16.5 40.5v7h7v-7z"/><rect x="19" y="19" width="2" height="2"/><rect x="43" y="19" width="2" height="2"/><rect x="19" y="43" width="2" height="2"/><rect x="37" y="37" width="5" height="5" rx="1"/><rect x="46" y="37" width="5" height="5" rx="1"/><rect x="37" y="46" width="5" height="5" rx="1"/><rect x="46" y="46" width="5" height="5" rx="1"/><rect x="41.5" y="41.5" width="5" height="5" rx="1"/></g>`;
     default:
       return `<text x="32" y="43" font-family="system-ui,sans-serif" font-size="30" font-weight="700" fill="#fff" text-anchor="middle">${appId.slice(0, 1).toUpperCase()}</text>`;
   }

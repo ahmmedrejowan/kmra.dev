@@ -24,7 +24,7 @@ const CSP = [
 ].join("; ");
 
 /** Vercel project config for a static Astro app in apps/<id>. */
-export function appConfig(): VercelConfig {
+export function appConfig(opts: { camera?: boolean } = {}): VercelConfig {
   return {
     framework: "astro",
     buildCommand: "turbo run build",
@@ -38,7 +38,8 @@ export function appConfig(): VercelConfig {
         { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
         {
           key: "Permissions-Policy",
-          value: "camera=(), microphone=(), geolocation=(), interest-cohort=()",
+          // Only apps that scan with the camera (QR) may ask for it, and only for themselves
+          value: `camera=${opts.camera ? "(self)" : "()"}, microphone=(), geolocation=(), interest-cohort=()`,
         },
         { key: "Cross-Origin-Opener-Policy", value: "same-origin" },
       ]),

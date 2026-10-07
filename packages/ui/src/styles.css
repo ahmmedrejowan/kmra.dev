@@ -4395,3 +4395,177 @@ footer.site .fmore {
   font-weight: 600;
   font-size: 11px;
 }
+
+/* ---------- QR tools ---------- */
+.qr-stage {
+  gap: 14px;
+  align-content: center;
+}
+.qr-preview {
+  background: #fff;
+  padding: 18px;
+  border-radius: 16px;
+  box-shadow: 0 16px 40px -20px rgb(0 0 0 / 0.45);
+  line-height: 0;
+}
+.qr-preview svg {
+  width: min(320px, 70vw);
+  height: auto;
+}
+.qr-preview.placeholder {
+  opacity: 0.35;
+}
+.qr-caption {
+  margin: 0;
+  font-size: 13.5px;
+  color: var(--muted);
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+.qr-caption .ico {
+  width: 15px;
+  height: 15px;
+  color: var(--good);
+}
+.cam {
+  position: relative;
+  width: 100%;
+  max-width: 560px;
+  aspect-ratio: 4 / 3;
+  border-radius: 14px;
+  overflow: hidden;
+  background: #0d0f14;
+  display: grid;
+  place-items: center;
+}
+.cam video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.cam video.off {
+  display: none;
+}
+.cam-frame {
+  position: absolute;
+  inset: 18% 24%;
+  border: 3px solid rgb(255 255 255 / 0.9);
+  border-radius: 18px;
+  box-shadow: 0 0 0 9999px rgb(0 0 0 / 0.35);
+}
+.cam-idle {
+  position: relative;
+  display: grid;
+  gap: 12px;
+  justify-items: center;
+  text-align: center;
+  padding: 20px;
+  color: #e8eaee;
+}
+.cam-idle .muted {
+  color: #b9bec8;
+  max-width: 320px;
+  margin: 0;
+}
+.cam-idle .warn {
+  margin: 0;
+  max-width: 340px;
+}
+.scan-drop {
+  width: 100%;
+  min-height: 300px;
+  cursor: pointer;
+}
+.scan-results {
+  display: grid;
+  gap: 10px;
+}
+.scan-result {
+  display: grid;
+  gap: 8px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 12px;
+  background: var(--card);
+  justify-items: start;
+}
+.scan-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+.tag {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--acc);
+  background: var(--acc-soft);
+  border-radius: 6px;
+  padding: 2px 8px;
+}
+.scan-host {
+  margin: 0;
+  font-weight: 600;
+  font-size: 16px;
+  overflow-wrap: anywhere;
+}
+.scan-text {
+  margin: 0;
+  font-size: 14px;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+.warn.block {
+  display: block;
+}
+.scan-result .kv {
+  width: 100%;
+}
+.barcode-wrap {
+  background: #fff;
+  padding: 18px;
+  border-radius: 14px;
+  box-shadow: 0 16px 40px -20px rgb(0 0 0 / 0.45);
+  max-width: 100%;
+  overflow: auto;
+  line-height: 0;
+}
+.barcode-wrap svg {
+  max-width: 100%;
+  height: auto;
+}
+.barcode-wrap svg.dim {
+  opacity: 0.25;
+}
+.bulk-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+  gap: 12px;
+  width: 100%;
+}
+.bulk-grid figure {
+  margin: 0;
+  display: grid;
+  gap: 6px;
+  justify-items: center;
+}
+.bulk-grid figure > div {
+  background: #fff;
+  padding: 6px;
+  border-radius: 8px;
+  line-height: 0;
+}
+.bulk-grid svg {
+  width: 100%;
+  height: auto;
+  max-width: 120px;
+}
+.bulk-grid figcaption {
+  font-size: 11.5px;
+  color: var(--muted);
+  overflow-wrap: anywhere;
+  text-align: center;
+}

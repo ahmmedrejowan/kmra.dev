@@ -1,0 +1,70 @@
+---
+import BaseLayout from "@kmra/ui/layouts/BaseLayout.astro";
+import ToolShowcase from "@kmra/ui/components/ToolShowcase.astro";
+import TaskDirectory from "@kmra/ui/components/TaskDirectory.astro";
+import PrivacySection from "@kmra/ui/components/PrivacySection.astro";
+import HeroChips from "@kmra/ui/components/HeroChips.astro";
+import LandingDrop from "@kmra/ui/components/LandingDrop";
+import { getApp } from "@kmra/registry";
+
+const app = getApp("qrtool");
+const icons = Object.fromEntries(app.tools.map((t) => [t.slug, t.icon]));
+// A short popular list (tools and tasks); the full set is in the menu and the showcase below
+const chips = (app.popular ?? []).flatMap((slug) => {
+  const tool = app.tools.find((t) => t.slug === slug && t.ready);
+  if (tool) return [{ href: `/${slug}`, label: tool.name, icon: tool.icon }];
+  const task = app.tasks.find((t) => t.slug === slug);
+  return task
+    ? [{ href: `/${slug}`, label: task.name, icon: icons[task.tool] ?? "file" }]
+    : [];
+});
+---
+
+<BaseLayout appId="qrtool" title="Free QR code generator and scanner">
+  <section class="hero-band screen">
+    <div class="wrap hero-center">
+      <h1 class="display">QR codes that never expire</h1>
+      <p class="lede">
+        Make QR codes and barcodes, or scan one from your camera or a
+        screenshot. No sign-up, no tracking links.
+      </p>
+      <LandingDrop
+        client:load
+        large
+        accept="image/"
+        label="Drop an image to scan its code"
+        formats={["Screenshot", "Photo", "PNG", "JPG"]}
+        target="/scan-qr-from-image"
+        text={{
+          hint: "Or paste a screenshot. Read on your device.",
+          button: "Choose an image",
+          over: "Drop to scan",
+        }}
+      />
+      <HeroChips items={chips} />
+    </div>
+  </section>
+
+  <section class="screen">
+    <div class="wrap">
+      <div class="sechead primary">
+        <h2>QR tools</h2>
+        <p>Free, private, and the codes are yours forever.</p>
+      </div>
+    </div>
+    <ToolShowcase tools={app.tools} />
+  </section>
+
+  <section class="screen">
+    <div class="wrap stack">
+      <div>
+        <div class="sechead primary">
+          <h2>Popular tasks</h2>
+          <p>Ready-made settings for everyday jobs.</p>
+        </div>
+        <TaskDirectory tasks={app.tasks} icons={icons} />
+      </div>
+      <PrivacySection />
+    </div>
+  </section>
+</BaseLayout>

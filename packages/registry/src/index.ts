@@ -1410,17 +1410,227 @@ export const apps = [
     name: "QR tools",
     brand: ["QR", "Tool"],
     short: "QR",
-    tagline: "Generate and scan QR codes and barcodes.",
+    tagline:
+      "Make and scan QR codes and barcodes in your browser. No sign-up, no tracking links.",
     accent: {
       light: "#f76b15",
       dark: "#ff8b3e",
       softLight: "#feeee3",
       softDark: "#3a2312",
     },
+    // Turns true once qrtool.kmra.dev is deployed and its DNS record exists
     live: false,
     devPort: 4325,
-    tools: [],
-    tasks: [],
+    toolGroups: ["Create", "Scan"],
+    popular: [
+      "generator",
+      "scanner",
+      "wifi-qr",
+      "barcode",
+      "bulk",
+      "whatsapp-qr",
+    ],
+    tools: [
+      {
+        slug: "generator",
+        title: "QR code generator",
+        name: "QR code generator",
+        description:
+          "QR codes for links, text, Wi-Fi, contacts and more. Style them, add a logo, download PNG or SVG.",
+        blurb: "Links, Wi-Fi, contacts",
+        icon: "grid",
+        group: "Create",
+        ready: true,
+        steps: [
+          "Pick what the code is for: a link, Wi-Fi, a contact, text and more.",
+          "Fill it in. The code updates as you type. Choose colours and a style.",
+          "Download PNG for printing or SVG for designs. The code never expires.",
+        ],
+      },
+      {
+        slug: "scanner",
+        title: "Scan a QR code or barcode",
+        name: "QR scanner",
+        description:
+          "Read QR codes and barcodes with your camera or from a photo or screenshot.",
+        blurb: "Camera or image",
+        icon: "scanFace",
+        group: "Scan",
+        ready: true,
+        steps: [
+          "Allow the camera and point it at a code, or drop a photo or screenshot.",
+          "The code is read on your device.",
+          "Copy the result, join the Wi-Fi, or check the link before you open it.",
+        ],
+      },
+      {
+        slug: "barcode",
+        title: "Barcode generator",
+        name: "Barcode generator",
+        description:
+          "Code 128, EAN-13, UPC-A, Code 39 and more, as PNG or SVG.",
+        blurb: "EAN, UPC, Code 128",
+        icon: "hash",
+        group: "Create",
+        ready: true,
+        steps: [
+          "Pick the barcode type you need.",
+          "Type the number or text. Check digits are added for you.",
+          "Download PNG or SVG.",
+        ],
+      },
+      {
+        slug: "bulk",
+        title: "Bulk QR code generator",
+        name: "Bulk QR codes",
+        description:
+          "Paste a list and get a QR code for every line, all in one zip.",
+        blurb: "One per line, zipped",
+        icon: "layers",
+        group: "Create",
+        ready: true,
+        steps: [
+          "Paste links or text, one per line. Optionally add a name before a comma.",
+          "Pick the size, colours and format.",
+          "Download every code in one zip, named by line.",
+        ],
+      },
+    ],
+    tasks: [
+      {
+        slug: "wifi-qr",
+        tool: "generator",
+        name: "Wi-Fi QR code",
+        short: "Guests join without typing",
+        group: "Popular codes",
+        title: "Make a Wi-Fi QR code",
+        intro:
+          "Guests scan it with their phone camera and join your Wi-Fi without typing the password. Print it for your home, café or office.",
+        about: [
+          "Works with the built-in camera on iPhone and Android. Your network name and password stay on your device.",
+        ],
+        preset: { type: "wifi" },
+      },
+      {
+        slug: "whatsapp-qr",
+        tool: "generator",
+        name: "WhatsApp QR code",
+        short: "Start a chat in one scan",
+        group: "Popular codes",
+        title: "Make a WhatsApp QR code",
+        intro:
+          "People scan it and a WhatsApp chat with you opens, with an optional message already typed. Great for shops and business cards.",
+        about: [
+          "Use your number with the country code, for example 8801712345678.",
+        ],
+        preset: { type: "whatsapp" },
+      },
+      {
+        slug: "contact-qr",
+        tool: "generator",
+        name: "Contact QR code",
+        short: "Save your details in one scan",
+        group: "Popular codes",
+        title: "Make a contact (vCard) QR code",
+        intro:
+          "Put your name, phone, email and company in a QR code. Scanning it offers to save you as a contact.",
+        about: ["Add it to business cards, name badges and email signatures."],
+        preset: { type: "vcard" },
+      },
+      {
+        slug: "link-qr",
+        tool: "generator",
+        name: "Link QR code",
+        short: "Website, menu, form",
+        group: "Popular codes",
+        title: "Make a QR code for a link",
+        intro:
+          "Point people to a website, menu, form or video. The code is permanent: no sign-up, no redirect, no expiry.",
+        about: [
+          "Many free QR sites use their own redirect links that stop working or show ads. These codes contain your link directly.",
+        ],
+        preset: { type: "url" },
+      },
+      {
+        slug: "email-qr",
+        tool: "generator",
+        name: "Email QR code",
+        short: "Pre-filled email",
+        group: "More codes",
+        title: "Make an email QR code",
+        intro:
+          "Scanning opens a new email to you with the subject and message filled in.",
+        about: ["Handy for feedback, support and sign-up sheets."],
+        preset: { type: "email" },
+      },
+      {
+        slug: "sms-qr",
+        tool: "generator",
+        name: "SMS QR code",
+        short: "Text message ready to send",
+        group: "More codes",
+        title: "Make an SMS QR code",
+        intro:
+          "Scanning opens a text message to your number with the message already written.",
+        about: ["Good for votes, sign-ups and opt-in keywords."],
+        preset: { type: "sms" },
+      },
+      {
+        slug: "location-qr",
+        tool: "generator",
+        name: "Location QR code",
+        short: "Open a place in maps",
+        group: "More codes",
+        title: "Make a map location QR code",
+        intro: "Scanning opens a location in the phone's maps app.",
+        about: [
+          "Paste coordinates from your maps app, for example 23.8103, 90.4125.",
+        ],
+        preset: { type: "geo" },
+      },
+      {
+        slug: "ean-13",
+        tool: "barcode",
+        name: "EAN-13 barcode",
+        short: "Retail product codes",
+        group: "Barcodes",
+        title: "Make an EAN-13 barcode",
+        intro:
+          "Make the 13-digit barcode used on retail products. Type 12 digits and the check digit is added.",
+        about: [
+          "Shops can only sell products with EAN numbers registered to your company through GS1. This makes the barcode image for a number you already have.",
+        ],
+        preset: { format: "EAN13" },
+      },
+      {
+        slug: "code-128",
+        tool: "barcode",
+        name: "Code 128 barcode",
+        short: "Labels, shipping, inventory",
+        group: "Barcodes",
+        title: "Make a Code 128 barcode",
+        intro:
+          "Code 128 holds letters and numbers in a compact barcode, ideal for labels, inventory and shipping.",
+        about: [
+          "Any scanner reads Code 128. It's the safest choice when you're not told which type to use.",
+        ],
+        preset: { format: "CODE128" },
+      },
+      {
+        slug: "scan-qr-from-image",
+        tool: "scanner",
+        name: "Scan QR from image",
+        short: "Screenshots and photos",
+        group: "Scan",
+        title: "Scan a QR code from an image or screenshot",
+        intro:
+          "Got a QR code in a screenshot or a photo? Drop it here to read it, no second phone needed.",
+        about: [
+          "Paste a screenshot straight from the clipboard. Several codes in one image are all read.",
+        ],
+        preset: { mode: "image" },
+      },
+    ],
   },
 ] as const satisfies readonly App[];
 
