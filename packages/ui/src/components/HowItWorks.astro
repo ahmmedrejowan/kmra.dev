@@ -1,0 +1,30 @@
+---
+import Trio from "./Trio.astro";
+---
+
+<div class="content" style="padding-top: 8px">
+  <div class="prose">
+    <p>
+      When you open a kmra page, your browser downloads the code for that tool
+      once. Everything after that, from reading your file to saving the result,
+      happens in your browser's memory on your own device.
+    </p>
+    <p id="privacy">
+      Every kmra site sends a security policy that stops the page from
+      contacting any other server. Even if there were a bug, your browser would
+      refuse to send your file anywhere.
+    </p>
+    <p>
+      To check for yourself, open your browser's developer tools, choose the
+      Network tab and use any tool. You'll see the page load, then nothing while
+      your file is processed.
+    </p>
+    <p>
+      There are no accounts and no tracking of your files. Settings you choose,
+      like dark mode or Advanced mode, are kept in your own browser.
+    </p>
+  </div>
+  <div>
+    <Trio />
+  </div>
+</div>

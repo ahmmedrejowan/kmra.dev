@@ -16,6 +16,7 @@
     "@kmra/ui": "workspace:*",
     "@tailwindcss/vite": "^4.3.3",
     "astro": "^7.3.6",
+    "fflate": "^0.8.3",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
     "tailwindcss": "^4.3.3"

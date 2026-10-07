@@ -1,86 +1,284 @@
 ---
-import { apps, appUrl, getApp, type AppId } from "@kmra/registry";
+import {
+  apps,
+  getApp,
+  groupBy,
+  linkTo,
+  type App,
+  type AppId,
+} from "@kmra/registry";
+import Icon from "./Icon.astro";
 
 interface Props {
   appId: AppId;
-  /** Current tool slug, highlighted in the nav */
-  current?: string;
 }
 
-const { appId, current } = Astro.props;
+const { appId } = Astro.props;
 const app = getApp(appId);
 const dev = import.meta.env.DEV;
+const toolGroups = groupBy(app.tools);
+const taskGroups = groupBy(app.tasks);
+const popular = app.tasks.slice(0, 3);
+const toolIcon = (slug: string) =>
+  app.tools.find((t) => t.slug === slug)?.icon ?? "file";
+const appHref = (a: App) =>
+  a.live ? linkTo(appId, a.id as AppId, "/", dev) : undefined;
 ---
 
-<header class="border-b border-line bg-paper">
-  <div class="mx-auto flex max-w-6xl items-center gap-6 px-4 py-3 sm:px-6">
-    <a href="/" class="flex items-baseline gap-2 whitespace-nowrap">
-      <span class="font-wide text-lg font-extrabold tracking-tight">kmra</span>
-      <span class="text-muted">{app.name}</span>
-    </a>
+<header class="site">
+  <div class="wrap">
+    <div class="hd">
+      <a class="logo" href="/">
+        <b aria-hidden="true">k</b>kmra <span>{app.short.toLowerCase()}</span>
+      </a>
 
-    <nav
-      aria-label={app.name}
-      class="hidden flex-1 items-center gap-5 text-sm md:flex"
-    >
+      <nav aria-label="Main" style="display: contents">
+        <div class="menu">
+          <button type="button" aria-expanded="false" aria-controls="m-tools">
+            Tools <Icon name="down" />
+          </button>
+          <div class="mega" id="m-tools" hidden>
+            {toolGroups.map(([group, tools]) => (
+              <div>
+                <h6>{group}</h6>
+                {tools.map((t) => (
+                  <a class="mi" href={`/${t.slug}`}>
+                    <Icon name={t.icon} />
+                    <span>
+                      <strong>
+                        {t.name}
+                        {!t.ready && <span class="soon">Soon</span>}
+                      </strong>
+                      <small>{t.description}</small>
+                    </span>
+                  </a>
+                ))}
+              </div>
+            ))}
+            {popular.length > 0 && (
+              <div class="feature">
+                <h6>Popular tasks</h6>
+                {popular.map((t) => (
+                  <a class="mi" href={`/${t.slug}`}>
+                    <Icon name={toolIcon(t.tool)} />
+                    <span>
+                      <strong>{t.name}</strong>
+                      <small>{t.short}</small>
+                    </span>
+                  </a>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {taskGroups.length > 0 && (
+          <div class="menu">
+            <button type="button" aria-expanded="false" aria-controls="m-tasks">
+              Use cases <Icon name="down" />
+            </button>
+            <div class="mega" id="m-tasks" hidden>
+              {taskGroups.map(([group, tasks]) => (
+                <div>
+                  <h6>{group}</h6>
+                  {tasks.map((t) => (
+                    <a class="mi" href={`/${t.slug}`}>
+                      <Icon name={toolIcon(t.tool)} />
+                      <span>
+                        <strong>{t.name}</strong>
+                        <small>{t.short}</small>
+                      </span>
+                    </a>
+                  ))}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        <div class="menu">
+          <button type="button" aria-expanded="false" aria-controls="m-apps">
+            Apps <Icon name="down" />
+          </button>
+          <div class="mega single" id="m-apps" hidden>
+            {apps.map((a) => {
+              const inner = (
+                <>
+                  <span class="appdot" style={`background:${a.accent.light}`} />
+                  <span>
+                    <strong>
+                      {a.name}
+                      {!a.live && <span class="soon">Soon</span>}
+                    </strong>
+                    <small>{a.tagline}</small>
+                  </span>
+                </>
+              );
+              const href = appHref(a);
+              return href ? (
+                <a
+                  class="mi"
+                  href={href}
+                  aria-current={a.id === appId ? "true" : undefined}
+                >
+                  {inner}
+                </a>
+              ) : (
+                <div class="mi">{inner}</div>
+              );
+            })}
+          </div>
+        </div>
+
+        <a class="navlink" href="/how-it-works">
+          How it works
+        </a>
+      </nav>
+
+      <div class="right">
+        <button
+          class="kbtn"
+          type="button"
+          data-palette
+          aria-label="Search tools"
+        >
+          <Icon name="search" />
+          <span>Search tools</span>
+          <kbd>⌘K</kbd>
+        </button>
+        <button
+          class="iconbtn"
+          type="button"
+          id="theme-toggle"
+          aria-label="Switch light or dark theme"
+        >
+          <Icon name="moon" class="ico theme-moon" />
+          <Icon name="sun" class="ico theme-sun" />
+        </button>
+        <button
+          class="iconbtn burger"
+          type="button"
+          id="burger"
+          aria-label="Menu"
+          aria-expanded="false"
+          aria-controls="drawer"
+        >
+          <Icon name="menu" />
+        </button>
+      </div>
+    </div>
+
+    <nav class="drawer" id="drawer" aria-label="Menu" hidden>
+      <h6>Tools</h6>
       {app.tools.map((t) => (
-        <a
-          href={`/${t.slug}`}
-          aria-current={t.slug === current ? "page" : undefined}
-          class:list={[
-            "hover:text-ink",
-            t.slug === current
-              ? "font-semibold text-ink underline decoration-marker decoration-2 underline-offset-8"
-              : "text-muted",
-          ]}
-        >
+        <a href={`/${t.slug}`}>
           {t.name}
+          {!t.ready && <span class="soon">Soon</span>}
         </a>
       ))}
-    </nav>
-
-    <nav
-      aria-label="Switch tool set"
-      class="ml-auto flex items-center gap-1 text-sm md:ml-0"
-    >
-      {apps.map((a) => (
-        <a
-          href={a.id === appId ? "/" : appUrl(a.id, "/", dev)}
-          aria-current={a.id === appId ? "true" : undefined}
-          class:list={[
-            "flex items-center gap-2 rounded-full px-3 py-1.5",
-            a.id === appId
-              ? "bg-surface font-medium ring-1 ring-line"
-              : "text-muted hover:text-ink",
-          ]}
-        >
+      {app.tasks.length > 0 && (
+        <>
+          <h6>Use cases</h6>
+          {app.tasks.map((t) => (
+            <a href={`/${t.slug}`}>{t.name}</a>
+          ))}
+        </>
+      )}
+      <h6>Apps</h6>
+      {apps.map((a) => {
+        const href = appHref(a);
+        return href ? (
+          <a href={href}>
+            <span class="appdot" style={`background:${a.accent.light}`} />
+            {a.name}
+          </a>
+        ) : (
           <span
-            class="size-2.5 rounded-sm"
-            style={`background:${a.mat}`}
-            aria-hidden="true"
-          />
-          {a.short}
-        </a>
-      ))}
+            class="muted"
+            style="display:flex;gap:8px;align-items:center;padding:7px 0"
+          >
+            <span class="appdot" style={`background:${a.accent.light}`} />
+            {a.name} <span class="soon">Soon</span>
+          </span>
+        );
+      })}
+      <h6>About</h6>
+      <a href="/how-it-works">How it works</a>
     </nav>
   </div>
-
-  <nav
-    aria-label={`${app.name} (mobile)`}
-    class="border-t border-line md:hidden"
-  >
-    <div class="flex gap-5 overflow-x-auto px-4 py-2.5 text-sm whitespace-nowrap">
-      {app.tools.map((t) => (
-        <a
-          href={`/${t.slug}`}
-          aria-current={t.slug === current ? "page" : undefined}
-          class:list={[
-            t.slug === current ? "font-semibold text-ink" : "text-muted",
-          ]}
-        >
-          {t.name}
-        </a>
-      ))}
-    </div>
-  </nav>
 </header>
+
+<style is:global>
+  .theme-sun {
+    display: none;
+  }
+  :root[data-theme="dark"] .theme-sun {
+    display: block;
+  }
+  :root[data-theme="dark"] .theme-moon {
+    display: none;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) .theme-sun {
+      display: block;
+    }
+    :root:not([data-theme="light"]) .theme-moon {
+      display: none;
+    }
+  }
+</style>
+
+<script>
+  const menus = () => [
+    ...document.querySelectorAll<HTMLButtonElement>(".menu > button"),
+  ];
+  function setMenu(btn: HTMLButtonElement, open: boolean) {
+    btn.setAttribute("aria-expanded", String(open));
+    const panel = document.getElementById(
+      btn.getAttribute("aria-controls") ?? "",
+    );
+    if (panel) panel.hidden = !open;
+  }
+  const closeAll = (except?: Element) =>
+    menus().forEach((b) => b !== except && setMenu(b, false));
+
+  document.addEventListener("click", (e) => {
+    const target = e.target as Element;
+    const btn = target.closest<HTMLButtonElement>(".menu > button");
+    if (btn) {
+      closeAll(btn);
+      setMenu(btn, btn.getAttribute("aria-expanded") !== "true");
+      return;
+    }
+    if (!target.closest(".mega")) closeAll();
+  });
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") closeAll();
+  });
+
+  const burger = document.getElementById("burger")!;
+  const drawer = document.getElementById("drawer")!;
+  burger.addEventListener("click", () => {
+    drawer.hidden = !drawer.hidden;
+    burger.setAttribute("aria-expanded", String(!drawer.hidden));
+  });
+
+  document.getElementById("theme-toggle")!.addEventListener("click", () => {
+    const root = document.documentElement;
+    const isDark = root.dataset.theme
+      ? root.dataset.theme === "dark"
+      : matchMedia("(prefers-color-scheme: dark)").matches;
+    root.dataset.theme = isDark ? "light" : "dark";
+    try {
+      localStorage.setItem("kmra-theme", root.dataset.theme);
+    } catch {}
+  });
+
+  document
+    .querySelectorAll("[data-palette]")
+    .forEach((b) =>
+      b.addEventListener("click", () =>
+        window.dispatchEvent(new CustomEvent("kmra:palette")),
+      ),
+    );
+</script>

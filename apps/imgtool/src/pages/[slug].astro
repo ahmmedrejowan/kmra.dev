@@ -1,0 +1,152 @@
+---
+import BaseLayout from "@kmra/ui/layouts/BaseLayout.astro";
+import Crumbs from "@kmra/ui/components/Crumbs.astro";
+import ToolGrid from "@kmra/ui/components/ToolGrid.astro";
+import TaskList from "@kmra/ui/components/TaskList.astro";
+import Steps from "@kmra/ui/components/Steps.astro";
+import Faq from "@kmra/ui/components/Faq.astro";
+import SoonBox from "@kmra/ui/components/SoonBox.astro";
+import Icon from "@kmra/ui/components/Icon.astro";
+import { getApp, type Task, type Tool } from "@kmra/registry";
+import ImageTool from "../components/ImageTool";
+
+export function getStaticPaths() {
+  const app = getApp("imgtool");
+  return [
+    ...app.tools.map((tool) => ({
+      params: { slug: tool.slug },
+      props: { tool, task: undefined },
+    })),
+    ...app.tasks.map((task) => ({
+      params: { slug: task.slug },
+      props: { tool: app.tools.find((t) => t.slug === task.tool)!, task },
+    })),
+  ];
+}
+
+interface Props {
+  tool: Tool;
+  task?: Task;
+}
+
+const { tool, task } = Astro.props;
+const app = getApp("imgtool");
+const title = task?.title ?? tool.title ?? tool.name;
+const intro = task?.intro ?? tool.description;
+const crumbs = task
+  ? [
+      { label: app.name, href: "/" },
+      { label: tool.name, href: `/${tool.slug}` },
+      { label: task.name },
+    ]
+  : [{ label: app.name, href: "/" }, { label: tool.name }];
+const related = app.tasks.filter(
+  (t) => t.tool === tool.slug && t.slug !== task?.slug,
+);
+const others = app.tools
+  .filter((t) => t.slug !== tool.slug && t.ready)
+  .slice(0, 4);
+const railTools = app.tools.map(({ slug, name, icon, ready }) => ({
+  slug,
+  name,
+  icon,
+  ready,
+}));
+
+const faq = [
+  {
+    q: "Is my image uploaded?",
+    a: "No. It's processed in your browser and never leaves your device.",
+  },
+  {
+    q: "What does Advanced add?",
+    a: "Every option at once (size, format, quality, target size), a batch list for many files, and the steps applied to all of them. Your choice is remembered next time.",
+  },
+  {
+    q: "Is there a limit?",
+    a: "No limits from us. Very large images can be slow on phones because the work uses your device's memory.",
+  },
+];
+---
+
+<BaseLayout appId="imgtool" title={`${title} · kmra`} description={intro}>
+  <div class="wrap">
+    <Crumbs items={crumbs} />
+    <div class="ptitle">
+      <div>
+        <h1>{title}</h1>
+        <p>{intro}</p>
+      </div>
+      {tool.ready && (
+        <div class="modes" role="group" aria-label="Mode">
+          <button type="button" aria-pressed="true">
+            Simple
+          </button>
+          <button type="button" aria-pressed="false" data-advanced>
+            <Icon name="sliders" />
+            Advanced
+          </button>
+        </div>
+      )}
+    </div>
+
+    {tool.ready ? (
+      <ImageTool
+        client:load
+        tool={tool.slug}
+        preset={task?.preset}
+        tools={railTools}
+      />
+    ) : (
+      <SoonBox tool={tool} cta={{ label: "Try Compress", href: "/compress" }} />
+    )}
+
+    {tool.ready && (
+      <div class="content">
+        <div>
+          <h2>How to use it</h2>
+          {tool.steps && <Steps steps={tool.steps} />}
+        </div>
+        {task ? (
+          <div>
+            <h2>Good to know</h2>
+            <div class="prose">
+              {task.about.map((p) => (
+                <p>{p}</p>
+              ))}
+            </div>
+          </div>
+        ) : (
+          <div>
+            <h2>Questions</h2>
+            <Faq items={faq} />
+          </div>
+        )}
+      </div>
+    )}
+
+    {related.length > 0 && (
+      <section class="block">
+        <div class="sechead">
+          <h2>Related tasks</h2>
+        </div>
+        <TaskList tasks={related} />
+      </section>
+    )}
+
+    <section class="block">
+      <div class="sechead">
+        <h2>{tool.ready ? "Other tools" : "Ready now"}</h2>
+      </div>
+      <ToolGrid tools={others} />
+    </section>
+  </div>
+</BaseLayout>
+
+<script>
+  document
+    .querySelector("[data-advanced]")
+    ?.addEventListener("click", () =>
+      window.dispatchEvent(new CustomEvent("kmra:advanced")),
+    );
+</script>

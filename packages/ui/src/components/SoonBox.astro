@@ -1,0 +1,26 @@
+---
+import type { Tool } from "@kmra/registry";
+import Icon from "./Icon.astro";
+
+interface Props {
+  tool: Tool;
+  /** Where to send people meanwhile */
+  cta?: { label: string; href: string };
+}
+
+const { tool, cta } = Astro.props;
+---
+
+<div class="soonbox">
+  <Icon name={tool.icon} />
+  <h2>{tool.name} is coming soon</h2>
+  <p>
+    It will run on your device like every other kmra tool, with simple and
+    advanced modes.
+  </p>
+  {cta && (
+    <a class="btn primary" href={cta.href}>
+      {cta.label}
+    </a>
+  )}
+</div>

@@ -2,10 +2,10 @@
 
 Free utility tools that run entirely in your browser. Files are never uploaded.
 
-| App         | URL                                          | Tools                                              |
-| ----------- | -------------------------------------------- | -------------------------------------------------- |
-| Image Tools | [imgtool.kmra.dev](https://imgtool.kmra.dev) | resize, convert · _soon:_ compress, crop, rotate   |
-| PDF Tools   | [pdftool.kmra.dev](https://pdftool.kmra.dev) | _soon:_ merge, split, rotate, PDF→image, image→PDF |
+| App         | URL                                          | Tools                                                                                                                                                            |
+| ----------- | -------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Image tools | [imgtool.kmra.dev](https://imgtool.kmra.dev) | compress, convert, resize, strip metadata, plus task pages (compress to 100 KB, PNG to JPG, Instagram sizes…) · _soon:_ crop, rotate, remove background, upscale |
+| PDF Tools   | [pdftool.kmra.dev](https://pdftool.kmra.dev) | _soon:_ merge, split, rotate, PDF→image, image→PDF                                                                                                               |
 
 ## Development
 

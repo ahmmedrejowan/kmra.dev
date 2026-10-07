@@ -1,14 +1,14 @@
 ---
 import BaseLayout from "@kmra/ui/layouts/BaseLayout.astro";
-import Section from "@kmra/ui/components/Section.astro";
-import ToolList from "@kmra/ui/components/ToolList.astro";
+import ToolGrid from "@kmra/ui/components/ToolGrid.astro";
+import Trio from "@kmra/ui/components/Trio.astro";
+import AppCards from "@kmra/ui/components/AppCards.astro";
 import Faq from "@kmra/ui/components/Faq.astro";
-import OtherApps from "@kmra/ui/components/OtherApps.astro";
+import LandingDrop from "@kmra/ui/components/LandingDrop";
 import { appUrl, getApp } from "@kmra/registry";
 
 const app = getApp("pdftool");
 const dev = import.meta.env.DEV;
-
 const faq = [
   {
     q: "Will my PDFs be uploaded?",
@@ -16,91 +16,77 @@ const faq = [
   },
   {
     q: "When will the PDF tools be ready?",
-    a: "They're being built now, starting with merge and split. Each one appears in the list above as soon as it works.",
+    a: "They're being built now, starting with merge and split. Each one appears here as soon as it works.",
   },
   {
     q: "Will there be page or file limits?",
     a: "We won't set any. Very large documents can be slow on phones because the work uses your device's memory.",
   },
 ];
-
-// Lines of "text" on the illustrated pages
-const lines = [92, 100, 84, 96, 70, 100, 88, 60];
 ---
 
 <BaseLayout
   appId="pdftool"
-  title="PDF tools: merge, split and convert PDFs in your browser · kmra"
+  title="Free PDF tools that run in your browser · kmra"
 >
-  <section class="mat ruler">
-    <div class="mx-auto grid max-w-6xl items-center gap-12 px-4 pt-16 pb-14 sm:px-6 lg:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)] lg:gap-16 lg:pt-20 lg:pb-20">
+  <div class="wrap">
+    <div class="hero">
       <div>
-        <h1 class="font-wide text-4xl leading-[1.05] font-extrabold tracking-tight sm:text-5xl lg:text-6xl">
-          Work on PDFs without sending them anywhere.
+        <span class="pill">
+          <i>Soon</i> PDF tools are being built
+        </span>
+        <h1 class="display">
+          Merge, split and sign PDFs without uploading them.
         </h1>
-        <p class="mt-6 max-w-md text-lg leading-relaxed text-on-mat-muted">
-          Merge, split, rotate and convert PDFs in your browser. These tools are
-          being built now. Image tools are ready today.
+        <p class="lede">
+          Contracts, statements and IDs stay on your device. PDF tools will work
+          just like the image tools, with simple and advanced modes.
         </p>
-        <a
-          href={appUrl("imgtool", "/", dev)}
-          class="mt-8 inline-block rounded-md bg-marker px-5 py-2.5 font-semibold text-[#16201c] hover:brightness-95"
-        >
-          Open image tools
-        </a>
-      </div>
-
-      <div class="flex justify-center py-6" aria-hidden="true">
-        <div class="relative ml-10 h-72 w-52 sm:h-80 sm:w-56">
-          <div class="absolute inset-x-0 -top-7 flex items-center gap-2 text-sm text-on-mat-muted">
-            <span class="h-3 w-px bg-current"></span>
-            <span class="h-px flex-1 bg-current"></span>
-            <span class="font-semibold text-on-mat">210 mm</span>
-            <span class="h-px flex-1 bg-current"></span>
-            <span class="h-3 w-px bg-current"></span>
-          </div>
-          <div class="absolute inset-y-0 -left-9 flex flex-col items-center gap-2 text-sm text-on-mat-muted">
-            <span class="h-px w-3 bg-current"></span>
-            <span class="w-px flex-1 bg-current"></span>
-            <span class="rotate-180 font-semibold text-on-mat [writing-mode:vertical-rl]">
-              297 mm
-            </span>
-            <span class="w-px flex-1 bg-current"></span>
-            <span class="h-px w-3 bg-current"></span>
-          </div>
-          {[8, 4, 0].map((offset, i) => (
-            <div
-              class="absolute inset-0 bg-white p-6 shadow-[0_6px_14px_-6px_rgb(0_0_0/0.45)]"
-              style={`transform: translate(${offset * 2}px, ${offset * 2}px) rotate(${(i - 2) * 2}deg)`}
-            >
-              {i === 2 && (
-                <div class="space-y-2.5">
-                  <div class="mb-5 h-3 w-2/3 bg-[#1d3e63]" />
-                  {lines.map((w) => (
-                    <div class="h-1.5 bg-[#c9d2dc]" style={`width:${w}%`} />
-                  ))}
-                </div>
-              )}
-            </div>
-          ))}
+        <div class="ctas">
+          <a class="btn primary" href={appUrl("imgtool", "/", dev)}>
+            Use image tools now
+          </a>
+          <a class="btn" href="/how-it-works">
+            How it works
+          </a>
         </div>
       </div>
+      <LandingDrop
+        client:load
+        accept="application/pdf"
+        label="Drop PDFs here"
+        formats={["PDF"]}
+        unavailable="PDF tools aren't ready yet. Your file wasn't opened or uploaded."
+      />
     </div>
-  </section>
 
-  <Section
-    title="Tools"
-    id="tools"
-    intro="Planned PDF tools. Each one opens here as soon as it's ready."
-  >
-    <ToolList tools={app.tools} />
-  </Section>
+    <section class="block">
+      <div class="sechead">
+        <h2>PDF tools</h2>
+        <p>Each one gets simple and advanced modes.</p>
+      </div>
+      <ToolGrid tools={app.tools} />
+    </section>
 
-  <Section title="Questions">
-    <Faq items={faq} />
-  </Section>
+    <section class="block">
+      <Trio />
+    </section>
 
-  <Section title="More tools">
-    <OtherApps appId="pdftool" />
-  </Section>
+    <section class="block">
+      <div class="content" style="padding-top: 0">
+        <div>
+          <h2>Questions</h2>
+        </div>
+        <Faq items={faq} />
+      </div>
+    </section>
+
+    <section class="block">
+      <div class="sechead">
+        <h2>More from kmra</h2>
+        <p>Same privacy, different files.</p>
+      </div>
+      <AppCards appId="pdftool" others />
+    </section>
+  </div>
 </BaseLayout>

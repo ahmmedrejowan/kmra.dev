@@ -1,0 +1,49 @@
+---
+import BaseLayout from "@kmra/ui/layouts/BaseLayout.astro";
+import Crumbs from "@kmra/ui/components/Crumbs.astro";
+import ToolGrid from "@kmra/ui/components/ToolGrid.astro";
+import SoonBox from "@kmra/ui/components/SoonBox.astro";
+import { appUrl, getApp, type Tool } from "@kmra/registry";
+
+export function getStaticPaths() {
+  return getApp("pdftool").tools.map((tool) => ({
+    params: { slug: tool.slug },
+    props: { tool },
+  }));
+}
+
+interface Props {
+  tool: Tool;
+}
+
+const { tool } = Astro.props;
+const app = getApp("pdftool");
+const dev = import.meta.env.DEV;
+const title = tool.title ?? tool.name;
+---
+
+<BaseLayout
+  appId="pdftool"
+  title={`${title} · kmra`}
+  description={tool.description}
+>
+  <div class="wrap">
+    <Crumbs items={[{ label: app.name, href: "/" }, { label: tool.name }]} />
+    <div class="ptitle">
+      <div>
+        <h1>{title}</h1>
+        <p>{tool.description}</p>
+      </div>
+    </div>
+    <SoonBox
+      tool={tool}
+      cta={{ label: "Use image tools now", href: appUrl("imgtool", "/", dev) }}
+    />
+    <section class="block">
+      <div class="sechead">
+        <h2>Other PDF tools</h2>
+      </div>
+      <ToolGrid tools={app.tools.filter((t) => t.slug !== tool.slug)} />
+    </section>
+  </div>
+</BaseLayout>

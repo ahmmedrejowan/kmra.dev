@@ -1,0 +1,23 @@
+---
+import type { Tool } from "@kmra/registry";
+import Icon from "./Icon.astro";
+
+interface Props {
+  tools: readonly Tool[];
+}
+
+const { tools } = Astro.props;
+---
+
+<div class="tgrid">
+  {tools.map((t) => (
+    <a class="tcard" href={`/${t.slug}`}>
+      <Icon name={t.icon} />
+      <strong>
+        {t.name}
+        {!t.ready && <span class="soon">Soon</span>}
+      </strong>
+      <p>{t.description}</p>
+    </a>
+  ))}
+</div>

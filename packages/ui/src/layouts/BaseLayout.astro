@@ -1,51 +1,84 @@
 ---
 import "../styles.css";
-import { getApp, type AppId } from "@kmra/registry";
+import { allPages, apps, getApp, linkTo, type AppId } from "@kmra/registry";
 import SiteHeader from "../components/SiteHeader.astro";
 import SiteFooter from "../components/SiteFooter.astro";
+import CommandPalette, { type PaletteItem } from "../components/CommandPalette";
 
 interface Props {
   appId: AppId;
-  title?: string;
+  title: string;
   description?: string;
-  /** Current tool slug, for nav highlighting */
-  current?: string;
 }
 
-const { appId, title, description, current } = Astro.props;
+const { appId, title, description } = Astro.props;
 const app = getApp(appId);
-const pageTitle = title ?? `${app.name} · kmra`;
+const dev = import.meta.env.DEV;
 const pageDescription = description ?? app.tagline;
 // Clean URL (no .html / trailing slash) to match Vercel cleanUrls + trailingSlash: false
 const path = Astro.url.pathname
   .replace(/(index)?\.html$/, "")
   .replace(/(.)\/$/, "$1");
+const accentStyle = `--acc-l:${app.accent.light};--acc-d:${app.accent.dark};--acc-soft-l:${app.accent.softLight};--acc-soft-d:${app.accent.softDark}`;
+
+// Current app first, then other live apps.
+const appName = (id: AppId) => apps.find((a) => a.id === id)?.short ?? id;
+const pages = allPages().sort(
+  (a, b) => Number(b.app === appId) - Number(a.app === appId),
+);
+const paletteItems: PaletteItem[] = [
+  ...pages.map((p) => ({
+    group:
+      p.app === appId
+        ? p.kind === "task"
+          ? "Use cases"
+          : "Tools"
+        : `${appName(p.app)} tools`,
+    name: p.name,
+    hint: p.kind === "task" ? p.hint : p.ready ? appName(p.app) : "Soon",
+    href: linkTo(appId, p.app, `/${p.slug}`, dev),
+    icon: p.icon,
+  })),
+  {
+    group: "Help",
+    name: "How it works",
+    hint: "Privacy",
+    href: "/how-it-works",
+    icon: "shield",
+  },
+];
 ---
 
 <!doctype html>
-<html lang="en" style={`--mat:${app.mat}`}>
+<html lang="en" style={accentStyle}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>{pageTitle}</title>
+    <title>{title}</title>
     <meta name="description" content={pageDescription} />
-    <meta name="theme-color" content={app.mat} />
+    <meta name="theme-color" content={app.accent.light} />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     {Astro.site && <link rel="canonical" href={new URL(path, Astro.site)} />}
-    <meta property="og:title" content={pageTitle} />
+    <meta property="og:title" content={title} />
     <meta property="og:description" content={pageDescription} />
+    <meta property="og:type" content="website" />
+    <script is:inline>
+      try {
+        const t = localStorage.getItem("kmra-theme");
+        if (t === "dark" || t === "light")
+          document.documentElement.dataset.theme = t;
+      } catch {}
+    </script>
   </head>
-  <body class="flex min-h-dvh flex-col font-sans antialiased">
-    <a
-      href="#main"
-      class="sr-only focus:not-sr-only focus:absolute focus:m-2 focus:bg-marker focus:px-3 focus:py-2 focus:text-ink"
-    >
+  <body>
+    <a href="#main" class="sr-only skip">
       Skip to content
     </a>
-    <SiteHeader appId={appId} current={current} />
-    <main id="main" class="flex-1">
+    <SiteHeader appId={appId} />
+    <main id="main">
       <slot />
     </main>
     <SiteFooter appId={appId} />
+    <CommandPalette client:idle items={paletteItems} />
   </body>
 </html>

@@ -1,102 +1,77 @@
 ---
 import BaseLayout from "@kmra/ui/layouts/BaseLayout.astro";
-import Section from "@kmra/ui/components/Section.astro";
-import ToolList from "@kmra/ui/components/ToolList.astro";
-import Faq from "@kmra/ui/components/Faq.astro";
-import OtherApps from "@kmra/ui/components/OtherApps.astro";
+import ToolGrid from "@kmra/ui/components/ToolGrid.astro";
+import TaskList from "@kmra/ui/components/TaskList.astro";
+import Trio from "@kmra/ui/components/Trio.astro";
+import AppCards from "@kmra/ui/components/AppCards.astro";
+import LandingDrop from "@kmra/ui/components/LandingDrop";
 import { getApp } from "@kmra/registry";
-import HeroDrop from "../components/HeroDrop";
 
 const app = getApp("imgtool");
-const ready = app.tools
-  .filter((t) => t.ready)
-  .map(({ slug, name }) => ({ slug, name }));
-
-const faq = [
-  {
-    q: "Are my images uploaded anywhere?",
-    a: "No. Your browser does all the work on your own device. The page is built so it can't send data to any other server, and you can confirm this in your browser's network tab while you use a tool.",
-  },
-  {
-    q: "Is there a file size or daily limit?",
-    a: "There's no limit we set. Very large images (for example 50+ megapixels) can be slow on phones because the work uses your device's memory.",
-  },
-  {
-    q: "Which formats can I use?",
-    a: "You can open anything your browser can display, including JPEG, PNG, WebP, GIF and AVIF. You can save as JPEG, PNG or WebP.",
-  },
-  {
-    q: "Do you add a watermark or need an account?",
-    a: "No watermark and no account. Open a tool and use it.",
-  },
-];
 ---
 
 <BaseLayout
   appId="imgtool"
-  title="Image tools: resize and convert images in your browser · kmra"
+  title="Free image tools that run in your browser · kmra"
 >
-  <section class="mat ruler">
-    <div class="mx-auto grid max-w-6xl items-center gap-12 px-4 pt-16 pb-14 sm:px-6 lg:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)] lg:gap-16 lg:pt-20 lg:pb-20">
+  <div class="wrap">
+    <div class="hero">
       <div>
-        <h1 class="font-wide text-4xl leading-[1.05] font-extrabold tracking-tight sm:text-5xl lg:text-6xl">
-          Fix your images without uploading them.
+        <a class="pill" href="/compress-to-100kb">
+          <i>New</i> Compress to an exact file size
+        </a>
+        <h1 class="display">
+          Edit images in your browser. Nothing gets uploaded.
         </h1>
-        <p class="mt-6 max-w-md text-lg leading-relaxed text-on-mat-muted">
-          Resize and convert JPEG, PNG and WebP right in your browser. Your
-          images stay on your device, with no sign-up and no watermark.
+        <p class="lede">
+          Resize, compress and convert photos in seconds, one at a time or in
+          batches. Switch to Advanced when you need every option.
         </p>
+        <div class="ctas">
+          <a class="btn primary" href="/compress">
+            Start compressing
+          </a>
+          <a class="btn" href="/how-it-works">
+            How it works
+          </a>
+        </div>
       </div>
-      <HeroDrop client:load tools={ready} />
+      <LandingDrop
+        client:load
+        accept="image/"
+        label="Drop images here"
+        formats={["JPG", "PNG", "WebP", "GIF", "AVIF"]}
+        target="/compress"
+        sample
+      />
     </div>
-  </section>
 
-  <Section
-    title="Tools"
-    id="tools"
-    intro="Once a tool has loaded, it keeps working even if you go offline."
-  >
-    <ToolList tools={app.tools} />
-  </Section>
+    <section class="block">
+      <div class="sechead">
+        <h2>Image tools</h2>
+        <p>Every tool opens simple. Advanced is one click away.</p>
+      </div>
+      <ToolGrid tools={app.tools} />
+    </section>
 
-  <Section title="Why it runs in your browser">
-    <div class="grid max-w-3xl gap-8 sm:grid-cols-2">
-      <div>
-        <h3 class="font-semibold">Your images stay with you</h3>
-        <p class="mt-2 leading-relaxed text-muted">
-          Most online editors send your photo to a server, process it there and
-          send it back. Here the code comes to your image instead, so private
-          photos, scans and screenshots never leave your device.
-        </p>
+    <section class="block">
+      <div class="sechead">
+        <h2>Popular tasks</h2>
+        <p>Ready-made settings for common jobs.</p>
       </div>
-      <div>
-        <h3 class="font-semibold">Faster for everyday files</h3>
-        <p class="mt-2 leading-relaxed text-muted">
-          There's no upload or download wait. A typical photo is resized in well
-          under a second, and you can work through a batch without queueing.
-        </p>
-      </div>
-      <div>
-        <h3 class="font-semibold">Nothing to sign up for</h3>
-        <p class="mt-2 leading-relaxed text-muted">
-          No account, no email, no limit on how many images you process.
-        </p>
-      </div>
-      <div>
-        <h3 class="font-semibold">Check it yourself</h3>
-        <p class="mt-2 leading-relaxed text-muted">
-          Open your browser's developer tools, switch to the Network tab and use
-          any tool. You won't see your file being sent anywhere.
-        </p>
-      </div>
-    </div>
-  </Section>
+      <TaskList tasks={app.tasks} />
+    </section>
 
-  <Section title="Questions">
-    <Faq items={faq} />
-  </Section>
+    <section class="block">
+      <Trio />
+    </section>
 
-  <Section title="More tools">
-    <OtherApps appId="imgtool" />
-  </Section>
+    <section class="block">
+      <div class="sechead">
+        <h2>More from kmra</h2>
+        <p>Same privacy, different files.</p>
+      </div>
+      <AppCards appId="imgtool" others />
+    </section>
+  </div>
 </BaseLayout>

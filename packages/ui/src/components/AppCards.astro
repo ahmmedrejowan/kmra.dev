@@ -1,0 +1,36 @@
+---
+import { apps, linkTo, type AppId } from "@kmra/registry";
+
+interface Props {
+  appId: AppId;
+  /** Leave out the current app */
+  others?: boolean;
+}
+
+const { appId, others = false } = Astro.props;
+const dev = import.meta.env.DEV;
+const list = apps.filter((a) => !others || a.id !== appId);
+---
+
+<div class="apps">
+  {list.map((a) => {
+    const body = (
+      <>
+        <span class="tag">
+          <span class="appdot" style={`background:${a.accent.light}`} />
+          {a.name}
+          {!a.live && <span class="soon">Soon</span>}
+        </span>
+        <p>{a.tagline}</p>
+        <small class="muted">{a.id}.kmra.dev</small>
+      </>
+    );
+    return a.live ? (
+      <a class="appcard" href={linkTo(appId, a.id as AppId, "/", dev)}>
+        {body}
+      </a>
+    ) : (
+      <div class="appcard">{body}</div>
+    );
+  })}
+</div>
