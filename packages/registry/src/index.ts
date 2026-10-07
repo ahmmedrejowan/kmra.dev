@@ -1670,7 +1670,6 @@ export function linkTo(
   return current === target ? path : appUrl(target, path, dev);
 }
 
-/** Group items by their `group` field, keeping first-seen order. */
 /** Items grouped by `group`, in `order` when given (unknown groups go last), else first-seen order. */
 export function groupBy<T extends { group: string }>(
   items: readonly T[],
