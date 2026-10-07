@@ -464,14 +464,15 @@ a.mi:hover {
   opacity: 0.7;
 }
 /*
- * Page rhythm: homepages are three equal full-width "screens": hero, tool showcase, and one block
- * holding tasks, privacy and other apps. <main> becomes a grid whose rows all match the tallest
- * block, so heights stay equal without padding shorter blocks with extra space. On small screens
- * each block fits its content.
+ * Page rhythm: homepages are full-width "screens". The hero and the tool showcase share one height
+ * (the first two grid rows match the taller of the two); the block with tasks, privacy and other
+ * apps after them sizes to its content. On small screens every block fits its content.
  */
 main:has(> .screen) {
   display: grid;
-  grid-auto-rows: 1fr;
+  /* Hero and tool showcase share a height; later blocks size to their content */
+  grid-template-rows: 1fr 1fr;
+  grid-auto-rows: auto;
 }
 .screen {
   display: flex;
@@ -568,16 +569,10 @@ main:has(> .screen:last-child) + footer.site {
   color: var(--acc);
 }
 
-/* Last homepage block: tasks on top, privacy + more apps side by side below */
+/* Last homepage block: tasks, then the privacy card, then other apps */
 .stack {
   display: grid;
-  gap: 40px;
-}
-.pair {
-  display: grid;
-  grid-template-columns: 1.4fr 1fr;
-  gap: 16px;
-  align-items: stretch;
+  gap: 28px;
 }
 .safe {
   display: grid;
@@ -1956,11 +1951,8 @@ input[type="range"] {
   .dir-cols {
     grid-template-columns: 1fr;
   }
-  .pair {
-    grid-template-columns: 1fr;
-  }
   main:has(> .screen) {
-    grid-auto-rows: auto;
+    grid-template-rows: none;
   }
   .screen {
     padding-block: 32px;
