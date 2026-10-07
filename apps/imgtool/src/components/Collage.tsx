@@ -10,7 +10,7 @@ import {
   FileInput,
   ToolCard,
   useFiles,
-} from "./kit";
+} from "@kmra/ui/components/kit";
 
 /** Photo collage: pick a layout, shape, spacing and background. */
 interface Cell {

@@ -12,7 +12,7 @@ import {
   FileInput,
   ToolCard,
   useFiles,
-} from "./kit";
+} from "@kmra/ui/components/kit";
 
 /** Colour palette extractor and colour picker. */
 type Mode = "palette" | "picker";

@@ -10,7 +10,7 @@ import {
   FileInput,
   ToolCard,
   useFiles,
-} from "./kit";
+} from "@kmra/ui/components/kit";
 
 /** Image info, EXIF viewer and histogram. Everything is read on this device. */
 type Mode = "info" | "exif" | "histogram";

@@ -2,3 +2,4 @@ pnpm-lock.yaml
 dist/
 .astro/
 .turbo/
+apps/pdftool/public/pdfjs

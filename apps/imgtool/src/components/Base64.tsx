@@ -10,7 +10,7 @@ import {
   FileInput,
   ToolCard,
   useFiles,
-} from "./kit";
+} from "@kmra/ui/components/kit";
 
 /** Image to Base64 (data URI, CSS, HTML) and back. */
 type Out = "uri" | "raw" | "css" | "html" | "md";

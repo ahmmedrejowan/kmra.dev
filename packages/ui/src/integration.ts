@@ -32,6 +32,8 @@ const SKIP = [
   /^test-fixtures\//,
   /^og\//,
   /^models\//,
+  // pdf.js CMaps and fonts: cached when first used instead (only some PDFs need them)
+  /^pdfjs\//,
   /\.(onnx|wasm|map)$/,
   /^sw\.js$/,
   /^sitemap/,

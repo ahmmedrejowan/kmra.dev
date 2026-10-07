@@ -11,7 +11,7 @@ import {
   FileInput,
   ToolCard,
   useFiles,
-} from "./kit";
+} from "@kmra/ui/components/kit";
 
 /** Favicon generator: every icon a website needs, plus the HTML to paste. */
 const PNGS: { name: string; size: number; solid?: boolean }[] = [

@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { zipSync } from "fflate";
-import { Icon } from "@kmra/ui/components/Icon";
-import { downloadBlob, IMAGE_ACCEPT, isImageFile } from "@kmra/ui/lib/files";
-import { takeFiles } from "@kmra/ui/lib/handoff";
-import { pasteHint } from "@kmra/ui/lib/keys";
-import { toast } from "@kmra/ui/lib/toast";
+import { Icon } from "./Icon";
+import { downloadBlob, IMAGE_ACCEPT, isImageFile } from "../lib/files";
+import { takeFiles } from "../lib/handoff";
+import { pasteHint } from "../lib/keys";
+import { toast } from "../lib/toast";
 
 /**
  * Shared pieces for the tools that aren't a single-image pipeline (analyze, collage, split,

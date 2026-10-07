@@ -12,7 +12,7 @@ import {
   FileInput,
   ToolCard,
   useFiles,
-} from "./kit";
+} from "@kmra/ui/components/kit";
 
 /** Cut one image into a grid of tiles (Instagram grids and carousels, print tiles). */
 const PRESETS: {

@@ -13,3 +13,6 @@ dist/
 
 # Local test images (downloaded, never committed)
 apps/*/public/test-fixtures/
+
+# pdf.js runtime files, copied from node_modules at build time
+apps/pdftool/public/pdfjs/

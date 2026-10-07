@@ -1,45 +1,32 @@
 ---
 import BaseLayout from "@kmra/ui/layouts/BaseLayout.astro";
-import ToolGrid from "@kmra/ui/components/ToolGrid.astro";
+import ToolShowcase from "@kmra/ui/components/ToolShowcase.astro";
+import TaskDirectory from "@kmra/ui/components/TaskDirectory.astro";
 import PrivacySection from "@kmra/ui/components/PrivacySection.astro";
 import HeroChips from "@kmra/ui/components/HeroChips.astro";
-import Faq from "@kmra/ui/components/Faq.astro";
 import LandingDrop from "@kmra/ui/components/LandingDrop";
-import { appUrl, getApp } from "@kmra/registry";
+import { getApp } from "@kmra/registry";
 
 const app = getApp("pdftool");
-const dev = import.meta.env.DEV;
-const chips = app.tools.map((t) => ({
-  href: `/${t.slug}`,
-  label: t.name,
-  icon: t.icon,
-}));
-const faq = [
-  {
-    q: "Will my PDFs be uploaded?",
-    a: "No. Like every kmra tool, PDF tools run entirely in your browser. Contracts, statements and IDs stay on your device.",
-  },
-  {
-    q: "When will the PDF tools be ready?",
-    a: "They're being built now, starting with merge and split. Each one appears here as soon as it works.",
-  },
-  {
-    q: "Will there be page or file limits?",
-    a: "We won't set any. Very large documents can be slow on phones because the work uses your device's memory.",
-  },
-];
+const icons = Object.fromEntries(app.tools.map((t) => [t.slug, t.icon]));
+// A short popular list (tools and tasks); the full set is in the menu and the showcase below
+const chips = (app.popular ?? []).flatMap((slug) => {
+  const tool = app.tools.find((t) => t.slug === slug && t.ready);
+  if (tool) return [{ href: `/${slug}`, label: tool.name, icon: tool.icon }];
+  const task = app.tasks.find((t) => t.slug === slug);
+  return task
+    ? [{ href: `/${slug}`, label: task.name, icon: icons[task.tool] ?? "file" }]
+    : [];
+});
 ---
 
 <BaseLayout appId="pdftool" title="Free PDF tools in your browser">
   <section class="hero-band screen">
     <div class="wrap hero-center">
-      <a class="pill" href={appUrl("imgtool", "/", dev)}>
-        <i>Soon</i> PDF tools are being built. Image tools are ready.
-      </a>
       <h1 class="display">Work on PDFs in your browser</h1>
       <p class="lede">
-        Merge, split and sign PDFs. Contracts, statements and IDs never leave
-        your device.
+        Merge, split, compress and sign. Contracts, statements and IDs never
+        leave your device.
       </p>
       <LandingDrop
         client:load
@@ -47,33 +34,32 @@ const faq = [
         accept="application/pdf"
         label="Drop PDFs here"
         formats={["PDF"]}
-        unavailable="PDF tools aren't ready yet. Your file wasn't opened or uploaded."
+        target="/organize"
       />
       <HeroChips items={chips} />
     </div>
   </section>
 
   <section class="screen">
-    <div class="wrap stack">
-      <div>
-        <div class="sechead primary">
-          <h2>PDF tools</h2>
-          <p>Each one gets simple and advanced modes.</p>
-        </div>
-        <ToolGrid tools={app.tools} />
+    <div class="wrap">
+      <div class="sechead primary">
+        <h2>PDF tools</h2>
+        <p>Every tool opens simple. Advanced shows every page.</p>
       </div>
-      <PrivacySection />
     </div>
+    <ToolShowcase tools={app.tools} />
   </section>
 
   <section class="screen">
-    <div class="wrap">
-      <div class="content" style="padding-top: 0">
+    <div class="wrap stack">
+      <div>
         <div class="sechead primary">
-          <h2>Questions</h2>
+          <h2>Popular tasks</h2>
+          <p>Ready-made settings for everyday jobs.</p>
         </div>
-        <Faq items={faq} />
+        <TaskDirectory tasks={app.tasks} icons={icons} />
       </div>
+      <PrivacySection />
     </div>
   </section>
 </BaseLayout>

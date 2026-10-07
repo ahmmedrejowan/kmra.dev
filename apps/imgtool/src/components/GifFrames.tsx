@@ -11,7 +11,7 @@ import {
   FileInput,
   ToolCard,
   useFiles,
-} from "./kit";
+} from "@kmra/ui/components/kit";
 
 /** Split an animated GIF into its frames. */
 interface Frame {
