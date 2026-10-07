@@ -14,6 +14,10 @@ const dev = import.meta.env.DEV;
 const pageTitle = title ? `${title} · ${app.name}` : `${app.name} · kmra.dev`;
 const pageDescription = description ?? app.tagline;
 const otherApps = apps.filter((a) => a.id !== appId);
+// Clean URL (no .html / trailing slash) to match Vercel cleanUrls + trailingSlash: false
+const path = Astro.url.pathname
+  .replace(/(index)?\.html$/, "")
+  .replace(/(.)\/$/, "$1");
 ---
 
 <!doctype html>
@@ -24,9 +28,7 @@ const otherApps = apps.filter((a) => a.id !== appId);
     <title>{pageTitle}</title>
     <meta name="description" content={pageDescription} />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-    {Astro.site && (
-      <link rel="canonical" href={new URL(Astro.url.pathname, Astro.site)} />
-    )}
+    {Astro.site && <link rel="canonical" href={new URL(path, Astro.site)} />}
     <meta property="og:title" content={pageTitle} />
     <meta property="og:description" content={pageDescription} />
   </head>

@@ -9,10 +9,9 @@ Free utility tools that run entirely in your browser. Files are never uploaded.
 
 ## Development
 
-Requires Node 22.12+ and corepack (pnpm is pinned in `package.json`).
+Requires Node 22.12+ and pnpm 12 (`npm i -g pnpm`; the exact version is pinned in `package.json`).
 
 ```bash
-corepack enable
 pnpm install
 pnpm dev
 ```
@@ -30,9 +29,9 @@ pnpm check
 - `apps/*`: one Astro site per subdomain
 - `packages/registry`: list of all apps and tools; used for cross-app links
 - `packages/ui`: shared layout, components and helpers
+- `packages/config`: shared Vercel config (security headers, caching)
 
 ## Deployment
 
-Each app is a static site. Deploy each one as its own project (Cloudflare Pages, Vercel, etc.) with
-root directory `apps/<app>`, build command `pnpm build` and output `dist`, then attach the
-`<app>.kmra.dev` subdomain.
+Vercel, one project per app (Root Directory `apps/<app>`), connected to this repo. Settings come
+from `apps/<app>/vercel.ts`. Pushing to `main` deploys to production; other branches get previews.

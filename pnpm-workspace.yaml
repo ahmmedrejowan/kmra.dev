@@ -2,8 +2,8 @@ packages:
   - "apps/*"
   - "packages/*"
 
-onlyBuiltDependencies:
-  - esbuild
+allowBuilds:
+  esbuild: true
 
 # Astro's prerender chunk resolves `cookie` by walking up from apps/*/dist. Hoisting it to the
 # root keeps a stray ~/node_modules/cookie (outside the repo) from being picked up instead.

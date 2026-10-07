@@ -7,6 +7,8 @@ import { appOrigin } from "@kmra/registry";
 
 export default defineConfig({
   site: appOrigin("imgtool"),
+  trailingSlash: "never",
+  build: { format: "file" },
   server: { port: 4321 },
   integrations: [react(), sitemap()],
   vite: {

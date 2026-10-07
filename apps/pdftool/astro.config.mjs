@@ -7,6 +7,8 @@ import { appOrigin } from "@kmra/registry";
 
 export default defineConfig({
   site: appOrigin("pdftool"),
+  trailingSlash: "never",
+  build: { format: "file" },
   server: { port: 4322 },
   integrations: [react(), sitemap()],
   vite: {
