@@ -184,6 +184,9 @@ importers:
       '@astrojs/react':
         specifier: ^7.0.1
         version: 7.0.1(@types/node@24.19.1)(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(esbuild@0.28.2)(jiti@2.7.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(yaml@2.9.1)
+      '@fontsource/noto-sans-bengali':
+        specifier: ^5.3.0
+        version: 5.3.0
       '@kmra/registry':
         specifier: workspace:*
         version: link:../../packages/registry
@@ -819,6 +822,9 @@ packages:
 
   '@fontsource/geist@5.3.0':
     resolution: {integrity: sha512-u03ftlfVwb05uijq2jGDJ03/HKGqMKaNFk7KOhkpBUex8+BhrAOfMs/XciJ2UUNUX9fEsZbZQld/RWMA2oFU7g==}
+
+  '@fontsource/noto-sans-bengali@5.3.0':
+    resolution: {integrity: sha512-EFBMU0UvzyFSc1ERK369zfqEu6DMRuWmCQ2+2ahhQTQAIDPEyN1UYlQdQeFkheu2DWG2hfdwrhiLlGFl2sSr/A==}
 
   '@img/colour@1.1.0':
     resolution: {integrity: sha512-Td76q7j57o/tLVdgS746cYARfSyxk8iEfRxewL9h4OMzYhbW4TAcppl0mT4eyqXddh6L/jwoM75mo7ixa/pCeQ==}
@@ -3215,6 +3221,8 @@ snapshots:
   '@fontsource-variable/geist@5.3.0': {}
 
   '@fontsource/geist@5.3.0': {}
+
+  '@fontsource/noto-sans-bengali@5.3.0': {}
 
   '@img/colour@1.1.0':
     optional: true

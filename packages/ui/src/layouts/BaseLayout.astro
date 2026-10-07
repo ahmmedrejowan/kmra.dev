@@ -28,6 +28,10 @@ interface Props {
   noindex?: boolean;
   /** Extra JSON-LD objects for this page */
   schema?: Record<string, unknown>[];
+  /** Page language (default English) */
+  lang?: "en" | "bn";
+  /** The same page in other languages, for hreflang links */
+  alternates?: readonly { lang: "en" | "bn"; path: string }[];
 }
 
 const {
@@ -37,6 +41,8 @@ const {
   og,
   noindex = false,
   schema = [],
+  lang = "en",
+  alternates = [],
 } = Astro.props;
 const app = getApp(appId);
 const brand = brandName(app);
@@ -124,7 +130,7 @@ const paletteItems: PaletteItem[] = [
 ---
 
 <!doctype html>
-<html lang="en" style={accentStyle}>
+<html lang={lang} style={accentStyle}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -155,7 +161,31 @@ const paletteItems: PaletteItem[] = [
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
     <meta property="og:image:alt" content={`${title}, ${brand} by kmra.dev`} />
-    <meta property="og:locale" content="en_US" />
+    <meta property="og:locale" content={lang === "bn" ? "bn_BD" : "en_US"} />
+    {alternates.length > 0 && (
+      <>
+        <link rel="alternate" hreflang={lang} href={canonical} />
+        {alternates.map((a) => (
+          <link
+            rel="alternate"
+            hreflang={a.lang}
+            href={new URL(a.path, site).toString()}
+          />
+        ))}
+        <link
+          rel="alternate"
+          hreflang="x-default"
+          href={
+            lang === "en"
+              ? canonical
+              : new URL(
+                  alternates.find((a) => a.lang === "en")?.path ?? "/",
+                  site,
+                ).toString()
+          }
+        />
+      </>
+    )}
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content={title} />
     <meta name="twitter:description" content={pageDescription} />

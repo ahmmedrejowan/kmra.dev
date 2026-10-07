@@ -21,7 +21,11 @@ const chips = (app.popular ?? []).flatMap((slug) => {
 const count = app.tools.filter((t) => t.ready).length;
 ---
 
-<BaseLayout appId="imgtool" title="Free image tools in your browser">
+<BaseLayout
+  appId="imgtool"
+  title="Free image tools in your browser"
+  alternates={[{ lang: "bn", path: "/bn" }]}
+>
   <section class="hero-band screen">
     <div class="wrap hero-center">
       <h1 class="display">Edit images in your browser</h1>
@@ -38,6 +42,9 @@ const count = app.tools.filter((t) => t.ready).length;
         target="/editor"
       />
       <HeroChips items={chips} />
+      <a class="langswitch hero-lang" href="/bn" hreflang="bn" lang="bn">
+        বাংলায় ফর্মের ছবি ঠিক করুন
+      </a>
     </div>
   </section>
 

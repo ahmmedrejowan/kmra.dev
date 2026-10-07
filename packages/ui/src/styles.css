@@ -4036,3 +4036,48 @@ footer.site .fmore {
   color: var(--acc);
   font-weight: 500;
 }
+
+/* Bangla pages: Noto Sans Bengali for Bengali glyphs (Geist has none), Latin stays Geist */
+:lang(bn) {
+  font-family:
+    "Geist Variable", "Noto Sans Bengali", ui-sans-serif, system-ui, sans-serif;
+}
+:lang(bn) h1,
+:lang(bn) h2,
+:lang(bn) .display {
+  letter-spacing: 0;
+  line-height: 1.3;
+}
+:lang(bn) p,
+:lang(bn) small,
+:lang(bn) dd,
+:lang(bn) li {
+  line-height: 1.65;
+}
+.display.bn {
+  font-size: clamp(30px, 5vw, 52px);
+}
+.langswitch {
+  font-size: 13.5px;
+  font-weight: 500;
+  border: 1px solid var(--line);
+  background: var(--card);
+  border-radius: 999px;
+  padding: 5px 12px;
+  white-space: nowrap;
+}
+.langswitch:hover {
+  border-color: var(--acc);
+  color: var(--acc);
+}
+.langswitch.top {
+  margin-bottom: 14px;
+}
+.hero-lang {
+  margin-top: 14px;
+  display: inline-block;
+}
+.ptitle .langswitch {
+  align-self: center;
+  margin-left: auto;
+}

@@ -16,6 +16,8 @@ interface Props {
   unavailable?: string;
   /** Large hero version */
   large?: boolean;
+  /** Labels for non-English pages */
+  text?: { hint: string; button: string; over: string };
 }
 
 /**
@@ -29,6 +31,7 @@ export default function LandingDrop({
   target,
   unavailable,
   large,
+  text,
 }: Props) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [over, setOver] = useState(false);
@@ -103,8 +106,8 @@ export default function LandingDrop({
         <div className="big">
           <Icon name="upload" />
         </div>
-        <strong>{over ? "Drop to start" : label}</strong>
-        <span className="muted">{hint}</span>
+        <strong>{over ? (text?.over ?? "Drop to start") : label}</strong>
+        <span className="muted">{text?.hint ?? hint}</span>
         <div className="row">
           <button
             className={`btn acc${large ? " lg" : ""}`}
@@ -115,7 +118,7 @@ export default function LandingDrop({
             }}
           >
             <Icon name="upload" />
-            Choose files
+            {text?.button ?? "Choose files"}
           </button>
         </div>
         <div className="formats">

@@ -21,6 +21,7 @@ import Split from "../components/Split";
 import Favicon from "../components/Favicon";
 import Base64 from "../components/Base64";
 import GifFrames from "../components/GifFrames";
+import { BN_PAGES, BN_UI } from "../i18n/bn";
 
 export function getStaticPaths() {
   const app = getApp("imgtool");
@@ -56,6 +57,8 @@ const STANDALONE = [
   "gif-frames",
 ];
 const standalone = STANDALONE.includes(tool.slug);
+const slug = task?.slug ?? tool.slug;
+const hasBn = slug in BN_PAGES;
 const app = getApp("imgtool");
 const title = task?.title ?? tool.title ?? tool.name;
 const intro = task?.intro ?? tool.description;
@@ -164,7 +167,13 @@ const schema = [
 ];
 ---
 
-<BaseLayout appId="imgtool" title={title} schema={schema} description={intro}>
+<BaseLayout
+  appId="imgtool"
+  title={title}
+  schema={schema}
+  description={intro}
+  alternates={hasBn ? [{ lang: "bn", path: `/bn/${slug}` }] : []}
+>
   <section class="hero-band tool-head">
     <div class="wrap">
       <Crumbs items={crumbs} />
@@ -178,6 +187,11 @@ const schema = [
             <p>{intro}</p>
           </div>
         </div>
+        {hasBn && (
+          <a class="langswitch" href={`/bn/${slug}`} hreflang="bn" lang="bn">
+            {BN_UI.bangla}
+          </a>
+        )}
         {tool.ready && !standalone && (
           <div class="modes" role="group" aria-label="Mode">
             <button type="button" aria-pressed="true" data-mode="simple">

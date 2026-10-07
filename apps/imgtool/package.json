@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@astrojs/react": "^7.0.1",
+    "@fontsource/noto-sans-bengali": "^5.3.0",
     "@kmra/registry": "workspace:*",
     "@kmra/ui": "workspace:*",
     "@resvg/resvg-js": "^2.6.2",

@@ -42,6 +42,7 @@ import {
   TextCtl,
 } from "./FxControls";
 import { FILTERS, NO_ADJUST, NO_FRAME, SHEETS } from "../lib/fx";
+import { BN_TOOL } from "../i18n/bn";
 import {
   applyForm,
   applyPreset,
@@ -73,6 +74,8 @@ export interface ToolMeta {
 interface Props {
   /** Tool slug, or "editor" for the all-in-one editor page (workspace only) */
   tool: string;
+  /** Interface language for the main labels (Bangla pages pass "bn") */
+  lang?: "en" | "bn";
   preset?: Preset;
   /** All tools of this app, for the workspace rail */
   tools: ToolMeta[];
@@ -154,7 +157,27 @@ function outName(file: File, type: string): string {
   return `${base}-kmra.${EXT[type as Format] ?? "img"}`;
 }
 
-export default function ImageTool({ tool, preset, tools }: Props) {
+const EN = {
+  drop: "Drop images here",
+  pasteHint: "",
+  choose: "Choose images",
+  download: "Download",
+  downloadZip: (n: number) => `Download all ${n} as zip`,
+  each: "Save each separately",
+  onlyThis: "Only this one",
+  more: "More options in Advanced",
+  working: "Working…",
+  addFirst: "Add an image to see the result.",
+  to: "to",
+  smaller: "smaller",
+  larger: "larger",
+  add: "+ Add",
+  opensAdvanced: "Opens in the Advanced workspace",
+  best: "Best quality that fits",
+};
+
+export default function ImageTool({ tool, preset, tools, lang = "en" }: Props) {
+  const L = lang === "bn" ? BN_TOOL : EN;
   const editor = tool === "editor";
   const [items, setItems] = useState<Item[]>([]);
   const [cur, setCur] = useState(0);
@@ -1236,22 +1259,26 @@ export default function ImageTool({ tool, preset, tools }: Props) {
 
   function resultSummary() {
     if (error) return <small className="warn">{error}</small>;
-    if (!item) return <small>Add an image to see the result.</small>;
-    if (!outForItem) return <small>Working…</small>;
+    if (!item) return <small>{L.addFirst}</small>;
+    if (!outForItem) return <small>{L.working}</small>;
     const pct = Math.round((1 - outForItem.blob.size / item.file.size) * 100);
     return (
       <>
-        <small>{formatBytes(item.file.size)} to</small>
+        <small>
+          {formatBytes(item.file.size)} {L.to}
+        </small>
         <div className="sz">
           <b>{formatBytes(outForItem.blob.size)}</b>
           {pct >= 0 ? (
-            <span className="delta">{pct}% smaller</span>
+            <span className="delta">
+              {pct}% {L.smaller}
+            </span>
           ) : (
             // Only a warning when the job is making files smaller
             <span
               className={`delta up${tool === "compress" || s.target ? "" : " neutral"}`}
             >
-              {-pct}% larger
+              {-pct}% {L.larger}
             </span>
           )}
         </div>
@@ -1264,7 +1291,9 @@ export default function ImageTool({ tool, preset, tools }: Props) {
             in Advanced.
           </small>
         ) : s.target && isLossy(type) ? (
-          <small>Best quality that fits: {outForItem.q}</small>
+          <small>
+            {L.best}: {outForItem.q}
+          </small>
         ) : null}
       </>
     );
@@ -1283,8 +1312,8 @@ export default function ImageTool({ tool, preset, tools }: Props) {
         <div className="big">
           <Icon name="upload" />
         </div>
-        <strong>Drop images here</strong>
-        <span className="muted">{keys.hint}</span>
+        <strong>{L.drop}</strong>
+        <span className="muted">{L.pasteHint || keys.hint}</span>
         <div className="row">
           <button
             className="btn acc lg"
@@ -1295,7 +1324,7 @@ export default function ImageTool({ tool, preset, tools }: Props) {
             }}
           >
             <Icon name="upload" />
-            Choose images
+            {L.choose}
           </button>
         </div>
         <div className="formats">
@@ -1306,7 +1335,7 @@ export default function ImageTool({ tool, preset, tools }: Props) {
         {wantAdvanced && (
           <span className="mode-note">
             <Icon name="sliders" />
-            Opens in the Advanced workspace
+            {L.opensAdvanced}
           </span>
         )}
         {fileInput}
@@ -1338,7 +1367,7 @@ export default function ImageTool({ tool, preset, tools }: Props) {
             className="fchip add"
             onClick={() => pickRef.current?.click()}
           >
-            + Add
+            {L.add}
           </button>
         </div>
       </div>
@@ -1355,10 +1384,10 @@ export default function ImageTool({ tool, preset, tools }: Props) {
             >
               <Icon name="download" />
               {zipping
-                ? "Preparing…"
+                ? L.working
                 : many
-                  ? `Download all ${items.length} as zip`
-                  : "Download"}
+                  ? L.downloadZip(items.length)
+                  : L.download}
             </button>
             {many && (
               <div className="dl-row">
@@ -1368,7 +1397,7 @@ export default function ImageTool({ tool, preset, tools }: Props) {
                   onClick={() => void downloadEach()}
                   disabled={dlDisabled}
                 >
-                  Save each separately
+                  {L.each}
                 </button>
                 <button
                   className="btn sm"
@@ -1376,13 +1405,13 @@ export default function ImageTool({ tool, preset, tools }: Props) {
                   onClick={() => void downloadOne()}
                   disabled={dlDisabled}
                 >
-                  Only this one
+                  {L.onlyThis}
                 </button>
               </div>
             )}
             <button className="advlink" type="button" onClick={openAdvanced}>
               <Icon name="sliders" />
-              More options in Advanced
+              {L.more}
             </button>
           </div>
         </div>
