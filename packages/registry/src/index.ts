@@ -115,6 +115,21 @@ export const apps = [
         ],
       },
       {
+        slug: "resize",
+        title: "Resize images",
+        name: "Resize",
+        description: "Exact pixels, percentages or social media presets.",
+        blurb: "Pixels or presets",
+        icon: "resize",
+        group: "Edit",
+        ready: true,
+        steps: [
+          "Drop an image.",
+          "Type a width and height, or pick a preset.",
+          "Download the resized copy.",
+        ],
+      },
+      {
         slug: "convert",
         title: "Convert images",
         name: "Convert",
@@ -142,21 +157,6 @@ export const apps = [
           "Drop a photo.",
           "kmra re-saves the pixels only, leaving location, camera and date info behind.",
           "Download the clean copy.",
-        ],
-      },
-      {
-        slug: "resize",
-        title: "Resize images",
-        name: "Resize",
-        description: "Exact pixels, percentages or social media presets.",
-        blurb: "Pixels or presets",
-        icon: "resize",
-        group: "Edit",
-        ready: true,
-        steps: [
-          "Drop an image.",
-          "Type a width and height, or pick a preset.",
-          "Download the resized copy.",
         ],
       },
       {

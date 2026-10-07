@@ -1,8 +1,8 @@
 ---
 import BaseLayout from "@kmra/ui/layouts/BaseLayout.astro";
-import ToolGrid from "@kmra/ui/components/ToolGrid.astro";
-import TaskList from "@kmra/ui/components/TaskList.astro";
-import Trio from "@kmra/ui/components/Trio.astro";
+import ToolShowcase from "@kmra/ui/components/ToolShowcase.astro";
+import TaskDirectory from "@kmra/ui/components/TaskDirectory.astro";
+import PrivacyBand from "@kmra/ui/components/PrivacyBand.astro";
 import AppCards from "@kmra/ui/components/AppCards.astro";
 import Promises from "@kmra/ui/components/Promises.astro";
 import Icon from "@kmra/ui/components/Icon.astro";
@@ -47,27 +47,30 @@ const icons = Object.fromEntries(app.tools.map((t) => [t.slug, t.icon]));
 
   <div class="wrap">
     <section class="block">
-      <div class="sechead">
+      <div class="sechead primary">
         <h2>Image tools</h2>
         <p>Every tool opens simple. Advanced is one click away.</p>
       </div>
-      <ToolGrid tools={app.tools} />
+      <ToolShowcase tools={app.tools} />
     </section>
+  </div>
 
-    <section class="block">
-      <div class="sechead">
-        <h2>Popular tasks</h2>
-        <p>Ready-made settings for common jobs.</p>
-      </div>
-      <TaskList tasks={app.tasks} icons={icons} />
-    </section>
+  <TaskDirectory
+    tasks={app.tasks}
+    icons={icons}
+    title="Popular tasks"
+    intro="Ready-made settings for jobs people do every day."
+  />
 
-    <section class="block">
-      <Trio />
-    </section>
+  <PrivacyBand
+    file="beach-sunset.jpg"
+    page="compress"
+    engine="image.worker.js"
+  />
 
+  <div class="wrap">
     <section class="block">
-      <div class="sechead">
+      <div class="sechead quiet">
         <h2>More from kmra</h2>
         <p>Same privacy, different files.</p>
       </div>

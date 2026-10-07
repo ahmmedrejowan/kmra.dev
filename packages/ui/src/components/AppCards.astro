@@ -1,5 +1,6 @@
 ---
 import { apps, linkTo, type AppId } from "@kmra/registry";
+import Icon from "./Icon.astro";
 
 interface Props {
   appId: AppId;
@@ -14,23 +15,33 @@ const list = apps.filter((a) => !others || a.id !== appId);
 
 <div class="apps">
   {list.map((a) => {
+    const style = `--app:${a.accent.light}`;
     const body = (
       <>
-        <span class="tag">
-          <span class="appdot" style={`background:${a.accent.light}`} />
-          {a.name}
-          {!a.live && <span class="soon">Soon</span>}
+        <span class="app-mark">{a.short.slice(0, 1)}</span>
+        <span class="app-text">
+          <strong>
+            {a.name}
+            {!a.live && <span class="soon">Soon</span>}
+          </strong>
+          <small>{a.tagline}</small>
+          <span class="app-host">{a.id}.kmra.dev</span>
         </span>
-        <p>{a.tagline}</p>
-        <small class="muted">{a.id}.kmra.dev</small>
+        {a.live && <Icon name="right" class="ico go" />}
       </>
     );
     return a.live ? (
-      <a class="appcard" href={linkTo(appId, a.id as AppId, "/", dev)}>
+      <a
+        class="appcard live"
+        href={linkTo(appId, a.id as AppId, "/", dev)}
+        style={style}
+      >
         {body}
       </a>
     ) : (
-      <div class="appcard">{body}</div>
+      <div class="appcard" style={style}>
+        {body}
+      </div>
     );
   })}
 </div>

@@ -1,7 +1,7 @@
 ---
 import BaseLayout from "@kmra/ui/layouts/BaseLayout.astro";
 import ToolGrid from "@kmra/ui/components/ToolGrid.astro";
-import Trio from "@kmra/ui/components/Trio.astro";
+import PrivacyBand from "@kmra/ui/components/PrivacyBand.astro";
 import AppCards from "@kmra/ui/components/AppCards.astro";
 import Faq from "@kmra/ui/components/Faq.astro";
 import LandingDrop from "@kmra/ui/components/LandingDrop";
@@ -65,20 +65,20 @@ const faq = [
 
   <div class="wrap">
     <section class="block">
-      <div class="sechead">
+      <div class="sechead primary">
         <h2>PDF tools</h2>
         <p>Each one gets simple and advanced modes.</p>
       </div>
       <ToolGrid tools={app.tools} />
     </section>
+  </div>
 
-    <section class="block">
-      <Trio />
-    </section>
+  <PrivacyBand file="contract-signed.pdf" page="merge" engine="pdf.worker.js" />
 
+  <div class="wrap">
     <section class="block">
       <div class="content" style="padding-top: 0">
-        <div>
+        <div class="sechead primary">
           <h2>Questions</h2>
         </div>
         <Faq items={faq} />
@@ -86,7 +86,7 @@ const faq = [
     </section>
 
     <section class="block">
-      <div class="sechead">
+      <div class="sechead quiet">
         <h2>More from kmra</h2>
         <p>Same privacy, different files.</p>
       </div>

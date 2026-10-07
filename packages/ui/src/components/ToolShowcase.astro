@@ -1,0 +1,97 @@
+---
+import type { Tool } from "@kmra/registry";
+import Icon from "./Icon.astro";
+
+interface Props {
+  tools: readonly Tool[];
+}
+
+const { tools } = Astro.props;
+const ready = tools.filter((t) => t.ready);
+const soon = tools.filter((t) => !t.ready);
+---
+
+<div class="showcase">
+  {ready.map((t) => (
+    <a class="feat" href={`/${t.slug}`}>
+      <div class="feat-art" aria-hidden="true">
+        {t.slug === "compress" ? (
+          <div class="art-bars">
+            <div>
+              <span>Before</span>
+              <i style="width:100%" />
+              <b>4.2 MB</b>
+            </div>
+            <div>
+              <span>After</span>
+              <i class="acc" style="width:15%" />
+              <b>612 KB</b>
+            </div>
+          </div>
+        ) : t.slug === "resize" ? (
+          <div class="art-frames">
+            <div class="outer">
+              <span>2400 × 1600</span>
+              <div class="inner">
+                <span>1080 × 720</span>
+              </div>
+            </div>
+          </div>
+        ) : t.slug === "convert" ? (
+          <div class="art-formats">
+            <span>HEIC</span>
+            <span>PNG</span>
+            <Icon name="right" />
+            <span class="acc">JPG</span>
+            <span class="acc">WebP</span>
+          </div>
+        ) : t.slug === "strip-metadata" ? (
+          <ul class="art-meta">
+            <li>
+              <span>Location</span>
+              <s>23.81°N 90.41°E</s>
+            </li>
+            <li>
+              <span>Camera</span>
+              <s>iPhone 15 Pro</s>
+            </li>
+            <li>
+              <span>Taken</span>
+              <s>12 Mar, 18:42</s>
+            </li>
+          </ul>
+        ) : (
+          <span class="tile">
+            <Icon name={t.icon} />
+          </span>
+        )}
+      </div>
+      <div class="feat-body">
+        <span class="tile">
+          <Icon name={t.icon} />
+        </span>
+        <div>
+          <strong>{t.name}</strong>
+          <p>{t.description}</p>
+        </div>
+        <Icon name="right" class="ico go" />
+      </div>
+    </a>
+  ))}
+</div>
+
+{soon.length > 0 && (
+  <div class="next">
+    <span class="next-label">Coming next</span>
+    <ul>
+      {soon.map((t) => (
+        <li>
+          <a href={`/${t.slug}`}>
+            <Icon name={t.icon} />
+            {t.name}
+          </a>
+        </li>
+      ))}
+    </ul>
+  </div>
+)}
