@@ -1,38 +1,41 @@
 ---
+import { CONTACT } from "@kmra/registry";
 import Icon from "./Icon.astro";
+
+const steps = [
+  {
+    icon: "download",
+    title: "You open a tool",
+    text: "Your browser downloads the tool's code once, like any web page.",
+  },
+  {
+    icon: "zap",
+    title: "Your browser does the work",
+    text: "Your file is read and edited in your device's memory. It isn't sent anywhere.",
+  },
+  {
+    icon: "check",
+    title: "You save the result",
+    text: "The finished file goes straight to your downloads. Your original stays untouched.",
+  },
+] as const;
 ---
 
-<ol class="flow">
-  <li>
-    <span class="tile">
-      <Icon name="download" />
-    </span>
-    <b>1</b>
-    <strong>You open a tool</strong>
-    <p>Your browser downloads the tool's code once, like any web page.</p>
-  </li>
-  <li>
-    <span class="tile">
-      <Icon name="zap" />
-    </span>
-    <b>2</b>
-    <strong>Your browser does the work</strong>
-    <p>
-      Your file is read and edited in your device's memory. It isn't sent
-      anywhere.
-    </p>
-  </li>
-  <li>
-    <span class="tile">
-      <Icon name="check" />
-    </span>
-    <b>3</b>
-    <strong>You save the result</strong>
-    <p>
-      The finished file goes straight to your downloads. Your original stays
-      untouched.
-    </p>
-  </li>
+<ol class="timeline">
+  {steps.map((s, i) => (
+    <li>
+      <span class="tl-dot">{i + 1}</span>
+      <div class="tl-body">
+        <span class="tile">
+          <Icon name={s.icon} />
+        </span>
+        <div>
+          <strong>{s.title}</strong>
+          <p>{s.text}</p>
+        </div>
+      </div>
+    </li>
+  ))}
 </ol>
 
 <div class="duo">
@@ -59,3 +62,7 @@ import Icon from "./Icon.astro";
     </ol>
   </section>
 </div>
+
+<p class="page-note">
+  Questions? Email <a href={`mailto:${CONTACT.email}`}>{CONTACT.email}</a>.
+</p>

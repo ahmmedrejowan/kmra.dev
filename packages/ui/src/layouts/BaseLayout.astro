@@ -12,6 +12,7 @@ import {
 import SiteHeader from "../components/SiteHeader.astro";
 import SiteFooter from "../components/SiteFooter.astro";
 import CommandPalette, { type PaletteItem } from "../components/CommandPalette";
+import MoreAppsCta from "../components/MoreAppsCta.astro";
 
 interface Props {
   appId: AppId;
@@ -156,6 +157,9 @@ const paletteItems: PaletteItem[] = [
     <main id="main">
       <slot />
     </main>
+    <aside class="wrap cta-wrap" aria-label="More from kmra">
+      <MoreAppsCta appId={appId} />
+    </aside>
     <SiteFooter appId={appId} />
     <CommandPalette client:idle items={paletteItems} />
   </body>

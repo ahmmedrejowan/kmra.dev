@@ -23,6 +23,8 @@
   --warn: #b45309;
   --check: #ebebee;
   --shadow: 0 30px 60px -30px rgb(24 24 27 / 0.28);
+  /* Vertical gap between the last content blocks, the More-apps banner and the footer */
+  --rhythm: 48px;
   --font:
     "Geist Variable", ui-sans-serif, system-ui, -apple-system, "Segoe UI",
     sans-serif;
@@ -295,8 +297,8 @@ header.site {
   border-radius: 8px;
   cursor: pointer;
   color: var(--fg);
-  font-size: 14.5px;
-  font-weight: 500;
+  font-size: 15px;
+  font-weight: 600;
 }
 .menu > button:hover,
 .navlink:hover,
@@ -608,8 +610,8 @@ main:has(> .screen) {
 .hero-band.screen {
   border-bottom: 0;
 }
-main:has(> .screen:last-child) + footer.site {
-  margin-top: 0;
+main > .screen:last-child {
+  padding-bottom: 0;
 }
 
 /* Centred hero: title, big drop box, shortcut chips */
@@ -691,7 +693,7 @@ main:has(> .screen:last-child) + footer.site {
 /* Last homepage block: tasks, then the privacy card, then other apps */
 .stack {
   display: grid;
-  gap: 48px;
+  gap: var(--rhythm);
 }
 .safe {
   display: grid;
@@ -707,8 +709,7 @@ main:has(> .screen:last-child) + footer.site {
   gap: 14px;
   align-items: center;
 }
-.safe-head h2,
-.more h2 {
+.safe-head h2 {
   font-size: 18px;
   margin: 0;
   letter-spacing: -0.02em;
@@ -737,11 +738,6 @@ main:has(> .screen:last-child) + footer.site {
   width: 16px;
   height: 16px;
   color: var(--good);
-}
-.more {
-  display: grid;
-  gap: 12px;
-  align-content: center;
 }
 
 .pill {
@@ -1543,7 +1539,14 @@ a:hover .feat-body > .ico.go {
   font-size: 17px;
 }
 
-/* More-apps call to action */
+/* More-apps call to action, shown above the footer on every page */
+.cta-wrap {
+  display: block;
+  padding-block: var(--rhythm) 0;
+}
+.cta-wrap:empty {
+  display: none;
+}
 .cta-app {
   display: flex;
   align-items: center;
@@ -1692,15 +1695,66 @@ a:hover .feat-body > .ico.go {
 .page-body {
   padding-block: 40px 0;
 }
-.flow {
+/* How it works: steps one after another on a vertical line */
+.timeline {
   list-style: none;
-  margin: 0;
+  margin: 0 auto;
   padding: 0;
+  max-width: 760px;
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 16px;
+  gap: 0;
 }
-.flow li,
+.timeline li {
+  position: relative;
+  display: grid;
+  grid-template-columns: 44px 1fr;
+  gap: 20px;
+  padding-bottom: 28px;
+}
+.timeline li:last-child {
+  padding-bottom: 0;
+}
+.timeline li:not(:last-child)::before {
+  content: "";
+  position: absolute;
+  left: 21px;
+  top: 44px;
+  bottom: 0;
+  width: 2px;
+  background: linear-gradient(
+    var(--acc),
+    color-mix(in srgb, var(--acc) 15%, transparent)
+  );
+}
+.tl-dot {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--acc);
+  color: var(--on-acc);
+  display: grid;
+  place-items: center;
+  font-weight: 700;
+  font-size: 17px;
+  box-shadow: 0 8px 20px -10px var(--acc);
+}
+.tl-body {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  padding: 20px 22px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+}
+.tl-body strong {
+  font-size: 18px;
+  letter-spacing: -0.02em;
+}
+.tl-body p {
+  margin: 4px 0 0;
+  color: var(--muted);
+}
 .card-block,
 .principles > div,
 .doc-aside {
@@ -1709,41 +1763,34 @@ a:hover .feat-body > .ico.go {
   border-radius: 16px;
   padding: 24px;
 }
-.flow li {
-  position: relative;
-  display: grid;
-  gap: 6px;
-}
-.flow li b {
-  position: absolute;
-  top: 20px;
-  right: 22px;
-  font-size: 40px;
-  font-weight: 700;
-  line-height: 1;
-  color: color-mix(in srgb, var(--acc) 22%, transparent);
-}
-.flow .tile,
 .card-block .tile,
 .principles .tile {
   margin-bottom: 10px;
 }
-.flow strong,
 .principles strong {
   font-size: 17px;
   letter-spacing: -0.02em;
 }
-.flow p,
 .principles p,
 .card-block p {
   margin: 0;
   color: var(--muted);
 }
+.page-note {
+  margin: 32px 0 0;
+  text-align: center;
+  color: var(--muted);
+}
+.page-note a,
+.doc-main a {
+  color: var(--acc);
+  font-weight: 500;
+}
 .duo {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 16px;
-  margin-top: 16px;
+  margin-top: 64px;
 }
 .card-block h2 {
   font-size: 20px;
@@ -1837,6 +1884,31 @@ a:hover .feat-body > .ico.go {
   gap: 4px;
   align-content: start;
 }
+.maker {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px 32px;
+  padding: 28px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+}
+.maker h2 {
+  font-size: 22px;
+  margin: 0 0 6px;
+}
+.maker p {
+  margin: 0;
+  color: var(--muted);
+  max-width: 34em;
+}
+.maker-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
 .nf {
   position: relative;
   padding-block: 72px;
@@ -1863,13 +1935,13 @@ a:hover .feat-body > .ico.go {
 
 /* ---------- Footer ---------- */
 footer.site {
-  margin-top: 80px;
+  margin-top: var(--rhythm);
   border-top: 1px solid var(--line);
   padding-block: 40px;
 }
 .fgrid {
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
   gap: 24px;
   font-size: 14px;
 }
@@ -1888,10 +1960,58 @@ footer.site {
 .fgrid a:hover {
   color: var(--fg);
 }
-.fhost {
+.fmail {
+  display: inline-block;
+  margin-top: 12px;
+  color: var(--acc);
+  font-weight: 500;
+}
+.fapps {
+  gap: 10px !important;
+}
+.fapps a {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  padding: 8px 10px;
+  margin-inline: -10px;
+  border-radius: 10px;
+  border: 1px solid transparent;
+}
+.fapps a:hover {
+  background: var(--raise);
+}
+.fapps a[aria-current="true"] {
+  border-color: color-mix(in srgb, var(--app) 25%, var(--line));
+  background: color-mix(in srgb, var(--app) 5%, var(--card));
+}
+.fapp-mark {
+  width: 28px;
+  height: 28px;
+  flex: none;
+}
+.fapp-mark svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.fapp-name {
+  display: block;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  color: var(--fg);
+}
+.fapps small {
   display: block;
   font-size: 12px;
   color: var(--muted);
+}
+.fbottom a {
+  color: var(--fg);
+  font-weight: 500;
+}
+.fbottom a:hover {
+  color: var(--acc);
 }
 .fbrand p {
   margin: 14px 0 0;
@@ -2587,7 +2707,6 @@ input[type="range"] {
   .content,
   .info-steps,
   .info-qa,
-  .flow,
   .duo,
   .doc {
     grid-template-columns: 1fr;

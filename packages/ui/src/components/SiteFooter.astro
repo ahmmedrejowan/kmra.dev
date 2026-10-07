@@ -1,6 +1,7 @@
 ---
-import { apps, getApp, linkTo, type AppId } from "@kmra/registry";
+import { apps, CONTACT, getApp, linkTo, type AppId } from "@kmra/registry";
 import Wordmark from "./Wordmark.astro";
+import { markSvg } from "../lib/brand";
 
 interface Props {
   appId: AppId;
@@ -27,6 +28,9 @@ const toolList = readyTools.length ? readyTools : app.tools;
           Small tools for everyday files. Everything runs in your browser, so
           your files stay on your device.
         </p>
+        <a class="fmail" href={`mailto:${CONTACT.email}`}>
+          {CONTACT.email}
+        </a>
       </div>
       <div>
         <strong>Tools</strong>
@@ -38,40 +42,50 @@ const toolList = readyTools.length ? readyTools : app.tools;
           ))}
         </ul>
       </div>
-      <div>
-        <strong>{app.tasks.length ? "Use cases" : "Apps"}</strong>
-        <ul>
-          {app.tasks.length
-            ? app.tasks.slice(0, 7).map((t) => (
-                <li>
-                  <a href={`/${t.slug}`}>{t.name}</a>
-                </li>
-              ))
-            : liveApps.map((a) => (
-                <li>
-                  <a href={linkTo(appId, a.id as AppId, "/", dev)}>{a.name}</a>
-                </li>
-              ))}
-        </ul>
-      </div>
+      {app.tasks.length > 0 && (
+        <div>
+          <strong>Use cases</strong>
+          <ul>
+            {app.tasks.slice(0, 7).map((t) => (
+              <li>
+                <a href={`/${t.slug}`}>{t.name}</a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
       <div>
         <strong>kmra apps</strong>
-        <ul>
+        <ul class="fapps">
           {liveApps.map((a) => (
             <li>
-              <a href={linkTo(appId, a.id as AppId, "/", dev)}>
-                {a.brand.join("")}
-                <small class="fhost">{a.id}.kmra.dev</small>
+              <a
+                href={linkTo(appId, a.id as AppId, "/", dev)}
+                aria-current={a.id === appId ? "true" : undefined}
+                style={`--app:${a.accent.light}`}
+              >
+                <span
+                  class="fapp-mark"
+                  set:html={markSvg(a.id, a.accent.light)}
+                  aria-hidden="true"
+                />
+                <span>
+                  <span
+                    class="fapp-name"
+                    set:html={`<span style="color:var(--app)">${a.brand[0]}</span>${a.brand[1]}`}
+                  />
+                  <small>{a.id}.kmra.dev</small>
+                </span>
               </a>
             </li>
           ))}
         </ul>
       </div>
       <div>
-        <strong>Company</strong>
+        <strong>About</strong>
         <ul>
           <li>
-            <a href="/about">About</a>
+            <a href="/about">About {app.brand.join("")}</a>
           </li>
           <li>
             <a href="/how-it-works">How it works</a>
@@ -79,12 +93,30 @@ const toolList = readyTools.length ? readyTools : app.tools;
           <li>
             <a href="/privacy">Privacy</a>
           </li>
+          <li>
+            <a href={`mailto:${CONTACT.email}`}>Contact</a>
+          </li>
+          <li>
+            <a href={CONTACT.portfolio} rel="noopener" target="_blank">
+              rejowan.com
+            </a>
+          </li>
+          <li>
+            <a href={CONTACT.linkedin} rel="noopener" target="_blank">
+              LinkedIn
+            </a>
+          </li>
         </ul>
       </div>
     </div>
     <div class="fbottom">
       <span>© {year} kmra.dev</span>
-      <span>Files are processed on your device and never uploaded.</span>
+      <span>
+        Made by{" "}
+        <a href={CONTACT.portfolio} rel="noopener" target="_blank">
+          {CONTACT.maker}
+        </a>
+      </span>
     </div>
   </div>
 </footer>

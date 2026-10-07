@@ -6,6 +6,14 @@
 
 export const ROOT_DOMAIN = "kmra.dev";
 
+/** Who makes kmra, and how to reach them. */
+export const CONTACT = {
+  email: "ping@kmra.dev",
+  maker: "K M Rejowan Ahmmed",
+  portfolio: "https://rejowan.com",
+  linkedin: "https://www.linkedin.com/in/ahmmedrejowan",
+} as const;
+
 /** Icon names available in @kmra/ui (see packages/ui/src/lib/icons.ts) */
 export type IconName =
   | "resize"

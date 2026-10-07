@@ -3,7 +3,6 @@ import BaseLayout from "@kmra/ui/layouts/BaseLayout.astro";
 import Crumbs from "@kmra/ui/components/Crumbs.astro";
 import ToolCards from "@kmra/ui/components/ToolCards.astro";
 import InfoCard from "@kmra/ui/components/InfoCard.astro";
-import MoreAppsCta from "@kmra/ui/components/MoreAppsCta.astro";
 import TaskList from "@kmra/ui/components/TaskList.astro";
 import SoonBox from "@kmra/ui/components/SoonBox.astro";
 import Icon from "@kmra/ui/components/Icon.astro";
@@ -181,10 +180,6 @@ const schema = [
         <p>More ways to edit your images.</p>
       </div>
       <ToolCards tools={others} allHref="/" allLabel="All image tools" />
-    </section>
-
-    <section class="block">
-      <MoreAppsCta appId="imgtool" />
     </section>
   </div>
 </BaseLayout>

@@ -1,5 +1,5 @@
 ---
-import type { AppId } from "@kmra/registry";
+import { CONTACT, type AppId } from "@kmra/registry";
 import AppCards from "./AppCards.astro";
 import Icon from "./Icon.astro";
 
@@ -54,4 +54,28 @@ const { appId } = Astro.props;
     <h2>kmra apps</h2>
   </div>
   <AppCards appId={appId} />
+</section>
+
+<section class="block">
+  <div class="maker">
+    <div>
+      <h2>Who makes it</h2>
+      <p>
+        kmra.dev is built and run by {CONTACT.maker}. Ideas, bugs or a tool
+        you'd like to see? Get in touch.
+      </p>
+    </div>
+    <div class="maker-links">
+      <a class="btn acc" href={`mailto:${CONTACT.email}`}>
+        <Icon name="mail" />
+        {CONTACT.email}
+      </a>
+      <a class="btn" href={CONTACT.portfolio} rel="noopener" target="_blank">
+        rejowan.com
+      </a>
+      <a class="btn" href={CONTACT.linkedin} rel="noopener" target="_blank">
+        LinkedIn
+      </a>
+    </div>
+  </div>
 </section>

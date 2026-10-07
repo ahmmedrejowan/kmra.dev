@@ -3,7 +3,6 @@ import BaseLayout from "@kmra/ui/layouts/BaseLayout.astro";
 import ToolShowcase from "@kmra/ui/components/ToolShowcase.astro";
 import TaskDirectory from "@kmra/ui/components/TaskDirectory.astro";
 import PrivacySection from "@kmra/ui/components/PrivacySection.astro";
-import AppCards from "@kmra/ui/components/AppCards.astro";
 import HeroChips from "@kmra/ui/components/HeroChips.astro";
 import LandingDrop from "@kmra/ui/components/LandingDrop";
 import { getApp } from "@kmra/registry";
@@ -65,10 +64,6 @@ const chips = [
         <TaskDirectory tasks={app.tasks} icons={icons} />
       </div>
       <PrivacySection />
-      <div class="more">
-        <h2>More from kmra</h2>
-        <AppCards appId="imgtool" others />
-      </div>
     </div>
   </section>
 </BaseLayout>

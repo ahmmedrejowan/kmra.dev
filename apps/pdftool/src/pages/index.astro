@@ -3,7 +3,6 @@ import BaseLayout from "@kmra/ui/layouts/BaseLayout.astro";
 import ToolGrid from "@kmra/ui/components/ToolGrid.astro";
 import PrivacySection from "@kmra/ui/components/PrivacySection.astro";
 import HeroChips from "@kmra/ui/components/HeroChips.astro";
-import AppCards from "@kmra/ui/components/AppCards.astro";
 import Faq from "@kmra/ui/components/Faq.astro";
 import LandingDrop from "@kmra/ui/components/LandingDrop";
 import { appUrl, getApp } from "@kmra/registry";
@@ -64,10 +63,6 @@ const faq = [
         <ToolGrid tools={app.tools} />
       </div>
       <PrivacySection />
-      <div class="more">
-        <h2>More from kmra</h2>
-        <AppCards appId="pdftool" others />
-      </div>
     </div>
   </section>
 
