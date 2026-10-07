@@ -96,7 +96,10 @@ export default function ImageTool({ tool, preset, tools }: Props) {
   const outRef = useRef<Out | null>(null);
   const itemsRef = useRef(items);
   itemsRef.current = items;
-  const prefAdvanced = useRef(false);
+  /** Advanced is the chosen mode (shown on the page's Simple/Advanced switch) */
+  const [wantAdvanced, setWantAdvanced] = useState(false);
+  /** Open the workspace as soon as files arrive */
+  const openOnFiles = useRef(false);
 
   const item = items[cur];
   const set = (patch: Partial<Settings>) => setS((p) => ({ ...p, ...patch }));
@@ -141,10 +144,11 @@ export default function ImageTool({ tool, preset, tools }: Props) {
   // Files handed over from the landing page, or ?sample
   useEffect(() => {
     try {
-      // Only reopen the workspace automatically on wide screens; on phones Simple fits better.
-      prefAdvanced.current =
-        localStorage.getItem(MODE_KEY) === "advanced" &&
-        matchMedia("(min-width: 981px)").matches;
+      if (localStorage.getItem(MODE_KEY) === "advanced") {
+        setWantAdvanced(true);
+        // Reopen the workspace by itself only on wide screens; on phones Simple fits better.
+        openOnFiles.current = matchMedia("(min-width: 981px)").matches;
+      }
     } catch {}
     void (async () => {
       const handed = await takeFiles();
@@ -155,10 +159,10 @@ export default function ImageTool({ tool, preset, tools }: Props) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Reopen Advanced for people who chose it last time
+  // Open the workspace once files arrive, if Advanced was chosen
   useEffect(() => {
-    if (items.length && prefAdvanced.current) {
-      prefAdvanced.current = false;
+    if (items.length && openOnFiles.current) {
+      openOnFiles.current = false;
       setAdvanced(true);
     }
   }, [items.length]);
@@ -231,17 +235,20 @@ export default function ImageTool({ tool, preset, tools }: Props) {
 
   /* ---------- Mode ---------- */
   function openAdvanced() {
-    if (!items.length) {
-      toast("Add an image first.");
-      return;
-    }
-    setAdvanced(true);
+    setWantAdvanced(true);
     try {
       localStorage.setItem(MODE_KEY, "advanced");
     } catch {}
+    if (items.length) setAdvanced(true);
+    else {
+      openOnFiles.current = true;
+      toast("Advanced is on. Add images to open the workspace.");
+    }
   }
   function closeAdvanced() {
     setAdvanced(false);
+    setWantAdvanced(false);
+    openOnFiles.current = false;
     try {
       localStorage.setItem(MODE_KEY, "simple");
     } catch {}
@@ -253,12 +260,25 @@ export default function ImageTool({ tool, preset, tools }: Props) {
     };
   }, [advanced]);
 
-  // The "Simple / Advanced" switch in the page title lives outside this island.
+  // The Simple/Advanced switch in the page header lives outside this island: it sends
+  // kmra:advanced / kmra:simple, and we report the current mode back with kmra:mode.
   useEffect(() => {
     const open = () => openAdvanced();
+    const close = () => closeAdvanced();
     window.addEventListener("kmra:advanced", open);
-    return () => window.removeEventListener("kmra:advanced", open);
+    window.addEventListener("kmra:simple", close);
+    return () => {
+      window.removeEventListener("kmra:advanced", open);
+      window.removeEventListener("kmra:simple", close);
+    };
   });
+  useEffect(() => {
+    window.dispatchEvent(
+      new CustomEvent("kmra:mode", {
+        detail: { advanced: wantAdvanced || advanced },
+      }),
+    );
+  }, [wantAdvanced, advanced]);
 
   /* ---------- Download ---------- */
   async function download() {
