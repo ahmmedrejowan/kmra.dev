@@ -1,4 +1,15 @@
 import type { Preset } from "@kmra/registry";
+import {
+  NO_ADJUST,
+  NO_FRAME,
+  type Adjust,
+  type Bg,
+  type Frame,
+  type Ink,
+  type Redact,
+  type TextLayer,
+  type Watermark,
+} from "./fx";
 
 export type Format = "image/jpeg" | "image/png" | "image/webp";
 
@@ -37,6 +48,20 @@ export interface Settings {
   ratio: string | null;
   /** Selected form preset id (FORM_PRESETS), or null */
   form: string | null;
+  /* Effects (see fx.ts). null = off. */
+  adjust: Adjust | null;
+  /** Look id from FILTERS */
+  filter: string | null;
+  /** Look strength, 0..100 */
+  filterAmount: number;
+  redact: Redact | null;
+  ink: Ink | null;
+  bg: Bg | null;
+  text: TextLayer | null;
+  mark: Watermark | null;
+  frame: Frame | null;
+  /** Print sheet id from SHEETS */
+  sheet: string | null;
 }
 
 export interface Crop {
@@ -188,7 +213,98 @@ export function defaults(tool: string): Settings {
     crop: null,
     ratio: null,
     form: null,
+    adjust: null,
+    filter: null,
+    filterAmount: 100,
+    redact: null,
+    ink: null,
+    bg: null,
+    text: null,
+    mark: null,
+    frame: null,
+    sheet: null,
   };
+  const keep = { ...base, keepFormat: true, quality: 92 };
+  const png = { ...base, type: "image/png" as Format };
+  switch (tool) {
+    case "adjust":
+      return { ...keep, adjust: { ...NO_ADJUST } };
+    case "filters":
+      return { ...keep, filter: "vintage" };
+    case "border":
+      return {
+        ...keep,
+        frame: { ...NO_FRAME, border: 3, borderColor: "#ffffff", radius: 0 },
+      };
+    case "extend-canvas":
+      return { ...keep, frame: { ...NO_FRAME, ratio: "1:1", fill: "blur" } };
+    case "beautify":
+      return {
+        ...png,
+        frame: {
+          ...NO_FRAME,
+          pad: 9,
+          fill: "gradient",
+          radius: 1.6,
+          shadow: true,
+          chrome: "light",
+        },
+      };
+    case "watermark":
+      return {
+        ...keep,
+        mark: {
+          text: "© Your name",
+          logo: null,
+          logoName: "",
+          pos: "br",
+          size: 4,
+          opacity: 70,
+          color: "#ffffff",
+        },
+      };
+    case "add-text":
+      return {
+        ...base,
+        quality: 90,
+        text: {
+          top: "",
+          bottom: "",
+          size: 10,
+          color: "#ffffff",
+          stroke: true,
+          font: "impact",
+        },
+      };
+    case "blur":
+      return {
+        ...keep,
+        redact: {
+          mode: "pixelate",
+          strength: 50,
+          color: "#000000",
+          shape: "rect",
+          regions: [],
+        },
+      };
+    case "face-blur":
+      return {
+        ...keep,
+        redact: {
+          mode: "blur",
+          strength: 60,
+          color: "#000000",
+          shape: "ellipse",
+          regions: [],
+        },
+      };
+    case "signature":
+      return { ...png, ink: { threshold: 50, color: "keep", trim: true } };
+    case "remove-bg":
+      return { ...png, bg: { mode: "remove", color: "#ffffff" } };
+    case "change-bg":
+      return { ...base, quality: 92, bg: { mode: "color", color: "#ffffff" } };
+  }
   if (tool === "resize") return { ...base, keepFormat: true, quality: 90 };
   if (tool === "form-size") return applyForm(base, "job-photo");
   if (
@@ -227,6 +343,15 @@ export function outDims(
   s: Settings,
 ): [number, number] {
   const [srcW, srcH] = baseDims(origW, origH, s);
+  return fitDims(srcW, srcH, s);
+}
+
+/** Resize step alone: the size for a source of srcW × srcH. */
+export function fitDims(
+  srcW: number,
+  srcH: number,
+  s: Settings,
+): [number, number] {
   const p = s.size ? SIZES.find((x) => x.id === s.size) : undefined;
   if (p?.pct)
     return [

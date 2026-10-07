@@ -29,7 +29,28 @@ export type IconName =
   | "split"
   | "signature"
   | "image"
-  | "hash";
+  | "hash"
+  | "sun"
+  | "eyeOff"
+  | "type"
+  | "stamp"
+  | "frame"
+  | "expand"
+  | "monitor"
+  | "scanFace"
+  | "eraser"
+  | "palette"
+  | "pipette"
+  | "info"
+  | "chart"
+  | "grid"
+  | "layout"
+  | "film"
+  | "code"
+  | "star"
+  | "idCard"
+  | "droplet"
+  | "camera";
 
 export interface Tool {
   /** URL path segment, e.g. "resize" -> imgtool.kmra.dev/resize */
@@ -214,6 +235,148 @@ export const apps = [
           "Drop an image.",
           "Rotate left or right, or flip it.",
           "Download the fixed image.",
+        ],
+      },
+      {
+        slug: "adjust",
+        title: "Adjust brightness, contrast and colour",
+        name: "Adjust",
+        description:
+          "Brightness, contrast, saturation, warmth, sharpness and vignette.",
+        blurb: "Light, colour, sharpness",
+        icon: "sun",
+        group: "Edit",
+        ready: true,
+        steps: [
+          "Drop one or more photos.",
+          "Drag the sliders. Double-click a slider to reset it.",
+          "Download. Every photo in the batch gets the same fix.",
+        ],
+      },
+      {
+        slug: "filters",
+        title: "Photo filters",
+        name: "Filters",
+        description:
+          "One-click looks: mono, vintage, vivid, warm, cool and more.",
+        blurb: "Mono, vintage, vivid",
+        icon: "droplet",
+        group: "Edit",
+        ready: true,
+        steps: [
+          "Drop one or more photos.",
+          "Pick a look and set its strength.",
+          "Download the filtered copies.",
+        ],
+      },
+      {
+        slug: "add-text",
+        title: "Add text to an image (meme maker)",
+        name: "Add text",
+        description:
+          "Top and bottom text in classic meme style, or a clean caption.",
+        blurb: "Memes and captions",
+        icon: "type",
+        group: "Create",
+        ready: true,
+        steps: [
+          "Drop an image.",
+          "Type the top and bottom text, then pick a font and size.",
+          "Download your meme.",
+        ],
+      },
+      {
+        slug: "watermark",
+        title: "Watermark images",
+        name: "Watermark",
+        description: "Add your name or logo to many photos at once.",
+        blurb: "Text or logo, in bulk",
+        icon: "stamp",
+        group: "Create",
+        ready: true,
+        steps: [
+          "Drop all the photos you want to protect.",
+          "Type your name or add a logo, then pick a corner or repeat it across.",
+          "Download them all as a zip.",
+        ],
+      },
+      {
+        slug: "border",
+        title: "Add a border or round the corners",
+        name: "Border & corners",
+        description: "Coloured borders, rounded corners and a soft shadow.",
+        blurb: "Borders, rounded corners",
+        icon: "frame",
+        group: "Create",
+        ready: true,
+        steps: [
+          "Drop an image.",
+          "Set the border width and colour, and how round the corners are.",
+          "Download. Save as PNG to keep rounded corners transparent.",
+        ],
+      },
+      {
+        slug: "extend-canvas",
+        title: "Make an image square without cropping",
+        name: "Fit without cropping",
+        description:
+          "Pad photos to 1:1, 4:5 or 9:16 with a blurred or coloured background.",
+        blurb: "Square without cropping",
+        icon: "expand",
+        group: "Create",
+        ready: true,
+        steps: [
+          "Drop one or more photos.",
+          "Pick the shape you need and a blurred, coloured or clear background.",
+          "Download. Nothing is cut off.",
+        ],
+      },
+      {
+        slug: "beautify",
+        title: "Screenshot beautifier",
+        name: "Beautify screenshot",
+        description:
+          "Put screenshots on a gradient with padding, rounded corners and a shadow.",
+        blurb: "Gradient, shadow, window",
+        icon: "monitor",
+        group: "Create",
+        ready: true,
+        steps: [
+          "Drop or paste a screenshot.",
+          "Pick a background, padding and window style.",
+          "Download a share-ready image.",
+        ],
+      },
+      {
+        slug: "blur",
+        title: "Blur or pixelate part of an image",
+        name: "Blur & pixelate",
+        description:
+          "Hide faces, names, plates and card numbers before you share.",
+        blurb: "Hide faces and details",
+        icon: "eyeOff",
+        group: "Privacy",
+        ready: true,
+        steps: [
+          "Drop a photo or screenshot.",
+          "Drag boxes over what to hide, then choose pixelate, blur or a solid box.",
+          "Download. The hidden parts can't be recovered from the file.",
+        ],
+      },
+      {
+        slug: "signature",
+        title: "Clean up a signature",
+        name: "Signature cleaner",
+        description:
+          "Turn a phone photo of your signature into clean ink on a transparent or white background.",
+        blurb: "Clean, transparent ink",
+        icon: "signature",
+        group: "Forms",
+        ready: true,
+        steps: [
+          "Photograph your signature on plain paper and drop it here.",
+          "Adjust how much faint ink to keep and pick an ink colour.",
+          "Download a transparent PNG, or a 300 × 80 JPEG for forms.",
         ],
       },
     ],

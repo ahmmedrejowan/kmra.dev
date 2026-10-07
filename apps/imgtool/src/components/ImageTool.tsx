@@ -27,6 +27,19 @@ import {
 } from "@kmra/ui/lib/keys";
 import { engine, type EncodeResult } from "../lib/engine";
 import CropBox from "./CropBox";
+import RegionBox from "./RegionBox";
+import {
+  AdjustCtl,
+  FilterCtl,
+  FrameCtl,
+  InkCtl,
+  MarkCtl,
+  RedactCtl,
+  Seg,
+  SheetCtl,
+  TextCtl,
+} from "./FxControls";
+import { FILTERS, NO_ADJUST, NO_FRAME, SHEETS } from "../lib/fx";
 import {
   applyForm,
   applyPreset,
@@ -37,6 +50,7 @@ import {
   EXT,
   FORM_PRESETS,
   FORMATS,
+  hasGeometry,
   isLossy,
   outDims,
   outType,
@@ -85,7 +99,49 @@ const SECTION: Record<string, string> = {
   rotate: "rotate",
   "strip-metadata": "privacy",
   "form-size": "resize",
+  adjust: "look",
+  filters: "look",
+  "add-text": "text",
+  watermark: "watermark",
+  border: "frame",
+  "extend-canvas": "frame",
+  beautify: "frame",
+  blur: "redact",
+  signature: "signature",
 };
+const FRAME_MODE: Record<string, "border" | "extend" | "beautify"> = {
+  border: "border",
+  "extend-canvas": "extend",
+  beautify: "beautify",
+};
+
+/** SVGs are drawn on the page (workers can't decode them) at a generous size, then handled as PNGs. */
+async function rasterizeSvg(file: File): Promise<File> {
+  const url = URL.createObjectURL(file);
+  try {
+    const img = new Image();
+    img.src = url;
+    await img.decode();
+    const w = img.naturalWidth || 512;
+    const h = img.naturalHeight || 512;
+    const long = Math.max(w, h);
+    const scale = Math.min(4096, Math.max(2048, long)) / long;
+    const c = document.createElement("canvas");
+    c.width = Math.round(w * scale);
+    c.height = Math.round(h * scale);
+    c.getContext("2d")!.drawImage(img, 0, 0, c.width, c.height);
+    const blob = await new Promise<Blob>((res, rej) =>
+      c.toBlob((b) => (b ? res(b) : rej(new Error("SVG"))), "image/png"),
+    );
+    return new File([blob], file.name.replace(/\.svgz?$/i, "") + ".png", {
+      type: "image/png",
+    });
+  } finally {
+    URL.revokeObjectURL(url);
+  }
+}
+const isSvg = (f: File) =>
+  f.type === "image/svg+xml" || /\.svgz?$/i.test(f.name);
 
 function outName(file: File, type: string): string {
   const base = file.name.replace(/\.[^.]+$/, "");
@@ -149,9 +205,10 @@ export default function ImageTool({ tool, preset, tools }: Props) {
       return;
     }
     const added: Item[] = [];
-    for (const file of files) {
+    for (const picked of files) {
       const key = crypto.randomUUID();
       try {
+        const file = isSvg(picked) ? await rasterizeSvg(picked) : picked;
         const { w, h, preview } = await engine.load(key, file);
         added.push({
           key,
@@ -162,7 +219,7 @@ export default function ImageTool({ tool, preset, tools }: Props) {
         });
       } catch {
         toast(
-          `${file.name} couldn't be opened. It may be damaged or in a format your browser can't read.`,
+          `${picked.name} couldn't be opened. It may be damaged or in a format your browser can't read.`,
         );
       }
     }
@@ -272,7 +329,8 @@ export default function ImageTool({ tool, preset, tools }: Props) {
     const solo =
       outRef.current &&
       outRef.current.key === item.key &&
-      Math.abs(outRef.current.w / outRef.current.h - item.w / item.h) > 0.01;
+      (Math.abs(outRef.current.w / outRef.current.h - item.w / item.h) > 0.01 ||
+        !!(s.text || s.mark || s.frame || s.ink || s.sheet));
     return solo ? outRef.current!.w : item.w;
   }
   function zoomBy(dir: 1 | -1) {
@@ -532,8 +590,11 @@ export default function ImageTool({ tool, preset, tools }: Props) {
   const type = item ? outType(item.file.type, s) : s.type;
 
   function compare(it: Item) {
+    // Show the result alone when its shape differs, or when it adds things on top (text, frames)
+    // that a before/after split would only cut in half.
     const solo = outForItem
-      ? Math.abs(outForItem.w / outForItem.h - it.w / it.h) > 0.01
+      ? Math.abs(outForItem.w / outForItem.h - it.w / it.h) > 0.01 ||
+        !!(s.text || s.mark || s.frame || s.ink || s.sheet)
       : false;
     return (
       <div
@@ -839,6 +900,46 @@ export default function ImageTool({ tool, preset, tools }: Props) {
     </div>
   );
 
+  const sigForm = s.form === "job-signature";
+  const signatureSizeCtl = (
+    <>
+      <Seg<string>
+        label="Size"
+        options={[
+          ["any", "Original"],
+          ["job", "Form 300×80"],
+        ]}
+        value={sigForm ? "job" : "any"}
+        onPick={(v) =>
+          setS((p) =>
+            v === "job"
+              ? applyForm(p, "job-signature")
+              : {
+                  ...p,
+                  form: null,
+                  w: null,
+                  h: null,
+                  lock: true,
+                  target: null,
+                  type: "image/png",
+                },
+          )
+        }
+      />
+      {!sigForm && (
+        <Seg<string>
+          label="Save as"
+          options={[
+            ["image/png", "PNG (transparent)"],
+            ["image/jpeg", "JPEG (white)"],
+          ]}
+          value={s.type}
+          onPick={(v) => set({ type: v as Format, keepFormat: false })}
+        />
+      )}
+    </>
+  );
+
   function simpleControls(): ReactNode {
     switch (tool) {
       case "compress":
@@ -930,6 +1031,57 @@ export default function ImageTool({ tool, preset, tools }: Props) {
             {saveAsCtl}
           </>
         );
+      case "adjust":
+        return (
+          <>
+            <AdjustCtl s={s} setS={setS} />
+            {saveAsCtl}
+          </>
+        );
+      case "filters":
+        return (
+          <>
+            <FilterCtl s={s} setS={setS} />
+            {saveAsCtl}
+          </>
+        );
+      case "add-text":
+        return (
+          <>
+            <TextCtl s={s} setS={setS} />
+            {saveAsCtl}
+          </>
+        );
+      case "watermark":
+        return (
+          <>
+            <MarkCtl s={s} setS={setS} />
+            {saveAsCtl}
+          </>
+        );
+      case "border":
+      case "extend-canvas":
+      case "beautify":
+        return (
+          <>
+            <FrameCtl s={s} setS={setS} mode={FRAME_MODE[tool]!} />
+            {saveAsCtl}
+          </>
+        );
+      case "blur":
+        return (
+          <>
+            <RedactCtl s={s} setS={setS} />
+            {saveAsCtl}
+          </>
+        );
+      case "signature":
+        return (
+          <>
+            <InkCtl s={s} setS={setS} />
+            {signatureSizeCtl}
+          </>
+        );
       default:
         return null;
     }
@@ -940,9 +1092,34 @@ export default function ImageTool({ tool, preset, tools }: Props) {
     tool === "crop"
       ? !advanced || focus === "crop"
       : advanced && focus === "crop";
+  const redactTool = tool === "blur" || tool === "face-blur";
+  const showRegions =
+    !!s.redact &&
+    !showCrop &&
+    (redactTool
+      ? !advanced || SECTION[focus] === "redact"
+      : advanced && SECTION[focus] === "redact");
   function stageContent(it: Item) {
     const r = RATIOS.find((x) => x.id === s.ratio);
-    const content = showCrop ? (
+    // Areas are drawn on the result when it has the original's shape, so the effect shows live.
+    const onResult =
+      outForItem &&
+      !hasGeometry(s) &&
+      !s.frame &&
+      !s.sheet &&
+      Math.abs(outForItem.w / outForItem.h - it.w / it.h) < 0.01;
+    const content = showRegions ? (
+      <RegionBox
+        url={onResult ? outForItem.url : it.url}
+        alt={`Choose areas to blur in ${it.file.name}`}
+        regions={s.redact!.regions}
+        ellipse={s.redact!.shape === "ellipse"}
+        onChange={(regions) =>
+          setS((p) => ({ ...p, redact: { ...p.redact!, regions } }))
+        }
+        imgStyle={sized(it.w)}
+      />
+    ) : showCrop ? (
       <CropBox
         url={it.url}
         alt={`Crop ${it.file.name}`}
@@ -1011,7 +1188,12 @@ export default function ImageTool({ tool, preset, tools }: Props) {
           {pct >= 0 ? (
             <span className="delta">{pct}% smaller</span>
           ) : (
-            <span className="delta up">{-pct}% larger</span>
+            // Only a warning when the job is making files smaller
+            <span
+              className={`delta up${tool === "compress" || s.target ? "" : " neutral"}`}
+            >
+              {-pct}% larger
+            </span>
           )}
         </div>
         <small>
@@ -1185,9 +1367,46 @@ export default function ImageTool({ tool, preset, tools }: Props) {
         ? `Fit ≤ ${s.target} KB`
         : `Quality ${s.quality}`
       : null,
+    s.ink ? "Clean signature" : null,
+    s.redact?.regions.length
+      ? `Blur ${s.redact.regions.length} area${s.redact.regions.length > 1 ? "s" : ""}`
+      : null,
+    s.adjust && Object.values(s.adjust).some(Boolean) ? "Adjust" : null,
+    s.filter ? (FILTERS.find((f) => f.id === s.filter)?.label ?? null) : null,
+    s.text && (s.text.top || s.text.bottom) ? "Text" : null,
+    s.mark ? "Watermark" : null,
+    s.frame ? "Frame" : null,
+    s.sheet
+      ? `Print sheet ${SHEETS.find((x) => x.id === s.sheet)?.label ?? ""}`
+      : null,
     FORMATS[type],
     "Strip metadata",
   ].filter(Boolean) as string[];
+
+  /** An effect section in the workspace that can be switched on and off. */
+  const fxSection = (
+    key: string,
+    title: string,
+    icon: IconKey,
+    on: boolean,
+    toggle: (on: boolean) => void,
+    body: ReactNode,
+  ) => (
+    <section
+      id={`ws-${key}`}
+      className={SECTION[focus] === key ? "focus" : undefined}
+    >
+      <h3>
+        <Icon name={icon} />
+        {title}
+        <button type="button" className="fx-on" onClick={() => toggle(!on)}>
+          {on ? "Remove" : "Add"}
+        </button>
+      </h3>
+      {on && body}
+    </section>
+  );
+  const fromTool = (slug: string) => defaults(slug);
 
   return (
     <>
@@ -1250,24 +1469,29 @@ export default function ImageTool({ tool, preset, tools }: Props) {
 
         <div className="ws-body">
           <div className="rail" aria-label="Tools">
-            {tools.map((t) => (
-              <button
-                key={t.slug}
-                type="button"
-                title={t.ready ? t.name : `${t.name} (coming soon)`}
-                aria-label={t.name}
-                aria-pressed={focus === t.slug}
-                disabled={!t.ready}
-                onClick={() => {
-                  setFocus(t.slug);
-                  document
-                    .getElementById(`ws-${SECTION[t.slug]}`)
-                    ?.scrollIntoView({ block: "nearest", behavior: "smooth" });
-                }}
-              >
-                <Icon name={t.icon} />
-              </button>
-            ))}
+            {tools
+              .filter((t) => SECTION[t.slug])
+              .map((t) => (
+                <button
+                  key={t.slug}
+                  type="button"
+                  title={t.ready ? t.name : `${t.name} (coming soon)`}
+                  aria-label={t.name}
+                  aria-pressed={focus === t.slug}
+                  disabled={!t.ready}
+                  onClick={() => {
+                    setFocus(t.slug);
+                    document
+                      .getElementById(`ws-${SECTION[t.slug]}`)
+                      ?.scrollIntoView({
+                        block: "nearest",
+                        behavior: "smooth",
+                      });
+                  }}
+                >
+                  <Icon name={t.icon} />
+                </button>
+              ))}
           </div>
 
           <div className="ws-center">
@@ -1355,7 +1579,64 @@ export default function ImageTool({ tool, preset, tools }: Props) {
               <>
                 {dimsCtl}
                 {formCtl}
+                <SheetCtl s={s} setS={setS} />
               </>,
+            )}
+            {fxSection(
+              "look",
+              "Adjust & looks",
+              "sun",
+              !!(s.adjust || s.filter),
+              (on) =>
+                set(
+                  on
+                    ? { adjust: { ...NO_ADJUST } }
+                    : { adjust: null, filter: null },
+                ),
+              <>
+                <AdjustCtl s={s} setS={setS} />
+                <FilterCtl s={s} setS={setS} />
+              </>,
+            )}
+            {fxSection(
+              "redact",
+              "Blur areas",
+              "eyeOff",
+              !!s.redact,
+              (on) => set({ redact: on ? fromTool("blur").redact : null }),
+              s.redact && <RedactCtl s={s} setS={setS} />,
+            )}
+            {fxSection(
+              "text",
+              "Text",
+              "type",
+              !!s.text,
+              (on) => set({ text: on ? fromTool("add-text").text : null }),
+              s.text && <TextCtl s={s} setS={setS} />,
+            )}
+            {fxSection(
+              "watermark",
+              "Watermark",
+              "stamp",
+              !!s.mark,
+              (on) => set({ mark: on ? fromTool("watermark").mark : null }),
+              s.mark && <MarkCtl s={s} setS={setS} />,
+            )}
+            {fxSection(
+              "frame",
+              "Border & padding",
+              "frame",
+              !!s.frame,
+              (on) => set({ frame: on ? { ...NO_FRAME, border: 3 } : null }),
+              s.frame && <FrameCtl s={s} setS={setS} mode="all" />,
+            )}
+            {fxSection(
+              "signature",
+              "Signature cleanup",
+              "signature",
+              !!s.ink,
+              (on) => set({ ink: on ? fromTool("signature").ink : null }),
+              s.ink && <InkCtl s={s} setS={setS} />,
             )}
             {section(
               "format",
