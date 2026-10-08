@@ -6561,3 +6561,19 @@ button.sp-face[aria-pressed="true"] .thumb {
     top: 96px;
   }
 }
+
+/* Header band texture per app: images keep the grid; QR gets a module dot grid; PDF gets ruled
+   lines like paper. */
+[data-app="qrtool"] .hero-band::before {
+  background-image: radial-gradient(
+    circle,
+    var(--line) 1.4px,
+    transparent 1.8px
+  );
+  background-size: 18px 18px;
+  opacity: 1;
+}
+[data-app="pdftool"] .hero-band::before {
+  background-image: linear-gradient(var(--line) 1px, transparent 1px);
+  background-size: 100% 28px;
+}
