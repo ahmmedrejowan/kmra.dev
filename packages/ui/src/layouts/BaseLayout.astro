@@ -115,6 +115,31 @@ const paletteItems: PaletteItem[] = [
     : []),
   {
     group: T("Help"),
+    name: T("All tools"),
+    hint: brand,
+    href: lp(lang, "/tools"),
+    icon: "grid",
+  },
+  ...(app.tasks.length
+    ? [
+        {
+          group: T("Help"),
+          name: T("Use cases"),
+          hint: brand,
+          href: lp(lang, "/use-cases"),
+          icon: "layers" as const,
+        },
+      ]
+    : []),
+  {
+    group: T("Help"),
+    name: T("More tools from kmra"),
+    hint: "kmra.dev",
+    href: lp(lang, "/more-tools"),
+    icon: "zap",
+  },
+  {
+    group: T("Help"),
     name: T("How it works"),
     hint: T("Privacy"),
     href: lp(lang, "/how-it-works"),

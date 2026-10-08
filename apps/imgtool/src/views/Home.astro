@@ -1,7 +1,7 @@
 ---
 import BaseLayout from "@kmra/ui/layouts/BaseLayout.astro";
 import ToolShowcase from "@kmra/ui/components/ToolShowcase.astro";
-import TaskDirectory from "@kmra/ui/components/TaskDirectory.astro";
+import TaskList from "@kmra/ui/components/TaskList.astro";
 import PrivacySection from "@kmra/ui/components/PrivacySection.astro";
 import HeroChips from "@kmra/ui/components/HeroChips.astro";
 import LandingDrop from "@kmra/ui/components/LandingDrop";
@@ -30,6 +30,16 @@ const chips = (app.popular ?? []).flatMap((slug) => {
     : [];
 });
 const count = app.tools.filter((t) => t.ready).length;
+// Five popular tasks; the rest are on /use-cases
+const popular = app.popular ?? [];
+const tasks = app.tasks
+  .slice()
+  .sort(
+    (a, b) =>
+      (popular.includes(a.slug) ? popular.indexOf(a.slug) : 99) -
+      (popular.includes(b.slug) ? popular.indexOf(b.slug) : 99),
+  )
+  .slice(0, 5);
 ---
 
 <BaseLayout appId="imgtool" title={T("Free image tools in your browser")}>
@@ -72,7 +82,14 @@ const count = app.tools.filter((t) => t.ready).length;
           <h2>{T("Popular tasks")}</h2>
           <p>{T("Ready-made settings for everyday jobs.")}</p>
         </div>
-        <TaskDirectory tasks={app.tasks} icons={icons} />
+        <TaskList
+          tasks={tasks}
+          icons={icons}
+          all={{
+            href: "/use-cases",
+            label: T("All {n} use cases", { n: app.tasks.length }),
+          }}
+        />
       </div>
       <PrivacySection />
     </div>

@@ -1,0 +1,24 @@
+---
+import BaseLayout from "@kmra/ui/layouts/BaseLayout.astro";
+import PageHead from "@kmra/ui/components/PageHead.astro";
+import MoreTools from "@kmra/ui/components/MoreTools.astro";
+import { getApp } from "@kmra/registry";
+
+const app = getApp("qrtool");
+---
+
+<BaseLayout
+  appId="qrtool"
+  title="More tools from kmra"
+  description="The same free, private tools for other kinds of files."
+>
+  <PageHead
+    crumbs={[{ label: app.name, href: "/" }, { label: "More tools" }]}
+    icon="zap"
+    title="More tools from kmra"
+    intro="The same free, private tools for other kinds of files."
+  />
+  <div class="wrap page-body">
+    <MoreTools appId="qrtool" />
+  </div>
+</BaseLayout>

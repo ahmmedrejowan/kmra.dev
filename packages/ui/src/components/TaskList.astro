@@ -8,9 +8,11 @@ interface Props {
   tasks: readonly Task[];
   /** Icon for each task's tool */
   icons: Record<string, IconName>;
+  /** Last card: a link to every use case */
+  all?: { href: string; label: string };
 }
 
-const { tasks, icons } = Astro.props;
+const { tasks, icons, all } = Astro.props;
 const locale = pageLocale(Astro);
 ---
 
@@ -27,4 +29,15 @@ const locale = pageLocale(Astro);
       <Icon name="right" class="ico go" />
     </a>
   ))}
+  {all && (
+    <a class="task task-all" href={lp(locale, all.href)}>
+      <span class="tile">
+        <Icon name="layers" />
+      </span>
+      <span class="task-text">
+        <strong>{all.label}</strong>
+      </span>
+      <Icon name="right" class="ico go" />
+    </a>
+  )}
 </div>

@@ -75,7 +75,7 @@ export function ogPages(appId: AppId): OgPage[] {
     {
       slug: "index",
       title: app.tagline.split(".")[0] ?? app.name,
-      subtitle: "Compress, resize, convert, crop and more.",
+      subtitle: app.tagline.split(". ").slice(1).join(". ") || app.tagline,
     },
     ...app.tools.map((t) => ({
       slug: t.slug,
@@ -103,6 +103,25 @@ export function ogPages(appId: AppId): OgPage[] {
       subtitle:
         "Files stay on your device. No accounts, no tracking of your files.",
       icon: "shield",
+    },
+    {
+      slug: "tools",
+      title: `All ${app.short} tools`,
+      subtitle:
+        "Every tool, by category. Free, and everything runs on your device.",
+      icon: "grid",
+    },
+    {
+      slug: "use-cases",
+      title: "Use cases",
+      subtitle: "Ready-made settings for everyday jobs.",
+      icon: "layers",
+    },
+    {
+      slug: "more-tools",
+      title: "More tools from kmra",
+      subtitle: "Free, private tools for images, PDFs and QR codes.",
+      icon: "zap",
     },
     {
       slug: "about",

@@ -666,4 +666,24 @@ export const BN: Record<string, string> = {
   Location: "লোকেশন",
   "Under 100 KB": "১০০ কেবির নিচে",
   Ratio: "অনুপাত",
+
+  // All tools, use cases, more tools
+  "{n} tools in all": "মোট {n}টি টুল",
+  "{n} use cases": "{n}টি ব্যবহার",
+  "All image tools": "সব ছবির টুল",
+  "Every image tool on ImgTool, by category. All free, and everything runs on your device.":
+    "ImgTool-এর সব ছবির টুল, বিভাগ অনুযায়ী। সব বিনামূল্যে, আর সব কাজ হয় আপনার ডিভাইসে।",
+  "Every tool, by category. All free, and everything runs on your device.":
+    "সব টুল, বিভাগ অনুযায়ী। সব বিনামূল্যে, আর সব কাজ হয় আপনার ডিভাইসে।",
+  "Ready-made settings for everyday jobs: form photos, exact KB sizes, social media and more.":
+    "প্রতিদিনের কাজের জন্য তৈরি সেটিংস: ফর্মের ছবি, নির্দিষ্ট কেবি সাইজ, সোশ্যাল মিডিয়া আর আরও।",
+  "Ready-made settings for everyday jobs. Pick one and drop your file.":
+    "প্রতিদিনের কাজের জন্য তৈরি সেটিংস। একটি বেছে নিয়ে ফাইল দিন।",
+  "More tools from kmra": "kmra-র আরও টুল",
+  "More tools": "আরও টুল",
+  "Free, private tools for images, PDFs and QR codes. Everything runs on your device.":
+    "ছবি, পিডিএফ আর কিউআর কোডের জন্য বিনামূল্যের, ব্যক্তিগত টুল। সব কাজ হয় আপনার ডিভাইসে।",
+  "The same free, private tools for other kinds of files.":
+    "অন্য ধরনের ফাইলের জন্যও একই রকম বিনামূল্যের, ব্যক্তিগত টুল।",
+  "See all kmra tools": "kmra-র সব টুল দেখুন",
 };

@@ -1,0 +1,37 @@
+---
+import { getApp, groupBy, localizeApp, type AppId } from "@kmra/registry";
+import ToolCards from "./ToolCards.astro";
+import { pageLocale } from "../lib/locale";
+import { num, t as tr } from "../lib/i18n";
+
+/** Every tool of an app, as card grids grouped by category. */
+interface Props {
+  appId: AppId;
+}
+
+const { appId } = Astro.props;
+const locale = pageLocale(Astro);
+const app = localizeApp(getApp(appId), locale);
+const groups = groupBy(
+  app.tools.filter((t) => t.ready),
+  app.toolGroups,
+);
+---
+
+{groups.map(([group, list]) => (
+  <section class="block cat">
+    <div class="sechead primary">
+      <h2>{group}</h2>
+      <p>{tr(locale, "{n} tools", { n: list.length })}</p>
+    </div>
+    <ToolCards tools={list} />
+  </section>
+))}
+<p class="muted cat-count">
+  {tr(locale, "{n} tools in all", {
+    n: num(
+      locale,
+      groups.reduce((a, [, l]) => a + l.length, 0),
+    ),
+  })}
+</p>

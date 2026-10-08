@@ -297,7 +297,7 @@ function PaletteView({
               aria-label={T("Number of colours")}
             />
           </div>
-          <div className="palette">
+          <div className="swatch-grid">
             {colors.map((x) => (
               <Swatch key={hex(x.c)} c={x.c} share={x.share} />
             ))}
@@ -513,7 +513,7 @@ function PickerView({
               <span className="lbl">
                 Kept <span>{picked.length}</span>
               </span>
-              <div className="palette sm">
+              <div className="swatch-grid sm">
                 {picked.map((c) => (
                   <Swatch key={hex(c)} c={c} />
                 ))}

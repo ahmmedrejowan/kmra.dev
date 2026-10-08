@@ -30,7 +30,16 @@ const toolList = (readyTools.length ? readyTools : app.tools)
       (popular.includes(a.slug) ? popular.indexOf(a.slug) : 99) -
       (popular.includes(b.slug) ? popular.indexOf(b.slug) : 99),
   )
-  .slice(0, 7);
+  .slice(0, 5);
+// Five use cases (popular ones first) and a link to all of them: six lines per column
+const taskList = app.tasks
+  .slice()
+  .sort(
+    (a, b) =>
+      (popular.includes(a.slug) ? popular.indexOf(a.slug) : 99) -
+      (popular.includes(b.slug) ? popular.indexOf(b.slug) : 99),
+  )
+  .slice(0, 5);
 ---
 
 <footer class="site">
@@ -62,7 +71,7 @@ const toolList = (readyTools.length ? readyTools : app.tools)
           ))}
           {readyTools.length > toolList.length && (
             <li>
-              <a class="fmore" href={L("/sitemap")}>
+              <a class="fmore" href={L("/tools")}>
                 {T("All {n} tools", { n: readyTools.length })}
               </a>
             </li>
@@ -73,14 +82,14 @@ const toolList = (readyTools.length ? readyTools : app.tools)
         <div>
           <strong>{T("Use cases")}</strong>
           <ul>
-            {app.tasks.slice(0, 7).map((t) => (
+            {taskList.map((t) => (
               <li>
                 <a href={L(`/${t.slug}`)}>{t.name}</a>
               </li>
             ))}
-            {app.tasks.length > 7 && (
+            {app.tasks.length > taskList.length && (
               <li>
-                <a class="fmore" href={L("/sitemap") + "#use-cases"}>
+                <a class="fmore" href={L("/use-cases")}>
                   {T("All {n} use cases", { n: app.tasks.length })}
                 </a>
               </li>
@@ -135,14 +144,6 @@ const toolList = (readyTools.length ? readyTools : app.tools)
           <li>
             <a href="#shortcuts" data-shortcuts>
               {T("Keyboard shortcuts")}
-            </a>
-          </li>
-          <li>
-            <a href={L("/sitemap")}>{T("Sitemap")}</a>
-          </li>
-          <li>
-            <a href={CONTACT.portfolio} rel="noopener" target="_blank">
-              rejowan.com
             </a>
           </li>
           <li>

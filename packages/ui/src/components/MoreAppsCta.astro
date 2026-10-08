@@ -2,43 +2,51 @@
 import { apps, localizeApp, type AppId } from "@kmra/registry";
 import Icon from "./Icon.astro";
 import { markSvg } from "../lib/brand";
-import { appLink } from "../lib/locale";
-import { pageLocale } from "../lib/locale";
+import { appLink, pageLocale } from "../lib/locale";
 import { lp, t as tr } from "../lib/i18n";
 
+/** One card above the footer: up to three other kmra apps, and a link to all of them. */
 interface Props {
   appId: AppId;
 }
 
 const { appId } = Astro.props;
 const dev = import.meta.env.DEV;
-const others = apps.filter((a) => a.live && a.id !== appId);
 const locale = pageLocale(Astro);
 const T = (s: string, v?: Record<string, string | number>) => tr(locale, s, v);
-const L = (p: string) => lp(locale, p);
+const others = apps
+  .filter((a) => a.live && a.id !== appId)
+  .map((a) => localizeApp(a, locale));
+const shown = others.slice(0, 3);
 ---
 
-{others.map((raw) => {
-  const a = localizeApp(raw, locale);
-  return (
-    <a
-      class="cta-app"
-      href={appLink(appId, locale, a.id as AppId, "/", dev)}
-      style={`--app:${a.accent.light}`}
-    >
-      <span
-        class="app-mark"
-        set:html={markSvg(a.id, a.accent.light)}
-        aria-hidden="true"
-      />
-      <span class="cta-text">
-        <small>{T("More from kmra")}</small>
-        <strong>{a.name}</strong>
-        <span>{a.tagline}</span>
-      </span>
-      <span class="btn cta-btn">
-        {T("Open {name}", { name: a.name })} <Icon name="right" />
-      </span>
+{others.length > 0 && (
+  <div class="cta-more">
+    <p class="cta-more-head">{T("More from kmra")}</p>
+    <div class="cta-more-list">
+      {shown.map((a) => (
+        <a
+          class="cta-more-app"
+          href={appLink(appId, locale, a.id as AppId, "/", dev)}
+          style={`--app:${a.accent.light}`}
+        >
+          <span
+            class="app-mark"
+            set:html={markSvg(a.id, a.accent.light)}
+            aria-hidden="true"
+          />
+          <span class="cta-more-text">
+            <strong
+              set:html={`<span style="color:var(--app)">${a.brand[0]}</span>${a.brand[1]}`}
+            />
+            <small>{a.tagline.split(/(?<=[.।])\s/)[0]}</small>
+          </span>
+          <Icon name="right" class="ico go" />
+        </a>
+      ))}
+    </div>
+    <a class="cta-more-all" href={lp(locale, "/more-tools")}>
+      {T("See all kmra tools")} <Icon name="right" />
     </a>
-  );
-})}
+  </div>
+)}

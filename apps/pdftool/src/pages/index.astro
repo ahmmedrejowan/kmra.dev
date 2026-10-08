@@ -1,13 +1,23 @@
 ---
 import BaseLayout from "@kmra/ui/layouts/BaseLayout.astro";
 import ToolShowcase from "@kmra/ui/components/ToolShowcase.astro";
-import TaskDirectory from "@kmra/ui/components/TaskDirectory.astro";
+import TaskList from "@kmra/ui/components/TaskList.astro";
 import PrivacySection from "@kmra/ui/components/PrivacySection.astro";
 import HeroChips from "@kmra/ui/components/HeroChips.astro";
 import LandingDrop from "@kmra/ui/components/LandingDrop";
 import { getApp } from "@kmra/registry";
 
 const app = getApp("pdftool");
+// Five popular tasks; the rest are on /use-cases
+const popularSlugs = app.popular ?? [];
+const tasks = app.tasks
+  .slice()
+  .sort(
+    (a, b) =>
+      (popularSlugs.includes(a.slug) ? popularSlugs.indexOf(a.slug) : 99) -
+      (popularSlugs.includes(b.slug) ? popularSlugs.indexOf(b.slug) : 99),
+  )
+  .slice(0, 5);
 const icons = Object.fromEntries(app.tools.map((t) => [t.slug, t.icon]));
 // A short popular list (tools and tasks); the full set is in the menu and the showcase below
 const chips = (app.popular ?? []).flatMap((slug) => {
@@ -57,7 +67,14 @@ const chips = (app.popular ?? []).flatMap((slug) => {
           <h2>Popular tasks</h2>
           <p>Ready-made settings for everyday jobs.</p>
         </div>
-        <TaskDirectory tasks={app.tasks} icons={icons} />
+        <TaskList
+          tasks={tasks}
+          icons={icons}
+          all={{
+            href: "/use-cases",
+            label: `All ${app.tasks.length} use cases`,
+          }}
+        />
       </div>
       <PrivacySection />
     </div>

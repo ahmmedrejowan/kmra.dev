@@ -4,7 +4,9 @@ import PageHead from "@kmra/ui/components/PageHead.astro";
 import HowItWorks from "@kmra/ui/components/HowItWorks.astro";
 import PrivacyContent from "@kmra/ui/components/PrivacyContent.astro";
 import AboutContent from "@kmra/ui/components/AboutContent.astro";
-import SitemapContent from "@kmra/ui/components/SitemapContent.astro";
+import AllTools from "@kmra/ui/components/AllTools.astro";
+import UseCases from "@kmra/ui/components/UseCases.astro";
+import MoreTools from "@kmra/ui/components/MoreTools.astro";
 import { brandName, getApp, localizeApp } from "@kmra/registry";
 import { pageLocale } from "@kmra/ui/lib/locale";
 import { lp, t as tr } from "@kmra/ui/lib/i18n";
@@ -12,7 +14,14 @@ import ImageTool from "../components/ImageTool";
 
 /** The non-tool pages, in any language. */
 interface Props {
-  page: "how-it-works" | "privacy" | "about" | "sitemap" | "editor";
+  page:
+    | "how-it-works"
+    | "privacy"
+    | "about"
+    | "tools"
+    | "use-cases"
+    | "more-tools"
+    | "editor";
 }
 
 const { page } = Astro.props;
@@ -55,13 +64,39 @@ const PAGES = {
     intro: T("Small, private tools for everyday files."),
     og: undefined,
   },
-  sitemap: {
-    title: T("Sitemap"),
-    description: T("Every page and tool on this site."),
-    crumb: T("Sitemap"),
+  tools: {
+    title: T("All image tools"),
+    description: T(
+      "Every image tool on ImgTool, by category. All free, and everything runs on your device.",
+    ),
+    crumb: T("All tools"),
+    icon: "grid",
+    intro: T(
+      "Every tool, by category. All free, and everything runs on your device.",
+    ),
+    og: undefined,
+  },
+  "use-cases": {
+    title: T("Use cases"),
+    description: T(
+      "Ready-made settings for everyday jobs: form photos, exact KB sizes, social media and more.",
+    ),
+    crumb: T("Use cases"),
     icon: "layers",
-    intro: T("Every page and tool on this site."),
-    og: "index",
+    intro: T(
+      "Ready-made settings for everyday jobs. Pick one and drop your file.",
+    ),
+    og: undefined,
+  },
+  "more-tools": {
+    title: T("More tools from kmra"),
+    description: T(
+      "Free, private tools for images, PDFs and QR codes. Everything runs on your device.",
+    ),
+    crumb: T("More tools"),
+    icon: "zap",
+    intro: T("The same free, private tools for other kinds of files."),
+    og: undefined,
   },
   editor: {
     title: T("Image editor"),
@@ -104,12 +139,9 @@ const railTools = app.tools.map(({ slug, name, icon, ready }) => ({
       {page === "how-it-works" && <HowItWorks />}
       {page === "privacy" && <PrivacyContent brand={brand} ai />}
       {page === "about" && <AboutContent />}
-      {page === "sitemap" && (
-        <SitemapContent
-          appId="imgtool"
-          extra={[{ href: "/editor", label: "Image editor" }]}
-        />
-      )}
+      {page === "tools" && <AllTools appId="imgtool" />}
+      {page === "use-cases" && <UseCases appId="imgtool" />}
+      {page === "more-tools" && <MoreTools appId="imgtool" />}
     </div>
   )}
 </BaseLayout>

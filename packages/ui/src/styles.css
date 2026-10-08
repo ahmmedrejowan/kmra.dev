@@ -1590,52 +1590,181 @@ a:hover .feat-body > .ico.go {
 .cta-wrap:empty {
   display: none;
 }
-.cta-app {
-  display: flex;
-  align-items: center;
-  gap: 18px;
-  padding: 24px 28px;
+.cta-more {
+  border: 1px solid var(--line);
   border-radius: 18px;
-  border: 1px solid color-mix(in srgb, var(--app) 30%, var(--line));
   background:
     radial-gradient(
-      60% 140% at 100% 50%,
-      color-mix(in srgb, var(--app) 16%, transparent),
+      70% 120% at 100% 0%,
+      color-mix(in srgb, var(--acc) 9%, transparent),
       transparent 70%
     ),
     var(--card);
+  padding: 20px 22px 16px;
+  display: grid;
+  gap: 12px;
 }
-.cta-app .app-mark {
-  width: 52px;
-  height: 52px;
+.cta-more-head {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--muted);
 }
-.cta-text {
+.cta-more-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 10px;
+}
+.cta-more-app {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 1px solid color-mix(in srgb, var(--app) 25%, var(--line));
+  background: var(--bg);
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s;
+}
+.cta-more-app:hover {
+  border-color: var(--app);
+  box-shadow: 0 12px 28px -22px var(--app);
+}
+.cta-more-app .app-mark {
+  width: 42px;
+  height: 42px;
+  flex: none;
+}
+.cta-more-text {
   flex: 1;
   min-width: 0;
   display: grid;
   gap: 2px;
 }
-.cta-text small {
+.cta-more-text strong {
+  font-size: 17px;
+  letter-spacing: -0.02em;
+}
+.cta-more-text small {
   color: var(--muted);
   font-size: 13px;
 }
-.cta-text strong {
-  font-size: 20px;
+.cta-more-app .go {
+  color: var(--app);
+  transition: transform 0.15s;
+}
+.cta-more-app:hover .go {
+  transform: translateX(3px);
+}
+.cta-more-all {
+  justify-self: start;
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--acc);
+}
+.cta-more-all .ico {
+  width: 15px;
+  height: 15px;
+}
+
+/* All tools, use cases, more tools pages */
+.cat + .cat {
+  margin-top: 0;
+}
+.cat-count {
+  margin-top: 24px;
+  font-size: 14px;
+}
+.task-all strong {
+  color: var(--acc);
+}
+.more-apps {
+  display: grid;
+  gap: 18px;
+}
+.more-app {
+  border: 1px solid color-mix(in srgb, var(--app) 25%, var(--line));
+  border-radius: 18px;
+  background: var(--card);
+  padding: 22px;
+  display: grid;
+  gap: 16px;
+}
+.more-app header {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.more-app header > div {
+  flex: 1;
+  min-width: 220px;
+}
+.more-app .app-mark {
+  width: 52px;
+  height: 52px;
+}
+.more-app h2 {
+  margin: 0;
+  font-size: 22px;
   letter-spacing: -0.02em;
 }
-.cta-text span {
+.more-app header p {
+  margin: 4px 0 0;
   color: var(--muted);
 }
-.cta-btn {
+.more-open {
   background: var(--app);
   border-color: var(--app);
   color: #fff;
 }
-.cta-app:hover .cta-btn .ico {
-  transform: translateX(3px);
+.more-tools {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 8px;
 }
-.cta-btn .ico {
-  transition: transform 0.15s;
+.more-tools a {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  padding: 10px;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+}
+.more-tools a:hover {
+  border-color: var(--app);
+}
+.more-tools .tile {
+  width: 34px;
+  height: 34px;
+  color: var(--app);
+  background: color-mix(in srgb, var(--app) 12%, var(--card));
+}
+.more-tools strong {
+  display: block;
+  font-weight: 500;
+  font-size: 14.5px;
+}
+.more-tools small {
+  color: var(--muted);
+  font-size: 12.5px;
+}
+.more-all {
+  justify-self: start;
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--app);
+}
+.more-all .ico {
+  width: 15px;
+  height: 15px;
 }
 
 .steps {
@@ -3445,12 +3574,12 @@ textarea.num {
   color: var(--muted);
   margin-top: -8px;
 }
-.palette {
+.swatch-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(84px, 1fr));
   gap: 6px;
 }
-.palette.sm {
+.swatch-grid.sm {
   grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
 }
 .swatch {
@@ -3465,7 +3594,7 @@ textarea.num {
   cursor: pointer;
   text-align: left;
 }
-.palette.sm .swatch {
+.swatch-grid.sm .swatch {
   min-height: 44px;
 }
 .swatch b {

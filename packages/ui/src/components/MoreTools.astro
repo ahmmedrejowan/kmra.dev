@@ -1,0 +1,74 @@
+---
+import { apps, localizeApp, type AppId } from "@kmra/registry";
+import Icon from "./Icon.astro";
+import { markSvg } from "../lib/brand";
+import { appLink, pageLocale } from "../lib/locale";
+import { t as tr } from "../lib/i18n";
+
+/** The other kmra apps, each with what it does and its main tools. */
+interface Props {
+  appId: AppId;
+}
+
+const { appId } = Astro.props;
+const dev = import.meta.env.DEV;
+const locale = pageLocale(Astro);
+const T = (s: string, v?: Record<string, string | number>) => tr(locale, s, v);
+const others = apps
+  .filter((a) => a.live && a.id !== appId)
+  .map((a) => localizeApp(a, locale));
+---
+
+<div class="more-apps">
+  {others.map((a) => {
+    const id = a.id as AppId;
+    const ready = a.tools.filter((t) => t.ready);
+    const popular = a.popular ?? [];
+    // Popular tools first, then the rest
+    const shown = [...ready]
+      .sort(
+        (x, y) =>
+          (popular.includes(x.slug) ? popular.indexOf(x.slug) : 99) -
+          (popular.includes(y.slug) ? popular.indexOf(y.slug) : 99),
+      )
+      .slice(0, 8);
+    return (
+      <section class="more-app" style={`--app:${a.accent.light}`}>
+        <header>
+          <span
+            class="app-mark"
+            set:html={markSvg(a.id, a.accent.light)}
+            aria-hidden="true"
+          />
+          <div>
+            <h2
+              set:html={`<span style="color:var(--app)">${a.brand[0]}</span>${a.brand[1]}`}
+            />
+            <p>{a.tagline}</p>
+          </div>
+          <a class="btn more-open" href={appLink(appId, locale, id, "/", dev)}>
+            {T("Open {name}", { name: a.name })} <Icon name="right" />
+          </a>
+        </header>
+        <div class="more-tools">
+          {shown.map((t) => (
+            <a href={appLink(appId, locale, id, `/${t.slug}`, dev)}>
+              <span class="tile">
+                <Icon name={t.icon} />
+              </span>
+              <span>
+                <strong>{t.name}</strong>
+                <small>{t.blurb}</small>
+              </span>
+            </a>
+          ))}
+        </div>
+        {ready.length > shown.length && (
+          <a class="more-all" href={appLink(appId, locale, id, "/tools", dev)}>
+            {T("All {n} tools", { n: ready.length })} <Icon name="right" />
+          </a>
+        )}
+      </section>
+    );
+  })}
+</div>

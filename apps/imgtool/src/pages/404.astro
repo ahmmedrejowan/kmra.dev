@@ -23,7 +23,7 @@ const ready = app.tools
       <h2>{ready.length ? "Popular tools" : app.name}</h2>
     </div>
     {ready.length ? (
-      <ToolCards tools={ready} allHref="/sitemap" />
+      <ToolCards tools={ready} allHref="/tools" />
     ) : (
       <ToolGrid tools={app.tools} />
     )}

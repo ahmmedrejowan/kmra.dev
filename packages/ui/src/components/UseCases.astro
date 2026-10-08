@@ -1,0 +1,27 @@
+---
+import { getApp, groupBy, localizeApp, type AppId } from "@kmra/registry";
+import TaskList from "./TaskList.astro";
+import { pageLocale } from "../lib/locale";
+import { t as tr } from "../lib/i18n";
+
+/** Every use case (task page) of an app, grouped. */
+interface Props {
+  appId: AppId;
+}
+
+const { appId } = Astro.props;
+const locale = pageLocale(Astro);
+const app = localizeApp(getApp(appId), locale);
+const icons = Object.fromEntries(app.tools.map((t) => [t.slug, t.icon]));
+const groups = groupBy(app.tasks);
+---
+
+{groups.map(([group, list]) => (
+  <section class="block cat">
+    <div class="sechead primary">
+      <h2>{group}</h2>
+      <p>{tr(locale, "{n} use cases", { n: list.length })}</p>
+    </div>
+    <TaskList tasks={list} icons={icons} />
+  </section>
+))}
