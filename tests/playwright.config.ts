@@ -8,6 +8,7 @@ const APPS = [
   { id: "imgtool", port: 4601 },
   { id: "pdftool", port: 4602 },
   { id: "qrtool", port: 4603 },
+  { id: "devtool", port: 4604 },
 ] as const;
 
 export default defineConfig({

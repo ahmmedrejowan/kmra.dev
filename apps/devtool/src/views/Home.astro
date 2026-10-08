@@ -1,0 +1,101 @@
+---
+import BaseLayout from "@kmra/ui/layouts/BaseLayout.astro";
+import ToolShowcase from "@kmra/ui/components/ToolShowcase.astro";
+import TaskList from "@kmra/ui/components/TaskList.astro";
+import PrivacySection from "@kmra/ui/components/PrivacySection.astro";
+import HeroChips from "@kmra/ui/components/HeroChips.astro";
+import SmartPaste from "../components/SmartPaste";
+import Icon from "@kmra/ui/components/Icon.astro";
+import { getApp, localizeApp } from "@kmra/registry";
+import { pageLocale } from "@kmra/ui/lib/locale";
+import { lp, t as tr } from "@kmra/ui/lib/i18n";
+
+const locale = pageLocale(Astro);
+const T = (s: string, v?: Record<string, string | number>) => tr(locale, s, v);
+const L = (p: string) => lp(locale, p);
+const app = localizeApp(getApp("devtool"), locale);
+// Eleven popular tasks and an "All use cases" card; the rest are on /use-cases
+const popularSlugs = app.popular ?? [];
+const tasks = app.tasks
+  .slice()
+  .sort(
+    (a, b) =>
+      (popularSlugs.includes(a.slug) ? popularSlugs.indexOf(a.slug) : 99) -
+      (popularSlugs.includes(b.slug) ? popularSlugs.indexOf(b.slug) : 99),
+  )
+  .slice(0, 11);
+const icons = Object.fromEntries(app.tools.map((t) => [t.slug, t.icon]));
+// A short popular list (tools and tasks); the full set is in the menu and the showcase below
+const chips = (app.popular ?? []).flatMap((slug) => {
+  const tool = app.tools.find((t) => t.slug === slug && t.ready);
+  if (tool) return [{ href: L(`/${slug}`), label: tool.name, icon: tool.icon }];
+  const task = app.tasks.find((t) => t.slug === slug);
+  return task
+    ? [
+        {
+          href: L(`/${slug}`),
+          label: task.name,
+          icon: icons[task.tool] ?? "file",
+        },
+      ]
+    : [];
+});
+const count = app.tools.filter((t) => t.ready).length;
+---
+
+<BaseLayout appId="devtool" title={T("Free developer tools in your browser")}>
+  <section class="hero-band screen">
+    <div class="wrap hero-center">
+      <h1 class="display">{T("Developer tools that stay on your device")}</h1>
+      <p class="lede">
+        {T(
+          "Format JSON, decode tokens, hash files and convert data. Paste anything below and the right tool opens.",
+        )}
+      </p>
+      <SmartPaste
+        client:load
+        lang={locale}
+        names={Object.fromEntries(
+          app.tools.filter((t) => t.ready).map((t) => [t.slug, t.name]),
+        )}
+      />
+      <HeroChips items={chips} />
+    </div>
+  </section>
+
+  <section class="screen">
+    <div class="wrap">
+      <div class="sechead primary">
+        <h2>{T("Developer tools")}</h2>
+        <p>{T("Free, private, and nothing you paste leaves your browser.")}</p>
+      </div>
+    </div>
+    <ToolShowcase tools={app.tools} />
+    <div class="wrap showcase-all">
+      <a class="btn" href={L("/tools")}>
+        <Icon name="grid" />
+        {T("Browse all {n} tools", { n: count })}
+      </a>
+    </div>
+  </section>
+
+  <section class="screen">
+    <div class="wrap stack">
+      <div>
+        <div class="sechead primary">
+          <h2>{T("Popular tasks")}</h2>
+          <p>{T("Ready-made settings for everyday jobs.")}</p>
+        </div>
+        <TaskList
+          tasks={tasks}
+          icons={icons}
+          all={{
+            href: "/use-cases",
+            label: T("All {n} use cases", { n: app.tasks.length }),
+          }}
+        />
+      </div>
+      <PrivacySection />
+    </div>
+  </section>
+</BaseLayout>

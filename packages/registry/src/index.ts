@@ -56,7 +56,21 @@ export type IconName =
   | "droplet"
   | "camera"
   | "trash"
-  | "languages";
+  | "languages"
+  | "braces"
+  | "key"
+  | "clock"
+  | "diff"
+  | "regex"
+  | "table"
+  | "link"
+  | "terminal"
+  | "binary"
+  | "list"
+  | "globe"
+  | "shuffle"
+  | "book"
+  | "lock";
 
 export interface Tool {
   /** URL path segment, e.g. "resize" -> imgtool.kmra.dev/resize */
@@ -1401,8 +1415,10 @@ export const apps = [
     id: "devtool",
     name: "Developer tools",
     brand: ["Dev", "Tool"],
+    locales: ["en", "bn"],
     short: "Dev",
-    tagline: "JSON, Base64, hashes and more.",
+    tagline:
+      "Format JSON, decode tokens, hash files and convert data. Everything runs on your device.",
     accent: {
       light: "#8e4ec6",
       dark: "#b07ce6",
@@ -1411,8 +1427,763 @@ export const apps = [
     },
     live: false,
     devPort: 4324,
-    tools: [],
-    tasks: [],
+    toolGroups: [
+      "Format",
+      "Encode",
+      "Generate",
+      "Convert",
+      "Text",
+      "Reference",
+    ],
+    popular: [
+      "json-formatter",
+      "base64",
+      "jwt-decoder",
+      "uuid",
+      "timestamp",
+      "diff-checker",
+      "regex-tester",
+      "hash",
+      "json-validator",
+      "csv-to-json",
+      "epoch-to-date",
+    ],
+    tools: [
+      {
+        slug: "json-formatter",
+        title: "JSON formatter and validator",
+        name: "JSON formatter",
+        description:
+          "Format, validate and minify JSON. Errors point to the exact line, and a tree view helps you explore.",
+        blurb: "Format, validate, tree",
+        icon: "braces",
+        group: "Format",
+        ready: true,
+        steps: [
+          "Paste JSON or open a file.",
+          "Pick an indent, or minify it. Errors show the line and column.",
+          "Copy or download the result.",
+        ],
+      },
+      {
+        slug: "yaml-json",
+        title: "Convert YAML to JSON and back",
+        name: "YAML ↔ JSON",
+        description:
+          "Turn YAML into JSON or JSON into YAML, with clear errors for bad indentation.",
+        blurb: "Both directions",
+        icon: "convert",
+        group: "Format",
+        ready: false,
+        steps: [
+          "Paste YAML or JSON.",
+          "The other format appears as you type.",
+          "Copy or download it.",
+        ],
+      },
+      {
+        slug: "xml-formatter",
+        title: "XML formatter and validator",
+        name: "XML formatter",
+        description: "Indent, validate and minify XML, SVG and RSS.",
+        blurb: "Indent, validate, minify",
+        icon: "code",
+        group: "Format",
+        ready: false,
+        steps: [
+          "Paste XML or open a file.",
+          "Choose the indent, or minify it.",
+          "Copy or download the result.",
+        ],
+      },
+      {
+        slug: "sql-formatter",
+        title: "SQL formatter",
+        name: "SQL formatter",
+        description:
+          "Make long SQL readable: keywords in capitals, clauses on their own lines. Works with common dialects.",
+        blurb: "Readable queries",
+        icon: "list",
+        group: "Format",
+        ready: false,
+        steps: [
+          "Paste a query.",
+          "Pick the dialect and keyword case.",
+          "Copy the formatted SQL.",
+        ],
+      },
+      {
+        slug: "html-formatter",
+        title: "HTML formatter and minifier",
+        name: "HTML formatter",
+        description: "Beautify messy HTML or minify it for production.",
+        blurb: "Beautify or minify",
+        icon: "code",
+        group: "Format",
+        ready: false,
+        steps: [
+          "Paste HTML.",
+          "Beautify it, or minify it.",
+          "Copy or download the result.",
+        ],
+      },
+      {
+        slug: "css-formatter",
+        title: "CSS formatter and minifier",
+        name: "CSS formatter",
+        description: "Beautify or minify CSS, and see how many bytes you save.",
+        blurb: "Beautify or minify",
+        icon: "code",
+        group: "Format",
+        ready: false,
+        steps: [
+          "Paste CSS.",
+          "Beautify it, or minify it.",
+          "Copy or download the result.",
+        ],
+      },
+      {
+        slug: "js-formatter",
+        title: "JavaScript formatter and minifier",
+        name: "JavaScript formatter",
+        description: "Beautify or minify JavaScript and TypeScript.",
+        blurb: "Beautify or minify",
+        icon: "terminal",
+        group: "Format",
+        ready: false,
+        steps: [
+          "Paste JavaScript or TypeScript.",
+          "Beautify it, or minify it.",
+          "Copy or download the result.",
+        ],
+      },
+      {
+        slug: "markdown-preview",
+        title: "Markdown editor with live preview",
+        name: "Markdown preview",
+        description:
+          "Write Markdown and see it rendered as you type. Copy the HTML or download it.",
+        blurb: "Live preview, HTML out",
+        icon: "type",
+        group: "Format",
+        ready: false,
+        steps: [
+          "Write or paste Markdown.",
+          "The preview updates as you type.",
+          "Copy the HTML or download the file.",
+        ],
+      },
+      {
+        slug: "base64",
+        title: "Base64 encode and decode",
+        name: "Base64",
+        description:
+          "Encode text or any file to Base64, or decode Base64 back to text or a file.",
+        blurb: "Text and files",
+        icon: "binary",
+        group: "Encode",
+        ready: false,
+        steps: [
+          "Paste text or Base64, or drop a file.",
+          "Pick encode or decode. URL-safe Base64 is supported.",
+          "Copy the result or download the file.",
+        ],
+      },
+      {
+        slug: "url-encode",
+        title: "URL encode and decode",
+        name: "URL encode",
+        description:
+          "Encode and decode URL components and full URLs, including query strings.",
+        blurb: "Percent-encoding",
+        icon: "link",
+        group: "Encode",
+        ready: false,
+        steps: [
+          "Paste text or an encoded URL.",
+          "Pick encode or decode.",
+          "Copy the result.",
+        ],
+      },
+      {
+        slug: "html-entities",
+        title: "HTML entities encode and decode",
+        name: "HTML entities",
+        description:
+          "Escape text for HTML (&lt; &amp; &quot;) or turn entities back into characters.",
+        blurb: "Escape and unescape",
+        icon: "code",
+        group: "Encode",
+        ready: false,
+        steps: [
+          "Paste text or HTML.",
+          "Pick escape or unescape.",
+          "Copy the result.",
+        ],
+      },
+      {
+        slug: "jwt-decoder",
+        title: "JWT decoder",
+        name: "JWT decoder",
+        description:
+          "Read a JSON Web Token's header and payload, see when it expires, and check an HS256 signature with your secret.",
+        blurb: "Header, payload, expiry",
+        icon: "key",
+        group: "Encode",
+        ready: false,
+        steps: [
+          "Paste a token.",
+          "Read the header, payload and dates.",
+          "Optionally check the signature with your secret.",
+        ],
+      },
+      {
+        slug: "unicode-escape",
+        title: "Unicode escape and unescape",
+        name: "Unicode escape",
+        description:
+          "Turn text into \\\\u escapes, code points or JSON string escapes, and back.",
+        blurb: "\\\\u, code points, JSON",
+        icon: "type",
+        group: "Encode",
+        ready: false,
+        steps: [
+          "Paste text or escapes.",
+          "Pick the escape style.",
+          "Copy the result.",
+        ],
+      },
+      {
+        slug: "text-hex",
+        title: "Text to hex, binary and back",
+        name: "Text to hex and binary",
+        description:
+          "Convert text to hex, binary or decimal bytes (UTF-8), and back to text.",
+        blurb: "Hex, binary, bytes",
+        icon: "binary",
+        group: "Encode",
+        ready: false,
+        steps: [
+          "Paste text or bytes.",
+          "Pick hex, binary or decimal.",
+          "Copy the result.",
+        ],
+      },
+      {
+        slug: "uuid",
+        title: "UUID generator",
+        name: "UUID generator",
+        description:
+          "Make UUID v4 and v7 or ULIDs, one or a thousand at a time.",
+        blurb: "v4, v7, ULID",
+        icon: "shuffle",
+        group: "Generate",
+        ready: false,
+        steps: [
+          "Pick the type and how many.",
+          "Choose uppercase or no dashes if you need them.",
+          "Copy them or download a list.",
+        ],
+      },
+      {
+        slug: "password-generator",
+        title: "Password generator",
+        name: "Password generator",
+        description:
+          "Strong random passwords and passphrases, made with your browser's secure random generator.",
+        blurb: "Strong and random",
+        icon: "lock",
+        group: "Generate",
+        ready: false,
+        steps: [
+          "Pick the length and the characters to use.",
+          "See how strong it is.",
+          "Copy it. Nothing is saved.",
+        ],
+      },
+      {
+        slug: "hash",
+        title: "Hash generator",
+        name: "Hash generator",
+        description:
+          "MD5, SHA-1, SHA-256 and SHA-512 for text or files, plus HMAC with a secret key.",
+        blurb: "SHA-256, MD5, HMAC",
+        icon: "hash",
+        group: "Generate",
+        ready: false,
+        steps: [
+          "Paste text or drop a file.",
+          "Every hash appears at once. Add a key for HMAC.",
+          "Copy the one you need, or compare with a checksum.",
+        ],
+      },
+      {
+        slug: "lorem-ipsum",
+        title: "Lorem ipsum generator",
+        name: "Lorem ipsum",
+        description:
+          "Placeholder text by paragraphs, sentences or words, as plain text or HTML.",
+        blurb: "Placeholder text",
+        icon: "type",
+        group: "Generate",
+        ready: false,
+        steps: [
+          "Pick paragraphs, sentences or words.",
+          "Choose how many, and plain text or HTML.",
+          "Copy it.",
+        ],
+      },
+      {
+        slug: "fake-data",
+        title: "Fake test data generator",
+        name: "Fake data",
+        description:
+          "Realistic test data: names, emails, addresses, dates and IDs, as JSON, CSV or SQL.",
+        blurb: "JSON, CSV or SQL",
+        icon: "table",
+        group: "Generate",
+        ready: false,
+        steps: [
+          "Pick the fields you need.",
+          "Choose how many rows and the format.",
+          "Copy or download it.",
+        ],
+      },
+      {
+        slug: "timestamp",
+        title: "Unix timestamp converter",
+        name: "Timestamp converter",
+        description:
+          "Convert Unix timestamps to dates and back, in seconds or milliseconds, in your time zone and UTC.",
+        blurb: "Epoch ↔ date",
+        icon: "clock",
+        group: "Convert",
+        ready: false,
+        steps: [
+          "Paste a timestamp or pick a date.",
+          "See it in local time, UTC and ISO 8601.",
+          "Copy the format you need.",
+        ],
+      },
+      {
+        slug: "number-base",
+        title: "Number base converter",
+        name: "Number base converter",
+        description:
+          "Convert numbers between binary, octal, decimal, hex and any base up to 36, including very large numbers.",
+        blurb: "Binary, hex, decimal",
+        icon: "binary",
+        group: "Convert",
+        ready: false,
+        steps: [
+          "Type a number in any base.",
+          "Every other base updates.",
+          "Copy the one you need.",
+        ],
+      },
+      {
+        slug: "color-converter",
+        title: "Color converter and contrast checker",
+        name: "Color converter",
+        description:
+          "Convert colors between HEX, RGB, HSL and OKLCH, and check text contrast against WCAG.",
+        blurb: "HEX, RGB, HSL, OKLCH",
+        icon: "palette",
+        group: "Convert",
+        ready: false,
+        steps: [
+          "Type a color in any format, or pick one.",
+          "Every format updates.",
+          "Check the contrast with a second color.",
+        ],
+      },
+      {
+        slug: "case-converter",
+        title: "Case converter",
+        name: "Case converter",
+        description:
+          "Switch text between camelCase, PascalCase, snake_case, kebab-case, CONSTANT_CASE, Title Case and more.",
+        blurb: "camelCase, snake_case",
+        icon: "type",
+        group: "Convert",
+        ready: false,
+        steps: [
+          "Paste text or identifiers.",
+          "Every case appears at once.",
+          "Copy the one you need.",
+        ],
+      },
+      {
+        slug: "csv-json",
+        title: "CSV, JSON and Excel converter",
+        name: "CSV ↔ JSON",
+        description:
+          "Convert CSV to JSON, JSON to CSV, and read Excel sheets, with a table preview.",
+        blurb: "CSV, JSON, Excel",
+        icon: "table",
+        group: "Convert",
+        ready: false,
+        steps: [
+          "Paste CSV or JSON, or drop a CSV or Excel file.",
+          "Check the table preview and the options.",
+          "Copy or download the result.",
+        ],
+      },
+      {
+        slug: "json-to-typescript",
+        title: "JSON to TypeScript types",
+        name: "JSON to TypeScript",
+        description:
+          "Turn sample JSON into TypeScript interfaces, with nested types and optional fields.",
+        blurb: "Interfaces from samples",
+        icon: "braces",
+        group: "Convert",
+        ready: false,
+        steps: [
+          "Paste a JSON sample.",
+          "Name the root type and pick interface or type.",
+          "Copy the TypeScript.",
+        ],
+      },
+      {
+        slug: "curl-converter",
+        title: "cURL to code converter",
+        name: "cURL converter",
+        description:
+          "Turn a cURL command into fetch, axios, Python requests or Go code.",
+        blurb: "fetch, axios, Python",
+        icon: "terminal",
+        group: "Convert",
+        ready: false,
+        steps: [
+          "Paste a cURL command.",
+          "Pick the language.",
+          "Copy the code.",
+        ],
+      },
+      {
+        slug: "diff-checker",
+        title: "Text diff checker",
+        name: "Diff checker",
+        description:
+          "Compare two texts and see what changed, line by line or word by word.",
+        blurb: "Compare two texts",
+        icon: "diff",
+        group: "Text",
+        ready: false,
+        steps: [
+          "Paste the original and the changed text.",
+          "See additions and removals side by side or inline.",
+          "Ignore spaces or case if you like.",
+        ],
+      },
+      {
+        slug: "regex-tester",
+        title: "Regex tester",
+        name: "Regex tester",
+        description:
+          "Test regular expressions live with highlighted matches, groups and a plain-English explanation.",
+        blurb: "Matches, groups, replace",
+        icon: "regex",
+        group: "Text",
+        ready: false,
+        steps: [
+          "Type a pattern and pick flags.",
+          "Paste test text. Matches are highlighted.",
+          "Try a replacement, then copy the pattern.",
+        ],
+      },
+      {
+        slug: "line-tools",
+        title: "Sort, dedupe and count lines",
+        name: "Line tools",
+        description:
+          "Sort, reverse, shuffle and remove duplicate or empty lines, and count words and characters.",
+        blurb: "Sort, dedupe, count",
+        icon: "list",
+        group: "Text",
+        ready: false,
+        steps: [
+          "Paste text.",
+          "Pick what to do with the lines.",
+          "Copy the result.",
+        ],
+      },
+      {
+        slug: "slug-generator",
+        title: "URL slug generator",
+        name: "Slug generator",
+        description:
+          "Make clean URL slugs from titles, with accents removed and your choice of separator.",
+        blurb: "Clean URL slugs",
+        icon: "link",
+        group: "Text",
+        ready: false,
+        steps: [
+          "Paste titles, one per line.",
+          "Pick the separator and case.",
+          "Copy the slugs.",
+        ],
+      },
+      {
+        slug: "cron-explainer",
+        title: "Cron expression explainer",
+        name: "Cron explainer",
+        description:
+          "Read a cron expression in plain English and see the next run times.",
+        blurb: "Plain English, next runs",
+        icon: "clock",
+        group: "Reference",
+        ready: false,
+        steps: [
+          "Type a cron expression.",
+          "Read what it means.",
+          "Check the next run times in your time zone.",
+        ],
+      },
+      {
+        slug: "chmod-calculator",
+        title: "Chmod calculator",
+        name: "Chmod calculator",
+        description:
+          "Work out Unix file permissions: tick boxes, get 755 and rwxr-xr-x, or the other way round.",
+        blurb: "755 ↔ rwxr-xr-x",
+        icon: "lock",
+        group: "Reference",
+        ready: false,
+        steps: [
+          "Tick read, write and run for owner, group and others.",
+          "Or type a number like 644.",
+          "Copy the chmod command.",
+        ],
+      },
+      {
+        slug: "url-parser",
+        title: "URL parser",
+        name: "URL parser",
+        description:
+          "Split a URL into its parts and edit the query string as a table.",
+        blurb: "Parts and query",
+        icon: "globe",
+        group: "Reference",
+        ready: false,
+        steps: [
+          "Paste a URL.",
+          "See the protocol, host, path, query and hash.",
+          "Edit the query and copy the new URL.",
+        ],
+      },
+      {
+        slug: "http-status",
+        title: "HTTP status codes",
+        name: "HTTP status codes",
+        description:
+          "Every HTTP status code with a plain explanation and when to use it.",
+        blurb: "What each code means",
+        icon: "book",
+        group: "Reference",
+        ready: false,
+        steps: [
+          "Search by number or name.",
+          "Read what it means and when to use it.",
+          "Copy the code or its name.",
+        ],
+      },
+    ],
+    tasks: [
+      {
+        slug: "json-validator",
+        tool: "json-formatter",
+        name: "JSON validator",
+        short: "Find the error fast",
+        group: "Format",
+        title: "Validate JSON",
+        intro:
+          "Paste JSON to check it's valid. Errors show the exact line and column, with a hint for common mistakes.",
+        about: [
+          "Trailing commas and single quotes are the most common causes of invalid JSON.",
+        ],
+        preset: { mode: "validate" },
+      },
+      {
+        slug: "json-minify",
+        tool: "json-formatter",
+        name: "Minify JSON",
+        short: "Smallest valid JSON",
+        group: "Format",
+        title: "Minify JSON",
+        intro: "Remove whitespace from JSON to make it as small as possible.",
+        about: ["Minified JSON is still valid; it's just harder to read."],
+        preset: { mode: "minify" },
+      },
+      {
+        slug: "yaml-to-json",
+        tool: "yaml-json",
+        name: "YAML to JSON",
+        short: "Configs to JSON",
+        group: "Format",
+        title: "Convert YAML to JSON",
+        intro: "Paste YAML from a config file and get JSON.",
+        about: ["Comments in YAML have no place in JSON, so they're dropped."],
+        preset: { from: "yaml" },
+      },
+      {
+        slug: "json-to-yaml",
+        tool: "yaml-json",
+        name: "JSON to YAML",
+        short: "Readable configs",
+        group: "Format",
+        title: "Convert JSON to YAML",
+        intro: "Paste JSON and get clean YAML for configs and CI files.",
+        about: ["Keys keep their order."],
+        preset: { from: "json" },
+      },
+      {
+        slug: "base64-decode",
+        tool: "base64",
+        name: "Base64 decode",
+        short: "Base64 back to text",
+        group: "Encode",
+        title: "Decode Base64",
+        intro:
+          "Paste Base64 and get the original text, or download it as a file.",
+        about: ["URL-safe Base64 (with - and _) works too."],
+        preset: { mode: "decode" },
+      },
+      {
+        slug: "url-decode",
+        tool: "url-encode",
+        name: "URL decode",
+        short: "Readable URLs",
+        group: "Encode",
+        title: "Decode a URL",
+        intro: "Turn %20 and other percent-encoding back into readable text.",
+        about: [
+          "A + in a query string means a space; you can choose how to treat it.",
+        ],
+        preset: { mode: "decode" },
+      },
+      {
+        slug: "sha256",
+        tool: "hash",
+        name: "SHA-256 hash",
+        short: "Checksums and signatures",
+        group: "Generate",
+        title: "SHA-256 hash generator",
+        intro:
+          "Get the SHA-256 hash of text or a file, or check a download against its published checksum.",
+        about: ["Files are hashed on your device; they're never uploaded."],
+        preset: { algo: "SHA-256" },
+      },
+      {
+        slug: "md5",
+        tool: "hash",
+        name: "MD5 hash",
+        short: "Legacy checksums",
+        group: "Generate",
+        title: "MD5 hash generator",
+        intro: "Get the MD5 hash of text or a file.",
+        about: ["MD5 is fine for checksums but not for passwords or security."],
+        preset: { algo: "MD5" },
+      },
+      {
+        slug: "uuid-v4",
+        tool: "uuid",
+        name: "UUID v4",
+        short: "Random IDs",
+        group: "Generate",
+        title: "UUID v4 generator",
+        intro: "Random version 4 UUIDs, one or many at a time.",
+        about: [
+          "v4 UUIDs are random; v7 UUIDs sort by time, which suits database keys.",
+        ],
+        preset: { version: "v4" },
+      },
+      {
+        slug: "epoch-to-date",
+        tool: "timestamp",
+        name: "Epoch to date",
+        short: "Read Unix times",
+        group: "Convert",
+        title: "Convert epoch time to a date",
+        intro:
+          "Paste a Unix timestamp in seconds or milliseconds and see the date.",
+        about: [
+          "Ten digits are seconds; thirteen are milliseconds. Both are detected.",
+        ],
+        preset: {},
+      },
+      {
+        slug: "hex-to-rgb",
+        tool: "color-converter",
+        name: "HEX to RGB",
+        short: "Color codes",
+        group: "Convert",
+        title: "Convert HEX to RGB",
+        intro: "Turn #ff8800 into rgb(255, 136, 0), HSL and OKLCH.",
+        about: ["Short HEX like #f80 and HEX with alpha work too."],
+        preset: {},
+      },
+      {
+        slug: "csv-to-json",
+        tool: "csv-json",
+        name: "CSV to JSON",
+        short: "Spreadsheets to JSON",
+        group: "Convert",
+        title: "Convert CSV to JSON",
+        intro:
+          "Paste CSV or drop a file and get an array of objects, using the first row as keys.",
+        about: ["Commas, tabs and semicolons are detected automatically."],
+        preset: { from: "csv" },
+      },
+      {
+        slug: "json-to-csv",
+        tool: "csv-json",
+        name: "JSON to CSV",
+        short: "JSON to spreadsheets",
+        group: "Convert",
+        title: "Convert JSON to CSV",
+        intro:
+          "Turn an array of objects into CSV that opens in Excel and Google Sheets.",
+        about: ["Nested objects are flattened into dotted column names."],
+        preset: { from: "json" },
+      },
+      {
+        slug: "excel-to-json",
+        tool: "csv-json",
+        name: "Excel to JSON",
+        short: "Sheets to JSON",
+        group: "Convert",
+        title: "Convert Excel to JSON",
+        intro: "Drop an .xlsx file and get each sheet as JSON.",
+        about: [
+          "The file is read in your browser; it never leaves your device.",
+        ],
+        preset: { from: "excel" },
+      },
+      {
+        slug: "camel-case",
+        tool: "case-converter",
+        name: "camelCase converter",
+        short: "Names for code",
+        group: "Convert",
+        title: "Convert text to camelCase",
+        intro: "Turn phrases and snake_case names into camelCase.",
+        about: ["Acronyms like ID and URL are kept readable."],
+        preset: { case: "camel" },
+      },
+      {
+        slug: "compare-text",
+        tool: "diff-checker",
+        name: "Compare text",
+        short: "Two versions, side by side",
+        group: "Text",
+        title: "Compare two texts",
+        intro: "Paste two versions and see exactly what changed.",
+        about: ["Use word mode for prose and line mode for code."],
+        preset: {},
+      },
+    ],
   },
   {
     id: "qrtool",
@@ -1905,7 +2676,9 @@ export type AppId = (typeof apps)[number]["id"];
 export function getApp(id: AppId): App {
   const app = apps.find((a) => a.id === id);
   if (!app) throw new Error(`Unknown app: ${id}`);
-  return app;
+  // Use cases of tools that aren't built yet stay hidden everywhere (menus, lists, pages)
+  const ready = new Set(app.tools.filter((t) => t.ready).map((t) => t.slug));
+  return { ...app, tasks: app.tasks.filter((t) => ready.has(t.tool)) };
 }
 
 /** Origin for an app: localhost:<port> in dev, https://<id>.kmra.dev in production. */
