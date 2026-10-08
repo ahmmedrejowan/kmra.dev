@@ -1418,8 +1418,7 @@ export const apps = [
       softLight: "#feeee3",
       softDark: "#3a2312",
     },
-    // Turns true once qrtool.kmra.dev is deployed and its DNS record exists
-    live: false,
+    live: true,
     devPort: 4325,
     toolGroups: ["Create", "Scan"],
     popular: [
