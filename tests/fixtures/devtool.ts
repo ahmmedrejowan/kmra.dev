@@ -4,7 +4,12 @@
  */
 import { writeFile } from "node:fs/promises";
 import { join } from "node:path";
-import * as XLSX from "xlsx";
+import { createRequire } from "node:module";
+
+// SheetJS comes from the devtool app (it isn't a root dependency)
+const XLSX = createRequire(
+  new URL("../../apps/devtool/package.json", import.meta.url),
+)("xlsx") as typeof import("xlsx");
 
 export async function makeDevtoolFixtures(dir: string) {
   const wb = XLSX.utils.book_new();
