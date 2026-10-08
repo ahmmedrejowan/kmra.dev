@@ -1,6 +1,8 @@
 ---
 import { CONTACT } from "@kmra/registry";
 import Icon from "./Icon.astro";
+import { pageLocale } from "../lib/locale";
+import { t as tr } from "../lib/i18n";
 
 interface Props {
   brand: string;
@@ -9,7 +11,9 @@ interface Props {
 }
 
 const { brand, ai = false } = Astro.props;
-const updated = "8 October 2026";
+const locale = pageLocale(Astro);
+const T = (s: string, v?: Record<string, string>) => tr(locale, s, v);
+const updated = T("9 October 2026");
 ---
 
 <div class="psum">
@@ -17,98 +21,103 @@ const updated = "8 October 2026";
     <span class="tile">
       <Icon name="shield" />
     </span>
-    <strong>Files stay on your device</strong>
-    <span>Never uploaded, by us or anyone.</span>
+    <strong>{T("Files stay on your device")}</strong>
+    <span>{T("They're opened and edited right in your browser.")}</span>
   </div>
   <div>
     <span class="tile">
       <Icon name="check" />
     </span>
-    <strong>No accounts</strong>
-    <span>Nothing to sign up for.</span>
+    <strong>{T("No accounts")}</strong>
+    <span>{T("Nothing to sign up for.")}</span>
   </div>
   <div>
     <span class="tile">
       <Icon name="lock" />
     </span>
-    <strong>No cookies</strong>
-    <span>No ads, no tracking scripts.</span>
+    <strong>{T("No cookies")}</strong>
+    <span>{T("No ads, no tracking scripts.")}</span>
   </div>
   <div>
     <span class="tile">
       <Icon name="layers" />
     </span>
-    <strong>Anonymous page counts</strong>
-    <span>Visits only, never your files.</span>
+    <strong>{T("Anonymous page counts")}</strong>
+    <span>{T("Visits only, never your files.")}</span>
   </div>
 </div>
 
 <div class="policy">
   <section>
-    <h2>Your files</h2>
+    <h2>{T("Your files")}</h2>
     <p>
-      {brand} processes files in your browser. Files you open are read, edited
-      and saved on your device. They're never uploaded, and the site's security
-      policy blocks it from sending your data to other servers.
+      {T(
+        "{brand} processes files in your browser. Files you open are read, edited and saved on your device; they don't go to any server, and the site's security policy blocks it from sending your data elsewhere.",
+        { brand },
+      )}
     </p>
   </section>
   {ai && (
     <section>
-      <h2>AI features</h2>
+      <h2>{T("AI features")}</h2>
       <p>
-        Background removal, face blur and passport framing use small AI models
-        that run on your device. The first time you use one, the model downloads
-        from this site, the same way the page itself does, and your browser
-        caches it. Your photos are never sent anywhere to be processed.
+        {T(
+          "Background removal, face blur and passport framing use small AI models that run on your device. The first time you use one, the model downloads from this site, the same way the page itself does, and your browser caches it. Your photos are never sent anywhere to be processed.",
+        )}
       </p>
     </section>
   )}
   <section>
-    <h2>What your browser keeps</h2>
+    <h2>{T("What your browser keeps")}</h2>
     <p>
-      A few settings are saved in your own browser so the site remembers them.
-      We can't see them.
+      {T(
+        "A few settings are saved in your own browser so the site remembers them. We can't see them.",
+      )}
     </p>
     <ul>
       <li>
-        <strong>Theme</strong>: light or dark.
+        <strong>{T("Theme")}</strong>: {T("light or dark.")}
       </li>
       <li>
-        <strong>Mode</strong>: Simple or Advanced.
+        <strong>{T("Mode")}</strong>: {T("Simple or Advanced.")}
       </li>
       <li>
-        <strong>Dropped files</strong>: kept briefly so the tool page can open
-        them, then deleted.
+        <strong>{T("Dropped files")}</strong>:{" "}
+        {T("kept briefly so the tool page can open them, then deleted.")}
       </li>
     </ul>
   </section>
   <section>
-    <h2>Analytics</h2>
+    <h2>{T("Analytics")}</h2>
     <p>
-      We use Vercel Web Analytics to count visits: which pages are viewed, the
-      referring site, and the country, browser and device type. It sets no
-      cookies, doesn't identify you, and never sees your files or their names.
+      {T(
+        "We use Vercel Web Analytics to count visits: which pages are viewed, the referring site, and the country, browser and device type. It sets no cookies, doesn't identify you, and never sees your files or their names.",
+      )}
     </p>
   </section>
   <section>
-    <h2>Hosting</h2>
+    <h2>{T("Hosting")}</h2>
     <p>
-      The site is hosted on Vercel. Like any web host, it may keep standard
-      request logs (such as IP address, browser and page) to keep the service
-      running and secure. These never include your files.
+      {T(
+        "The site is hosted on Vercel. Like any web host, it may keep standard request logs (such as IP address, browser and page) to keep the service running and secure. These never include your files.",
+      )}
     </p>
   </section>
   <section>
-    <h2>Changes</h2>
+    <h2>{T("Changes")}</h2>
     <p>
-      If anything here changes, we'll update this page. Last updated {updated}.
+      {T(
+        "If anything here changes, we'll update this page. Last updated {date}.",
+        { date: updated },
+      )}
     </p>
   </section>
   <section>
-    <h2>Contact</h2>
+    <h2>{T("Contact")}</h2>
     <p>
-      Questions about privacy? Email{" "}
-      <a href={`mailto:${CONTACT.email}`}>{CONTACT.email}</a>.
+      {T("Questions about privacy? Email")}{" "}
+      <a href={`mailto:${CONTACT.email}`}>{CONTACT.email}</a>
+      {locale === "bn" ? "।" : "."}
     </p>
   </section>
 </div>

@@ -1,7 +1,10 @@
 ---
-import { apps, linkTo, type AppId } from "@kmra/registry";
+import { apps, localizeApp, type AppId } from "@kmra/registry";
 import Icon from "./Icon.astro";
 import { markSvg } from "../lib/brand";
+import { appLink } from "../lib/locale";
+import { pageLocale } from "../lib/locale";
+import { lp, t as tr } from "../lib/i18n";
 
 interface Props {
   appId: AppId;
@@ -10,26 +13,32 @@ interface Props {
 const { appId } = Astro.props;
 const dev = import.meta.env.DEV;
 const others = apps.filter((a) => a.live && a.id !== appId);
+const locale = pageLocale(Astro);
+const T = (s: string, v?: Record<string, string | number>) => tr(locale, s, v);
+const L = (p: string) => lp(locale, p);
 ---
 
-{others.map((a) => (
-  <a
-    class="cta-app"
-    href={linkTo(appId, a.id as AppId, "/", dev)}
-    style={`--app:${a.accent.light}`}
-  >
-    <span
-      class="app-mark"
-      set:html={markSvg(a.id, a.accent.light)}
-      aria-hidden="true"
-    />
-    <span class="cta-text">
-      <small>More from kmra</small>
-      <strong>{a.name}</strong>
-      <span>{a.tagline}</span>
-    </span>
-    <span class="btn cta-btn">
-      Open {a.name} <Icon name="right" />
-    </span>
-  </a>
-))}
+{others.map((raw) => {
+  const a = localizeApp(raw, locale);
+  return (
+    <a
+      class="cta-app"
+      href={appLink(appId, locale, a.id as AppId, "/", dev)}
+      style={`--app:${a.accent.light}`}
+    >
+      <span
+        class="app-mark"
+        set:html={markSvg(a.id, a.accent.light)}
+        aria-hidden="true"
+      />
+      <span class="cta-text">
+        <small>{T("More from kmra")}</small>
+        <strong>{a.name}</strong>
+        <span>{a.tagline}</span>
+      </span>
+      <span class="btn cta-btn">
+        {T("Open {name}", { name: a.name })} <Icon name="right" />
+      </span>
+    </a>
+  );
+})}

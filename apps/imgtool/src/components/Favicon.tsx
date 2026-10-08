@@ -1,3 +1,5 @@
+import { LangProvider, useT } from "@kmra/ui/lib/i18n-react";
+import type { Locale } from "@kmra/ui/lib/i18n";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Icon } from "@kmra/ui/components/Icon";
 import { toast } from "@kmra/ui/lib/toast";
@@ -98,7 +100,8 @@ const SNIPPET = `<link rel="icon" href="/favicon.ico" sizes="48x48">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <link rel="manifest" href="/site.webmanifest">`;
 
-export default function Favicon() {
+function FaviconView() {
+  const T = useT();
   const [src, setSrc] = useState<{ file: File; bmp: ImageBitmap } | null>(null);
   const [o, setO] = useState<Opts>({
     fit: "contain",
@@ -107,7 +110,7 @@ export default function Favicon() {
     bg: "#ffffff",
     transparent: true,
   });
-  const [name, setName] = useState("My site");
+  const [name, setName] = useState(T("My site"));
   const [saving, setSaving] = useState(false);
   const put = (p: Partial<Opts>) => setO((v) => ({ ...v, ...p }));
 
@@ -115,7 +118,7 @@ export default function Favicon() {
     try {
       setSrc({ file: files[0]!, bmp: await decode(files[0]!) });
     } catch {
-      toast(`${files[0]!.name} couldn't be opened.`);
+      toast(T("{name} couldn't be opened.", { name: files[0]!.name }));
     }
   }
   const { dragging, pickRef, pick, take } = useFiles({
@@ -227,12 +230,12 @@ export default function Favicon() {
         <DropCard
           dragging={dragging}
           onPick={pick}
-          title="Drop your logo"
-          button="Choose a logo"
+          title={T("Drop your logo")}
+          button={T("Choose a logo")}
           formats={["SVG", "PNG", "JPG", "WebP"]}
         >
           <span className="muted small">
-            A square logo, at least 512 × 512, works best.
+            {T("A square logo, at least 512 × 512, works best.")}
           </span>
         </DropCard>
         {input}
@@ -248,7 +251,7 @@ export default function Favicon() {
             <div className="fav-preview">
               <div className="fav-tab">
                 <canvas ref={tabRef} aria-hidden="true" />
-                <span>{name || "My site"}</span>
+                <span>{name || T("My site")}</span>
                 <Icon name="x" />
               </div>
               <div className="fav-sizes">
@@ -271,7 +274,7 @@ export default function Favicon() {
             </div>
             <div className="filebar">
               <button type="button" className="fchip add" onClick={pick}>
-                Use another logo
+                {T("Use another logo")}
               </button>
             </div>
           </>
@@ -279,46 +282,48 @@ export default function Favicon() {
         panel={
           <>
             <Seg<Opts["fit"]>
-              label="Fit"
+              label={T("Fit")}
               options={[
-                ["contain", "Whole logo"],
-                ["cover", "Fill the square"],
+                ["contain", T("Whole logo")],
+                ["cover", T("Fill the square")],
               ]}
               value={o.fit}
               onPick={(v) => put({ fit: v })}
             />
             <Slider
-              label="Padding"
+              label={T("Padding")}
               value={o.pad}
               max={30}
               unit="%"
               onChange={(v) => put({ pad: v })}
             />
             <Slider
-              label="Rounded corners"
+              label={T("Rounded corners")}
               value={o.radius}
               max={50}
               unit="%"
               onChange={(v) => put({ radius: v })}
             />
             <Seg<boolean>
-              label="Background"
+              label={T("Background")}
               options={[
-                [true, "Transparent"],
-                [false, "Colour"],
+                [true, T("Transparent")],
+                [false, T("Colour")],
               ]}
               value={o.transparent}
               onPick={(v) => put({ transparent: v })}
             />
             {!o.transparent && (
               <ColorPick
-                label="Colour"
+                label={T("Colour")}
                 value={o.bg}
                 onPick={(v) => put({ bg: v })}
               />
             )}
             <div className="ctl">
-              <label htmlFor="fav-name">Site name (for the app manifest)</label>
+              <label htmlFor="fav-name">
+                {T("Site name (for the app manifest)")}
+              </label>
               <input
                 id="fav-name"
                 className="num"
@@ -339,7 +344,7 @@ export default function Favicon() {
             </div>
             <div className="result">
               <small>
-                favicon.ico (16, 32, 48), 5 PNGs, site.webmanifest
+                {T("favicon.ico (16, 32, 48), 5 PNGs, site.webmanifest")}
                 {svg ? ", favicon.svg" : ""}
               </small>
               <div className="acts">
@@ -350,7 +355,7 @@ export default function Favicon() {
                   onClick={() => void save()}
                 >
                   <Icon name="download" />
-                  {saving ? "Preparing…" : "Download favicon pack"}
+                  {saving ? T("Preparing…") : T("Download favicon pack")}
                 </button>
               </div>
             </div>
@@ -359,5 +364,14 @@ export default function Favicon() {
       />
       {input}
     </>
+  );
+}
+
+/** Island entry: sets the interface language for everything inside. */
+export default function Favicon(props: { lang?: Locale }) {
+  return (
+    <LangProvider lang={props.lang}>
+      <FaviconView />
+    </LangProvider>
   );
 }

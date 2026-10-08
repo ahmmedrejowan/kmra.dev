@@ -9,6 +9,13 @@ export default defineConfig({
   site: appOrigin("imgtool"),
   trailingSlash: "never",
   build: { format: "file" },
+  // English at the root, other languages under a prefix (/bn/...). Keep in sync with the
+  // registry's imgtool `locales` and @kmra/ui's LOCALES.
+  i18n: {
+    locales: ["en", "bn"],
+    defaultLocale: "en",
+    routing: { prefixDefaultLocale: false },
+  },
   server: { port: 4321 },
   integrations: [react(), kmraBuild({ origin: appOrigin("imgtool") })],
   vite: {

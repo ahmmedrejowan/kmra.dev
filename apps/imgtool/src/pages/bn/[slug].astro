@@ -1,138 +1,27 @@
 ---
-import "@fontsource/noto-sans-bengali/400.css";
-import "@fontsource/noto-sans-bengali/600.css";
-import "@fontsource/noto-sans-bengali/700.css";
-import BaseLayout from "@kmra/ui/layouts/BaseLayout.astro";
-import PageHead from "@kmra/ui/components/PageHead.astro";
-import InfoCard from "@kmra/ui/components/InfoCard.astro";
-import Icon from "@kmra/ui/components/Icon.astro";
-import { appOrigin, getApp, type IconName } from "@kmra/registry";
-import ImageTool from "../../components/ImageTool";
-import { BN_HOME, BN_PAGES, BN_TOOLS, BN_UI, type BnPage } from "../../i18n/bn";
+import ToolPage from "../../views/ToolPage.astro";
+import { toolPaths } from "../../views/paths";
 
-export function getStaticPaths() {
-  return Object.entries(BN_PAGES).map(([slug, page]) => ({
-    params: { slug },
-    props: { slug, page },
-  }));
-}
-
-interface Props {
-  slug: string;
-  page: BnPage;
-}
-
-const { slug, page } = Astro.props;
-const app = getApp("imgtool");
-const task = app.tasks.find((t) => t.slug === slug);
-const tool = app.tools.find((t) => t.slug === (task?.tool ?? slug))!;
-const icon = (s: string): IconName => {
-  const tk = app.tasks.find((t) => t.slug === s);
-  return app.tools.find((t) => t.slug === (tk?.tool ?? s))?.icon ?? "file";
-};
-const railTools = app.tools.map(({ slug, name, icon, ready }) => ({
-  slug,
-  name,
-  icon,
-  ready,
-}));
-const crumbs = [
-  { label: BN_UI.home, href: "/bn" },
-  ...(task && BN_PAGES[task.tool]
-    ? [{ label: BN_PAGES[task.tool]!.name, href: `/bn/${task.tool}` }]
-    : []),
-  { label: page.name },
-];
-const info = [
-  ...(page.about?.[0] ? [{ q: BN_UI.good, a: page.about[0] }] : []),
-  ...BN_UI.faq,
-].slice(0, 3);
-// Three related Bangla pages: same tool first, then the home order
-const related = [...BN_HOME, ...BN_TOOLS]
-  .filter((s) => s !== slug)
-  .sort(
-    (a, b) =>
-      Number(app.tasks.find((t) => t.slug === b)?.tool === tool.slug) -
-      Number(app.tasks.find((t) => t.slug === a)?.tool === tool.slug),
-  )
-  .slice(0, 3);
-
-const origin = Astro.site?.toString() ?? appOrigin("imgtool");
-const schema = [
-  {
-    "@context": "https://schema.org",
-    "@type": "WebApplication",
-    name: page.title,
-    url: new URL(`/bn/${slug}`, origin).toString(),
-    description: page.intro,
-    inLanguage: "bn",
-    applicationCategory: "MultimediaApplication",
-    operatingSystem: "Any (runs in the browser)",
-    isAccessibleForFree: true,
-    offers: { "@type": "Offer", price: "0", priceCurrency: "BDT" },
-  },
-  {
-    "@context": "https://schema.org",
-    "@type": "FAQPage",
-    inLanguage: "bn",
-    mainEntity: info.map((it) => ({
-      "@type": "Question",
-      name: it.q,
-      acceptedAnswer: { "@type": "Answer", text: it.a },
-    })),
-  },
-];
+export const getStaticPaths = toolPaths;
 ---
 
-<BaseLayout
-  appId="imgtool"
-  lang="bn"
-  title={page.title}
-  description={page.intro}
-  og={slug}
-  schema={schema}
-  alternates={[{ lang: "en", path: `/${slug}` }]}
->
-  <PageHead
-    crumbs={crumbs}
-    icon={tool.icon}
-    title={page.title}
-    intro={page.intro}
-  >
-    <a class="langswitch" href={`/${slug}`} hreflang="en" lang="en">
-      {BN_UI.english}
-    </a>
-  </PageHead>
+<ToolPage slug={Astro.props.slug} />
 
-  <div class="wrap tool-area">
-    <ImageTool
-      client:load
-      lang="bn"
-      tool={tool.slug}
-      preset={task?.preset}
-      tools={railTools}
-    />
-
-    <InfoCard steps={page.steps} items={info} />
-
-    <section class="block">
-      <div class="sechead primary">
-        <h2>{BN_UI.related}</h2>
-      </div>
-      <div class="tasks">
-        {related.map((s) => (
-          <a class="task" href={`/bn/${s}`}>
-            <span class="tile">
-              <Icon name={icon(s)} />
-            </span>
-            <span class="task-text">
-              <strong>{BN_PAGES[s]!.name}</strong>
-              <small>{BN_PAGES[s]!.intro.split("।")[0]}</small>
-            </span>
-            <Icon name="right" class="ico go" />
-          </a>
-        ))}
-      </div>
-    </section>
-  </div>
-</BaseLayout>
+<script>
+  // Simple/Advanced switch: tells the tool which mode to use and mirrors the mode it reports back.
+  const buttons = document.querySelectorAll<HTMLButtonElement>("[data-mode]");
+  buttons.forEach((b) =>
+    b.addEventListener("click", () =>
+      window.dispatchEvent(new CustomEvent(`kmra:${b.dataset.mode}`)),
+    ),
+  );
+  window.addEventListener("kmra:mode", (e) => {
+    const advanced = (e as CustomEvent<{ advanced: boolean }>).detail.advanced;
+    buttons.forEach((b) =>
+      b.setAttribute(
+        "aria-pressed",
+        String((b.dataset.mode === "advanced") === advanced),
+      ),
+    );
+  });
+</script>

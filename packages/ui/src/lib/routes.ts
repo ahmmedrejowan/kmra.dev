@@ -100,7 +100,8 @@ export function ogPages(appId: AppId): OgPage[] {
     {
       slug: "privacy",
       title: "Privacy",
-      subtitle: "No uploads, no accounts, no tracking of your files.",
+      subtitle:
+        "Files stay on your device. No accounts, no tracking of your files.",
       icon: "shield",
     },
     {

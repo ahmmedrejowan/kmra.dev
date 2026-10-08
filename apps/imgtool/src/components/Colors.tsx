@@ -1,3 +1,5 @@
+import { LangProvider, useT } from "@kmra/ui/lib/i18n-react";
+import type { Locale } from "@kmra/ui/lib/i18n";
 import { useEffect, useMemo, useRef, useState, type PointerEvent } from "react";
 import { Icon } from "@kmra/ui/components/Icon";
 import { downloadBlob } from "@kmra/ui/lib/files";
@@ -137,7 +139,8 @@ interface Pic {
   small: Uint8ClampedArray;
 }
 
-export default function Colors({ mode }: { mode: Mode }) {
+function ColorsView({ mode }: { mode: Mode }) {
+  const T = useT();
   const [pic, setPic] = useState<Pic | null>(null);
   const [count, setCount] = useState(6);
 
@@ -168,7 +171,11 @@ export default function Colors({ mode }: { mode: Mode }) {
         small: sx.getImageData(0, 0, sc.width, sc.height).data,
       });
     } catch {
-      toast(`${file.name} couldn't be opened. Try a JPEG, PNG or WebP.`);
+      toast(
+        T("{name} couldn't be opened. Try a JPEG, PNG or WebP.", {
+          name: file.name,
+        }),
+      );
     }
   }
 
@@ -185,8 +192,8 @@ export default function Colors({ mode }: { mode: Mode }) {
         <DropCard
           dragging={dragging}
           onPick={pick}
-          title="Drop an image here"
-          button="Choose an image"
+          title={T("Drop an image here")}
+          button={T("Choose an image")}
         />
         {input}
       </>
@@ -211,6 +218,7 @@ export default function Colors({ mode }: { mode: Mode }) {
 }
 
 function Swatch({ c, share }: { c: RGB; share?: number }) {
+  const T = useT();
   const h = hex(c);
   return (
     <button
@@ -218,7 +226,7 @@ function Swatch({ c, share }: { c: RGB; share?: number }) {
       className="swatch"
       style={{ background: h, color: lum(c) > 150 ? "#111" : "#fff" }}
       onClick={() => void copyText(h, `${h} copied`)}
-      title="Copy"
+      title={T("Copy")}
     >
       <b>{h}</b>
       {share !== undefined && <small>{Math.round(share * 100)}%</small>}
@@ -239,6 +247,7 @@ function PaletteView({
   onPick: () => void;
   dragging: boolean;
 }) {
+  const T = useT();
   const colors = useMemo(() => palette(pic.small, count), [pic, count]);
   const hexes = colors.map((x) => hex(x.c));
   const css = `:root {\n${hexes.map((h, i) => `  --color-${i + 1}: ${h};`).join("\n")}\n}`;
@@ -268,7 +277,7 @@ function PaletteView({
           <img className="still" src={pic.url} alt={pic.file.name} />
           <div className="filebar">
             <button type="button" className="fchip add" onClick={onPick}>
-              Use another image
+              {T("Use another image")}
             </button>
           </div>
         </>
@@ -285,7 +294,7 @@ function PaletteView({
               max={12}
               value={count}
               onChange={(e) => setCount(+e.target.value)}
-              aria-label="Number of colours"
+              aria-label={T("Number of colours")}
             />
           </div>
           <div className="palette">
@@ -294,24 +303,27 @@ function PaletteView({
             ))}
           </div>
           <small className="muted">
-            Click a colour to copy it. Sorted by how much of the image it
-            covers.
+            {T(
+              T(
+                "Click a colour to copy it. Sorted by how much of the image it covers.",
+              ),
+            )}
           </small>
           <div className="acts-row">
             <CopyBtn
               text={hexes.join(", ")}
-              label="HEX list"
-              what="Colours copied"
+              label={T("HEX list")}
+              what={T("Colours copied")}
             />
-            <CopyBtn text={css} label="CSS" what="CSS variables copied" />
+            <CopyBtn text={css} label={T("CSS")} what="CSS variables copied" />
             <CopyBtn
               text={JSON.stringify(hexes)}
-              label="JSON"
+              label={T("JSON")}
               what="JSON copied"
             />
             <button type="button" className="btn sm" onClick={() => void png()}>
               <Icon name="download" />
-              PNG
+              {T("PNG")}
             </button>
           </div>
         </div>
@@ -329,6 +341,7 @@ function PickerView({
   onPick: () => void;
   dragging: boolean;
 }) {
+  const T = useT();
   const [hover, setHover] = useState<{ c: RGB; x: number; y: number } | null>(
     null,
   );
@@ -450,7 +463,7 @@ function PickerView({
           </div>
           <div className="filebar">
             <button type="button" className="fchip add" onClick={onPick}>
-              Use another image
+              {T("Use another image")}
             </button>
           </div>
         </>
@@ -461,10 +474,10 @@ function PickerView({
             <i style={{ background: show ? hex(show) : "transparent" }} />
             <span className="muted">
               {hover
-                ? "Click to keep this colour"
+                ? T("Click to keep this colour")
                 : current
-                  ? "Picked"
-                  : "Move over the image, click to pick"}
+                  ? T("Picked")
+                  : T("Move over the image, click to pick")}
             </span>
           </div>
           {show && (
@@ -492,7 +505,7 @@ function PickerView({
               onClick={() => void screenPick()}
             >
               <Icon name="pipette" />
-              Pick from anywhere on screen
+              {T("Pick from anywhere on screen")}
             </button>
           )}
           {picked.length > 0 && (
@@ -508,15 +521,15 @@ function PickerView({
               <div className="acts-row">
                 <CopyBtn
                   text={picked.map(hex).join(", ")}
-                  label="Copy all"
-                  what="Colours copied"
+                  label={T("Copy all")}
+                  what={T("Colours copied")}
                 />
                 <button
                   type="button"
                   className="btn sm"
                   onClick={() => setPicked([])}
                 >
-                  Clear
+                  {T("Clear")}
                 </button>
               </div>
             </div>
@@ -524,5 +537,16 @@ function PickerView({
         </div>
       }
     />
+  );
+}
+
+/** Island entry: sets the interface language for everything inside. */
+export default function Colors(
+  props: Parameters<typeof ColorsView>[0] & { lang?: Locale },
+) {
+  return (
+    <LangProvider lang={props.lang}>
+      <ColorsView {...props} />
+    </LangProvider>
   );
 }

@@ -3,21 +3,28 @@ import {
   apps,
   getApp,
   groupBy,
-  linkTo,
+  localizeApp,
   type App,
   type AppId,
 } from "@kmra/registry";
 import Icon from "./Icon.astro";
 import Wordmark from "./Wordmark.astro";
 import { markSvg } from "../lib/brand";
+import { appLink, langLinks, pageLocale } from "../lib/locale";
+import { lp, t as tr } from "../lib/i18n";
 
 interface Props {
   appId: AppId;
 }
 
 const { appId } = Astro.props;
-const app = getApp(appId);
+const locale = pageLocale(Astro);
+const T = (s: string, v?: Record<string, string | number>) => tr(locale, s, v);
+const L = (p: string) => lp(locale, p);
+const app = localizeApp(getApp(appId), locale);
 const dev = import.meta.env.DEV;
+// Other languages of this page (the switcher only shows when there's more than one)
+const langs = langLinks(Astro, app);
 // Only apps that are live are listed; others appear once they launch.
 const liveApps = apps.filter((a) => a.live);
 const toolGroups = groupBy(
@@ -28,7 +35,7 @@ const taskGroups = groupBy(app.tasks);
 const toolIcon = (slug: string) =>
   app.tools.find((t) => t.slug === slug)?.icon ?? "file";
 const appHref = (a: App) =>
-  a.live ? linkTo(appId, a.id as AppId, "/", dev) : undefined;
+  a.live ? appLink(appId, locale, a.id as AppId, "/", dev) : undefined;
 ---
 
 <header class="site">
@@ -36,8 +43,10 @@ const appHref = (a: App) =>
     <div class="hd">
       <a
         class="logo"
-        href="/"
-        aria-label={`${app.brand.join("")} by kmra.dev, home`}
+        href={L("/")}
+        aria-label={T("{brand} by kmra.dev, home", {
+          brand: app.brand.join(""),
+        })}
       >
         <Wordmark appId={appId} />
       </a>
@@ -45,14 +54,14 @@ const appHref = (a: App) =>
       <nav aria-label="Main" style="display: contents">
         <div class="menu">
           <button type="button" aria-expanded="false" aria-controls="m-tools">
-            Tools <Icon name="down" />
+            {T("Tools")} <Icon name="down" />
           </button>
           <div class="mega cols" id="m-tools" hidden>
             {toolGroups.map(([group, tools]) => (
               <div class="mgrp">
                 <h6>{group}</h6>
                 {tools.map((t) => (
-                  <a class="mi" href={`/${t.slug}`}>
+                  <a class="mi" href={L(`/${t.slug}`)}>
                     <span class="tile">
                       <Icon name={t.icon} />
                     </span>
@@ -73,14 +82,14 @@ const appHref = (a: App) =>
         {taskGroups.length > 0 && (
           <div class="menu">
             <button type="button" aria-expanded="false" aria-controls="m-tasks">
-              Use cases <Icon name="down" />
+              {T("Use cases")} <Icon name="down" />
             </button>
             <div class="mega cols" id="m-tasks" hidden>
               {taskGroups.map(([group, tasks]) => (
                 <div class="mgrp">
                   <h6>{group}</h6>
                   {tasks.map((t) => (
-                    <a class="mi" href={`/${t.slug}`}>
+                    <a class="mi" href={L(`/${t.slug}`)}>
                       <span class="tile">
                         <Icon name={toolIcon(t.tool)} />
                       </span>
@@ -98,11 +107,12 @@ const appHref = (a: App) =>
 
         <div class="menu">
           <button type="button" aria-expanded="false" aria-controls="m-apps">
-            Apps <Icon name="down" />
+            {T("Apps")} <Icon name="down" />
           </button>
           <div class="mega apps-menu" id="m-apps" hidden>
-            <h6>kmra apps</h6>
-            {liveApps.map((a) => {
+            <h6>{T("kmra apps")}</h6>
+            {liveApps.map((raw) => {
+              const a = localizeApp(raw, locale);
               const ready = a.tools.filter((t) => t.ready).length;
               const here = a.id === appId;
               return (
@@ -122,12 +132,17 @@ const appHref = (a: App) =>
                       <span
                         set:html={`<span style="color:var(--app)">${a.brand[0]}</span>${a.brand[1]}`}
                       />
-                      {here && <span class="here-tag">You're here</span>}
+                      {here && <span class="here-tag">{T("You're here")}</span>}
                     </span>
-                    <small>{a.tagline.split(".")[0]}.</small>
+                    <small>
+                      {a.tagline.split(/[.।]/)[0]}
+                      {locale === "bn" ? "।" : "."}
+                    </small>
                     <span class="app-item-meta">
                       <span>
-                        {ready > 0 ? `${ready} tools` : "In progress"}
+                        {ready > 0
+                          ? T("{n} tools", { n: ready })
+                          : T("In progress")}
                       </span>
                       <span>{a.id}.kmra.dev</span>
                     </span>
@@ -135,14 +150,14 @@ const appHref = (a: App) =>
                 </a>
               );
             })}
-            <a class="apps-more" href="/about">
-              About kmra and what's next
+            <a class="apps-more" href={L("/about")}>
+              {T("About kmra and what's next")}
             </a>
           </div>
         </div>
 
-        <a class="navlink" href="/how-it-works">
-          How it works
+        <a class="navlink" href={L("/how-it-works")}>
+          {T("How it works")}
         </a>
       </nav>
 
@@ -151,17 +166,49 @@ const appHref = (a: App) =>
           class="kbtn"
           type="button"
           data-palette
-          aria-label="Search tools"
+          aria-label={T("Search tools")}
         >
           <Icon name="search" />
-          <span>Search tools</span>
+          <span>{T("Search tools")}</span>
           <kbd data-keys="mod+K">⌘K</kbd>
         </button>
+        {langs.length > 1 && (
+          <div class="menu lang">
+            <button
+              type="button"
+              class="iconbtn"
+              aria-expanded="false"
+              aria-controls="m-lang"
+              aria-label={T("Language")}
+              title={T("Language")}
+            >
+              <Icon name="languages" />
+            </button>
+            <div class="mega single lang-menu" id="m-lang" hidden>
+              <h6>{T("Language")}</h6>
+              {langs.map((l) => (
+                <a
+                  class="mi"
+                  href={l.href}
+                  hreflang={l.code}
+                  lang={l.code}
+                  aria-current={l.current ? "true" : undefined}
+                >
+                  <span>
+                    <strong>{l.native}</strong>
+                    {l.native !== l.name && <small>{l.name}</small>}
+                  </span>
+                  {l.current && <Icon name="check" class="ico lang-check" />}
+                </a>
+              ))}
+            </div>
+          </div>
+        )}
         <button
           class="iconbtn"
           type="button"
           id="theme-toggle"
-          aria-label="Switch light or dark theme"
+          aria-label={T("Switch light or dark theme")}
         >
           <Icon name="moon" class="ico theme-moon" />
           <Icon name="sun" class="ico theme-sun" />
@@ -170,7 +217,7 @@ const appHref = (a: App) =>
           class="iconbtn burger"
           type="button"
           id="burger"
-          aria-label="Menu"
+          aria-label={T("Menu")}
           aria-expanded="false"
           aria-controls="drawer"
         >
@@ -179,29 +226,45 @@ const appHref = (a: App) =>
       </div>
     </div>
 
-    <nav class="drawer" id="drawer" aria-label="Menu" hidden>
-      <h6>Tools</h6>
-      {app.tools.map((t) => (
-        <a href={`/${t.slug}`}>
-          {t.name}
-          {!t.ready && <span class="soon">Soon</span>}
-        </a>
-      ))}
+    <nav class="drawer" id="drawer" aria-label={T("Menu")} hidden>
+      {langs.length > 1 && (
+        <>
+          <h6>{T("Language")}</h6>
+          <div class="drawer-langs">
+            {langs.map((l) => (
+              <a
+                href={l.href}
+                hreflang={l.code}
+                lang={l.code}
+                aria-current={l.current ? "true" : undefined}
+              >
+                {l.native}
+              </a>
+            ))}
+          </div>
+        </>
+      )}
+      <h6>{T("Tools")}</h6>
+      {app.tools
+        .filter((t) => t.ready)
+        .map((t) => (
+          <a href={L(`/${t.slug}`)}>{t.name}</a>
+        ))}
       {app.tasks.length > 0 && (
         <>
-          <h6>Use cases</h6>
+          <h6>{T("Use cases")}</h6>
           {app.tasks.map((t) => (
-            <a href={`/${t.slug}`}>{t.name}</a>
+            <a href={L(`/${t.slug}`)}>{t.name}</a>
           ))}
         </>
       )}
-      <h6>Apps</h6>
+      <h6>{T("Apps")}</h6>
       {liveApps.map((a) => {
         const href = appHref(a);
         return href ? (
           <a href={href}>
             <span class="appdot" style={`background:${a.accent.light}`} />
-            {a.name}
+            {localizeApp(a, locale).name}
           </a>
         ) : (
           <span
@@ -213,10 +276,10 @@ const appHref = (a: App) =>
           </span>
         );
       })}
-      <h6>About</h6>
-      <a href="/how-it-works">How it works</a>
-      <a href="/privacy">Privacy</a>
-      <a href="/about">About</a>
+      <h6>{T("About")}</h6>
+      <a href={L("/how-it-works")}>{T("How it works")}</a>
+      <a href={L("/privacy")}>{T("Privacy")}</a>
+      <a href={L("/about")}>{T("About")}</a>
     </nav>
   </div>
 </header>

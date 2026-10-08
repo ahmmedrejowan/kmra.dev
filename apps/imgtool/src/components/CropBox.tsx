@@ -1,3 +1,4 @@
+import { useT } from "@kmra/ui/lib/i18n-react";
 import {
   useRef,
   type CSSProperties,
@@ -35,6 +36,7 @@ export default function CropBox({
   onChange,
   imgStyle,
 }: Props) {
+  const T = useT();
   const wrapRef = useRef<HTMLDivElement>(null);
   const drag = useRef<{ mode: Mode; x: number; y: number; start: Crop } | null>(
     null,
@@ -131,7 +133,11 @@ export default function CropBox({
         onPointerDown={(e) => begin(e, "move")}
         tabIndex={0}
         role="slider"
-        aria-label="Crop area. Drag to move, use the corners to resize, or arrow keys to nudge."
+        aria-label={T(
+          T(
+            "Crop area. Drag to move, use the corners to resize, or arrow keys to nudge.",
+          ),
+        )}
         aria-valuetext={`${Math.round(c.w * srcW)} × ${Math.round(c.h * srcH)} pixels`}
         onKeyDown={onKey}
       >

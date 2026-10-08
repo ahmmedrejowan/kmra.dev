@@ -2,6 +2,8 @@
 import type { Tool } from "@kmra/registry";
 import ToolCard from "./ToolCard.astro";
 import Icon from "./Icon.astro";
+import { pageLocale } from "../lib/locale";
+import { lp, t as tr } from "../lib/i18n";
 
 interface Props {
   tools: readonly Tool[];
@@ -10,7 +12,10 @@ interface Props {
   allLabel?: string;
 }
 
-const { tools, allHref, allLabel = "All tools" } = Astro.props;
+const { tools, allHref, allLabel } = Astro.props;
+const locale = pageLocale(Astro);
+const T = (s: string, v?: Record<string, string | number>) => tr(locale, s, v);
+const L = (p: string) => lp(locale, p);
 const COLS = 3;
 const showAll = allHref && tools.length % COLS !== 0;
 ---
@@ -20,12 +25,12 @@ const showAll = allHref && tools.length % COLS !== 0;
     <ToolCard tool={t} />
   ))}
   {showAll && (
-    <a class="feat feat-all" href={allHref}>
+    <a class="feat feat-all" href={L(allHref)}>
       <span class="tile">
         <Icon name="layers" />
       </span>
-      <strong>{allLabel}</strong>
-      <span class="muted">See everything on one page</span>
+      <strong>{allLabel ?? T("All tools")}</strong>
+      <span class="muted">{T("See everything on one page")}</span>
     </a>
   )}
 </div>

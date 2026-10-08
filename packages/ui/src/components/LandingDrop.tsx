@@ -4,6 +4,7 @@ import { toast } from "../lib/toast";
 import { pasteHint } from "../lib/keys";
 import { IMAGE_ACCEPT, isImageFile } from "../lib/files";
 import { Icon } from "./Icon";
+import { t, type Locale } from "../lib/i18n";
 
 interface Props {
   /** MIME prefix or type the app accepts, e.g. "image/" or "application/pdf" */
@@ -18,6 +19,7 @@ interface Props {
   large?: boolean;
   /** Labels for non-English pages */
   text?: { hint: string; button: string; over: string };
+  lang?: Locale;
 }
 
 /**
@@ -32,11 +34,15 @@ export default function LandingDrop({
   unavailable,
   large,
   text,
+  lang = "en",
 }: Props) {
+  const T = (s: string, v?: Record<string, string>) => t(lang, s, v);
   const inputRef = useRef<HTMLInputElement>(null);
   const [over, setOver] = useState(false);
-  const [hint, setHint] = useState("or paste with ⌘V. Nothing is uploaded.");
-  useEffect(() => setHint(pasteHint()), []);
+  const [hint, setHint] = useState(
+    T("or paste with ⌘V. Your files stay on your device."),
+  );
+  useEffect(() => setHint(pasteHint(lang)), [lang]);
   const takeRef = useRef<(list: FileList | File[] | null) => Promise<void>>(
     async () => {},
   );
@@ -51,12 +57,14 @@ export default function LandingDrop({
     if (!files.length) {
       if (list && [...list].length)
         toast(
-          `That file type isn't supported here. Try ${formats.join(", ")}.`,
+          T("That file type isn't supported here. Try {list}.", {
+            list: formats.join(", "),
+          }),
         );
       return;
     }
     if (!target) {
-      toast(unavailable ?? "This tool isn't ready yet.");
+      toast(unavailable ?? T("This tool isn't ready yet."));
       return;
     }
     await stashFiles(files);
@@ -106,7 +114,7 @@ export default function LandingDrop({
         <div className="big">
           <Icon name="upload" />
         </div>
-        <strong>{over ? (text?.over ?? "Drop to start") : label}</strong>
+        <strong>{over ? (text?.over ?? T("Drop to start")) : label}</strong>
         <span className="muted">{text?.hint ?? hint}</span>
         <div className="row">
           <button
@@ -118,7 +126,7 @@ export default function LandingDrop({
             }}
           >
             <Icon name="upload" />
-            {text?.button ?? "Choose files"}
+            {text?.button ?? T("Choose files")}
           </button>
         </div>
         <div className="formats">

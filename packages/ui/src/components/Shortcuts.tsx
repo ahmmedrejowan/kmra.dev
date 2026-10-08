@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
 import { formatKeys, isApple, SHORTCUTS, typing } from "../lib/keys";
+import { t, type Locale } from "../lib/i18n";
 
 /** "?" opens a list of keyboard shortcuts, written for the visitor's OS. */
-export default function Shortcuts() {
+export default function Shortcuts({ lang = "en" }: { lang?: Locale }) {
+  const T = (s: string) => t(lang, s);
   const [open, setOpen] = useState(false);
   const [apple, setApple] = useState(true);
 
@@ -41,26 +43,28 @@ export default function Shortcuts() {
         className="palette keys-panel"
         role="dialog"
         aria-modal="true"
-        aria-label="Keyboard shortcuts"
+        aria-label={T("Keyboard shortcuts")}
       >
         <div className="keys-head">
-          <strong>Keyboard shortcuts</strong>
-          <span className="muted">{apple ? "macOS" : "Windows and Linux"}</span>
+          <strong>{T("Keyboard shortcuts")}</strong>
+          <span className="muted">
+            {apple ? "macOS" : T("Windows and Linux")}
+          </span>
           <button
             type="button"
             className="btn sm"
             onClick={() => setOpen(false)}
           >
-            Close
+            {T("Close")}
           </button>
         </div>
         {SHORTCUTS.map((g) => (
           <section key={g.title}>
-            <h3>{g.title}</h3>
+            <h3>{T(g.title)}</h3>
             <ul>
               {g.items.map((it) => (
                 <li key={it.label}>
-                  <span>{it.label}</span>
+                  <span>{T(it.label)}</span>
                   <span className="keys">
                     {it.keys.map((k) => (
                       <kbd key={k}>{formatKeys(k, apple)}</kbd>

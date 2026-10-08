@@ -1,3 +1,5 @@
+import { LangProvider, useT } from "@kmra/ui/lib/i18n-react";
+import type { Locale } from "@kmra/ui/lib/i18n";
 import { useEffect, useMemo, useState } from "react";
 import { Icon } from "@kmra/ui/components/Icon";
 import { downloadBlob, formatBytes } from "@kmra/ui/lib/files";
@@ -75,7 +77,8 @@ function parse(
   }
 }
 
-export default function Base64() {
+function Base64View() {
+  const T = useT();
   const [dir, setDir] = useState<"encode" | "decode">("encode");
   const [file, setFile] = useState<File | null>(null);
   const [uri, setUri] = useState("");
@@ -122,10 +125,10 @@ export default function Base64() {
   );
   const modeSwitch = (
     <Seg<"encode" | "decode">
-      label="Direction"
+      label={T("Direction")}
       options={[
-        ["encode", "Image to Base64"],
-        ["decode", "Base64 to image"],
+        ["encode", T("Image to Base64")],
+        ["decode", T("Base64 to image")],
       ]}
       value={dir}
       onPick={setDir}
@@ -139,8 +142,8 @@ export default function Base64() {
         <DropCard
           dragging={dragging}
           onPick={pick}
-          title="Drop an image here"
-          button="Choose an image"
+          title={T("Drop an image here")}
+          button={T("Choose an image")}
           formats={["JPG", "PNG", "WebP", "GIF", "SVG", "ICO"]}
         />
         {input}
@@ -153,12 +156,12 @@ export default function Base64() {
         <ToolCard
           stage={
             preview ? (
-              <img className="still" src={preview} alt="Decoded image" />
+              <img className="still" src={preview} alt={T("Decoded image")} />
             ) : (
               <p className="muted">
                 {decoded && "error" in decoded
-                  ? decoded.error
-                  : "Paste Base64 on the right to see the image here."}
+                  ? T(decoded.error)
+                  : T("Paste Base64 on the right to see the image here.")}
               </p>
             )
           }
@@ -166,7 +169,7 @@ export default function Base64() {
             <>
               {modeSwitch}
               <div className="ctl">
-                <label htmlFor="b64-in">Base64 or data URI</label>
+                <label htmlFor="b64-in">{T("Base64 or data URI")}</label>
                 <textarea
                   id="b64-in"
                   className="num code-in"
@@ -195,7 +198,7 @@ export default function Base64() {
                       }
                     >
                       <Icon name="download" />
-                      Download image
+                      {T("Download image")}
                     </button>
                   </div>
                 </div>
@@ -217,7 +220,7 @@ export default function Base64() {
             <img className="still" src={uri} alt={file!.name} />
             <div className="filebar">
               <button type="button" className="fchip add" onClick={pick}>
-                Use another image
+                {T("Use another image")}
               </button>
             </div>
           </>
@@ -226,13 +229,13 @@ export default function Base64() {
           <>
             {modeSwitch}
             <Seg<Out>
-              label="Copy as"
+              label={T("Copy as")}
               options={[
-                ["uri", "Data URI"],
-                ["raw", "Base64"],
-                ["css", "CSS"],
-                ["html", "HTML"],
-                ["md", "Markdown"],
+                ["uri", T("Data URI")],
+                ["raw", T("Base64")],
+                ["css", T("CSS")],
+                ["html", T("HTML")],
+                ["md", T("Markdown")],
               ]}
               value={out}
               onPick={setOut}
@@ -243,7 +246,7 @@ export default function Base64() {
               readOnly
               value={value}
               onFocus={(e) => e.target.select()}
-              aria-label="Base64 output"
+              aria-label={T("Base64 output")}
             />
             <div className="result">
               <small>
@@ -259,8 +262,8 @@ export default function Base64() {
               <div className="acts">
                 <CopyBtn
                   text={value}
-                  label="Copy"
-                  what="Copied"
+                  label={T("Copy")}
+                  what={T("Copied")}
                   className="btn acc"
                 />
                 <button
@@ -271,11 +274,11 @@ export default function Base64() {
                       new Blob([value], { type: "text/plain" }),
                       `${baseName(file!.name)}-base64.txt`,
                     );
-                    toast("Saved as a text file.");
+                    toast(T("Saved as a text file."));
                   }}
                 >
                   <Icon name="download" />
-                  Save as .txt
+                  {T("Save as .txt")}
                 </button>
               </div>
             </div>
@@ -284,5 +287,14 @@ export default function Base64() {
       />
       {input}
     </>
+  );
+}
+
+/** Island entry: sets the interface language for everything inside. */
+export default function Base64(props: { lang?: Locale }) {
+  return (
+    <LangProvider lang={props.lang}>
+      <Base64View />
+    </LangProvider>
   );
 }

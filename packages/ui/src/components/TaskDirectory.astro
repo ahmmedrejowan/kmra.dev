@@ -1,6 +1,8 @@
 ---
 import { groupBy, type IconName, type Task } from "@kmra/registry";
 import Icon from "./Icon.astro";
+import { pageLocale } from "../lib/locale";
+import { lp, num, t as tr } from "../lib/i18n";
 
 interface Props {
   tasks: readonly Task[];
@@ -9,6 +11,8 @@ interface Props {
 
 const { tasks, icons } = Astro.props;
 const groups = groupBy(tasks);
+const locale = pageLocale(Astro);
+const L = (p: string) => lp(locale, p);
 // Panels show six each so they line up; the rest open in place
 const SHOW = 6;
 ---
@@ -21,12 +25,12 @@ const SHOW = 6;
           <Icon name={icons[list[0]!.tool] ?? "file"} />
         </span>
         <h3>{group}</h3>
-        <small>{list.length}</small>
+        <small>{num(locale, list.length)}</small>
       </header>
       <ul>
         {list.slice(0, SHOW).map((t) => (
           <li>
-            <a href={`/${t.slug}`}>
+            <a href={L(`/${t.slug}`)}>
               <span>
                 <strong>{t.name}</strong>
                 <small>{t.short}</small>
@@ -38,11 +42,11 @@ const SHOW = 6;
       </ul>
       {list.length > SHOW && (
         <details class="dir-more">
-          <summary>{list.length - SHOW} more</summary>
+          <summary>{tr(locale, "{n} more", { n: list.length - SHOW })}</summary>
           <ul>
             {list.slice(SHOW).map((t) => (
               <li>
-                <a href={`/${t.slug}`}>
+                <a href={L(`/${t.slug}`)}>
                   <span>
                     <strong>{t.name}</strong>
                     <small>{t.short}</small>

@@ -4057,30 +4057,6 @@ footer.site .fmore {
 .display.bn {
   font-size: clamp(30px, 5vw, 52px);
 }
-.langswitch {
-  font-size: 13.5px;
-  font-weight: 500;
-  border: 1px solid var(--line);
-  background: var(--card);
-  border-radius: 999px;
-  padding: 5px 12px;
-  white-space: nowrap;
-}
-.langswitch:hover {
-  border-color: var(--acc);
-  color: var(--acc);
-}
-.langswitch.top {
-  margin-bottom: 14px;
-}
-.hero-lang {
-  margin-top: 14px;
-  display: inline-block;
-}
-.ptitle .langswitch {
-  align-self: center;
-  margin-left: auto;
-}
 
 /* ---------- PDF tools ---------- */
 .pdf-stage {
@@ -4722,4 +4698,44 @@ footer.site .fmore {
 .art-bars-code i {
   display: block;
   background: #111;
+}
+
+/* Language menu (header), list (footer and mobile drawer) */
+.menu.lang {
+  position: relative;
+}
+.mega.lang-menu {
+  left: auto;
+  right: 0;
+  top: calc(100% + 12px);
+  width: 210px;
+}
+.lang-menu .mi {
+  justify-content: space-between;
+}
+.lang-menu .mi small {
+  display: block;
+}
+.lang-check {
+  width: 16px;
+  height: 16px;
+  color: var(--acc);
+}
+.flangs {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+.flangs .ico {
+  width: 15px;
+  height: 15px;
+}
+.flangs a[aria-current="true"],
+.drawer-langs a[aria-current="true"] {
+  color: var(--acc);
+  font-weight: 600;
+}
+.drawer-langs {
+  display: flex;
+  gap: 16px;
 }

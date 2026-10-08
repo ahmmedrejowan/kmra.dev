@@ -1,7 +1,8 @@
 ---
-import { apps, linkTo, type AppId } from "@kmra/registry";
+import { apps, localizeApp, type AppId } from "@kmra/registry";
 import Icon from "./Icon.astro";
 import { markSvg } from "../lib/brand";
+import { appLink, pageLocale } from "../lib/locale";
 
 interface Props {
   appId: AppId;
@@ -11,7 +12,10 @@ interface Props {
 
 const { appId, others = false } = Astro.props;
 const dev = import.meta.env.DEV;
-const list = apps.filter((a) => a.live && (!others || a.id !== appId));
+const locale = pageLocale(Astro);
+const list = apps
+  .filter((a) => a.live && (!others || a.id !== appId))
+  .map((a) => localizeApp(a, locale));
 ---
 
 <div class="apps">
@@ -40,7 +44,7 @@ const list = apps.filter((a) => a.live && (!others || a.id !== appId));
     return a.live ? (
       <a
         class="appcard live"
-        href={linkTo(appId, a.id as AppId, "/", dev)}
+        href={appLink(appId, locale, a.id as AppId, "/", dev)}
         style={style}
       >
         {body}

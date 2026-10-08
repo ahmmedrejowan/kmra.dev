@@ -1,11 +1,20 @@
+---
+import { pageLocale } from "../lib/locale";
+import { lp, t as tr } from "../lib/i18n";
+
+const locale = pageLocale(Astro);
+const T = (s: string) => tr(locale, s);
+---
+
 <div class="nf">
   <p class="nf-code">404</p>
-  <h1>This page doesn't exist</h1>
+  <h1>{T("This page doesn't exist")}</h1>
   <p>
-    The link may be old or mistyped. Try one of the tools below, or go back to
-    the homepage.
+    {T(
+      "The link may be old or mistyped. Try one of the tools below, or go back to the homepage.",
+    )}
   </p>
-  <a class="btn acc lg" href="/">
-    Go to the homepage
+  <a class="btn acc lg" href={lp(locale, "/")}>
+    {T("Go to the homepage")}
   </a>
 </div>

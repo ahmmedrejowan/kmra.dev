@@ -1,13 +1,18 @@
 ---
 import { CONTACT } from "@kmra/registry";
 import Icon from "./Icon.astro";
+import { pageLocale } from "../lib/locale";
+import { t as tr } from "../lib/i18n";
+
+const locale = pageLocale(Astro);
+const T = (s: string, v?: Record<string, string>) => tr(locale, s, v);
 ---
 
 <div class="about-lede">
   <p>
-    kmra.dev is a family of small, focused tools for everyday files: images and
-    PDFs today, QR codes next. Each one lives on its own subdomain and does its
-    work in your browser, so it's fast and your files stay private.
+    {T(
+      "kmra.dev is a family of small, focused tools for everyday files: images, PDFs and QR codes. Each one lives on its own subdomain and does its work in your browser, so it's fast and your files stay private.",
+    )}
   </p>
 </div>
 
@@ -16,39 +21,45 @@ import Icon from "./Icon.astro";
     <span class="tile">
       <Icon name="shield" />
     </span>
-    <strong>Private by design</strong>
-    <p>No uploads, no accounts. The tool comes to your file.</p>
+    <strong>{T("Private by design")}</strong>
+    <p>
+      {T(
+        "Everything runs on your device, with no accounts. The tool comes to your file.",
+      )}
+    </p>
   </div>
   <div>
     <span class="tile">
       <Icon name="check" />
     </span>
-    <strong>Only what works</strong>
-    <p>A tool appears here when it's finished, not before.</p>
+    <strong>{T("Only what works")}</strong>
+    <p>{T("A tool appears here when it's finished, not before.")}</p>
   </div>
   <div>
     <span class="tile">
       <Icon name="zap" />
     </span>
-    <strong>Fast and free</strong>
-    <p>No queues, no watermarks, no limits we set.</p>
+    <strong>{T("Fast and free")}</strong>
+    <p>{T("No queues, no watermarks, no limits we set.")}</p>
   </div>
   <div>
     <span class="tile">
       <Icon name="sliders" />
     </span>
-    <strong>Simple first</strong>
-    <p>Two or three controls by default. Advanced when you need it.</p>
+    <strong>{T("Simple first")}</strong>
+    <p>{T("Two or three controls by default. Advanced when you need it.")}</p>
   </div>
 </div>
 
 <section class="block">
   <div class="maker">
     <div>
-      <h2>Who makes it</h2>
+      <h2>{T("Who makes it")}</h2>
       <p>
-        kmra.dev is built and run by {CONTACT.maker}. Ideas, bugs or a tool
-        you'd like to see? Get in touch.
+        {T(
+          "kmra.dev is built and run by {maker}. Ideas, bugs or a tool you'd like to see? Get in touch.",
+          { maker: CONTACT.maker },
+        )}
       </p>
     </div>
     <div class="maker-links">

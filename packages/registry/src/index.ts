@@ -6,6 +6,10 @@
 
 export const ROOT_DOMAIN = "kmra.dev";
 
+import { localizeApp } from "./locales/index.ts";
+export { localizeApp };
+export type { AppContent } from "./locales/index.ts";
+
 /** Who makes kmra, and how to reach them. */
 export const CONTACT = {
   email: "ping@kmra.dev",
@@ -51,7 +55,8 @@ export type IconName =
   | "idCard"
   | "droplet"
   | "camera"
-  | "trash";
+  | "trash"
+  | "languages";
 
 export interface Tool {
   /** URL path segment, e.g. "resize" -> imgtool.kmra.dev/resize */
@@ -116,6 +121,8 @@ export interface App {
   toolGroups?: readonly string[];
   /** Short list for the homepage chips: tool or task slugs */
   popular?: readonly string[];
+  /** Languages this app is published in (first = default). Defaults to English only. */
+  locales?: readonly string[];
 }
 
 export const apps = [
@@ -125,7 +132,7 @@ export const apps = [
     brand: ["Img", "Tool"],
     short: "Images",
     tagline:
-      "Compress, resize, convert, cut out backgrounds and more in your browser. Nothing gets uploaded.",
+      "Compress, resize, convert, cut out backgrounds and more. Everything runs on your device.",
     accent: {
       light: "#0057ff",
       dark: "#4d8bff",
@@ -134,6 +141,7 @@ export const apps = [
     },
     live: true,
     devPort: 4321,
+    locales: ["en", "bn"],
     toolGroups: [
       "Optimize",
       "Edit",
@@ -1006,7 +1014,7 @@ export const apps = [
     brand: ["PDF", "Tool"],
     short: "PDF",
     tagline:
-      "Merge, split, compress and sign PDFs in your browser. Nothing gets uploaded.",
+      "Merge, split, compress and sign PDFs. Everything runs on your device.",
     accent: {
       light: "#e5484d",
       dark: "#ff6b6f",
@@ -1698,10 +1706,11 @@ export interface PageLink {
   ready: boolean;
 }
 
-export function allPages(): PageLink[] {
+export function allPages(locale = "en"): PageLink[] {
   const out: PageLink[] = [];
-  for (const app of apps as readonly App[]) {
-    if (!app.live) continue;
+  for (const raw of apps as readonly App[]) {
+    if (!raw.live) continue;
+    const app = localizeApp(raw, locale);
     const id = app.id as AppId;
     for (const t of app.tools)
       out.push({

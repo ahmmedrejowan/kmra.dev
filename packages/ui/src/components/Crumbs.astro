@@ -1,12 +1,16 @@
 ---
+import { pageLocale } from "../lib/locale";
+import { t as tr } from "../lib/i18n";
+
 interface Props {
   items: readonly { label: string; href?: string }[];
 }
 
 const { items } = Astro.props;
+const locale = pageLocale(Astro);
 ---
 
-<nav class="crumbs" aria-label="Breadcrumb">
+<nav class="crumbs" aria-label={tr(locale, "Breadcrumb")}>
   {items.map((item, i) => (
     <>
       {i > 0 && <span aria-hidden="true">/</span>}

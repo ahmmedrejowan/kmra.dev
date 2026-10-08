@@ -1,24 +1,5 @@
 ---
-import BaseLayout from "@kmra/ui/layouts/BaseLayout.astro";
-import PageHead from "@kmra/ui/components/PageHead.astro";
-import HowItWorks from "@kmra/ui/components/HowItWorks.astro";
-import { getApp } from "@kmra/registry";
-
-const app = getApp("imgtool");
+import InfoPage from "../views/InfoPage.astro";
 ---
 
-<BaseLayout
-  appId="imgtool"
-  title="How your files stay on your device"
-  description="kmra tools run in your browser. Your files are never uploaded, and the site is blocked from sending them anywhere."
->
-  <PageHead
-    crumbs={[{ label: app.name, href: "/" }, { label: "How it works" }]}
-    icon="shield"
-    title="How your files stay on your device"
-    intro="Most online tools upload your file to a server. kmra sends the tool to your browser instead."
-  />
-  <div class="wrap page-body">
-    <HowItWorks />
-  </div>
-</BaseLayout>
+<InfoPage page="how-it-works" />

@@ -8,6 +8,7 @@
     "./layouts/*.astro": "./src/layouts/*.astro",
     "./components/*.astro": "./src/components/*.astro",
     "./components/*": "./src/components/*.tsx",
+    "./lib/i18n-react": "./src/lib/i18n-react.tsx",
     "./lib/*": "./src/lib/*.ts",
     "./package.json": "./package.json",
     "./integration": "./src/integration.ts"
@@ -18,6 +19,7 @@
   "dependencies": {
     "@fontsource-variable/geist": "^5.3.0",
     "@fontsource/geist": "^5.3.0",
+    "@fontsource/noto-sans-bengali": "^5.3.0",
     "@kmra/registry": "workspace:*",
     "@resvg/resvg-js": "^2.6.2",
     "@vercel/analytics": "^2.0.1",

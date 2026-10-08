@@ -1,3 +1,5 @@
+import { LangProvider, useT } from "@kmra/ui/lib/i18n-react";
+import type { Locale } from "@kmra/ui/lib/i18n";
 import { useState } from "react";
 import { Icon } from "@kmra/ui/components/Icon";
 import { downloadBlob, formatBytes } from "@kmra/ui/lib/files";
@@ -70,7 +72,8 @@ async function decodeGif(file: File): Promise<Gif> {
   return { file, w: W, h: H, frames, canvases };
 }
 
-export default function GifFrames() {
+function GifFramesView() {
+  const T = useT();
   const [gif, setGif] = useState<Gif | null>(null);
   const [busy, setBusy] = useState(false);
   const [sel, setSel] = useState<Set<number>>(new Set());
@@ -85,7 +88,7 @@ export default function GifFrames() {
       setGif(g);
       setSel(new Set(g.frames.map((_, i) => i)));
     } catch {
-      toast("This GIF couldn't be read. It may be damaged.");
+      toast(T("This GIF couldn't be read. It may be damaged."));
     } finally {
       setBusy(false);
     }
@@ -93,7 +96,7 @@ export default function GifFrames() {
   const { dragging, pickRef, pick, take } = useFiles({
     onFiles: (f) => void open(f),
     accept: isGif,
-    reject: "That isn't a GIF. Drop an animated .gif file.",
+    reject: T("That isn't a GIF. Drop an animated .gif file."),
   });
 
   async function out(i: number) {
@@ -155,8 +158,8 @@ export default function GifFrames() {
         <DropCard
           dragging={dragging}
           onPick={pick}
-          title={busy ? "Reading frames…" : "Drop a GIF here"}
-          button="Choose a GIF"
+          title={busy ? T("Reading frames…") : T("Drop a GIF here")}
+          button={T("Choose a GIF")}
           formats={["GIF"]}
         />
         {input}
@@ -186,7 +189,7 @@ export default function GifFrames() {
                   aria-pressed={sel.has(i)}
                   onClick={() => toggle(i)}
                 >
-                  <img src={f.url} alt={`Frame ${i + 1}`} />
+                  <img src={f.url} alt={T("Frame {n}", { n: i + 1 })} />
                   <span>
                     {i + 1}
                     <small>{f.delay} ms</small>
@@ -196,7 +199,7 @@ export default function GifFrames() {
             </div>
             <div className="filebar">
               <button type="button" className="fchip add" onClick={pick}>
-                Use another GIF
+                {T("Use another GIF")}
               </button>
             </div>
           </>
@@ -205,21 +208,21 @@ export default function GifFrames() {
           <>
             <dl className="kv">
               <div>
-                <dt>Frames</dt>
+                <dt>{T("Frames")}</dt>
                 <dd>{gif.frames.length}</dd>
               </div>
               <div>
-                <dt>Size</dt>
+                <dt>{T("Size")}</dt>
                 <dd>
                   {gif.w} × {gif.h}, {formatBytes(gif.file.size)}
                 </dd>
               </div>
               <div>
-                <dt>Length</dt>
+                <dt>{T("Length")}</dt>
                 <dd>{(total / 1000).toFixed(2)} s</dd>
               </div>
               <div>
-                <dt>Frame rate</dt>
+                <dt>{T("Frame rate")}</dt>
                 <dd>
                   about {Math.round((gif.frames.length / total) * 1000)} fps
                 </dd>
@@ -234,10 +237,10 @@ export default function GifFrames() {
                   type="button"
                   onClick={() => setSel(new Set(gif.frames.map((_, i) => i)))}
                 >
-                  All
+                  {T("All")}
                 </button>
                 <button type="button" onClick={() => setSel(new Set())}>
-                  None
+                  {T("None")}
                 </button>
                 <button
                   type="button"
@@ -249,7 +252,7 @@ export default function GifFrames() {
                     )
                   }
                 >
-                  Every 2nd
+                  {T("Every 2nd")}
                 </button>
                 <button
                   type="button"
@@ -261,22 +264,22 @@ export default function GifFrames() {
                     )
                   }
                 >
-                  Every 5th
+                  {T("Every 5th")}
                 </button>
               </div>
             </div>
             <Seg<string>
-              label="Save frames as"
+              label={T("Save frames as")}
               options={[
-                ["image/png", "PNG"],
-                ["image/jpeg", "JPEG"],
+                ["image/png", T("PNG")],
+                ["image/jpeg", T("JPEG")],
               ]}
               value={type}
               onPick={setType}
             />
             <div className="result">
               <small>
-                Click frames on the left to pick which ones to save.
+                {T("Click frames on the left to pick which ones to save.")}
               </small>
               <div className="acts">
                 <button
@@ -286,7 +289,9 @@ export default function GifFrames() {
                   onClick={() => void saveZip()}
                 >
                   <Icon name="download" />
-                  {saving ? "Preparing…" : `Download ${sel.size} frames as zip`}
+                  {saving
+                    ? T("Preparing…")
+                    : T("Download {n} frames as zip", { n: sel.size })}
                 </button>
                 <button
                   type="button"
@@ -303,5 +308,14 @@ export default function GifFrames() {
       />
       {input}
     </>
+  );
+}
+
+/** Island entry: sets the interface language for everything inside. */
+export default function GifFrames(props: { lang?: Locale }) {
+  return (
+    <LangProvider lang={props.lang}>
+      <GifFramesView />
+    </LangProvider>
   );
 }

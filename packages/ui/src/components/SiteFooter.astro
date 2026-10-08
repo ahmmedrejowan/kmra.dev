@@ -1,14 +1,21 @@
 ---
-import { apps, CONTACT, getApp, linkTo, type AppId } from "@kmra/registry";
+import { apps, CONTACT, getApp, localizeApp, type AppId } from "@kmra/registry";
 import Wordmark from "./Wordmark.astro";
+import Icon from "./Icon.astro";
 import { markSvg } from "../lib/brand";
+import { appLink, langLinks, pageLocale } from "../lib/locale";
+import { lp, t as tr } from "../lib/i18n";
 
 interface Props {
   appId: AppId;
 }
 
 const { appId } = Astro.props;
-const app = getApp(appId);
+const locale = pageLocale(Astro);
+const T = (s: string, v?: Record<string, string | number>) => tr(locale, s, v);
+const L = (p: string) => lp(locale, p);
+const app = localizeApp(getApp(appId), locale);
+const langs = langLinks(Astro, app);
 const dev = import.meta.env.DEV;
 // Only apps that are live are listed; others appear once they launch.
 const liveApps = apps.filter((a) => a.live);
@@ -30,29 +37,33 @@ const toolList = (readyTools.length ? readyTools : app.tools)
   <div class="wrap">
     <div class="fgrid">
       <div class="fbrand">
-        <a href="/" aria-label={`${app.brand.join("")} home`}>
+        <a
+          href={L("/")}
+          aria-label={T("{brand} home", { brand: app.brand.join("") })}
+        >
           <Wordmark appId={appId} />
         </a>
         <p>
-          Small tools for everyday files. Everything runs in your browser, so
-          your files stay on your device.
+          {T(
+            "Small tools for everyday files. Everything runs in your browser, so your files stay on your device.",
+          )}
         </p>
         <a class="fmail" href={`mailto:${CONTACT.email}`}>
           {CONTACT.email}
         </a>
       </div>
       <div>
-        <strong>Tools</strong>
+        <strong>{T("Tools")}</strong>
         <ul>
           {toolList.map((t) => (
             <li>
-              <a href={`/${t.slug}`}>{t.name}</a>
+              <a href={L(`/${t.slug}`)}>{t.name}</a>
             </li>
           ))}
           {readyTools.length > toolList.length && (
             <li>
-              <a class="fmore" href="/sitemap">
-                All {readyTools.length} tools
+              <a class="fmore" href={L("/sitemap")}>
+                {T("All {n} tools", { n: readyTools.length })}
               </a>
             </li>
           )}
@@ -60,17 +71,17 @@ const toolList = (readyTools.length ? readyTools : app.tools)
       </div>
       {app.tasks.length > 0 && (
         <div>
-          <strong>Use cases</strong>
+          <strong>{T("Use cases")}</strong>
           <ul>
             {app.tasks.slice(0, 7).map((t) => (
               <li>
-                <a href={`/${t.slug}`}>{t.name}</a>
+                <a href={L(`/${t.slug}`)}>{t.name}</a>
               </li>
             ))}
             {app.tasks.length > 7 && (
               <li>
-                <a class="fmore" href="/sitemap#use-cases">
-                  All {app.tasks.length} use cases
+                <a class="fmore" href={L("/sitemap") + "#use-cases"}>
+                  {T("All {n} use cases", { n: app.tasks.length })}
                 </a>
               </li>
             )}
@@ -78,12 +89,12 @@ const toolList = (readyTools.length ? readyTools : app.tools)
         </div>
       )}
       <div>
-        <strong>kmra apps</strong>
+        <strong>{T("kmra apps")}</strong>
         <ul class="fapps">
           {liveApps.map((a) => (
             <li>
               <a
-                href={linkTo(appId, a.id as AppId, "/", dev)}
+                href={appLink(appId, locale, a.id as AppId, "/", dev)}
                 aria-current={a.id === appId ? "true" : undefined}
                 style={`--app:${a.accent.light}`}
               >
@@ -105,27 +116,29 @@ const toolList = (readyTools.length ? readyTools : app.tools)
         </ul>
       </div>
       <div>
-        <strong>About</strong>
+        <strong>{T("About")}</strong>
         <ul>
           <li>
-            <a href="/about">About {app.brand.join("")}</a>
-          </li>
-          <li>
-            <a href="/how-it-works">How it works</a>
-          </li>
-          <li>
-            <a href="/privacy">Privacy</a>
-          </li>
-          <li>
-            <a href={`mailto:${CONTACT.email}`}>Contact</a>
-          </li>
-          <li>
-            <a href="#shortcuts" data-shortcuts>
-              Keyboard shortcuts
+            <a href={L("/about")}>
+              {T("About {brand}", { brand: app.brand.join("") })}
             </a>
           </li>
           <li>
-            <a href="/sitemap">Sitemap</a>
+            <a href={L("/how-it-works")}>{T("How it works")}</a>
+          </li>
+          <li>
+            <a href={L("/privacy")}>{T("Privacy")}</a>
+          </li>
+          <li>
+            <a href={`mailto:${CONTACT.email}`}>{T("Contact")}</a>
+          </li>
+          <li>
+            <a href="#shortcuts" data-shortcuts>
+              {T("Keyboard shortcuts")}
+            </a>
+          </li>
+          <li>
+            <a href={L("/sitemap")}>{T("Sitemap")}</a>
           </li>
           <li>
             <a href={CONTACT.portfolio} rel="noopener" target="_blank">
@@ -142,8 +155,23 @@ const toolList = (readyTools.length ? readyTools : app.tools)
     </div>
     <div class="fbottom">
       <span>© {year} kmra.dev</span>
+      {langs.length > 1 && (
+        <nav class="flangs" aria-label={T("Language")}>
+          <Icon name="languages" />
+          {langs.map((l) => (
+            <a
+              href={l.href}
+              hreflang={l.code}
+              lang={l.code}
+              aria-current={l.current ? "true" : undefined}
+            >
+              {l.native}
+            </a>
+          ))}
+        </nav>
+      )}
       <span>
-        Made by{" "}
+        {T("Made by")}{" "}
         <a href={CONTACT.portfolio} rel="noopener" target="_blank">
           {CONTACT.maker}
         </a>

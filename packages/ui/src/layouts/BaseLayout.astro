@@ -6,7 +6,6 @@ import {
   apps,
   brandName,
   getApp,
-  linkTo,
   type AppId,
 } from "@kmra/registry";
 import SiteHeader from "../components/SiteHeader.astro";
@@ -16,6 +15,12 @@ import MoreAppsCta from "../components/MoreAppsCta.astro";
 import Shortcuts from "../components/Shortcuts";
 // Cookieless page counts, served from the site's own domain on Vercel (allowed by the CSP)
 import Analytics from "@vercel/analytics/astro";
+import { localizeApp } from "@kmra/registry";
+import { appLink, langLinks, pageLocale } from "../lib/locale";
+import { LOCALES, lp, t as tr } from "../lib/i18n";
+import "@fontsource/noto-sans-bengali/400.css";
+import "@fontsource/noto-sans-bengali/600.css";
+import "@fontsource/noto-sans-bengali/700.css";
 
 interface Props {
   appId: AppId;
@@ -28,10 +33,6 @@ interface Props {
   noindex?: boolean;
   /** Extra JSON-LD objects for this page */
   schema?: Record<string, unknown>[];
-  /** Page language (default English) */
-  lang?: "en" | "bn";
-  /** The same page in other languages, for hreflang links */
-  alternates?: readonly { lang: "en" | "bn"; path: string }[];
 }
 
 const {
@@ -41,10 +42,12 @@ const {
   og,
   noindex = false,
   schema = [],
-  lang = "en",
-  alternates = [],
 } = Astro.props;
-const app = getApp(appId);
+// Language comes from the URL (/bn/... is Bangla); hreflang links come from the app's languages.
+const lang = pageLocale(Astro);
+const T = (s: string) => tr(lang, s);
+const app = localizeApp(getApp(appId), lang);
+const alternates = langLinks(Astro, app);
 const brand = brandName(app);
 const dev = import.meta.env.DEV;
 const site = Astro.site ?? new URL(appOrigin(appId));
@@ -54,7 +57,9 @@ const path = Astro.url.pathname
   .replace(/(index)?\.html$/, "")
   .replace(/(.)\/$/, "$1");
 const canonical = new URL(path, site).toString();
-const ogSlug = og ?? (path === "/" ? "index" : path.slice(1));
+// Translated pages share the English page's preview image
+const basePath = path.replace(new RegExp(`^/${lang}(?=/|$)`), "") || "/";
+const ogSlug = og ?? (basePath === "/" ? "index" : basePath.slice(1));
 const ogImage = new URL(`/og/${ogSlug}.png`, site).toString();
 const fullTitle = `${title} · ${brand}`;
 const accentStyle = `--acc-l:${app.accent.light};--acc-d:${app.accent.dark};--acc-soft-l:${app.accent.softLight};--acc-soft-d:${app.accent.softDark}`;
@@ -76,8 +81,12 @@ const jsonLd = [
 ];
 
 // Current app first, then other live apps.
-const appName = (id: AppId) => apps.find((a) => a.id === id)?.short ?? id;
-const pages = allPages().sort(
+const appName = (id: AppId) =>
+  localizeApp(
+    apps.find((a) => a.id === id)!,
+    lang,
+  ).short ?? id;
+const pages = allPages(lang).sort(
   (a, b) => Number(b.app === appId) - Number(a.app === appId),
 );
 const paletteItems: PaletteItem[] = [
@@ -85,43 +94,49 @@ const paletteItems: PaletteItem[] = [
     group:
       p.app === appId
         ? p.kind === "task"
-          ? "Use cases"
-          : "Tools"
-        : `${appName(p.app)} tools`,
+          ? T("Use cases")
+          : T("Tools")
+        : tr(lang, "{app} tools", { app: appName(p.app) }),
     name: p.name,
-    hint: p.kind === "task" ? p.hint : p.ready ? appName(p.app) : "Soon",
-    href: linkTo(appId, p.app, `/${p.slug}`, dev),
+    hint: p.kind === "task" ? p.hint : p.ready ? appName(p.app) : T("Soon"),
+    href: appLink(appId, lang, p.app, `/${p.slug}`, dev),
     icon: p.icon,
   })),
   ...(appId === "imgtool"
     ? [
         {
-          group: "Tools",
-          name: "Image editor",
-          hint: "All tools",
-          href: "/editor",
+          group: T("Tools"),
+          name: T("Image editor"),
+          hint: T("All tools"),
+          href: lp(lang, "/editor"),
           icon: "sliders" as const,
         },
       ]
     : []),
   {
-    group: "Help",
-    name: "How it works",
-    hint: "Privacy",
-    href: "/how-it-works",
+    group: T("Help"),
+    name: T("How it works"),
+    hint: T("Privacy"),
+    href: lp(lang, "/how-it-works"),
     icon: "shield",
   },
   {
-    group: "Help",
-    name: "Privacy",
-    hint: "What we store",
-    href: "/privacy",
+    group: T("Help"),
+    name: T("Privacy"),
+    hint: T("What we store"),
+    href: lp(lang, "/privacy"),
     icon: "shield",
   },
-  { group: "Help", name: "About", hint: brand, href: "/about", icon: "layers" },
   {
-    group: "Help",
-    name: "Keyboard shortcuts",
+    group: T("Help"),
+    name: T("About"),
+    hint: brand,
+    href: lp(lang, "/about"),
+    icon: "layers",
+  },
+  {
+    group: T("Help"),
+    name: T("Keyboard shortcuts"),
     hint: "?",
     href: "#shortcuts",
     icon: "sliders",
@@ -161,28 +176,26 @@ const paletteItems: PaletteItem[] = [
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
     <meta property="og:image:alt" content={`${title}, ${brand} by kmra.dev`} />
-    <meta property="og:locale" content={lang === "bn" ? "bn_BD" : "en_US"} />
-    {alternates.length > 0 && (
+    <meta
+      property="og:locale"
+      content={LOCALES.find((l) => l.code === lang)?.og ?? "en_US"}
+    />
+    {alternates.length > 1 && (
       <>
-        <link rel="alternate" hreflang={lang} href={canonical} />
         {alternates.map((a) => (
           <link
             rel="alternate"
-            hreflang={a.lang}
-            href={new URL(a.path, site).toString()}
+            hreflang={a.code}
+            href={new URL(a.href, site).toString()}
           />
         ))}
         <link
           rel="alternate"
           hreflang="x-default"
-          href={
-            lang === "en"
-              ? canonical
-              : new URL(
-                  alternates.find((a) => a.lang === "en")?.path ?? "/",
-                  site,
-                ).toString()
-          }
+          href={new URL(
+            alternates.find((a) => a.code === "en")!.href,
+            site,
+          ).toString()}
         />
       </>
     )}
@@ -202,18 +215,18 @@ const paletteItems: PaletteItem[] = [
   </head>
   <body>
     <a href="#main" class="sr-only skip">
-      Skip to content
+      {T("Skip to content")}
     </a>
     <SiteHeader appId={appId} />
     <main id="main">
       <slot />
     </main>
-    <aside class="wrap cta-wrap" aria-label="More from kmra">
+    <aside class="wrap cta-wrap" aria-label={T("More from kmra")}>
       <MoreAppsCta appId={appId} />
     </aside>
     <SiteFooter appId={appId} />
-    <CommandPalette client:idle items={paletteItems} />
-    <Shortcuts client:idle />
+    <CommandPalette client:idle items={paletteItems} lang={lang} />
+    <Shortcuts client:idle lang={lang} />
     <Analytics />
     <script is:inline>
       // Offline support: the service worker caches every page and tool (production only)

@@ -1,17 +1,24 @@
 ---
+import { pageLocale } from "../lib/locale";
+import { num, t as tr } from "../lib/i18n";
+
 interface Props {
   steps: readonly string[];
   items: readonly { q: string; a: string }[];
 }
 
 const { steps, items } = Astro.props;
+const locale = pageLocale(Astro);
 ---
 
-<section class="infocard" aria-label="How it works and common questions">
+<section
+  class="infocard"
+  aria-label={tr(locale, "How it works and common questions")}
+>
   <ol class="info-steps">
     {steps.map((s, i) => (
       <li>
-        <b>{i + 1}</b>
+        <b>{num(locale, i + 1)}</b>
         <span>{s}</span>
       </li>
     ))}

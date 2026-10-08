@@ -5,6 +5,7 @@ import { downloadBlob, IMAGE_ACCEPT, isImageFile } from "../lib/files";
 import { takeFiles } from "../lib/handoff";
 import { pasteHint } from "../lib/keys";
 import { toast } from "../lib/toast";
+import { useLang, useT } from "../lib/i18n-react";
 
 /**
  * Shared pieces for the tools that aren't a single-image pipeline (analyze, collage, split,
@@ -20,6 +21,7 @@ export function useFiles(opts: {
 }) {
   const [dragging, setDragging] = useState(false);
   const pickRef = useRef<HTMLInputElement>(null);
+  const tt = useT();
   const cb = useRef(opts);
   cb.current = opts;
 
@@ -28,7 +30,7 @@ export function useFiles(opts: {
     if (!ok.length) {
       toast(
         cb.current.reject ??
-          "That isn't an image. Try JPEG, PNG, WebP, GIF or AVIF.",
+          tt("That isn't an image. Try JPEG, PNG, WebP, GIF or AVIF."),
       );
       return;
     }
@@ -97,8 +99,8 @@ export function FileInput({
 
 /** The big empty-state drop card used by every tool. */
 export function DropCard({
-  title = "Drop images here",
-  button = "Choose images",
+  title,
+  button,
   formats = ["JPG", "PNG", "WebP", "GIF", "AVIF"],
   dragging,
   onPick,
@@ -111,15 +113,19 @@ export function DropCard({
   onPick: () => void;
   children?: ReactNode;
 }) {
-  const [hint, setHint] = useState("or paste with ⌘V. Nothing is uploaded.");
-  useEffect(() => setHint(pasteHint()), []);
+  const tt = useT();
+  const lang = useLang();
+  const [hint, setHint] = useState(
+    tt("or paste with ⌘V. Your files stay on your device."),
+  );
+  useEffect(() => setHint(pasteHint(lang)), [lang]);
   return (
     <div className="dropcard lg">
       <div className={`dropzone${dragging ? " over" : ""}`} onClick={onPick}>
         <div className="big">
           <Icon name="upload" />
         </div>
-        <strong>{title}</strong>
+        <strong>{title ?? tt("Drop images here")}</strong>
         <span className="muted">{hint}</span>
         <div className="row">
           <button
@@ -131,7 +137,7 @@ export function DropCard({
             }}
           >
             <Icon name="upload" />
-            {button}
+            {button ?? tt("Choose images")}
           </button>
         </div>
         <div className="formats">
@@ -145,18 +151,22 @@ export function DropCard({
   );
 }
 
-export async function copyText(text: string, what = "Copied") {
+export async function copyText(
+  text: string,
+  what = "Copied",
+  failed = "Couldn't copy. Select the text and copy it yourself.",
+) {
   try {
     await navigator.clipboard.writeText(text);
-    toast(`${what} to the clipboard.`);
+    toast(what);
   } catch {
-    toast("Couldn't copy. Select the text and copy it yourself.");
+    toast(failed);
   }
 }
 
 export function CopyBtn({
   text,
-  label = "Copy",
+  label,
   what,
   className = "btn sm",
 }: {
@@ -165,14 +175,21 @@ export function CopyBtn({
   what?: string;
   className?: string;
 }) {
+  const tt = useT();
   return (
     <button
       type="button"
       className={className}
-      onClick={() => void copyText(text, what)}
+      onClick={() =>
+        void copyText(
+          text,
+          tt(what ?? "Copied"),
+          tt("Couldn't copy. Select the text and copy it yourself."),
+        )
+      }
     >
       <Icon name="copy" />
-      {label}
+      {label ?? tt("Copy")}
     </button>
   );
 }

@@ -1,6 +1,11 @@
 ---
 import { CONTACT } from "@kmra/registry";
 import Icon from "./Icon.astro";
+import { pageLocale } from "../lib/locale";
+import { num, t as tr } from "../lib/i18n";
+
+const locale = pageLocale(Astro);
+const T = (s: string) => tr(locale, s);
 
 const steps = [
   {
@@ -24,14 +29,14 @@ const steps = [
 <ol class="timeline">
   {steps.map((s, i) => (
     <li>
-      <span class="tl-dot">{i + 1}</span>
+      <span class="tl-dot">{num(locale, i + 1)}</span>
       <div class="tl-body">
         <span class="tile">
           <Icon name={s.icon} />
         </span>
         <div>
-          <strong>{s.title}</strong>
-          <p>{s.text}</p>
+          <strong>{T(s.title)}</strong>
+          <p>{T(s.text)}</p>
         </div>
       </div>
     </li>
@@ -43,26 +48,30 @@ const steps = [
     <span class="tile">
       <Icon name="shield" />
     </span>
-    <h2>Blocked by design</h2>
+    <h2>{T("Blocked by design")}</h2>
     <p>
-      Every kmra site sends a security policy that stops the page from
-      contacting any other server. Even if there were a bug, your browser would
-      refuse to send your file anywhere.
+      {T(
+        "Every kmra site sends a security policy that stops the page from contacting any other server. Even if there were a bug, your browser would refuse to send your file anywhere.",
+      )}
     </p>
   </section>
   <section class="card-block">
     <span class="tile">
       <Icon name="search" />
     </span>
-    <h2>Check it yourself</h2>
+    <h2>{T("Check it yourself")}</h2>
     <ol class="mini-steps">
-      <li>Open your browser's developer tools.</li>
-      <li>Choose the Network tab.</li>
-      <li>Use any tool. Nothing is sent while your file is processed.</li>
+      <li>{T("Open your browser's developer tools.")}</li>
+      <li>{T("Choose the Network tab.")}</li>
+      <li>
+        {T("Use any tool. Nothing is sent while your file is processed.")}
+      </li>
     </ol>
   </section>
 </div>
 
 <p class="page-note">
-  Questions? Email <a href={`mailto:${CONTACT.email}`}>{CONTACT.email}</a>.
+  {T("Questions? Email")}{" "}
+  <a href={`mailto:${CONTACT.email}`}>{CONTACT.email}</a>
+  {locale === "bn" ? "।" : "."}
 </p>

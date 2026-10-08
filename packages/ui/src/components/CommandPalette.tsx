@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import type { IconKey } from "../lib/icons";
 import { matches, typing } from "../lib/keys";
 import { Icon } from "./Icon";
+import { t, type Locale } from "../lib/i18n";
 
 export interface PaletteItem {
   group: string;
@@ -12,7 +13,14 @@ export interface PaletteItem {
 }
 
 /** ⌘K / Ctrl+K search across every tool and task on every kmra app. */
-export default function CommandPalette({ items }: { items: PaletteItem[] }) {
+export default function CommandPalette({
+  items,
+  lang = "en",
+}: {
+  items: PaletteItem[];
+  lang?: Locale;
+}) {
+  const T = (s: string) => t(lang, s);
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [sel, setSel] = useState(0);
@@ -76,15 +84,15 @@ export default function CommandPalette({ items }: { items: PaletteItem[] }) {
         className="palette"
         role="dialog"
         aria-modal="true"
-        aria-label="Search tools"
+        aria-label={T("Search tools")}
       >
         <div className="in">
           <Icon name="search" />
           <input
             ref={inputRef}
             value={query}
-            placeholder="Search tools and tasks…"
-            aria-label="Search tools and tasks"
+            placeholder={T("Search tools and tasks…")}
+            aria-label={T("Search tools and tasks")}
             role="combobox"
             aria-expanded="true"
             aria-controls="palette-list"
@@ -111,7 +119,7 @@ export default function CommandPalette({ items }: { items: PaletteItem[] }) {
         <ul id="palette-list" role="listbox">
           {results.length === 0 && (
             <li className="grp">
-              No matches. Try "compress", "webp" or "instagram".
+              {T('No matches. Try "compress", "webp" or "instagram".')}
             </li>
           )}
           {results.map((item, i) => {

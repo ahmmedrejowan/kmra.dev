@@ -212,7 +212,7 @@ export async function ogPng({
         [
           ...[
             "Runs in your browser",
-            "Nothing is uploaded",
+            "Your files stay on your device",
             "Free, no sign-up",
           ].map((t) =>
             h("div", { display: "flex", alignItems: "center", gap: 10 }, [

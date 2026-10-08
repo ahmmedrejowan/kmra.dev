@@ -1,3 +1,5 @@
+import { LangProvider, useT } from "@kmra/ui/lib/i18n-react";
+import type { Locale } from "@kmra/ui/lib/i18n";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Icon } from "@kmra/ui/components/Icon";
 import { downloadBlob } from "@kmra/ui/lib/files";
@@ -167,7 +169,8 @@ function draw(
   });
 }
 
-export default function Collage() {
+function CollageView() {
+  const T = useT();
   const [pics, setPics] = useState<Pic[]>([]);
   const [layout, setLayout] = useState("grid");
   const [shape, setShape] = useState("1:1");
@@ -183,7 +186,12 @@ export default function Collage() {
   async function add(files: File[]) {
     const room = MAX - pics.length;
     if (files.length > room)
-      toast(`A collage holds up to ${MAX} photos. Added the first ${room}.`);
+      toast(
+        T("A collage holds up to {max} photos. Added the first {n}.", {
+          max: MAX,
+          n: room,
+        }),
+      );
     const out: Pic[] = [];
     for (const f of files.slice(0, room)) {
       try {
@@ -194,7 +202,7 @@ export default function Collage() {
           bmp: await decode(f),
         });
       } catch {
-        toast(`${f.name} couldn't be opened.`);
+        toast(T("{name} couldn't be opened.", { name: f.name }));
       }
     }
     setPics((p) => [...p, ...out]);
@@ -266,8 +274,8 @@ export default function Collage() {
         <DropCard
           dragging={dragging}
           onPick={pick}
-          title="Drop 2 to 12 photos"
-          button="Choose photos"
+          title={T("Drop 2 to 12 photos")}
+          button={T("Choose photos")}
         />
         {input}
       </>
@@ -283,7 +291,7 @@ export default function Collage() {
               ref={ref}
               className="still collage-canvas"
               onClick={onCanvasClick}
-              aria-label="Collage preview. Click two photos to swap them."
+              aria-label={T("Collage preview. Click two photos to swap them.")}
             />
             <div className="filebar">
               {pics.map((p, i) => (
@@ -300,7 +308,7 @@ export default function Collage() {
                   <button
                     type="button"
                     className="iconbtn"
-                    aria-label={`Remove ${p.name}`}
+                    aria-label={T("Remove {name}", { name: p.name })}
                     onClick={() => {
                       setPics((list) => list.filter((x) => x.key !== p.key));
                       setSel(null);
@@ -312,7 +320,7 @@ export default function Collage() {
               ))}
               {pics.length < MAX && (
                 <button type="button" className="fchip add" onClick={pick}>
-                  + Add
+                  {T("+ Add")}
                 </button>
               )}
             </div>
@@ -321,7 +329,7 @@ export default function Collage() {
         panel={
           <>
             <div className="ctl">
-              <span className="lbl">Layout</span>
+              <span className="lbl">{T("Layout")}</span>
               <div className="chips">
                 {options.map((l) => (
                   <button
@@ -330,7 +338,7 @@ export default function Collage() {
                     aria-pressed={current.id === l.id}
                     onClick={() => setLayout(l.id)}
                   >
-                    {l.label}
+                    {T(l.label)}
                   </button>
                 ))}
               </div>
@@ -338,11 +346,11 @@ export default function Collage() {
                 className="muted"
                 style={{ display: "block", marginTop: 8 }}
               >
-                Click two photos in the preview to swap them.
+                {T("Click two photos in the preview to swap them.")}
               </small>
             </div>
             <div className="ctl">
-              <span className="lbl">Shape</span>
+              <span className="lbl">{T("Shape")}</span>
               <div className="chips">
                 {SHAPES.map((s) => (
                   <button
@@ -351,13 +359,13 @@ export default function Collage() {
                     aria-pressed={shape === s.id}
                     onClick={() => setShape(s.id)}
                   >
-                    {s.label}
+                    {T(s.label)}
                   </button>
                 ))}
               </div>
             </div>
             <Slider
-              label="Spacing"
+              label={T("Spacing")}
               value={gap}
               max={8}
               step={0.25}
@@ -365,25 +373,25 @@ export default function Collage() {
               onChange={setGap}
             />
             <Slider
-              label="Rounded corners"
+              label={T("Rounded corners")}
               value={radius}
               max={10}
               step={0.25}
               unit="%"
               onChange={setRadius}
             />
-            <ColorPick label="Background" value={bg} onPick={setBg} />
+            <ColorPick label={T("Background")} value={bg} onPick={setBg} />
             <Seg<number>
-              label="Size (long side)"
+              label={T("Size (long side)")}
               options={SIZES.map((v) => [v, `${v}`] as [number, string])}
               value={size}
               onPick={setSize}
             />
             <Seg<string>
-              label="Save as"
+              label={T("Save as")}
               options={[
-                ["image/jpeg", "JPEG"],
-                ["image/png", "PNG"],
+                ["image/jpeg", T("JPEG")],
+                ["image/png", T("PNG")],
               ]}
               value={type}
               onPick={setType}
@@ -400,7 +408,7 @@ export default function Collage() {
                   onClick={() => void save()}
                 >
                   <Icon name="download" />
-                  {saving ? "Preparing…" : "Download collage"}
+                  {saving ? T("Preparing…") : T("Download collage")}
                 </button>
               </div>
             </div>
@@ -409,5 +417,14 @@ export default function Collage() {
       />
       {input}
     </>
+  );
+}
+
+/** Island entry: sets the interface language for everything inside. */
+export default function Collage(props: { lang?: Locale }) {
+  return (
+    <LangProvider lang={props.lang}>
+      <CollageView />
+    </LangProvider>
   );
 }

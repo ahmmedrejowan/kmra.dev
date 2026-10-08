@@ -1,3 +1,5 @@
+import { LangProvider, useT } from "@kmra/ui/lib/i18n-react";
+import type { Locale } from "@kmra/ui/lib/i18n";
 import {
   useCallback,
   useEffect,
@@ -42,7 +44,6 @@ import {
   TextCtl,
 } from "./FxControls";
 import { FILTERS, NO_ADJUST, NO_FRAME, SHEETS } from "../lib/fx";
-import { BN_TOOL } from "../i18n/bn";
 import {
   applyForm,
   applyPreset,
@@ -157,27 +158,8 @@ function outName(file: File, type: string): string {
   return `${base}-kmra.${EXT[type as Format] ?? "img"}`;
 }
 
-const EN = {
-  drop: "Drop images here",
-  pasteHint: "",
-  choose: "Choose images",
-  download: "Download",
-  downloadZip: (n: number) => `Download all ${n} as zip`,
-  each: "Save each separately",
-  onlyThis: "Only this one",
-  more: "More options in Advanced",
-  working: "Working…",
-  addFirst: "Add an image to see the result.",
-  to: "to",
-  smaller: "smaller",
-  larger: "larger",
-  add: "+ Add",
-  opensAdvanced: "Opens in the Advanced workspace",
-  best: "Best quality that fits",
-};
-
-export default function ImageTool({ tool, preset, tools, lang = "en" }: Props) {
-  const L = lang === "bn" ? BN_TOOL : EN;
+function ImageToolView({ tool, preset, tools, lang = "en" }: Props) {
+  const T = useT();
   const editor = tool === "editor";
   const [items, setItems] = useState<Item[]>([]);
   const [cur, setCur] = useState(0);
@@ -197,7 +179,7 @@ export default function ImageTool({ tool, preset, tools, lang = "en" }: Props) {
   const [keys, setKeys] = useState({
     paste: "⌘V",
     mod: "⌘",
-    hint: "or paste with ⌘V. Nothing is uploaded.",
+    hint: T("or paste with ⌘V. Your files stay on your device."),
     touch: false,
   });
   useEffect(
@@ -205,7 +187,7 @@ export default function ImageTool({ tool, preset, tools, lang = "en" }: Props) {
       setKeys({
         paste: formatKeys("mod+V"),
         mod: formatKeys("mod"),
-        hint: pasteHint(),
+        hint: pasteHint(lang),
         touch: isTouch(),
       }),
     [],
@@ -230,7 +212,7 @@ export default function ImageTool({ tool, preset, tools, lang = "en" }: Props) {
   const addFiles = useCallback(async (list: FileList | File[]) => {
     const files = [...list].filter(isImageFile);
     if (!files.length) {
-      toast("That isn't an image. Try JPEG, PNG, WebP, HEIC, GIF or AVIF.");
+      toast(T("That isn't an image. Try JPEG, PNG, WebP, HEIC, GIF or AVIF."));
       return;
     }
     const added: Item[] = [];
@@ -248,7 +230,10 @@ export default function ImageTool({ tool, preset, tools, lang = "en" }: Props) {
         });
       } catch {
         toast(
-          `${picked.name} couldn't be opened. It may be damaged or in a format your browser can't read.`,
+          T(
+            "{name} couldn't be opened. It may be damaged or in a format your browser can't read.",
+            { name: picked.name },
+          ),
         );
       }
     }
@@ -416,7 +401,9 @@ export default function ImageTool({ tool, preset, tools, lang = "en" }: Props) {
       } catch {
         if (id === reqRef.current)
           setError(
-            "Processing failed. The image may be too large for this device's memory.",
+            T(
+              "Processing failed. The image may be too large for this device's memory.",
+            ),
           );
       } finally {
         if (id === reqRef.current) setBusy(false);
@@ -572,7 +559,7 @@ export default function ImageTool({ tool, preset, tools, lang = "en" }: Props) {
         "kmra-images.zip",
       );
     } catch {
-      toast("Couldn't build the zip. Try fewer or smaller images.");
+      toast(T("Couldn't build the zip. Try fewer or smaller images."));
     } finally {
       setZipping(false);
     }
@@ -589,10 +576,13 @@ export default function ImageTool({ tool, preset, tools, lang = "en" }: Props) {
       }
       if (files.length > 1)
         toast(
-          `Saved ${files.length} files. If some are missing, allow multiple downloads for this site.`,
+          T(
+            "Saved {n} files. If some are missing, allow multiple downloads for this site.",
+            { n: files.length },
+          ),
         );
     } catch {
-      toast("Couldn't save the files. Try fewer or smaller images.");
+      toast(T("Couldn't save the files. Try fewer or smaller images."));
     } finally {
       setZipping(false);
     }
@@ -632,25 +622,25 @@ export default function ImageTool({ tool, preset, tools, lang = "en" }: Props) {
       >
         <img
           src={it.url}
-          alt={`Original: ${it.file.name}`}
+          alt={T("Original: {name}", { name: it.file.name })}
           ref={solo ? undefined : shownRef}
           style={solo ? undefined : sized(it.w)}
         />
         <img
           className="after"
           src={outForItem?.url ?? it.url}
-          alt="Result"
+          alt={T("Result")}
           ref={solo ? shownRef : undefined}
           style={solo && outForItem ? sized(outForItem.w) : undefined}
         />
         <div className="line" />
         <span className="lab" style={{ left: 10 }}>
-          Original
+          {T("Original")}
         </span>
         <span className="lab" style={{ right: 10 }}>
           {outForItem
             ? `${FORMATS[outForItem.type as Format]} ${formatBytes(outForItem.blob.size)}`
-            : "Result"}
+            : T("Result")}
         </span>
         <input
           type="range"
@@ -658,7 +648,7 @@ export default function ImageTool({ tool, preset, tools, lang = "en" }: Props) {
           max={98}
           value={cut}
           onChange={(e) => setCut(+e.target.value)}
-          aria-label="Drag to compare original and result"
+          aria-label={T("Drag to compare original and result")}
         />
       </div>
     );
@@ -690,7 +680,7 @@ export default function ImageTool({ tool, preset, tools, lang = "en" }: Props) {
     isLossy(type) ? (
       <div className="ctl">
         <label htmlFor={id}>
-          Quality <span>{s.target ? "Auto" : s.quality}</span>
+          Quality <span>{s.target ? T("Auto") : s.quality}</span>
         </label>
         <input
           id={id}
@@ -704,14 +694,17 @@ export default function ImageTool({ tool, preset, tools, lang = "en" }: Props) {
       </div>
     ) : (
       <p className="muted" style={{ margin: 0, fontSize: 14 }}>
-        PNG is lossless, so there's no quality setting. Pick JPEG or WebP for
-        smaller files.
+        {T(
+          T(
+            "PNG is lossless, so there's no quality setting. Pick JPEG or WebP for smaller files.",
+          ),
+        )}
       </p>
     );
 
   const targetCtl = (short = false) => (
     <div className="ctl">
-      <span className="lbl">Exact size</span>
+      <span className="lbl">{T("Exact size")}</span>
       <div className="chips">
         {[null, ...TARGETS].map((v) => (
           <button
@@ -721,10 +714,10 @@ export default function ImageTool({ tool, preset, tools, lang = "en" }: Props) {
             onClick={() => set({ target: v, form: null })}
           >
             {v
-              ? `${short ? "≤" : "Under"} ${v} KB`
+              ? `${short ? "≤" : T("Under")} ${v} KB`
               : short
-                ? "Any size"
-                : "Off"}
+                ? T("Any size")
+                : T("Off")}
           </button>
         ))}
       </div>
@@ -747,7 +740,7 @@ export default function ImageTool({ tool, preset, tools, lang = "en" }: Props) {
   const dimsCtl = item && (
     <>
       <div className="ctl">
-        <span className="lbl">Size in pixels</span>
+        <span className="lbl">{T("Size in pixels")}</span>
         <div className="row2">
           <input
             className="num"
@@ -756,14 +749,14 @@ export default function ImageTool({ tool, preset, tools, lang = "en" }: Props) {
             placeholder={String(item.w)}
             value={s.w ?? ""}
             onChange={(e) => setDim("w", e.target.value)}
-            aria-label="Width in pixels"
+            aria-label={T("Width in pixels")}
           />
           <button
             type="button"
             className="lockbtn"
             aria-pressed={s.lock}
-            aria-label="Keep aspect ratio"
-            title="Keep aspect ratio"
+            aria-label={T("Keep aspect ratio")}
+            title={T("Keep aspect ratio")}
             onClick={() => set({ lock: !s.lock, size: null })}
           >
             <Icon name="lock" />
@@ -775,12 +768,12 @@ export default function ImageTool({ tool, preset, tools, lang = "en" }: Props) {
             placeholder={String(item.h)}
             value={s.h ?? ""}
             onChange={(e) => setDim("h", e.target.value)}
-            aria-label="Height in pixels"
+            aria-label={T("Height in pixels")}
           />
         </div>
       </div>
       <div className="ctl">
-        <span className="lbl">Presets</span>
+        <span className="lbl">{T("Presets")}</span>
         <div className="chips">
           {SIZES.map((p) => (
             <button
@@ -789,7 +782,7 @@ export default function ImageTool({ tool, preset, tools, lang = "en" }: Props) {
               aria-pressed={s.size === p.id}
               onClick={() => setS((prev) => applySize(prev, p.id))}
             >
-              {p.label}
+              {T(p.label)}
             </button>
           ))}
           {(s.w || s.h || s.size) && (
@@ -797,7 +790,7 @@ export default function ImageTool({ tool, preset, tools, lang = "en" }: Props) {
               type="button"
               onClick={() => set({ w: null, h: null, size: null, lock: true })}
             >
-              Original size
+              {T("Original size")}
             </button>
           )}
         </div>
@@ -806,10 +799,10 @@ export default function ImageTool({ tool, preset, tools, lang = "en" }: Props) {
   );
 
   const formatOpts = (withOriginal: boolean): [string, string][] => [
-    ...(withOriginal ? ([["keep", "Original"]] as [string, string][]) : []),
-    ["image/jpeg", "JPEG"],
-    ["image/png", "PNG"],
-    ["image/webp", "WebP"],
+    ...(withOriginal ? ([["keep", T("Original")]] as [string, string][]) : []),
+    ["image/jpeg", T("JPEG")],
+    ["image/png", T("PNG")],
+    ["image/webp", T("WebP")],
   ];
   const formatValue = s.keepFormat ? "keep" : s.type;
   const pickFormat = (v: string) =>
@@ -827,14 +820,14 @@ export default function ImageTool({ tool, preset, tools, lang = "en" }: Props) {
 
   const cropCtl = (
     <div className="ctl">
-      <span className="lbl">Aspect ratio</span>
+      <span className="lbl">{T("Aspect ratio")}</span>
       <div className="chips">
         <button
           type="button"
           aria-pressed={s.ratio === null}
           onClick={() => pickRatio(null)}
         >
-          Free
+          {T("Free")}
         </button>
         {RATIOS.map((r) => (
           <button
@@ -851,12 +844,12 @@ export default function ImageTool({ tool, preset, tools, lang = "en" }: Props) {
             type="button"
             onClick={() => set({ crop: null, ratio: null })}
           >
-            Reset
+            {T("Reset")}
           </button>
         )}
       </div>
       <small className="muted" style={{ display: "block", marginTop: 8 }}>
-        Drag the frame on the image, or use the corners to resize.
+        {T("Drag the frame on the image, or use the corners to resize.")}
       </small>
     </div>
   );
@@ -875,11 +868,11 @@ export default function ImageTool({ tool, preset, tools, lang = "en" }: Props) {
       <div className="tbtns">
         <button type="button" className="btn sm" onClick={() => turn(-90)}>
           <Icon name="rotate" />
-          Left
+          {T("Left")}
         </button>
         <button type="button" className="btn sm" onClick={() => turn(90)}>
           <Icon name="rotateRight" />
-          Right
+          {T("Right")}
         </button>
         <button
           type="button"
@@ -888,7 +881,7 @@ export default function ImageTool({ tool, preset, tools, lang = "en" }: Props) {
           onClick={() => setS((p) => ({ ...p, flipH: !p.flipH }))}
         >
           <Icon name="flipH" />
-          Flip ↔
+          {T("Flip ↔")}
         </button>
         <button
           type="button"
@@ -897,7 +890,7 @@ export default function ImageTool({ tool, preset, tools, lang = "en" }: Props) {
           onClick={() => setS((p) => ({ ...p, flipV: !p.flipV }))}
         >
           <Icon name="flipV" />
-          Flip ↕
+          {T("Flip ↕")}
         </button>
       </div>
     </div>
@@ -905,14 +898,14 @@ export default function ImageTool({ tool, preset, tools, lang = "en" }: Props) {
 
   const saveAsCtl = (
     <div className="ctl">
-      <span className="lbl">Save as</span>
-      {seg<string>(formatOpts(true), formatValue, pickFormat, "Save as")}
+      <span className="lbl">{T("Save as")}</span>
+      {seg<string>(formatOpts(true), formatValue, pickFormat, T("Save as"))}
     </div>
   );
 
   const formCtl = (
     <div className="ctl">
-      <span className="lbl">Form presets</span>
+      <span className="lbl">{T("Form presets")}</span>
       <div className="presets">
         {FORM_PRESETS.map((f) => (
           <button
@@ -921,8 +914,8 @@ export default function ImageTool({ tool, preset, tools, lang = "en" }: Props) {
             aria-pressed={s.form === f.id}
             onClick={() => setS((p) => applyForm(p, f.id))}
           >
-            <strong>{f.label}</strong>
-            <small>{f.hint}</small>
+            <strong>{T(f.label)}</strong>
+            <small>{T(f.hint)}</small>
           </button>
         ))}
       </div>
@@ -943,7 +936,9 @@ export default function ImageTool({ tool, preset, tools, lang = "en" }: Props) {
       <small className={found ? "muted" : "warn"}>
         {found
           ? `${found} face${found > 1 ? "s" : ""} covered in this image.`
-          : "No faces found in this image. Drag on it to cover areas yourself."}
+          : T(
+              "No faces found in this image. Drag on it to cover areas yourself.",
+            )}
       </small>
     );
 
@@ -951,10 +946,10 @@ export default function ImageTool({ tool, preset, tools, lang = "en" }: Props) {
   const signatureSizeCtl = (
     <>
       <Seg<string>
-        label="Size"
+        label={T("Size")}
         options={[
-          ["any", "Original"],
-          ["job", "Form 300×80"],
+          ["any", T("Original")],
+          ["job", T("Form 300×80")],
         ]}
         value={sigForm ? "job" : "any"}
         onPick={(v) =>
@@ -975,10 +970,10 @@ export default function ImageTool({ tool, preset, tools, lang = "en" }: Props) {
       />
       {!sigForm && (
         <Seg<string>
-          label="Save as"
+          label={T("Save as")}
           options={[
-            ["image/png", "PNG (transparent)"],
-            ["image/jpeg", "JPEG (white)"],
+            ["image/png", T("PNG (transparent)")],
+            ["image/jpeg", T("JPEG (white)")],
           ]}
           value={s.type}
           onPick={(v) => set({ type: v as Format, keepFormat: false })}
@@ -993,15 +988,15 @@ export default function ImageTool({ tool, preset, tools, lang = "en" }: Props) {
         return (
           <>
             <div className="ctl">
-              <span className="lbl">Format</span>
+              <span className="lbl">{T("Format")}</span>
               {seg<string>(
                 [
-                  ["image/jpeg", "JPEG"],
-                  ["image/webp", "WebP"],
+                  ["image/jpeg", T("JPEG")],
+                  ["image/webp", T("WebP")],
                 ],
                 s.type,
                 (v) => set({ type: v as Format, keepFormat: false }),
-                "Format",
+                T("Format"),
               )}
             </div>
             {qualityCtl("q")}
@@ -1012,12 +1007,12 @@ export default function ImageTool({ tool, preset, tools, lang = "en" }: Props) {
         return (
           <>
             <div className="ctl">
-              <span className="lbl">Convert to</span>
+              <span className="lbl">{T("Convert to")}</span>
               {seg<string>(
                 formatOpts(false),
                 s.type,
                 (v) => set({ type: v as Format, keepFormat: false }),
-                "Convert to",
+                T("Convert to"),
               )}
             </div>
             {qualityCtl("q")}
@@ -1028,12 +1023,12 @@ export default function ImageTool({ tool, preset, tools, lang = "en" }: Props) {
           <>
             {dimsCtl}
             <div className="ctl">
-              <span className="lbl">Save as</span>
+              <span className="lbl">{T("Save as")}</span>
               {seg<string>(
                 formatOpts(true),
                 formatValue,
                 pickFormat,
-                "Save as",
+                T("Save as"),
               )}
             </div>
           </>
@@ -1046,12 +1041,12 @@ export default function ImageTool({ tool, preset, tools, lang = "en" }: Props) {
               date and other hidden data are left out.
             </p>
             <div className="ctl">
-              <span className="lbl">Save as</span>
+              <span className="lbl">{T("Save as")}</span>
               {seg<string>(
                 formatOpts(true),
                 formatValue,
                 pickFormat,
-                "Save as",
+                T("Save as"),
               )}
             </div>
           </>
@@ -1130,10 +1125,10 @@ export default function ImageTool({ tool, preset, tools, lang = "en" }: Props) {
             <BgCtl s={s} setS={setS} />
             {s.bg?.mode === "remove" ? (
               <Seg<string>
-                label="Save as"
+                label={T("Save as")}
                 options={[
-                  ["image/png", "PNG"],
-                  ["image/webp", "WebP"],
+                  ["image/png", T("PNG")],
+                  ["image/webp", T("WebP")],
                 ]}
                 value={s.type === "image/webp" ? "image/webp" : "image/png"}
                 onPick={(v) => set({ type: v as Format, keepFormat: false })}
@@ -1193,7 +1188,7 @@ export default function ImageTool({ tool, preset, tools, lang = "en" }: Props) {
     const content = showRegions ? (
       <RegionBox
         url={onResult ? outForItem.url : it.url}
-        alt={`Choose areas to blur in ${it.file.name}`}
+        alt={T("Choose areas to blur in {name}", { name: it.file.name })}
         regions={s.redact!.regions}
         ellipse={s.redact!.shape === "ellipse"}
         onChange={(regions) =>
@@ -1204,7 +1199,7 @@ export default function ImageTool({ tool, preset, tools, lang = "en" }: Props) {
     ) : showCrop ? (
       <CropBox
         url={it.url}
-        alt={`Crop ${it.file.name}`}
+        alt={T("Crop {name}", { name: it.file.name })}
         crop={s.crop}
         ratio={r ? r.r : null}
         srcW={it.w}
@@ -1218,12 +1213,12 @@ export default function ImageTool({ tool, preset, tools, lang = "en" }: Props) {
     return (
       <>
         <div className={`viewport${zoom ? " zoomed" : ""}`}>{content}</div>
-        <div className="zoombar" role="group" aria-label="Zoom">
+        <div className="zoombar" role="group" aria-label={T("Zoom")}>
           <button
             type="button"
             onClick={() => zoomBy(-1)}
-            aria-label="Zoom out"
-            title={`Zoom out (−, or ${keys.mod} + scroll)`}
+            aria-label={T("Zoom out")}
+            title={T("Zoom out (−, or {mod} + scroll)", { mod: keys.mod })}
           >
             <Icon name="minus" />
           </button>
@@ -1231,15 +1226,15 @@ export default function ImageTool({ tool, preset, tools, lang = "en" }: Props) {
             type="button"
             className="zl"
             onClick={() => setZoom(zoom === 1 ? null : 1)}
-            title={zoom === 1 ? "Fit to view" : "Actual size (100%)"}
+            title={zoom === 1 ? T("Fit to view") : T("Actual size (100%)")}
           >
-            {zoom ? `${Math.round(zoom * 100)}%` : "Fit"}
+            {zoom ? `${Math.round(zoom * 100)}%` : T("Fit")}
           </button>
           <button
             type="button"
             onClick={() => zoomBy(1)}
-            aria-label="Zoom in"
-            title={`Zoom in (+, or ${keys.mod} + scroll)`}
+            aria-label={T("Zoom in")}
+            title={T("Zoom in (+, or {mod} + scroll)", { mod: keys.mod })}
           >
             <Icon name="plus" />
           </button>
@@ -1249,7 +1244,7 @@ export default function ImageTool({ tool, preset, tools, lang = "en" }: Props) {
               className="zfit"
               onClick={() => setZoom(null)}
             >
-              Fit
+              {T("Fit")}
             </button>
           )}
         </div>
@@ -1259,26 +1254,26 @@ export default function ImageTool({ tool, preset, tools, lang = "en" }: Props) {
 
   function resultSummary() {
     if (error) return <small className="warn">{error}</small>;
-    if (!item) return <small>{L.addFirst}</small>;
-    if (!outForItem) return <small>{L.working}</small>;
+    if (!item) return <small>{T("Add an image to see the result.")}</small>;
+    if (!outForItem) return <small>{T("Working…")}</small>;
     const pct = Math.round((1 - outForItem.blob.size / item.file.size) * 100);
     return (
       <>
         <small>
-          {formatBytes(item.file.size)} {L.to}
+          {formatBytes(item.file.size)} {T("to")}
         </small>
         <div className="sz">
           <b>{formatBytes(outForItem.blob.size)}</b>
           {pct >= 0 ? (
             <span className="delta">
-              {pct}% {L.smaller}
+              {pct}% {T("smaller")}
             </span>
           ) : (
             // Only a warning when the job is making files smaller
             <span
               className={`delta up${tool === "compress" || s.target ? "" : " neutral"}`}
             >
-              {-pct}% {L.larger}
+              {-pct}% {T("larger")}
             </span>
           )}
         </div>
@@ -1292,7 +1287,7 @@ export default function ImageTool({ tool, preset, tools, lang = "en" }: Props) {
           </small>
         ) : s.target && isLossy(type) ? (
           <small>
-            {L.best}: {outForItem.q}
+            {T("Best quality that fits")}: {outForItem.q}
           </small>
         ) : null}
       </>
@@ -1312,8 +1307,8 @@ export default function ImageTool({ tool, preset, tools, lang = "en" }: Props) {
         <div className="big">
           <Icon name="upload" />
         </div>
-        <strong>{L.drop}</strong>
-        <span className="muted">{L.pasteHint || keys.hint}</span>
+        <strong>{T("Drop images here")}</strong>
+        <span className="muted">{keys.hint}</span>
         <div className="row">
           <button
             className="btn acc lg"
@@ -1324,7 +1319,7 @@ export default function ImageTool({ tool, preset, tools, lang = "en" }: Props) {
             }}
           >
             <Icon name="upload" />
-            {L.choose}
+            {T("Choose images")}
           </button>
         </div>
         <div className="formats">
@@ -1335,7 +1330,7 @@ export default function ImageTool({ tool, preset, tools, lang = "en" }: Props) {
         {wantAdvanced && (
           <span className="mode-note">
             <Icon name="sliders" />
-            {L.opensAdvanced}
+            {T("Opens in the Advanced workspace")}
           </span>
         )}
         {fileInput}
@@ -1367,7 +1362,7 @@ export default function ImageTool({ tool, preset, tools, lang = "en" }: Props) {
             className="fchip add"
             onClick={() => pickRef.current?.click()}
           >
-            {L.add}
+            {T("+ Add")}
           </button>
         </div>
       </div>
@@ -1384,10 +1379,10 @@ export default function ImageTool({ tool, preset, tools, lang = "en" }: Props) {
             >
               <Icon name="download" />
               {zipping
-                ? L.working
+                ? T("Working…")
                 : many
-                  ? L.downloadZip(items.length)
-                  : L.download}
+                  ? T("Download all {n} as zip", { n: items.length })
+                  : T("Download")}
             </button>
             {many && (
               <div className="dl-row">
@@ -1397,7 +1392,7 @@ export default function ImageTool({ tool, preset, tools, lang = "en" }: Props) {
                   onClick={() => void downloadEach()}
                   disabled={dlDisabled}
                 >
-                  {L.each}
+                  {T("Save each separately")}
                 </button>
                 <button
                   className="btn sm"
@@ -1405,13 +1400,13 @@ export default function ImageTool({ tool, preset, tools, lang = "en" }: Props) {
                   onClick={() => void downloadOne()}
                   disabled={dlDisabled}
                 >
-                  {L.onlyThis}
+                  {T("Only this one")}
                 </button>
               </div>
             )}
             <button className="advlink" type="button" onClick={openAdvanced}>
               <Icon name="sliders" />
-              {L.more}
+              {T("More options in Advanced")}
             </button>
           </div>
         </div>
@@ -1445,39 +1440,46 @@ export default function ImageTool({ tool, preset, tools, lang = "en" }: Props) {
   const [bw, bh] = item ? baseDims(item.w, item.h, s) : [0, 0];
   const recipe = [
     s.crop
-      ? `Crop ${Math.round(s.crop.w * (item?.w ?? 0))} × ${Math.round(s.crop.h * (item?.h ?? 0))}`
+      ? T("Crop {w} × {h}", {
+          w: Math.round(s.crop.w * (item?.w ?? 0)),
+          h: Math.round(s.crop.h * (item?.h ?? 0)),
+        })
       : null,
-    s.rotate ? `Rotate ${s.rotate}°` : null,
-    s.flipH || s.flipV ? "Flip" : null,
-    item && (ow !== bw || oh !== bh) ? `Resize ${ow} × ${oh}` : null,
+    s.rotate ? T("Rotate {n}°", { n: s.rotate }) : null,
+    s.flipH || s.flipV ? T("Flip") : null,
+    item && (ow !== bw || oh !== bh)
+      ? T("Resize {w} × {h}", { w: ow, h: oh })
+      : null,
     isLossy(type)
       ? s.target
-        ? `Fit ≤ ${s.target} KB`
-        : `Quality ${s.quality}`
+        ? T("Fit ≤ {n} KB", { n: s.target })
+        : T("Quality {n}", { n: s.quality })
       : null,
     s.passport ? "ID photo framing" : null,
     s.bg
       ? s.bg.mode === "remove"
-        ? "Remove background"
+        ? T("Remove background")
         : s.bg.mode === "blur"
-          ? "Blur background"
-          : "New background"
+          ? T("Blur background")
+          : T("New background")
       : null,
-    s.redact?.faces ? "Cover faces" : null,
-    s.ink ? "Clean signature" : null,
+    s.redact?.faces ? T("Cover faces") : null,
+    s.ink ? T("Clean signature") : null,
     s.redact?.regions.length
       ? `Blur ${s.redact.regions.length} area${s.redact.regions.length > 1 ? "s" : ""}`
       : null,
-    s.adjust && Object.values(s.adjust).some(Boolean) ? "Adjust" : null,
+    s.adjust && Object.values(s.adjust).some(Boolean) ? T("Adjust") : null,
     s.filter ? (FILTERS.find((f) => f.id === s.filter)?.label ?? null) : null,
-    s.text && (s.text.top || s.text.bottom) ? "Text" : null,
-    s.mark ? "Watermark" : null,
-    s.frame ? "Frame" : null,
+    s.text && (s.text.top || s.text.bottom) ? T("Text") : null,
+    s.mark ? T("Watermark") : null,
+    s.frame ? T("Frame") : null,
     s.sheet
-      ? `Print sheet ${SHEETS.find((x) => x.id === s.sheet)?.label ?? ""}`
+      ? T("Print sheet {name}", {
+          name: T(SHEETS.find((x) => x.id === s.sheet)?.label ?? ""),
+        })
       : null,
     FORMATS[type],
-    "Strip metadata",
+    T("Strip metadata"),
   ].filter(Boolean) as string[];
 
   /** An effect section in the workspace that can be switched on and off. */
@@ -1497,7 +1499,7 @@ export default function ImageTool({ tool, preset, tools, lang = "en" }: Props) {
         <Icon name={icon} />
         {title}
         <button type="button" className="fx-on" onClick={() => toggle(!on)}>
-          {on ? "Remove" : "Add"}
+          {on ? T("Remove") : T("Add")}
         </button>
       </h3>
       {on && body}
@@ -1512,19 +1514,21 @@ export default function ImageTool({ tool, preset, tools, lang = "en" }: Props) {
         className="ws"
         role="dialog"
         aria-modal="true"
-        aria-label="Advanced workspace"
+        aria-label={T("Advanced workspace")}
       >
         <div className="ws-top">
           <button className="btn sm" type="button" onClick={closeAdvanced}>
             <Icon name="back" />
-            <span className="hide-sm">{editor ? "Home" : "Simple mode"}</span>
+            <span className="hide-sm">
+              {editor ? T("Home") : T("Simple mode")}
+            </span>
           </button>
           <span className="title">
-            {editor ? "Image editor" : "Workspace"}{" "}
+            {editor ? T("Image editor") : T("Workspace")}{" "}
             <small>
               {items.length
                 ? `${items.length} file${items.length > 1 ? "s" : ""}`
-                : "No files yet"}
+                : T("No files yet")}
             </small>
           </span>
           <span className="right">
@@ -1534,7 +1538,7 @@ export default function ImageTool({ tool, preset, tools, lang = "en" }: Props) {
               onClick={() => pickRef.current?.click()}
             >
               <Icon name="upload" />
-              Add files
+              {T("Add files")}
             </button>
             {many && (
               <button
@@ -1542,9 +1546,9 @@ export default function ImageTool({ tool, preset, tools, lang = "en" }: Props) {
                 type="button"
                 onClick={() => void downloadEach()}
                 disabled={dlDisabled}
-                title="Save every file separately"
+                title={T("Save every file separately")}
               >
-                Save each
+                {T("Save each")}
               </button>
             )}
             <button
@@ -1552,20 +1556,20 @@ export default function ImageTool({ tool, preset, tools, lang = "en" }: Props) {
               type="button"
               onClick={() => void download()}
               disabled={dlDisabled}
-              title={many ? "Download every file in one zip" : "Download"}
+              title={many ? T("Download every file in one zip") : T("Download")}
             >
               <Icon name="download" />
               {zipping
-                ? "Preparing…"
+                ? T("Preparing…")
                 : many
-                  ? `Zip of ${items.length}`
-                  : "Download"}
+                  ? T("Zip of {n}", { n: items.length })
+                  : T("Download")}
             </button>
           </span>
         </div>
 
         <div className="ws-body">
-          <div className="rail" aria-label="Tools">
+          <div className="rail" aria-label={T("Tools")}>
             {tools
               .filter((t) => SECTION[t.slug])
               .map((t) => (
@@ -1604,11 +1608,16 @@ export default function ImageTool({ tool, preset, tools, lang = "en" }: Props) {
                   <span className="big">
                     <Icon name="upload" />
                   </span>
-                  <strong>Drop images to start</strong>
+                  <strong>{T("Drop images to start")}</strong>
                   <span className="muted">
                     {keys.touch
-                      ? "Or tap to choose files. Settings apply to every file."
-                      : `Or click to choose files, or paste with ${keys.paste}. Settings apply to every file.`}
+                      ? T(
+                          "Or tap to choose files. Settings apply to every file.",
+                        )
+                      : T(
+                          "Or click to choose files, or paste with {keys}. Settings apply to every file.",
+                          { keys: keys.paste },
+                        )}
                   </span>
                 </button>
               )}
@@ -1637,8 +1646,8 @@ export default function ImageTool({ tool, preset, tools, lang = "en" }: Props) {
                     type="button"
                     className="iconbtn"
                     style={{ width: 28, height: 28 }}
-                    aria-label={`Download ${it.file.name}`}
-                    title="Download this file"
+                    aria-label={T("Download {name}", { name: it.file.name })}
+                    title={T("Download this file")}
                     disabled={zipping}
                     onClick={() => void downloadOne(i)}
                   >
@@ -1648,8 +1657,8 @@ export default function ImageTool({ tool, preset, tools, lang = "en" }: Props) {
                     type="button"
                     className="iconbtn"
                     style={{ width: 28, height: 28 }}
-                    aria-label={`Remove ${it.file.name}`}
-                    title="Remove"
+                    aria-label={T("Remove {name}", { name: it.file.name })}
+                    title={T("Remove")}
                     onClick={() => removeItem(i)}
                   >
                     <Icon name="x" />
@@ -1661,17 +1670,17 @@ export default function ImageTool({ tool, preset, tools, lang = "en" }: Props) {
                 className="fchip add"
                 onClick={() => pickRef.current?.click()}
               >
-                + Add
+                {T("+ Add")}
               </button>
             </div>
           </div>
 
           <div className="insp">
-            {section("crop", "Crop", "crop", cropCtl)}
-            {section("rotate", "Rotate & flip", "rotate", rotateCtl)}
+            {section("crop", T("Crop"), "crop", cropCtl)}
+            {section("rotate", T("Rotate & flip"), "rotate", rotateCtl)}
             {section(
               "resize",
-              "Resize",
+              T("Resize"),
               "resize",
               <>
                 {dimsCtl}
@@ -1681,7 +1690,7 @@ export default function ImageTool({ tool, preset, tools, lang = "en" }: Props) {
             )}
             {fxSection(
               "look",
-              "Adjust & looks",
+              T("Adjust & looks"),
               "sun",
               !!(s.adjust || s.filter),
               (on) =>
@@ -1697,7 +1706,7 @@ export default function ImageTool({ tool, preset, tools, lang = "en" }: Props) {
             )}
             {fxSection(
               "redact",
-              "Blur areas",
+              T("Blur areas"),
               "eyeOff",
               !!s.redact,
               (on) => set({ redact: on ? fromTool("blur").redact : null }),
@@ -1705,7 +1714,7 @@ export default function ImageTool({ tool, preset, tools, lang = "en" }: Props) {
             )}
             {fxSection(
               "text",
-              "Text",
+              T("Text"),
               "type",
               !!s.text,
               (on) => set({ text: on ? fromTool("add-text").text : null }),
@@ -1713,7 +1722,7 @@ export default function ImageTool({ tool, preset, tools, lang = "en" }: Props) {
             )}
             {fxSection(
               "watermark",
-              "Watermark",
+              T("Watermark"),
               "stamp",
               !!s.mark,
               (on) => set({ mark: on ? fromTool("watermark").mark : null }),
@@ -1721,7 +1730,7 @@ export default function ImageTool({ tool, preset, tools, lang = "en" }: Props) {
             )}
             {fxSection(
               "frame",
-              "Border & padding",
+              T("Border & padding"),
               "frame",
               !!s.frame,
               (on) => set({ frame: on ? { ...NO_FRAME, border: 3 } : null }),
@@ -1729,7 +1738,7 @@ export default function ImageTool({ tool, preset, tools, lang = "en" }: Props) {
             )}
             {fxSection(
               "background",
-              "Background",
+              T("Background"),
               "eraser",
               !!s.bg,
               (on) => set({ bg: on ? fromTool("change-bg").bg : null }),
@@ -1754,7 +1763,7 @@ export default function ImageTool({ tool, preset, tools, lang = "en" }: Props) {
             )}
             {fxSection(
               "signature",
-              "Signature cleanup",
+              T("Signature cleanup"),
               "signature",
               !!s.ink,
               (on) => set({ ink: on ? fromTool("signature").ink : null }),
@@ -1762,18 +1771,18 @@ export default function ImageTool({ tool, preset, tools, lang = "en" }: Props) {
             )}
             {section(
               "format",
-              "Format",
+              T("Format"),
               "convert",
               seg<string>(
                 formatOpts(true),
                 formatValue,
                 pickFormat,
-                "Output format",
+                T("Output format"),
               ),
             )}
             {section(
               "compress",
-              "Compression",
+              T("Compression"),
               "compress",
               <>
                 {qualityCtl("wq")}
@@ -1782,15 +1791,16 @@ export default function ImageTool({ tool, preset, tools, lang = "en" }: Props) {
             )}
             {section(
               "privacy",
-              "Privacy",
+              T("Privacy"),
               "shield",
               <small className="muted">
-                Location, camera and date data are always removed from the
-                output.
+                {T(
+                  "Location, camera and date data are always removed from the output.",
+                )}
               </small>,
             )}
             <section>
-              <h3>Result</h3>
+              <h3>{T("Result")}</h3>
               <div
                 className={`result${busy ? " working" : ""}`}
                 style={{ marginTop: 0, borderTop: 0, paddingTop: 0 }}
@@ -1800,18 +1810,16 @@ export default function ImageTool({ tool, preset, tools, lang = "en" }: Props) {
               </div>
             </section>
             <section>
-              <h3>Recipe</h3>
+              <h3>{T("Recipe")}</h3>
               <div className="recipe">
                 {recipe.map((step, i) => (
                   <span key={step} style={{ display: "contents" }}>
-                    {i > 0 && <i>then</i>}
+                    {i > 0 && <i>{T("then")}</i>}
                     <span>{step}</span>
                   </span>
                 ))}
               </div>
-              <small className="muted">
-                Applied to every file. Saving recipes is coming soon.
-              </small>
+              <small className="muted">{T("Applied to every file.")}</small>
             </section>
           </div>
         </div>
@@ -1820,10 +1828,21 @@ export default function ImageTool({ tool, preset, tools, lang = "en" }: Props) {
           <span>
             <b>●</b> Processing on this device
           </span>
-          <span>0 bytes uploaded</span>
+          <span>{T("Files stay on this device")}</span>
           <span>{items.length} in batch</span>
         </div>
       </div>
     </>
+  );
+}
+
+/** Island entry: sets the interface language for everything inside. */
+export default function ImageTool(
+  props: Parameters<typeof ImageToolView>[0] & { lang?: Locale },
+) {
+  return (
+    <LangProvider lang={props.lang}>
+      <ImageToolView {...props} />
+    </LangProvider>
   );
 }

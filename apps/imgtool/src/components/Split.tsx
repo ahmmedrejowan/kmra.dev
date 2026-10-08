@@ -1,3 +1,5 @@
+import { LangProvider, useT } from "@kmra/ui/lib/i18n-react";
+import type { Locale } from "@kmra/ui/lib/i18n";
 import { useMemo, useState } from "react";
 import { Icon } from "@kmra/ui/components/Icon";
 import { downloadBlob } from "@kmra/ui/lib/files";
@@ -41,7 +43,8 @@ interface Pic {
   bmp: ImageBitmap;
 }
 
-export default function Split() {
+function SplitView() {
+  const T = useT();
   const [pic, setPic] = useState<Pic | null>(null);
   const [rows, setRows] = useState(1);
   const [cols, setCols] = useState(3);
@@ -56,7 +59,7 @@ export default function Split() {
       if (pic) URL.revokeObjectURL(pic.url);
       setPic({ file: files[0]!, url: URL.createObjectURL(files[0]!), bmp });
     } catch {
-      toast(`${files[0]!.name} couldn't be opened.`);
+      toast(T("{name} couldn't be opened.", { name: files[0]!.name }));
     }
   }
   const { dragging, pickRef, pick, take } = useFiles({
@@ -140,8 +143,8 @@ export default function Split() {
         <DropCard
           dragging={dragging}
           onPick={pick}
-          title="Drop an image here"
-          button="Choose an image"
+          title={T("Drop an image here")}
+          button={T("Choose an image")}
         />
         {input}
       </>
@@ -181,7 +184,7 @@ export default function Split() {
             </div>
             <div className="filebar">
               <button type="button" className="fchip add" onClick={pick}>
-                Use another image
+                {T("Use another image")}
               </button>
             </div>
           </>
@@ -189,7 +192,7 @@ export default function Split() {
         panel={
           <>
             <div className="ctl">
-              <span className="lbl">Presets</span>
+              <span className="lbl">{T("Presets")}</span>
               <div className="chips">
                 {PRESETS.map((p) => (
                   <button
@@ -202,13 +205,13 @@ export default function Split() {
                       setSquare(!!p.square);
                     }}
                   >
-                    {p.label}
+                    {T(p.label)}
                   </button>
                 ))}
               </div>
             </div>
             <div className="ctl">
-              <span className="lbl">Rows and columns</span>
+              <span className="lbl">{T("Rows and columns")}</span>
               <div className="row2">
                 <input
                   className="num"
@@ -219,7 +222,7 @@ export default function Split() {
                   onChange={(e) =>
                     setRows(Math.min(12, Math.max(1, +e.target.value || 1)))
                   }
-                  aria-label="Rows"
+                  aria-label={T("Rows")}
                 />
                 <span className="muted">×</span>
                 <input
@@ -231,7 +234,7 @@ export default function Split() {
                   onChange={(e) =>
                     setCols(Math.min(12, Math.max(1, +e.target.value || 1)))
                   }
-                  aria-label="Columns"
+                  aria-label={T("Columns")}
                 />
               </div>
             </div>
@@ -241,22 +244,22 @@ export default function Split() {
                 checked={square}
                 onChange={(e) => setSquare(e.target.checked)}
               />
-              <span>Square tiles (crops the edges evenly)</span>
+              <span>{T("Square tiles (crops the edges evenly)")}</span>
             </label>
             <Seg<"read" | "post">
-              label="Numbering"
+              label={T("Numbering")}
               options={[
-                ["read", "Reading order"],
-                ["post", "Posting order"],
+                ["read", T("Reading order")],
+                ["post", T("Posting order")],
               ]}
               value={order}
               onPick={setOrder}
             />
             <Seg<string>
-              label="Save as"
+              label={T("Save as")}
               options={[
-                ["image/jpeg", "JPEG"],
-                ["image/png", "PNG"],
+                ["image/jpeg", T("JPEG")],
+                ["image/png", T("PNG")],
               ]}
               value={type}
               onPick={setType}
@@ -274,8 +277,8 @@ export default function Split() {
                 >
                   <Icon name="download" />
                   {saving
-                    ? "Preparing…"
-                    : `Download ${rows * cols} tiles as zip`}
+                    ? T("Preparing…")
+                    : T("Download {n} tiles as zip", { n: rows * cols })}
                 </button>
                 <button
                   type="button"
@@ -283,7 +286,7 @@ export default function Split() {
                   disabled={saving}
                   onClick={() => void save(false)}
                 >
-                  Save each separately
+                  {T("Save each separately")}
                 </button>
               </div>
             </div>
@@ -292,5 +295,14 @@ export default function Split() {
       />
       {input}
     </>
+  );
+}
+
+/** Island entry: sets the interface language for everything inside. */
+export default function Split(props: { lang?: Locale }) {
+  return (
+    <LangProvider lang={props.lang}>
+      <SplitView />
+    </LangProvider>
   );
 }

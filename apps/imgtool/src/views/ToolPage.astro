@@ -1,0 +1,260 @@
+---
+import BaseLayout from "@kmra/ui/layouts/BaseLayout.astro";
+import Crumbs from "@kmra/ui/components/Crumbs.astro";
+import ToolCards from "@kmra/ui/components/ToolCards.astro";
+import InfoCard from "@kmra/ui/components/InfoCard.astro";
+import TaskList from "@kmra/ui/components/TaskList.astro";
+import Icon from "@kmra/ui/components/Icon.astro";
+import { appOrigin, brandName, getApp, localizeApp } from "@kmra/registry";
+import { pageLocale } from "@kmra/ui/lib/locale";
+import { lp, t as tr } from "@kmra/ui/lib/i18n";
+import ImageTool from "../components/ImageTool";
+import Inspect from "../components/Inspect";
+import Colors from "../components/Colors";
+import Collage from "../components/Collage";
+import Split from "../components/Split";
+import Favicon from "../components/Favicon";
+import Base64 from "../components/Base64";
+import GifFrames from "../components/GifFrames";
+
+interface Props {
+  /** Tool or task slug */
+  slug: string;
+}
+
+const { slug } = Astro.props;
+const locale = pageLocale(Astro);
+const T = (s: string, v?: Record<string, string | number>) => tr(locale, s, v);
+const L = (p: string) => lp(locale, p);
+const app = localizeApp(getApp("imgtool"), locale);
+const task = app.tasks.find((t) => t.slug === slug);
+const tool = app.tools.find((t) => t.slug === (task?.tool ?? slug))!;
+// Tools with their own interface (no Simple/Advanced switch); everything else uses ImageTool.
+const STANDALONE = [
+  "image-info",
+  "exif",
+  "histogram",
+  "palette",
+  "color-picker",
+  "collage",
+  "split",
+  "favicon",
+  "base64",
+  "gif-frames",
+];
+const standalone = STANDALONE.includes(tool.slug);
+const title = task?.title ?? tool.title ?? tool.name;
+const intro = task?.intro ?? tool.description;
+const crumbs = task
+  ? [
+      { label: app.name, href: L("/") },
+      { label: tool.name, href: L(`/${tool.slug}`) },
+      { label: task.name },
+    ]
+  : [{ label: app.name, href: L("/") }, { label: tool.name }];
+// Always three related tasks: this tool's own first, then other popular tasks.
+const related = [
+  ...app.tasks.filter((t) => t.tool === tool.slug && t.slug !== task?.slug),
+  ...app.tasks.filter((t) => t.tool !== tool.slug && t.slug !== task?.slug),
+].slice(0, 3);
+// Eight other tools: same group first, then the popular ones, then the rest
+const popular = app.popular ?? [];
+const others = app.tools
+  .filter((t) => t.slug !== tool.slug && t.ready)
+  .map((t) => ({
+    t,
+    rank:
+      t.group === tool.group
+        ? 0
+        : popular.includes(t.slug)
+          ? 1 + popular.indexOf(t.slug) / 100
+          : 2,
+  }))
+  .sort((a, b) => a.rank - b.rank)
+  .slice(0, 8)
+  .map((x) => x.t);
+const icons = Object.fromEntries(app.tools.map((t) => [t.slug, t.icon]));
+const railTools = app.tools.map(({ slug, name, icon, ready }) => ({
+  slug,
+  name,
+  icon,
+  ready,
+}));
+
+const baseFaq = [
+  {
+    q: T("Do my images leave my device?"),
+    a: T("No. They're processed right in your browser, on your device."),
+  },
+  standalone
+    ? {
+        q: T("Does it work offline?"),
+        a: T(
+          "Yes. Once this page has loaded, it keeps working without an internet connection.",
+        ),
+      }
+    : {
+        q: T("What does Advanced add?"),
+        a: T(
+          "Every option at once, many files in one go, and a single zip download.",
+        ),
+      },
+  {
+    q: T("Is there a limit?"),
+    a: T(
+      "No limits from us. Very large images can be slow on phones because the work uses your device's memory.",
+    ),
+  },
+];
+// Task pages lead with their own note, then the general answers; always three items.
+const info = task
+  ? [{ q: T("Good to know"), a: task.about[0] ?? "" }, ...baseFaq].slice(0, 3)
+  : baseFaq;
+
+// Structured data: the tool as a free web app, its breadcrumb trail and the always-visible Q&A.
+const origin = Astro.site?.toString() ?? appOrigin("imgtool");
+const pageUrl = new URL(L(`/${slug}`), origin).toString();
+const schema = [
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    name: title,
+    url: pageUrl,
+    description: intro,
+    inLanguage: locale,
+    applicationCategory: "MultimediaApplication",
+    operatingSystem: "Any (runs in the browser)",
+    browserRequirements: "Requires a modern browser with JavaScript",
+    isAccessibleForFree: true,
+    offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
+    publisher: {
+      "@type": "Organization",
+      name: `${brandName(app)} by kmra.dev`,
+      url: origin,
+    },
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: crumbs.map((c, i) => ({
+      "@type": "ListItem",
+      position: i + 1,
+      name: c.label,
+      item: c.href ? new URL(c.href, origin).toString() : pageUrl,
+    })),
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    inLanguage: locale,
+    mainEntity: info.map((it) => ({
+      "@type": "Question",
+      name: it.q,
+      acceptedAnswer: { "@type": "Answer", text: it.a },
+    })),
+  },
+];
+---
+
+<BaseLayout appId="imgtool" title={title} schema={schema} description={intro}>
+  <section class="hero-band tool-head">
+    <div class="wrap">
+      <Crumbs items={crumbs} />
+      <div class="ptitle">
+        <div class="ptitle-main">
+          <span class="tile">
+            <Icon name={tool.icon} />
+          </span>
+          <div>
+            <h1>{title}</h1>
+            <p>{intro}</p>
+          </div>
+        </div>
+        {tool.ready && !standalone && (
+          <div class="modes" role="group" aria-label={T("Mode")}>
+            <button type="button" aria-pressed="true" data-mode="simple">
+              {T("Simple")}
+            </button>
+            <button type="button" aria-pressed="false" data-mode="advanced">
+              <Icon name="sliders" />
+              {T("Advanced")}
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  </section>
+
+  <div class="wrap tool-area">
+    {tool.slug === "image-info" && (
+      <Inspect client:load mode="info" lang={locale} />
+    )}
+    {tool.slug === "exif" && <Inspect client:load mode="exif" lang={locale} />}
+    {tool.slug === "histogram" && (
+      <Inspect client:load mode="histogram" lang={locale} />
+    )}
+    {tool.slug === "palette" && (
+      <Colors client:load mode="palette" lang={locale} />
+    )}
+    {tool.slug === "color-picker" && (
+      <Colors client:load mode="picker" lang={locale} />
+    )}
+    {tool.slug === "collage" && <Collage client:load lang={locale} />}
+    {tool.slug === "split" && <Split client:load lang={locale} />}
+    {tool.slug === "favicon" && <Favicon client:load lang={locale} />}
+    {tool.slug === "base64" && <Base64 client:load lang={locale} />}
+    {tool.slug === "gif-frames" && <GifFrames client:load lang={locale} />}
+    {!standalone && (
+      <ImageTool
+        client:load
+        lang={locale}
+        tool={tool.slug}
+        preset={task?.preset}
+        tools={railTools}
+      />
+    )}
+
+    {tool.ready && tool.steps && <InfoCard steps={tool.steps} items={info} />}
+
+    <section class="block">
+      <div class="sechead primary">
+        <h2>{T("Related tasks")}</h2>
+        <p>{T("Ready-made settings for common jobs.")}</p>
+      </div>
+      <TaskList tasks={related} icons={icons} />
+    </section>
+
+    <section class="block">
+      <div class="sechead primary">
+        <h2>{T("Other tools")}</h2>
+        <p>{T("More ways to edit your images.")}</p>
+      </div>
+      <ToolCards
+        tools={others}
+        allHref="/sitemap"
+        allLabel={T("All {n} image tools", {
+          n: app.tools.filter((t) => t.ready).length,
+        })}
+      />
+    </section>
+  </div>
+</BaseLayout>
+
+<script>
+  // Simple/Advanced switch: tells the tool which mode to use and mirrors the mode it reports back.
+  const buttons = document.querySelectorAll<HTMLButtonElement>("[data-mode]");
+  buttons.forEach((b) =>
+    b.addEventListener("click", () =>
+      window.dispatchEvent(new CustomEvent(`kmra:${b.dataset.mode}`)),
+    ),
+  );
+  window.addEventListener("kmra:mode", (e) => {
+    const advanced = (e as CustomEvent<{ advanced: boolean }>).detail.advanced;
+    buttons.forEach((b) =>
+      b.setAttribute(
+        "aria-pressed",
+        String((b.dataset.mode === "advanced") === advanced),
+      ),
+    );
+  });
+</script>

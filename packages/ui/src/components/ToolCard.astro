@@ -1,6 +1,8 @@
 ---
 import type { Tool } from "@kmra/registry";
 import Icon from "./Icon.astro";
+import { pageLocale } from "../lib/locale";
+import { lp, t as tr } from "../lib/i18n";
 
 interface Props {
   tool: Tool;
@@ -9,6 +11,8 @@ interface Props {
 }
 
 const { tool, hidden = false } = Astro.props;
+const locale = pageLocale(Astro);
+const T = (s: string) => tr(locale, s);
 // Each app is built with its own site URL (imgtool.kmra.dev, pdftool.kmra.dev, ...)
 const app = Astro.site?.hostname.split(".")[0] ?? "imgtool";
 const page = (lines = 3) => Array.from({ length: lines });
@@ -16,7 +20,7 @@ const page = (lines = 3) => Array.from({ length: lines });
 
 <a
   class="feat"
-  href={`/${tool.slug}`}
+  href={lp(locale, `/${tool.slug}`)}
   aria-hidden={hidden ? "true" : undefined}
   tabindex={hidden ? -1 : undefined}
 >
@@ -143,12 +147,12 @@ const page = (lines = 3) => Array.from({ length: lines });
     ) : tool.slug === "compress" ? (
       <div class="art-bars">
         <div>
-          <span>Before</span>
+          <span>{T("Before")}</span>
           <i style="width:100%" />
           <b>4.2 MB</b>
         </div>
         <div>
-          <span>After</span>
+          <span>{T("After")}</span>
           <i class="acc" style="width:15%" />
           <b>612 KB</b>
         </div>
@@ -173,11 +177,11 @@ const page = (lines = 3) => Array.from({ length: lines });
     ) : tool.slug === "strip-metadata" ? (
       <ul class="art-meta">
         <li>
-          <span>Location</span>
+          <span>{T("Location")}</span>
           <s>23.81°N 90.41°E</s>
         </li>
         <li>
-          <span>Camera</span>
+          <span>{T("Camera")}</span>
           <s>iPhone 15 Pro</s>
         </li>
       </ul>
@@ -206,7 +210,7 @@ const page = (lines = 3) => Array.from({ length: lines });
           <b>35 × 45 mm</b>
           <i />
           <i />
-          <small>4 × 6 sheet</small>
+          <small>{T("4 × 6 sheet")}</small>
         </div>
       </div>
     ) : tool.slug === "watermark" ? (
@@ -223,14 +227,14 @@ const page = (lines = 3) => Array.from({ length: lines });
       </div>
     ) : tool.slug === "adjust" ? (
       <div class="art-sliders">
-        <span style="--v:70%">Brightness</span>
-        <span style="--v:40%">Contrast</span>
-        <span style="--v:85%">Saturation</span>
+        <span style="--v:70%">{T("Brightness")}</span>
+        <span style="--v:40%">{T("Contrast")}</span>
+        <span style="--v:85%">{T("Saturation")}</span>
       </div>
     ) : tool.slug === "add-text" ? (
       <div class="art-meme">
-        <b>Top text</b>
-        <b>Bottom text</b>
+        <b>{T("Top text")}</b>
+        <b>{T("Bottom text")}</b>
       </div>
     ) : tool.slug === "blur" || tool.slug === "face-blur" ? (
       <div class="art-pixel">
@@ -268,7 +272,7 @@ const page = (lines = 3) => Array.from({ length: lines });
       <div class="art-tab">
         <span class="tab">
           <Icon name="star" />
-          My site
+          {T("My site")}
         </span>
         <span class="sizes">
           <i style="width:16px;height:16px" />
@@ -291,7 +295,7 @@ const page = (lines = 3) => Array.from({ length: lines });
         <span class="ph" />
         <span>
           <b>300 × 300 px</b>
-          <small>Under 100 KB</small>
+          <small>{T("Under 100 KB")}</small>
         </span>
       </div>
     ) : tool.slug === "base64" ? (
@@ -307,15 +311,15 @@ const page = (lines = 3) => Array.from({ length: lines });
     ) : tool.slug === "image-info" || tool.slug === "exif" ? (
       <ul class="art-meta plain">
         <li>
-          <span>{tool.slug === "exif" ? "Camera" : "Format"}</span>
+          <span>{T(tool.slug === "exif" ? "Camera" : "Format")}</span>
           <b>{tool.slug === "exif" ? "iPhone 15 Pro" : "JPEG"}</b>
         </li>
         <li>
-          <span>{tool.slug === "exif" ? "Taken" : "Size"}</span>
+          <span>{T(tool.slug === "exif" ? "Taken" : "Size")}</span>
           <b>{tool.slug === "exif" ? "12 Mar 2026" : "4032 × 3024"}</b>
         </li>
         <li>
-          <span>{tool.slug === "exif" ? "Location" : "Ratio"}</span>
+          <span>{T(tool.slug === "exif" ? "Location" : "Ratio")}</span>
           <b>{tool.slug === "exif" ? "23.81°N 90.41°E" : "4:3"}</b>
         </li>
       </ul>

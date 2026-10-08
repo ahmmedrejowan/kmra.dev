@@ -1,0 +1,115 @@
+---
+import BaseLayout from "@kmra/ui/layouts/BaseLayout.astro";
+import PageHead from "@kmra/ui/components/PageHead.astro";
+import HowItWorks from "@kmra/ui/components/HowItWorks.astro";
+import PrivacyContent from "@kmra/ui/components/PrivacyContent.astro";
+import AboutContent from "@kmra/ui/components/AboutContent.astro";
+import SitemapContent from "@kmra/ui/components/SitemapContent.astro";
+import { brandName, getApp, localizeApp } from "@kmra/registry";
+import { pageLocale } from "@kmra/ui/lib/locale";
+import { lp, t as tr } from "@kmra/ui/lib/i18n";
+import ImageTool from "../components/ImageTool";
+
+/** The non-tool pages, in any language. */
+interface Props {
+  page: "how-it-works" | "privacy" | "about" | "sitemap" | "editor";
+}
+
+const { page } = Astro.props;
+const locale = pageLocale(Astro);
+const T = (s: string, v?: Record<string, string | number>) => tr(locale, s, v);
+const app = localizeApp(getApp("imgtool"), locale);
+const brand = brandName(app);
+const home = { label: app.name, href: lp(locale, "/") };
+
+const PAGES = {
+  "how-it-works": {
+    title: T("How your files stay on your device"),
+    description: T(
+      "kmra tools run in your browser. Your files stay on your device, and the site is blocked from sending them anywhere.",
+    ),
+    crumb: T("How it works"),
+    icon: "shield",
+    intro: T(
+      "Most online tools send your file to a server. kmra sends the tool to your browser instead.",
+    ),
+    og: undefined,
+  },
+  privacy: {
+    title: T("Privacy"),
+    description: T(
+      "Your files stay on your device. No accounts, no cookies. What kmra stores, and what it doesn't.",
+    ),
+    crumb: T("Privacy"),
+    icon: "shield",
+    intro: T(
+      "Short version: your files never leave your device, and nothing identifies you.",
+    ),
+    og: undefined,
+  },
+  about: {
+    title: T("About"),
+    description: T("Small, private tools for everyday files, from kmra.dev."),
+    crumb: T("About"),
+    icon: "layers",
+    intro: T("Small, private tools for everyday files."),
+    og: undefined,
+  },
+  sitemap: {
+    title: T("Sitemap"),
+    description: T("Every page and tool on this site."),
+    crumb: T("Sitemap"),
+    icon: "layers",
+    intro: T("Every page and tool on this site."),
+    og: "index",
+  },
+  editor: {
+    title: T("Image editor"),
+    description: T(
+      "Resize, crop, rotate, compress and convert many images at once, all in your browser.",
+    ),
+    crumb: T("Editor"),
+    icon: "sliders",
+    intro: T("Every tool in one workspace. Drop images to start."),
+    og: "index",
+  },
+} as const;
+const p = PAGES[page];
+const railTools = app.tools.map(({ slug, name, icon, ready }) => ({
+  slug,
+  name,
+  icon,
+  ready,
+}));
+---
+
+<BaseLayout
+  appId="imgtool"
+  title={p.title}
+  description={p.description}
+  og={p.og}
+>
+  <PageHead
+    crumbs={[home, { label: p.crumb }]}
+    icon={p.icon}
+    title={page === "about" ? T("About {brand}", { brand }) : p.title}
+    intro={p.intro}
+  />
+  {page === "editor" ? (
+    <div class="wrap tool-area">
+      <ImageTool client:load lang={locale} tool="editor" tools={railTools} />
+    </div>
+  ) : (
+    <div class="wrap page-body">
+      {page === "how-it-works" && <HowItWorks />}
+      {page === "privacy" && <PrivacyContent brand={brand} ai />}
+      {page === "about" && <AboutContent />}
+      {page === "sitemap" && (
+        <SitemapContent
+          appId="imgtool"
+          extra={[{ href: "/editor", label: "Image editor" }]}
+        />
+      )}
+    </div>
+  )}
+</BaseLayout>

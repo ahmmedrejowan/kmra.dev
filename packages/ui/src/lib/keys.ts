@@ -22,11 +22,16 @@ export function isTouch(): boolean {
   );
 }
 
-/** "or paste with ⌘V. Nothing is uploaded." on desktop, "Nothing is uploaded." on touch devices. */
-export function pasteHint(): string {
+/** Hint under drop boxes: mentions pasting on desktop only (touch devices have no ⌘V). */
+export function pasteHint(locale: "en" | "bn" = "en"): string {
+  const keys = formatKeys("mod+V");
+  if (locale === "bn")
+    return isTouch()
+      ? "ফাইল আপনার ডিভাইসেই থাকে।"
+      : `অথবা ${keys} দিয়ে পেস্ট করুন। ফাইল আপনার ডিভাইসেই থাকে।`;
   return isTouch()
-    ? "Nothing is uploaded."
-    : `or paste with ${formatKeys("mod+V")}. Nothing is uploaded.`;
+    ? "Your files stay on your device."
+    : `or paste with ${keys}. Your files stay on your device.`;
 }
 
 const NAMES: Record<string, [apple: string, other: string]> = {

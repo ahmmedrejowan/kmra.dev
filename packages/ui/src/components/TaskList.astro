@@ -1,6 +1,8 @@
 ---
 import type { IconName, Task } from "@kmra/registry";
 import Icon from "./Icon.astro";
+import { pageLocale } from "../lib/locale";
+import { lp } from "../lib/i18n";
 
 interface Props {
   tasks: readonly Task[];
@@ -9,11 +11,12 @@ interface Props {
 }
 
 const { tasks, icons } = Astro.props;
+const locale = pageLocale(Astro);
 ---
 
 <div class="tasks">
   {tasks.map((t) => (
-    <a class="task" href={`/${t.slug}`}>
+    <a class="task" href={lp(locale, `/${t.slug}`)}>
       <span class="tile">
         <Icon name={icons[t.tool] ?? "file"} />
       </span>

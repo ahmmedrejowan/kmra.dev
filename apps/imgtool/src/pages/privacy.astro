@@ -1,24 +1,5 @@
 ---
-import BaseLayout from "@kmra/ui/layouts/BaseLayout.astro";
-import PageHead from "@kmra/ui/components/PageHead.astro";
-import PrivacyContent from "@kmra/ui/components/PrivacyContent.astro";
-import { brandName, getApp } from "@kmra/registry";
-
-const app = getApp("imgtool");
+import InfoPage from "../views/InfoPage.astro";
 ---
 
-<BaseLayout
-  appId="imgtool"
-  title="Privacy"
-  description="No uploads, no accounts, no analytics and no cookies. What kmra stores, and what it doesn't."
->
-  <PageHead
-    crumbs={[{ label: app.name, href: "/" }, { label: "Privacy" }]}
-    icon="shield"
-    title="Privacy"
-    intro="Short version: your files never leave your device, and nothing identifies you."
-  />
-  <div class="wrap page-body">
-    <PrivacyContent brand={brandName(app)} ai />
-  </div>
-</BaseLayout>
+<InfoPage page="privacy" />

@@ -1,3 +1,4 @@
+import { useT } from "@kmra/ui/lib/i18n-react";
 import { useRef, useState, type CSSProperties, type PointerEvent } from "react";
 import type { Crop } from "../lib/settings";
 
@@ -25,6 +26,7 @@ export default function RegionBox({
   onChange,
   imgStyle,
 }: Props) {
+  const T = useT();
   const wrapRef = useRef<HTMLDivElement>(null);
   const drag = useRef<
     | { kind: "new"; x: number; y: number }
@@ -126,7 +128,7 @@ export default function RegionBox({
           <button
             type="button"
             className="region-x"
-            aria-label={`Remove area ${i + 1}`}
+            aria-label={T("Remove area {n}", { n: i + 1 })}
             onPointerDown={(e) => e.stopPropagation()}
             onClick={() => onChange(regions.filter((_, j) => j !== i))}
           >

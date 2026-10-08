@@ -1,3 +1,5 @@
+import { LangProvider, useT } from "@kmra/ui/lib/i18n-react";
+import type { Locale } from "@kmra/ui/lib/i18n";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Icon } from "@kmra/ui/components/Icon";
 import { downloadBlob, formatBytes, isImageFile } from "@kmra/ui/lib/files";
@@ -200,7 +202,8 @@ function pick(e: Entry, group: string, key: string): unknown {
   return e.meta?.[group]?.[key];
 }
 
-export default function Inspect({ mode }: { mode: Mode }) {
+function InspectView({ mode }: { mode: Mode }) {
+  const T = useT();
   const [entries, setEntries] = useState<Entry[]>([]);
   const [cur, setCur] = useState(0);
   const [busy, setBusy] = useState(false);
@@ -268,7 +271,7 @@ export default function Inspect({ mode }: { mode: Mode }) {
         <DropCard
           dragging={dragging}
           onPick={openPicker}
-          title={busy ? "Reading…" : "Drop images here"}
+          title={busy ? T("Reading…") : T("Drop images here")}
           formats={["JPG", "PNG", "WebP", "HEIC", "GIF", "AVIF"]}
         />
         {input}
@@ -290,7 +293,7 @@ export default function Inspect({ mode }: { mode: Mode }) {
         </button>
       ))}
       <button type="button" className="fchip add" onClick={openPicker}>
-        + Add
+        {T("+ Add")}
       </button>
     </div>
   );
@@ -301,7 +304,7 @@ export default function Inspect({ mode }: { mode: Mode }) {
         <img className="still" src={e!.url} alt={e!.file.name} />
       ) : (
         <p className="muted">
-          This format can't be shown, but its data is below.
+          {T("This format can't be shown, but its data is below.")}
         </p>
       )}
       {filebar}
@@ -331,6 +334,7 @@ export default function Inspect({ mode }: { mode: Mode }) {
 }
 
 function Rows({ rows }: { rows: [string, React.ReactNode][] }) {
+  const T = useT();
   return (
     <dl className="kv">
       {rows.map(([k, v]) => (
@@ -351,6 +355,7 @@ async function handOff(file: File, path: string) {
 const cleanCopy = (file: File) => handOff(file, "/strip-metadata");
 
 function InfoPanel({ e }: { e: Entry }) {
+  const T = useT();
   const make = pick(e, "ifd0", "Make");
   const model = pick(e, "ifd0", "Model");
   const taken =
@@ -363,38 +368,38 @@ function InfoPanel({ e }: { e: Entry }) {
   const hex = `#${[r, g, b].map((v) => v.toString(16).padStart(2, "0")).join("")}`;
   const mp = (e.w * e.h) / 1e6;
   const rows: [string, React.ReactNode][] = [
-    ["Format", e.format],
+    [T("Format"), e.format],
     [
-      "File size",
+      T("File size"),
       `${formatBytes(e.file.size)} (${e.file.size.toLocaleString()} bytes)`,
     ],
-    ["Dimensions", `${e.w} × ${e.h} px`],
+    [T("Dimensions"), `${e.w} × ${e.h} px`],
     [
-      "Megapixels",
+      T("Megapixels"),
       mp >= 0.1 ? `${mp.toFixed(1)} MP` : `${(e.w * e.h).toLocaleString()} px`,
     ],
-    ["Aspect ratio", ratio(e.w, e.h)],
+    [T("Aspect ratio"), ratio(e.w, e.h)],
     [
-      "Orientation",
-      e.w === e.h ? "Square" : e.w > e.h ? "Landscape" : "Portrait",
+      T("Orientation"),
+      e.w === e.h ? T("Square") : e.w > e.h ? T("Landscape") : T("Portrait"),
     ],
-    ["Transparency", e.stats.alpha ? "Yes" : "No"],
+    [T("Transparency"), e.stats.alpha ? T("Yes") : T("No")],
     [
-      "Average colour",
+      T("Average colour"),
       <span className="avg">
         <i style={{ background: hex }} />
         {hex}
       </span>,
     ],
   ];
-  if (dpi) rows.push(["Resolution", `${fmt(dpi)} dpi`]);
-  if (profile) rows.push(["Colour profile", fmt(profile)]);
+  if (dpi) rows.push([T("Resolution"), `${fmt(dpi)} dpi`]);
+  if (profile) rows.push([T("Colour profile"), fmt(profile)]);
   if (make || model)
-    rows.push(["Camera", [make, model].filter(Boolean).map(fmt).join(" ")]);
-  if (taken) rows.push(["Taken", fmt(taken)]);
-  rows.push(["Location data", lat !== undefined ? "Yes" : "No"]);
+    rows.push([T("Camera"), [make, model].filter(Boolean).map(fmt).join(" ")]);
+  if (taken) rows.push([T("Taken"), fmt(taken)]);
+  rows.push([T("Location data"), lat !== undefined ? T("Yes") : T("No")]);
   rows.push([
-    "Print size at 300 dpi",
+    T("Print size at 300 dpi"),
     `${((e.w / 300) * 2.54).toFixed(1)} × ${((e.h / 300) * 2.54).toFixed(1)} cm`,
   ]);
   const text = rows
@@ -414,13 +419,17 @@ function InfoPanel({ e }: { e: Entry }) {
               className="linkbtn"
               onClick={() => void cleanCopy(e.file)}
             >
-              Remove location and other data
+              {T("Remove location and other data")}
             </button>
           </span>
         </div>
       )}
       <div className="acts-row">
-        <CopyBtn text={text} label="Copy details" what="Details copied" />
+        <CopyBtn
+          text={text}
+          label={T("Copy details")}
+          what={T("Details copied")}
+        />
         {e.meta && (
           <button
             type="button"
@@ -428,7 +437,7 @@ function InfoPanel({ e }: { e: Entry }) {
             onClick={() => void handOff(e.file, "/exif")}
           >
             <Icon name="camera" />
-            All metadata
+            {T("All metadata")}
           </button>
         )}
       </div>
@@ -437,6 +446,7 @@ function InfoPanel({ e }: { e: Entry }) {
 }
 
 function ExifPanel({ e }: { e: Entry }) {
+  const T = useT();
   const lat = pick(e, "gps", "latitude") as number | undefined;
   const lon = pick(e, "gps", "longitude") as number | undefined;
   const json = useMemo(
@@ -454,8 +464,11 @@ function ExifPanel({ e }: { e: Entry }) {
       <div className="panel-stack">
         <h3 className="ptitle-sm">{e.file.name}</h3>
         <p className="muted">
-          No metadata found. This file has no camera, date or location info.
-          Screenshots and images saved by apps often have none.
+          {T(
+            T(
+              "No metadata found. This file has no camera, date or location info. Screenshots and images saved by apps often have none.",
+            ),
+          )}
         </p>
       </div>
     );
@@ -472,7 +485,7 @@ function ExifPanel({ e }: { e: Entry }) {
               target="_blank"
               rel="noopener noreferrer"
             >
-              See on a map
+              {T("See on a map")}
             </a>
           </span>
         </div>
@@ -484,9 +497,13 @@ function ExifPanel({ e }: { e: Entry }) {
           onClick={() => void cleanCopy(e.file)}
         >
           <Icon name="shield" />
-          Remove all metadata
+          {T("Remove all metadata")}
         </button>
-        <CopyBtn text={json} label="Copy JSON" what="Metadata copied" />
+        <CopyBtn
+          text={json}
+          label={T("Copy JSON")}
+          what={T("Metadata copied")}
+        />
         <button
           type="button"
           className="btn sm"
@@ -498,7 +515,7 @@ function ExifPanel({ e }: { e: Entry }) {
           }
         >
           <Icon name="download" />
-          JSON
+          {T("JSON")}
         </button>
       </div>
       {Object.entries(e.meta).map(([group, tags]) => (
@@ -508,7 +525,7 @@ function ExifPanel({ e }: { e: Entry }) {
           open={group !== "xmp" && group !== "icc"}
         >
           <summary>
-            {GROUP[group] ?? group}
+            {T(GROUP[group] ?? group)}
             <span>{Object.keys(tags).length}</span>
           </summary>
           <Rows
@@ -539,6 +556,7 @@ function HistPanel({
   channel: "rgb" | "l" | "r" | "g" | "b";
   setChannel: (c: "rgb" | "l" | "r" | "g" | "b") => void;
 }) {
+  const T = useT();
   const ref = useRef<HTMLCanvasElement>(null);
   useEffect(() => {
     const c = ref.current;
@@ -572,18 +590,22 @@ function HistPanel({
   }, [e, channel]);
   const s = e.stats;
   const tone =
-    s.mean < 70 ? "Mostly dark" : s.mean > 185 ? "Mostly bright" : "Balanced";
-  const contrast = s.sd < 40 ? "Low" : s.sd > 75 ? "High" : "Normal";
+    s.mean < 70
+      ? T("Mostly dark")
+      : s.mean > 185
+        ? T("Mostly bright")
+        : T("Balanced");
+  const contrast = s.sd < 40 ? T("Low") : s.sd > 75 ? T("High") : T("Normal");
   return (
     <div className="panel-stack">
-      <div className="seg" role="group" aria-label="Channel">
+      <div className="seg" role="group" aria-label={T("Channel")}>
         {(
           [
-            ["rgb", "RGB"],
-            ["l", "Brightness"],
-            ["r", "Red"],
-            ["g", "Green"],
-            ["b", "Blue"],
+            ["rgb", T("RGB")],
+            ["l", T("Brightness")],
+            ["r", T("Red")],
+            ["g", T("Green")],
+            ["b", T("Blue")],
           ] as const
         ).map(([v, l]) => (
           <button
@@ -596,30 +618,43 @@ function HistPanel({
           </button>
         ))}
       </div>
-      <canvas ref={ref} className="hist" aria-label="Histogram" />
+      <canvas ref={ref} className="hist" aria-label={T("Histogram")} />
       <div className="hist-axis">
-        <span>Shadows</span>
-        <span>Midtones</span>
-        <span>Highlights</span>
+        <span>{T("Shadows")}</span>
+        <span>{T("Midtones")}</span>
+        <span>{T("Highlights")}</span>
       </div>
       <Rows
         rows={[
-          ["Overall", tone],
-          ["Average brightness", `${Math.round((s.mean / 255) * 100)}%`],
-          ["Contrast", `${contrast} (${Math.round(s.sd)})`],
-          ["Pure black", `${s.dark.toFixed(1)}% of pixels`],
-          ["Pure white", `${s.bright.toFixed(1)}% of pixels`],
+          [T("Overall"), tone],
+          [T("Average brightness"), `${Math.round((s.mean / 255) * 100)}%`],
+          [T("Contrast"), `${contrast} (${Math.round(s.sd)})`],
+          [T("Pure black"), T("{n}% of pixels", { n: s.dark.toFixed(1) })],
+          [T("Pure white"), T("{n}% of pixels", { n: s.bright.toFixed(1) })],
         ]}
       />
       {(s.dark > 3 || s.bright > 3) && (
         <p className="muted small">
           {s.bright > 3
-            ? "Highlights are clipped: some bright detail is lost. "
+            ? T("Highlights are clipped: some bright detail is lost. ")
             : ""}
-          {s.dark > 3 ? "Shadows are clipped: some dark detail is lost. " : ""}
-          <a href="/adjust">Adjust brightness and contrast</a>
+          {s.dark > 3
+            ? T("Shadows are clipped: some dark detail is lost. ")
+            : ""}
+          <a href="/adjust">{T("Adjust brightness and contrast")}</a>
         </p>
       )}
     </div>
+  );
+}
+
+/** Island entry: sets the interface language for everything inside. */
+export default function Inspect(
+  props: Parameters<typeof InspectView>[0] & { lang?: Locale },
+) {
+  return (
+    <LangProvider lang={props.lang}>
+      <InspectView {...props} />
+    </LangProvider>
   );
 }

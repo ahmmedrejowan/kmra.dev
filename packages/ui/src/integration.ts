@@ -34,6 +34,8 @@ const SKIP = [
   /^models\//,
   // pdf.js CMaps and fonts: cached when first used instead (only some PDFs need them)
   /^pdfjs\//,
+  // Bengali font files: only Bangla pages need them, and only the glyphs they use
+  /noto-sans-bengali/,
   /\.(onnx|wasm|map)$/,
   /^sw\.js$/,
   /^sitemap/,
