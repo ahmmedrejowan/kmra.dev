@@ -70,7 +70,9 @@ export type IconName =
   | "globe"
   | "shuffle"
   | "book"
-  | "lock";
+  | "lock"
+  | "scanText"
+  | "search";
 
 export interface Tool {
   /** URL path segment, e.g. "resize" -> imgtool.kmra.dev/resize */
@@ -2666,6 +2668,250 @@ export const apps = [
           "Read EAN, UPC, Code 128 and other barcodes with your phone or laptop camera, or from a photo.",
         about: ["Hold the barcode flat and fill most of the frame with it."],
         preset: { mode: "camera" },
+      },
+    ],
+  },
+  {
+    id: "ocrtool",
+    name: "OCR tools",
+    brand: ["OCR", "Tool"],
+    locales: ["en", "bn"],
+    short: "OCR",
+    tagline:
+      "Copy text from images, screenshots and scanned PDFs. Everything runs on your device.",
+    accent: {
+      light: "#30a46c",
+      dark: "#3dd68c",
+      softLight: "#e6f6eb",
+      softDark: "#132d21",
+    },
+    live: false,
+    devPort: 4326,
+    toolGroups: ["Images", "PDFs"],
+    popular: [
+      "image-to-text",
+      "pdf-to-text",
+      "searchable-pdf",
+      "screenshot-to-text",
+      "batch-ocr",
+      "photo-to-text",
+    ],
+    tools: [
+      {
+        slug: "image-to-text",
+        title: "Extract text from an image (OCR)",
+        name: "Image to text",
+        description:
+          "Copy the text out of photos, screenshots and scans. Two engines: one for documents, one for photos and screenshots.",
+        blurb: "Photos, screenshots, scans",
+        icon: "scanText",
+        group: "Images",
+        ready: false,
+        steps: [
+          "Drop or paste an image. PDFs work too.",
+          "Pick the language. The right engine is chosen for you; switch it if you like.",
+          "Edit the text, then copy it or download .txt.",
+        ],
+      },
+      {
+        slug: "pdf-to-text",
+        title: "Extract text from a PDF, including scanned pages",
+        name: "PDF to text",
+        description:
+          "Get the text out of any PDF. Real text is copied exactly; scanned pages are read with OCR.",
+        blurb: "Scanned or not",
+        icon: "file",
+        group: "PDFs",
+        ready: false,
+        steps: [
+          "Drop a PDF.",
+          "Pages with a text layer are copied as they are; scanned pages are read with OCR.",
+          "Copy the text or download it, page by page or as one file.",
+        ],
+      },
+      {
+        slug: "searchable-pdf",
+        title: "Make a scanned PDF searchable",
+        name: "Searchable PDF",
+        description:
+          "Add an invisible text layer to scanned PDFs, so you can search, select and copy the text. The pages look exactly the same.",
+        blurb: "Search and copy scans",
+        icon: "search",
+        group: "PDFs",
+        ready: false,
+        steps: [
+          "Drop a scanned PDF, or images to turn into one.",
+          "Each page is read with OCR and the text is placed under the picture.",
+          "Download the searchable PDF.",
+        ],
+      },
+      {
+        slug: "batch-ocr",
+        title: "Extract text from many images at once",
+        name: "Batch OCR",
+        description:
+          "Read text from many images or PDFs in one go, and download one file per image or everything combined.",
+        blurb: "Many files, one zip",
+        icon: "layers",
+        group: "Images",
+        ready: false,
+        steps: [
+          "Drop many images or PDFs.",
+          "They're read one after another on your device.",
+          "Download a zip of text files, or one combined file.",
+        ],
+      },
+    ],
+    tasks: [
+      {
+        slug: "screenshot-to-text",
+        tool: "image-to-text",
+        name: "Screenshot to text",
+        short: "Copy text from a screenshot",
+        group: "Images",
+        title: "Copy text from a screenshot",
+        intro:
+          "Paste a screenshot and get the text, ready to copy. Works with chats, error messages, slides and web pages.",
+        about: [
+          "The photo and screenshot engine handles small, coloured and anti-aliased text best.",
+        ],
+        preset: { engine: "photo" },
+      },
+      {
+        slug: "photo-to-text",
+        tool: "image-to-text",
+        name: "Photo to text",
+        short: "Signs, labels, whiteboards",
+        group: "Images",
+        title: "Extract text from a photo",
+        intro:
+          "Take a picture of a sign, label, whiteboard or page and get the text.",
+        about: [
+          "Hold the camera straight and close enough that the text fills most of the picture.",
+        ],
+        preset: { engine: "photo" },
+      },
+      {
+        slug: "receipt-to-text",
+        tool: "image-to-text",
+        name: "Receipt to text",
+        short: "Shop and restaurant receipts",
+        group: "Images",
+        title: "Receipt to text",
+        intro:
+          "Read the items and totals from a photo of a receipt, line by line.",
+        about: [
+          "Flatten the receipt and photograph it in good light for the best result.",
+        ],
+        preset: { engine: "photo" },
+      },
+      {
+        slug: "scan-to-text",
+        tool: "image-to-text",
+        name: "Scanned page to text",
+        short: "Letters, forms, book pages",
+        group: "Images",
+        title: "Scanned document to text",
+        intro: "Turn a scanned letter, form or book page into editable text.",
+        about: ["Scans at 300 dpi give the most accurate results."],
+        preset: { engine: "document" },
+      },
+      {
+        slug: "chinese-ocr",
+        tool: "image-to-text",
+        name: "Chinese OCR",
+        short: "Simplified Chinese text",
+        group: "Languages",
+        title: "Extract Chinese text from an image",
+        intro: "Read Simplified Chinese text from images and scans.",
+        about: ["Traditional Chinese is in the language list too."],
+        preset: { lang: "chi_sim" },
+      },
+      {
+        slug: "japanese-ocr",
+        tool: "image-to-text",
+        name: "Japanese OCR",
+        short: "Japanese text",
+        group: "Languages",
+        title: "Extract Japanese text from an image",
+        intro:
+          "Read Japanese text from images and scans, including vertical text in document mode.",
+        about: ["Pick Japanese (vertical) for vertical layouts."],
+        preset: { lang: "jpn" },
+      },
+      {
+        slug: "arabic-ocr",
+        tool: "image-to-text",
+        name: "Arabic OCR",
+        short: "Arabic text",
+        group: "Languages",
+        title: "Extract Arabic text from an image",
+        intro:
+          "Read Arabic text from images and scans. The result keeps right-to-left order.",
+        about: [
+          "Clear, printed text works best; handwriting is not supported.",
+        ],
+        preset: { lang: "ara" },
+      },
+      {
+        slug: "hindi-ocr",
+        tool: "image-to-text",
+        name: "Hindi OCR",
+        short: "Devanagari text",
+        group: "Languages",
+        title: "Extract Hindi text from an image",
+        intro: "Read Hindi and other Devanagari text from images and scans.",
+        about: ["Marathi and Nepali are in the language list too."],
+        preset: { lang: "hin" },
+      },
+      {
+        slug: "russian-ocr",
+        tool: "image-to-text",
+        name: "Russian OCR",
+        short: "Cyrillic text",
+        group: "Languages",
+        title: "Extract Russian text from an image",
+        intro: "Read Russian and other Cyrillic text from images and scans.",
+        about: ["Ukrainian and Bulgarian are in the language list too."],
+        preset: { lang: "rus" },
+      },
+      {
+        slug: "spanish-ocr",
+        tool: "image-to-text",
+        name: "Spanish OCR",
+        short: "Spanish text",
+        group: "Languages",
+        title: "Extract Spanish text from an image",
+        intro: "Read Spanish text from images and scans, accents included.",
+        about: ["Add English as a second language for mixed text."],
+        preset: { lang: "spa" },
+      },
+      {
+        slug: "scanned-pdf-to-text",
+        tool: "pdf-to-text",
+        name: "Scanned PDF to text",
+        short: "OCR every page",
+        group: "PDFs",
+        title: "Scanned PDF to text",
+        intro: "Read the text from a scanned PDF, page by page.",
+        about: [
+          "Pages that already have real text are copied exactly, without OCR.",
+        ],
+        preset: { force: "ocr" },
+      },
+      {
+        slug: "ocr-pdf",
+        tool: "searchable-pdf",
+        name: "OCR a PDF",
+        short: "Search inside scans",
+        group: "PDFs",
+        title: "OCR a PDF",
+        intro:
+          "Run OCR on a PDF so you can search and copy its text in any PDF reader.",
+        about: [
+          "The pages look the same; the text sits invisibly under each page.",
+        ],
+        preset: {},
       },
     ],
   },
