@@ -423,7 +423,7 @@ header.site {
 /* Many tools: four balanced columns, groups never split across columns */
 .mega.cols {
   display: block;
-  columns: 4 220px;
+  columns: var(--cols, 4) 220px;
   column-gap: 16px;
   width: min(1040px, calc(100vw - 32px));
   max-height: calc(100dvh - 90px);
@@ -4909,21 +4909,70 @@ footer.site .fmore {
   margin-top: 22px;
 }
 
-/* Use cases menu: plain names (the task name already says what it does) */
+/* Use cases menu: small task cards, like Popular tasks */
 .tasks-menu .mgrp {
-  margin-bottom: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+.tasks-menu h6 {
+  margin-bottom: 2px;
 }
 .mi-task {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--card);
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s;
+}
+.mi-task .tile {
+  width: 30px;
+  height: 30px;
+  flex: none;
+}
+.mi-task .tile svg {
+  width: 16px;
+  height: 16px;
+}
+.mi-task-text {
+  flex: 1;
+  min-width: 0;
+}
+.mi-task-text strong,
+.mi-task-text small {
   display: block;
-  padding: 6px 10px;
-  border-radius: 8px;
-  font-size: 14.5px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
+.mi-task-text strong {
+  font-size: 13.5px;
+  font-weight: 600;
+}
+.mi-task-text small {
+  font-size: 12px;
+  color: var(--muted);
+}
+.mi-task .go {
+  width: 14px;
+  height: 14px;
+  flex: none;
+  color: var(--muted);
+  opacity: 0;
+  transition: opacity 0.15s;
+}
 .mi-task:hover {
-  background: var(--raise);
+  border-color: color-mix(in srgb, var(--acc) 45%, var(--line));
+  box-shadow: 0 12px 24px -20px color-mix(in srgb, var(--acc) 55%, transparent);
+}
+.mi-task:hover .go {
+  opacity: 1;
   color: var(--acc);
 }
 .tasks-menu .mi-more {
