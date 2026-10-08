@@ -8,6 +8,9 @@ import { makeImgtoolFixtures } from "./imgtool.ts";
 import { makeDocFixtures } from "./docs.ts";
 import makeHard from "./hard.ts";
 import { makeDevtoolFixtures } from "./devtool.ts";
+import { makeOcrPdfFixtures } from "./ocrtool-pdf.ts";
+import { makeOcrImageFixtures } from "./ocrtool.ts";
+import { makeOcrPhotoFixtures } from "./ocrtool-photo.ts";
 
 export default async function make() {
   await mkdir(GEN, { recursive: true });
@@ -19,4 +22,10 @@ export default async function make() {
   await makeHard();
   // devtool inputs (an Excel workbook): see devtool.ts
   await makeDevtoolFixtures(GEN);
+  // OCRTool PDF inputs (scanned, text-layer and mixed PDFs, scan images): see ocrtool-pdf.ts
+  await makeOcrPdfFixtures(GEN);
+  // OCRTool image inputs (document, UI screenshot, note, Chinese line): see ocrtool.ts
+  await makeOcrImageFixtures(GEN);
+  // OCRTool photo engine inputs (app screenshot, phone photo of a page): see ocrtool-photo.ts
+  await makeOcrPhotoFixtures(GEN);
 }

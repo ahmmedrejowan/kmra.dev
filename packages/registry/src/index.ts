@@ -2706,7 +2706,7 @@ export const apps = [
         blurb: "Photos, screenshots, scans",
         icon: "scanText",
         group: "Images",
-        ready: false,
+        ready: true,
         steps: [
           "Drop or paste an image. PDFs work too.",
           "Pick the language. The right engine is chosen for you; switch it if you like.",
@@ -2722,7 +2722,7 @@ export const apps = [
         blurb: "Scanned or not",
         icon: "file",
         group: "PDFs",
-        ready: false,
+        ready: true,
         steps: [
           "Drop a PDF.",
           "Pages with a text layer are copied as they are; scanned pages are read with OCR.",
@@ -2738,7 +2738,7 @@ export const apps = [
         blurb: "Search and copy scans",
         icon: "search",
         group: "PDFs",
-        ready: false,
+        ready: true,
         steps: [
           "Drop a scanned PDF, or images to turn into one.",
           "Each page is read with OCR and the text is placed under the picture.",
@@ -2754,7 +2754,7 @@ export const apps = [
         blurb: "Many files, one zip",
         icon: "layers",
         group: "Images",
-        ready: false,
+        ready: true,
         steps: [
           "Drop many images or PDFs.",
           "They're read one after another on your device.",

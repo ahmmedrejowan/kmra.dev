@@ -8649,3 +8649,821 @@ select.bar-input {
     font-size: 36px;
   }
 }
+
+/* ocrtool card art: a scanned page with boxed lines, turned into text */
+.art-ocr {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.art-ocr > .ico {
+  width: 20px;
+  height: 20px;
+  color: var(--muted);
+}
+.art-ocr-src,
+.art-ocr-out {
+  display: grid;
+  align-content: center;
+  gap: 8px;
+  width: 92px;
+  height: 112px;
+  padding: 12px;
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: 0 10px 24px -16px rgb(0 0 0 / 0.5);
+}
+.art-ocr-src {
+  background: #f1efe8;
+}
+.art-ocr-src i {
+  display: block;
+  height: 8px;
+  border-radius: 2px;
+  background: #3f3f46;
+  outline: 1.5px solid var(--acc);
+  outline-offset: 2px;
+}
+.art-ocr-src i.w1 {
+  width: 100%;
+}
+.art-ocr-src i.w2 {
+  width: 80%;
+}
+.art-ocr-src i.w3 {
+  width: 55%;
+}
+.art-ocr.pdf-to-text .art-ocr-src,
+.art-ocr.searchable-pdf .art-ocr-src {
+  border-top-right-radius: 18px;
+}
+.art-ocr.batch-ocr .art-ocr-src {
+  box-shadow:
+    5px -5px 0 -1px #e4e2da,
+    10px -10px 0 -2px #d6d3ca,
+    0 10px 24px -16px rgb(0 0 0 / 0.5);
+}
+.art-ocr-out b {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--acc);
+  line-height: 1;
+}
+.art-ocr-out i {
+  display: block;
+  height: 6px;
+  border-radius: 3px;
+  background: #d4d4d8;
+}
+.art-ocr-out i.short {
+  width: 60%;
+}
+
+/* ocrtool: pdf tools */
+/* Workspace: options bar on top, page rail on the left, text or page preview on the right */
+.toolcard.op-card {
+  display: flex;
+  flex-direction: column;
+}
+.op-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 18px;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--line);
+}
+.op-langlist {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+.op-lang {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 2px 3px 2px 10px;
+  border-radius: 999px;
+  background: var(--acc-soft);
+  font-size: 13px;
+  white-space: nowrap;
+}
+.op-lang:not(:has(button)) {
+  padding-right: 10px;
+}
+.op-lang button {
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border: 0;
+  border-radius: 50%;
+  background: none;
+  color: var(--muted);
+  cursor: pointer;
+}
+.op-lang button:hover {
+  color: var(--fg);
+  background: color-mix(in srgb, var(--acc) 15%, transparent);
+}
+.op-lang .ico {
+  width: 13px;
+  height: 13px;
+}
+.op-langlist select {
+  max-width: 150px;
+}
+.op-range {
+  width: 110px;
+}
+.op-range[aria-invalid="true"] {
+  border-color: var(--warn);
+}
+.op-acts {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.op-hint {
+  margin: 0;
+  padding: 6px 14px;
+  font-size: 13px;
+  color: var(--warn);
+  border-bottom: 1px solid var(--line);
+}
+.op-run {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 14px;
+  font-size: 13.5px;
+  background: var(--acc-soft);
+  border-bottom: 1px solid var(--line);
+}
+.op-track {
+  flex: 1;
+  min-width: 60px;
+  height: 6px;
+  border-radius: 3px;
+  overflow: hidden;
+  background: color-mix(in srgb, var(--acc) 18%, transparent);
+}
+.op-track i {
+  display: block;
+  height: 100%;
+  background: var(--acc);
+  transition: width 0.3s;
+}
+.op-spin {
+  flex: none;
+  width: 14px;
+  height: 14px;
+  border: 2px solid var(--acc);
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: op-spin 0.8s linear infinite;
+}
+@keyframes op-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .op-spin {
+    animation: none;
+  }
+}
+.op-body {
+  display: grid;
+  grid-template-columns: 172px minmax(0, 1fr);
+  min-height: 580px;
+}
+.op-rail {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: min(80vh, 820px);
+  overflow-y: auto;
+  padding: 10px;
+  border-right: 1px solid var(--line);
+}
+.op-thumb {
+  display: grid;
+  gap: 6px;
+  padding: 6px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  background: none;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.op-thumb:hover {
+  background: var(--raise);
+}
+.op-thumb[aria-pressed="true"] {
+  border-color: var(--acc);
+  background: var(--acc-soft);
+}
+.op-thumb.dim {
+  opacity: 0.45;
+}
+.op-pic {
+  display: block;
+  width: 100%;
+  aspect-ratio: 0.707;
+  overflow: hidden;
+  border-radius: 4px;
+  background: #fff;
+  box-shadow: 0 0 0 1px var(--line);
+}
+.op-pic img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+.op-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  font-size: 12px;
+}
+.op-num {
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+.op-badge {
+  padding: 1px 7px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  font-size: 11.5px;
+  color: var(--muted);
+  white-space: nowrap;
+}
+.op-badge.acc {
+  color: var(--acc);
+  background: var(--card);
+  border-color: color-mix(in srgb, var(--acc) 35%, var(--line));
+}
+.op-badge.warn {
+  color: var(--warn);
+  border-color: color-mix(in srgb, var(--warn) 40%, var(--line));
+}
+.op-badge.busy {
+  color: var(--on-acc);
+  background: var(--acc);
+  border-color: transparent;
+  font-variant-numeric: tabular-nums;
+}
+.op-main {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.op-head,
+.op-foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 14px;
+  padding: 10px 14px;
+  font-size: 13.5px;
+}
+.op-head {
+  border-bottom: 1px solid var(--line);
+}
+.op-foot {
+  border-top: 1px solid var(--line);
+}
+.op-foot .small {
+  font-size: 13px;
+}
+.op-text {
+  flex: 1;
+  min-height: 460px;
+  padding: 18px 20px;
+  border: 0;
+  outline: 0;
+  resize: none;
+  background: var(--card);
+  color: var(--fg);
+  font: inherit;
+  font-size: 15px;
+  line-height: 1.6;
+}
+.op-text:focus-visible {
+  box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--acc) 40%, transparent);
+}
+.op-text::placeholder {
+  color: var(--muted);
+}
+/* Searchable PDF: the selected page, with the words found outlined */
+.op-sheet-wrap {
+  flex: 1;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  overflow: auto;
+}
+.op-sheet {
+  position: relative;
+  width: min(100%, calc(70vh * var(--r, 0.707)), 760px);
+  aspect-ratio: var(--r, 0.707);
+  background: #fff;
+  border-radius: 3px;
+  box-shadow:
+    0 0 0 1px var(--line),
+    0 14px 34px -20px rgb(0 0 0 / 0.5);
+}
+.op-sheet img,
+.op-sheet svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.op-sheet rect {
+  fill: color-mix(in srgb, var(--acc) 20%, transparent);
+  stroke: var(--acc);
+  stroke-width: 1.5px;
+  vector-effect: non-scaling-stroke;
+}
+.op-found {
+  font-weight: 600;
+}
+/* Before a file: languages and engine under the drop button */
+.op-preopts {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px 18px;
+  margin-top: 16px;
+  cursor: default;
+}
+.op-problem {
+  max-width: 480px;
+  margin: 14px auto 0;
+  text-align: left;
+}
+@media (max-width: 760px) {
+  .op-body {
+    grid-template-columns: 1fr;
+    min-height: 0;
+  }
+  .op-rail {
+    flex-direction: row;
+    max-height: none;
+    overflow-x: auto;
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .op-thumb {
+    flex: none;
+    width: 104px;
+  }
+  .op-text {
+    min-height: 340px;
+  }
+  .op-sheet-wrap {
+    padding: 14px;
+  }
+  .op-sheet {
+    width: min(100%, calc(64vh * var(--r, 0.707)));
+  }
+}
+
+/* ocrtool: image tools */
+/* Image to text and Batch OCR share the devtool workspace (.devcard, .dev-bar, .pane) */
+.oi-card {
+  position: relative;
+  overflow: visible;
+}
+.oi-card > .dev-bar {
+  position: relative;
+  z-index: 3;
+}
+.oi-empty {
+  padding: 16px;
+}
+.oi-empty .dropcard.lg {
+  width: 100%;
+  padding: 0;
+  box-shadow: none;
+}
+.oi-empty .dropcard.lg .dropzone {
+  padding: 64px 24px;
+}
+.oi-paste {
+  margin-top: 4px;
+}
+/* Language picker: a button and a searchable list */
+.oi-langs {
+  position: relative;
+}
+.oi-lang-btn {
+  max-width: 340px;
+}
+.oi-lang-btn #oi-lang-value {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.oi-pop {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  width: min(360px, calc(100vw - 32px));
+  padding: 10px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+  z-index: 20;
+}
+.oi-search {
+  width: 100%;
+  padding: 7px 10px;
+}
+.oi-pop-hint {
+  margin: 8px 2px;
+  font-size: 12.5px;
+  color: var(--muted);
+}
+.oi-pop-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-height: 320px;
+  overflow: auto;
+}
+.oi-pop-list button {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 7px 8px;
+  border: 0;
+  border-radius: 8px;
+  background: none;
+  color: var(--fg);
+  font: inherit;
+  font-size: 13.5px;
+  text-align: left;
+  cursor: pointer;
+}
+.oi-pop-list button:hover {
+  background: var(--raise);
+}
+.oi-pop-list button.on {
+  background: var(--acc-soft);
+}
+.oi-check {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 18px;
+  height: 18px;
+  border: 1.5px solid var(--line);
+  border-radius: 5px;
+}
+.oi-pop-list .on .oi-check {
+  background: var(--acc);
+  border-color: var(--acc);
+  color: var(--on-acc, #fff);
+}
+.oi-check .ico {
+  width: 12px;
+  height: 12px;
+}
+.oi-lname {
+  flex: 1;
+  min-width: 0;
+}
+.oi-native {
+  margin-left: 8px;
+  color: var(--muted);
+}
+.oi-size {
+  flex: none;
+  font-size: 12px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+.oi-none {
+  padding: 10px 8px;
+  color: var(--muted);
+  font-size: 13.5px;
+}
+/* One-line notes under the bar (PDF dropped, several images, settings changed) */
+.oi-note {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 10px;
+  padding: 8px 10px 8px 14px;
+  border-bottom: 1px solid var(--line);
+  background: var(--acc-soft);
+  font-size: 13.5px;
+}
+.oi-note > .ico {
+  width: 16px;
+  height: 16px;
+  color: var(--acc);
+}
+.oi-note-x {
+  margin-left: auto;
+}
+/* Picture and text side by side. The picture sets the height (as tall as it is at full width,
+   within the screen); the text fills that height and scrolls on its own. */
+.oi-panes {
+  min-height: 0;
+}
+.oi-panes > .pane {
+  min-height: 0;
+}
+.oi-fname {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.oi-zoom {
+  flex: none;
+  flex-wrap: nowrap;
+  align-items: center;
+}
+.oi-zl {
+  min-width: 44px;
+  text-align: center;
+  font-size: 12.5px;
+  font-variant-numeric: tabular-nums;
+  color: var(--muted);
+}
+.oi-view {
+  position: relative;
+}
+.oi-scroll {
+  flex: none;
+  height: 420px;
+  min-height: 0;
+  overflow: auto;
+  display: grid;
+  padding: 16px;
+  background: var(--raise);
+}
+.oi-canvas {
+  position: relative;
+  margin: auto;
+  box-shadow: 0 0 0 1px var(--line);
+}
+.oi-canvas img,
+.oi-canvas svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  user-select: none;
+}
+.oi-line {
+  fill: transparent;
+  stroke: color-mix(in srgb, var(--acc) 55%, transparent);
+  stroke-width: 1;
+  cursor: pointer;
+}
+.oi-line:hover,
+.oi-line.on {
+  fill: color-mix(in srgb, var(--acc) 22%, transparent);
+  stroke: var(--acc);
+  stroke-width: 2;
+}
+.oi-unsure {
+  fill: rgb(229 72 77 / 0.24);
+  pointer-events: none;
+}
+.oi-busy {
+  position: absolute;
+  left: 50%;
+  bottom: 18px;
+  transform: translateX(-50%);
+  display: grid;
+  gap: 8px;
+  width: min(440px, calc(100% - 32px));
+  padding: 12px 14px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+  font-size: 13.5px;
+}
+.oi-busy.bad {
+  color: #e5484d;
+}
+.oi-bar {
+  display: block;
+  height: 4px;
+  border-radius: 4px;
+  background: var(--line);
+  overflow: hidden;
+}
+.oi-bar i {
+  display: block;
+  height: 100%;
+  background: var(--acc);
+  transition: width 0.2s;
+}
+/* Text with the marked line: a mirror behind a transparent textarea, both sized by the text */
+.oi-text {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  /* Doesn't stretch the row: the picture decides the height */
+  contain: size;
+}
+.oi-stack {
+  display: grid;
+  min-height: 100%;
+}
+.oi-stack > * {
+  grid-area: 1 / 1;
+  margin: 0;
+  padding: 14px 16px;
+  font: inherit;
+  font-size: 14.5px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  border: 0;
+  tab-size: 2;
+}
+.oi-hl {
+  color: transparent;
+  pointer-events: none;
+}
+.oi-hl mark {
+  color: transparent;
+  background: color-mix(in srgb, var(--acc) 22%, transparent);
+  border-radius: 3px;
+}
+.oi-stack textarea {
+  resize: none;
+  overflow: hidden;
+  outline: 0;
+  background: transparent;
+  color: var(--fg);
+  min-height: 100%;
+}
+.oi-stack textarea::placeholder {
+  color: var(--muted);
+}
+.oi-legend {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.oi-legend i {
+  width: 12px;
+  height: 10px;
+  border-radius: 2px;
+  background: rgb(229 72 77 / 0.35);
+}
+/* Batch: one row per file */
+.oi-rows {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.oi-row:last-child {
+  border-bottom: 0;
+}
+.oi-row {
+  border-bottom: 1px solid var(--line);
+  padding: 10px 14px;
+}
+.oi-row-main {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1.2fr) minmax(0, 2fr) auto;
+  align-items: center;
+  gap: 12px;
+}
+.oi-thumb {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 8px;
+  background: var(--raise);
+  overflow: hidden;
+  color: var(--muted);
+}
+.oi-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+.oi-row-name {
+  display: grid;
+  min-width: 0;
+  font-size: 13.5px;
+}
+.oi-row-name strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 600;
+}
+.oi-row-name .muted {
+  font-size: 12.5px;
+}
+.oi-row-state {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+  font-size: 13px;
+}
+.oi-row-status {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.oi-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+.oi-bad {
+  color: #e5484d;
+}
+.oi-row-acts {
+  display: flex;
+  gap: 4px;
+}
+.oi-preview {
+  margin: 8px 0 0 56px;
+  font-size: 13px;
+  color: var(--muted);
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+.oi-full {
+  display: block;
+  width: calc(100% - 56px);
+  margin: 10px 0 0 56px;
+  min-height: 220px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--raise);
+  color: var(--fg);
+  font: inherit;
+  font-size: 13.5px;
+  line-height: 1.55;
+  resize: vertical;
+}
+.oi-batch-foot {
+  align-items: center;
+  justify-content: space-between;
+}
+.oi-dl {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+@media (max-width: 760px) {
+  /* Long choices wrap instead of widening the page */
+  .oi-card .bar-item {
+    flex-wrap: wrap;
+    min-width: 0;
+    max-width: 100%;
+  }
+  .oi-card .seg.sm {
+    display: flex;
+    flex-wrap: wrap;
+  }
+  .oi-lang-btn {
+    max-width: calc(100vw - 120px);
+  }
+  .oi-scroll {
+    max-height: 56vh;
+  }
+  .oi-text {
+    min-height: 280px;
+    contain: none;
+  }
+  .oi-row-main {
+    grid-template-columns: 44px minmax(0, 1fr) auto;
+  }
+  .oi-row-state {
+    grid-column: 2 / -1;
+  }
+  .oi-preview,
+  .oi-full {
+    margin-left: 0;
+    width: 100%;
+  }
+}

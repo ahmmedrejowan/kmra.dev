@@ -6,6 +6,8 @@ allowBuilds:
   esbuild: true
   # Pulled in by onnxruntime-web; its postinstall isn't needed in the browser build
   protobufjs: false
+  # tesseract.js only runs an opencollective banner on install
+  tesseract.js: false
 
 # Astro's prerender chunk resolves `cookie` by walking up from apps/*/dist. Hoisting it to the
 # root keeps a stray ~/node_modules/cookie (outside the repo) from being picked up instead.

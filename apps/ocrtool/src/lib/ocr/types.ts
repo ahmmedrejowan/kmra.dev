@@ -2,7 +2,7 @@
  * The contract between the OCR tools and the two engines. Tools only talk to `recognize()` in
  * ./index.ts; each engine runs in its own Web Worker and returns this shape.
  *
- *   document: Tesseract (tesseract.js) — scans and documents, 100+ languages.
+ *   document: Tesseract (tesseract.js) — scans and documents, 43 languages (best_int models).
  *   photo:    PaddleOCR (ONNX on onnxruntime-web) — photos, screenshots, uneven text.
  */
 

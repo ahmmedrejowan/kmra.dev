@@ -192,6 +192,31 @@ const dm = (() => {
           <span set:html={QR} />
         ))}
       </div>
+    ) : app === "ocrtool" ? (
+      <div class:list={["art-ocr", tool.slug]} aria-hidden="true">
+        <span class="art-ocr-src">
+          {tool.slug === "image-to-text" || tool.slug === "batch-ocr" ? (
+            <>
+              <i class="w1" />
+              <i class="w2" />
+              <i class="w3" />
+            </>
+          ) : (
+            <>
+              <i class="w2" />
+              <i class="w1" />
+              <i class="w3" />
+              <i class="w2" />
+            </>
+          )}
+        </span>
+        <Icon name="right" />
+        <span class="art-ocr-out">
+          <b>Aa</b>
+          <i />
+          <i class="short" />
+        </span>
+      </div>
     ) : app === "devtool" ? (
       <div class="art-code" aria-hidden="true">
         <span class="art-code-bar">
