@@ -2674,7 +2674,7 @@ export const apps = [
 export type AppId = (typeof apps)[number]["id"];
 
 /**
- * IndexNow key (Bing, Yandex and others). Each app serves it at /<key>.txt (apps/*/public), which
+ * IndexNow key (Bing, Yandex and others). Each app serves it at /<key>.txt (from its public folder), which
  * proves the site owns it when URLs are submitted to https://api.indexnow.org.
  */
 export const INDEXNOW_KEY = "0f0695727b67e3fb00b1dc4dd4f0ff4f";
