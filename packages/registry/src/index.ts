@@ -2685,7 +2685,7 @@ export const apps = [
       softLight: "#e6f6eb",
       softDark: "#132d21",
     },
-    live: false,
+    live: true,
     devPort: 4326,
     toolGroups: ["Images", "PDFs"],
     popular: [
