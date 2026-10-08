@@ -1474,7 +1474,7 @@ export const apps = [
         blurb: "Both directions",
         icon: "convert",
         group: "Format",
-        ready: false,
+        ready: true,
         steps: [
           "Paste YAML or JSON.",
           "The other format appears as you type.",
@@ -1742,7 +1742,7 @@ export const apps = [
         blurb: "JSON, CSV or SQL",
         icon: "table",
         group: "Generate",
-        ready: false,
+        ready: true,
         steps: [
           "Pick the fields you need.",
           "Choose how many rows and the format.",
@@ -1774,7 +1774,7 @@ export const apps = [
         blurb: "Binary, hex, decimal",
         icon: "binary",
         group: "Convert",
-        ready: false,
+        ready: true,
         steps: [
           "Type a number in any base.",
           "Every other base updates.",
@@ -1790,7 +1790,7 @@ export const apps = [
         blurb: "HEX, RGB, HSL, OKLCH",
         icon: "palette",
         group: "Convert",
-        ready: false,
+        ready: true,
         steps: [
           "Type a color in any format, or pick one.",
           "Every format updates.",
@@ -1822,7 +1822,7 @@ export const apps = [
         blurb: "CSV, JSON, Excel",
         icon: "table",
         group: "Convert",
-        ready: false,
+        ready: true,
         steps: [
           "Paste CSV or JSON, or drop a CSV or Excel file.",
           "Check the table preview and the options.",
@@ -1838,7 +1838,7 @@ export const apps = [
         blurb: "Interfaces from samples",
         icon: "braces",
         group: "Convert",
-        ready: false,
+        ready: true,
         steps: [
           "Paste a JSON sample.",
           "Name the root type and pick interface or type.",
@@ -1854,7 +1854,7 @@ export const apps = [
         blurb: "fetch, axios, Python",
         icon: "terminal",
         group: "Convert",
-        ready: false,
+        ready: true,
         steps: [
           "Paste a cURL command.",
           "Pick the language.",
@@ -1870,7 +1870,7 @@ export const apps = [
         blurb: "Compare two texts",
         icon: "diff",
         group: "Text",
-        ready: false,
+        ready: true,
         steps: [
           "Paste the original and the changed text.",
           "See additions and removals side by side or inline.",
@@ -1886,7 +1886,7 @@ export const apps = [
         blurb: "Matches, groups, replace",
         icon: "regex",
         group: "Text",
-        ready: false,
+        ready: true,
         steps: [
           "Type a pattern and pick flags.",
           "Paste test text. Matches are highlighted.",
@@ -1902,7 +1902,7 @@ export const apps = [
         blurb: "Sort, dedupe, count",
         icon: "list",
         group: "Text",
-        ready: false,
+        ready: true,
         steps: [
           "Paste text.",
           "Pick what to do with the lines.",
@@ -1918,7 +1918,7 @@ export const apps = [
         blurb: "Clean URL slugs",
         icon: "link",
         group: "Text",
-        ready: false,
+        ready: true,
         steps: [
           "Paste titles, one per line.",
           "Pick the separator and case.",
@@ -2122,7 +2122,7 @@ export const apps = [
         title: "Convert HEX to RGB",
         intro: "Turn #ff8800 into rgb(255, 136, 0), HSL and OKLCH.",
         about: ["Short HEX like #f80 and HEX with alpha work too."],
-        preset: {},
+        preset: { color: "#ff8800" },
       },
       {
         slug: "csv-to-json",

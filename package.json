@@ -21,6 +21,7 @@
     "prettier": "^3.9.9",
     "prettier-plugin-astro": "^1.1.0",
     "turbo": "^2.11.7",
-    "typescript": "^6.0.3"
+    "typescript": "^6.0.3",
+    "xlsx": "0.18.5"
   }
 }

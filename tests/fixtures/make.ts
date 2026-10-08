@@ -7,6 +7,7 @@ import { GEN } from "../helpers.ts";
 import { makeImgtoolFixtures } from "./imgtool.ts";
 import { makeDocFixtures } from "./docs.ts";
 import makeHard from "./hard.ts";
+import { makeDevtoolFixtures } from "./devtool.ts";
 
 export default async function make() {
   await mkdir(GEN, { recursive: true });
@@ -16,4 +17,6 @@ export default async function make() {
   await makeDocFixtures(GEN);
   // hard inputs for tests/hard (huge, damaged, odd formats, code photos): see hard.ts
   await makeHard();
+  // devtool inputs (an Excel workbook): see devtool.ts
+  await makeDevtoolFixtures(GEN);
 }
