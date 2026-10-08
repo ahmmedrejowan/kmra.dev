@@ -16,6 +16,47 @@ const T = (s: string) => tr(locale, s);
 // Each app is built with its own site URL (imgtool.kmra.dev, pdftool.kmra.dev, ...)
 const app = Astro.site?.hostname.split(".")[0] ?? "imgtool";
 const page = (lines = 3) => Array.from({ length: lines });
+// A few lines of code per developer tool card
+const SNIPS: Record<string, string[]> = {
+  "json-formatter": ["{", '  "name": "kmra",', '  "live": true', "}"],
+  "yaml-json": ["name: kmra", "live: true", '→ {"name":"kmra"}'],
+  "xml-formatter": ["<site>", "  <name>kmra</name>", "</site>"],
+  "sql-formatter": ["SELECT id, name", "FROM tools", "WHERE live = 1"],
+  "html-formatter": ["<main>", "  <h1>Hi</h1>", "</main>"],
+  "css-formatter": [".card {", "  color: #8e4ec6;", "}"],
+  "js-formatter": ["const ok = (x) =>", "  x > 0;"],
+  "markdown-preview": ["# Title", "**bold** text", "- item"],
+  base64: ["héllo 👋", "aMOpbGxvIPCfkYs="],
+  "url-encode": ["a b&c", "a%20b%26c"],
+  "html-entities": ['<a href="#">', "&lt;a href=&quot;#&quot;&gt;"],
+  "jwt-decoder": ["eyJhbGciOiJIUzI1…", '{ "sub": "42" }', "expires in 2 h"],
+  "unicode-escape": ["é → \\u00e9", "👋 → \\u{1F44B}"],
+  "text-hex": ["Hi", "48 69", "01001000 01101001"],
+  uuid: ["018f3a2c-7b1d-7c4e-", "9a1b-5f2e8c0d4a17"],
+  "password-generator": ["k7#Qv!2pRz$9", "strong, 78 bits"],
+  hash: ["SHA-256", "ba7816bf8f01cfea…"],
+  "lorem-ipsum": [
+    "Lorem ipsum dolor",
+    "sit amet, consec-",
+    "tetur adipiscing.",
+  ],
+  "fake-data": ["name,email", "Ada,ada@mail.dev", "Lin,lin@mail.dev"],
+  timestamp: ["1700000000", "2023-11-14 22:13 UTC"],
+  "number-base": ["255", "0xff  0b11111111"],
+  "color-converter": ["#8e4ec6", "rgb(142 78 198)"],
+  "case-converter": ["userId", "user_id  UserId"],
+  "csv-json": ["id,name", "1,Ada", '→ [{"id":1,…}]'],
+  "json-to-typescript": ["interface User {", "  id: number;", "}"],
+  "curl-converter": ["curl -X POST …", "→ fetch(url, {…})"],
+  "diff-checker": ["- old line", "+ new line"],
+  "regex-tester": ["/\\d{3}-\\d{4}/g", "2 matches"],
+  "line-tools": ["b, a, a", "→ a, b"],
+  "slug-generator": ["Hello World!", "hello-world"],
+  "cron-explainer": ["*/15 9-17 * * 1-5", "every 15 min, weekdays"],
+  "chmod-calculator": ["755", "rwxr-xr-x"],
+  "url-parser": ["https://kmra.dev/a?b=1", "host  path  query"],
+  "http-status": ["404", "Not Found"],
+};
 // Small QR mark reused by the QR tool cards
 const QR = `<svg viewBox="0 0 21 21"><path fill="currentColor" fill-rule="evenodd" d="M0 0h7v7H0zM1 1v5h5V1zM2 2h3v3H2zM14 0h7v7h-7zM15 1v5h5V1zM16 2h3v3h-3zM0 14h7v7H0zM1 15v5h5v-5zM2 16h3v3H2zM9 1h2v2H9zM9 5h1v3H9zM12 9h3v1h-3zM9 9h2v2H9zM17 9h3v2h-3zM9 13h3v2H9zM14 14h2v3h-2zM18 16h3v2h-3zM10 18h3v3h-3zM16 19h2v2h-2zM1 9h3v2H1zM5 10h2v1H5z"/></svg>`;
 // A 14×14 Data Matrix look: solid L finder (left, bottom), dotted clock track (top, right)
@@ -150,6 +191,19 @@ const dm = (() => {
         {(tool.slug === "bulk" ? [0, 1, 2] : [0]).map(() => (
           <span set:html={QR} />
         ))}
+      </div>
+    ) : app === "devtool" ? (
+      <div class="art-code" aria-hidden="true">
+        <span class="art-code-bar">
+          <i />
+          <i />
+          <i />
+        </span>
+        <code>
+          {(SNIPS[tool.slug] ?? ["{ }"]).map((l) => (
+            <span>{l}</span>
+          ))}
+        </code>
       </div>
     ) : app === "qrtool" && tool.slug === "codes-2d" ? (
       <div class="art-qr">

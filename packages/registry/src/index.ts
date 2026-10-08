@@ -1582,7 +1582,7 @@ export const apps = [
         blurb: "Text and files",
         icon: "binary",
         group: "Encode",
-        ready: false,
+        ready: true,
         steps: [
           "Paste text or Base64, or drop a file.",
           "Pick encode or decode. URL-safe Base64 is supported.",
@@ -1598,7 +1598,7 @@ export const apps = [
         blurb: "Percent-encoding",
         icon: "link",
         group: "Encode",
-        ready: false,
+        ready: true,
         steps: [
           "Paste text or an encoded URL.",
           "Pick encode or decode.",
@@ -1614,7 +1614,7 @@ export const apps = [
         blurb: "Escape and unescape",
         icon: "code",
         group: "Encode",
-        ready: false,
+        ready: true,
         steps: [
           "Paste text or HTML.",
           "Pick escape or unescape.",
@@ -1630,7 +1630,7 @@ export const apps = [
         blurb: "Header, payload, expiry",
         icon: "key",
         group: "Encode",
-        ready: false,
+        ready: true,
         steps: [
           "Paste a token.",
           "Read the header, payload and dates.",
@@ -1646,7 +1646,7 @@ export const apps = [
         blurb: "\\\\u, code points, JSON",
         icon: "type",
         group: "Encode",
-        ready: false,
+        ready: true,
         steps: [
           "Paste text or escapes.",
           "Pick the escape style.",
@@ -1662,7 +1662,7 @@ export const apps = [
         blurb: "Hex, binary, bytes",
         icon: "binary",
         group: "Encode",
-        ready: false,
+        ready: true,
         steps: [
           "Paste text or bytes.",
           "Pick hex, binary or decimal.",
@@ -1678,7 +1678,7 @@ export const apps = [
         blurb: "v4, v7, ULID",
         icon: "shuffle",
         group: "Generate",
-        ready: false,
+        ready: true,
         steps: [
           "Pick the type and how many.",
           "Choose uppercase or no dashes if you need them.",
@@ -1694,11 +1694,11 @@ export const apps = [
         blurb: "Strong and random",
         icon: "lock",
         group: "Generate",
-        ready: false,
+        ready: true,
         steps: [
           "Pick the length and the characters to use.",
           "See how strong it is.",
-          "Copy it. Nothing is saved.",
+          "Copy it. It exists only on your screen.",
         ],
       },
       {
@@ -1710,7 +1710,7 @@ export const apps = [
         blurb: "SHA-256, MD5, HMAC",
         icon: "hash",
         group: "Generate",
-        ready: false,
+        ready: true,
         steps: [
           "Paste text or drop a file.",
           "Every hash appears at once. Add a key for HMAC.",
@@ -1726,7 +1726,7 @@ export const apps = [
         blurb: "Placeholder text",
         icon: "type",
         group: "Generate",
-        ready: false,
+        ready: true,
         steps: [
           "Pick paragraphs, sentences or words.",
           "Choose how many, and plain text or HTML.",
@@ -1758,7 +1758,7 @@ export const apps = [
         blurb: "Epoch ↔ date",
         icon: "clock",
         group: "Convert",
-        ready: false,
+        ready: true,
         steps: [
           "Paste a timestamp or pick a date.",
           "See it in local time, UTC and ISO 8601.",
@@ -1806,7 +1806,7 @@ export const apps = [
         blurb: "camelCase, snake_case",
         icon: "type",
         group: "Convert",
-        ready: false,
+        ready: true,
         steps: [
           "Paste text or identifiers.",
           "Every case appears at once.",
@@ -2072,7 +2072,7 @@ export const apps = [
         title: "SHA-256 hash generator",
         intro:
           "Get the SHA-256 hash of text or a file, or check a download against its published checksum.",
-        about: ["Files are hashed on your device; they're never uploaded."],
+        about: ["Files are hashed on your device, so they stay private."],
         preset: { algo: "SHA-256" },
       },
       {
@@ -2677,7 +2677,9 @@ export function getApp(id: AppId): App {
   const app = apps.find((a) => a.id === id);
   if (!app) throw new Error(`Unknown app: ${id}`);
   // Use cases of tools that aren't built yet stay hidden everywhere (menus, lists, pages)
-  const ready = new Set(app.tools.filter((t) => t.ready).map((t) => t.slug));
+  const ready = new Set<string>(
+    app.tools.filter((t) => t.ready).map((t) => t.slug),
+  );
   return { ...app, tasks: app.tasks.filter((t) => ready.has(t.tool)) };
 }
 

@@ -17,6 +17,7 @@
     "@tailwindcss/vite": "^4.3.3",
     "astro": "^7.3.6",
     "fflate": "^0.8.3",
+    "hash-wasm": "^4.12.0",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
     "satori": "^0.35.1",
