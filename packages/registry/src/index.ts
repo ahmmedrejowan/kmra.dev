@@ -1489,7 +1489,7 @@ export const apps = [
         blurb: "Indent, validate, minify",
         icon: "code",
         group: "Format",
-        ready: false,
+        ready: true,
         steps: [
           "Paste XML or open a file.",
           "Choose the indent, or minify it.",
@@ -1505,7 +1505,7 @@ export const apps = [
         blurb: "Readable queries",
         icon: "list",
         group: "Format",
-        ready: false,
+        ready: true,
         steps: [
           "Paste a query.",
           "Pick the dialect and keyword case.",
@@ -1520,7 +1520,7 @@ export const apps = [
         blurb: "Beautify or minify",
         icon: "code",
         group: "Format",
-        ready: false,
+        ready: true,
         steps: [
           "Paste HTML.",
           "Beautify it, or minify it.",
@@ -1535,7 +1535,7 @@ export const apps = [
         blurb: "Beautify or minify",
         icon: "code",
         group: "Format",
-        ready: false,
+        ready: true,
         steps: [
           "Paste CSS.",
           "Beautify it, or minify it.",
@@ -1550,7 +1550,7 @@ export const apps = [
         blurb: "Beautify or minify",
         icon: "terminal",
         group: "Format",
-        ready: false,
+        ready: true,
         steps: [
           "Paste JavaScript or TypeScript.",
           "Beautify it, or minify it.",
@@ -1566,7 +1566,7 @@ export const apps = [
         blurb: "Live preview, HTML out",
         icon: "type",
         group: "Format",
-        ready: false,
+        ready: true,
         steps: [
           "Write or paste Markdown.",
           "The preview updates as you type.",
@@ -1642,8 +1642,8 @@ export const apps = [
         title: "Unicode escape and unescape",
         name: "Unicode escape",
         description:
-          "Turn text into \\\\u escapes, code points or JSON string escapes, and back.",
-        blurb: "\\\\u, code points, JSON",
+          "Turn text into \\u escapes, code points or JSON string escapes, and back.",
+        blurb: "\\u, code points, JSON",
         icon: "type",
         group: "Encode",
         ready: true,
@@ -1934,7 +1934,7 @@ export const apps = [
         blurb: "Plain English, next runs",
         icon: "clock",
         group: "Reference",
-        ready: false,
+        ready: true,
         steps: [
           "Type a cron expression.",
           "Read what it means.",
@@ -1950,7 +1950,7 @@ export const apps = [
         blurb: "755 ↔ rwxr-xr-x",
         icon: "lock",
         group: "Reference",
-        ready: false,
+        ready: true,
         steps: [
           "Tick read, write and run for owner, group and others.",
           "Or type a number like 644.",
@@ -1966,7 +1966,7 @@ export const apps = [
         blurb: "Parts and query",
         icon: "globe",
         group: "Reference",
-        ready: false,
+        ready: true,
         steps: [
           "Paste a URL.",
           "See the protocol, host, path, query and hash.",
@@ -1982,7 +1982,7 @@ export const apps = [
         blurb: "What each code means",
         icon: "book",
         group: "Reference",
-        ready: false,
+        ready: true,
         steps: [
           "Search by number or name.",
           "Read what it means and when to use it.",

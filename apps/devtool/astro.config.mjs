@@ -17,7 +17,10 @@ export default defineConfig({
     routing: { prefixDefaultLocale: false },
   },
   server: { port: 4324 },
-  integrations: [react(), kmraBuild({ origin: appOrigin("devtool") })],
+  integrations: [
+    react(),
+    kmraBuild({ origin: appOrigin("devtool"), maxPrecache: 150_000 }),
+  ],
   vite: {
     plugins: [tailwindcss()],
     // ES-module workers can lazy-load heavy decoders as separate chunks

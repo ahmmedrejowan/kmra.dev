@@ -854,6 +854,328 @@ export const BN_DEVTOOL: Record<string, string> = {
   "{n} without spaces": "স্পেস ছাড়া {n}",
 
   // -- format --
+  "1 query": "১টি কোয়েরি",
+  "A bare & isn't allowed. Write &amp; instead, or close the entity with a semicolon.":
+    "শুধু & লেখা যায় না। এর বদলে &amp; লিখুন, অথবা এনটিটির শেষে সেমিকোলন দিন।",
+  "A closing tag doesn't match the tag it closes.":
+    "একটি বন্ধ করার ট্যাগ যে ট্যাগটি বন্ধ করছে তার সঙ্গে মেলে না।",
+  "A namespace prefix is used without being declared.":
+    "একটি নেমস্পেস প্রিফিক্স ঘোষণা না করেই ব্যবহার করা হয়েছে।",
+  "A tag isn't closed with >.": "একটি ট্যাগ > দিয়ে বন্ধ করা হয়নি।",
+  "A tag name is invalid. Tag names start with a letter or underscore.":
+    "একটি ট্যাগের নাম ঠিক নেই। ট্যাগের নাম অক্ষর বা আন্ডারস্কোর দিয়ে শুরু হয়।",
+  "An attribute appears twice on the same tag.":
+    "একই ট্যাগে একটি অ্যাট্রিবিউট দুবার আছে।",
+  'An attribute value needs quotes, like name="value".':
+    'অ্যাট্রিবিউটের মান কোটের মধ্যে রাখতে হয়, যেমন name="value"।',
+  "As typed": "যেমন লেখা",
+  Beautify: "সুন্দর করুন",
+  Bold: "বোল্ড",
+  Code: "কোড",
+  "Collapse empty tags": "খালি ট্যাগ ছোট করুন",
+  "Copy HTML": "HTML কপি করুন",
+  "Couldn't parse this code": "এই কোড পড়া গেল না",
+  "Couldn't read this query": "এই কোয়েরি পড়া গেল না",
+  Dialect: "ডায়ালেক্ট",
+  Double: "ডাবল",
+  "Download .html": ".html ডাউনলোড করুন",
+  "Download .md": ".md ডাউনলোড করুন",
+  Formatting: "ফরম্যাটিং",
+  Heading: "শিরোনাম",
+  Italic: "ইটালিক",
+  "Keep comments": "কমেন্ট রাখুন",
+  "Line width": "লাইনের দৈর্ঘ্য",
+  "Lines between queries": "কোয়েরির মাঝে লাইন",
+  List: "তালিকা",
+  "Loading the formatter…": "ফরম্যাটার লোড হচ্ছে…",
+  "Lower case": "ছোট হাতের",
+  "Markdown document": "মার্কডাউন ডকুমেন্ট",
+  "Minify works on JavaScript. Turn off TypeScript, or compile the code first.":
+    "মিনিফাই শুধু জাভাস্ক্রিপ্টে কাজ করে। TypeScript বন্ধ করুন, অথবা আগে কোড কম্পাইল করুন।",
+  "Not well-formed": "গঠন ঠিক নেই",
+  "Paste CSS here": "এখানে CSS পেস্ট করুন",
+  "Paste HTML here": "এখানে HTML পেস্ট করুন",
+  "Paste JavaScript or TypeScript here":
+    "এখানে জাভাস্ক্রিপ্ট বা TypeScript পেস্ট করুন",
+  "Paste SQL here": "এখানে SQL পেস্ট করুন",
+  "Paste XML here": "এখানে XML পেস্ট করুন",
+  "Paste XML, SVG or RSS to start. Errors show the line and column.":
+    "শুরু করতে XML, SVG বা RSS পেস্ট করুন। ভুল থাকলে লাইন আর কলাম দেখাবে।",
+  "Paste a query to start. Formatting follows the dialect you pick.":
+    "শুরু করতে একটি কোয়েরি পেস্ট করুন। আপনার বেছে নেওয়া ডায়ালেক্ট অনুযায়ী সাজানো হবে।",
+  "Paste code to start. Errors show the line and column.":
+    "শুরু করতে কোড পেস্ট করুন। ভুল থাকলে লাইন আর কলাম দেখাবে।",
+  Preview: "প্রিভিউ",
+  Quotes: "কোট",
+  "Removes comments and extra spaces. Text in <pre>, <textarea>, <script> and <style> stays as written.":
+    "কমেন্ট আর বাড়তি স্পেস সরায়। <pre>, <textarea>, <script> আর <style>-এর লেখা যেমন আছে তেমনই থাকে।",
+  "Removes comments, spaces and the last semicolon in each block. Comments starting with /*! stay.":
+    "কমেন্ট, স্পেস আর প্রতিটি ব্লকের শেষ সেমিকোলন সরায়। /*! দিয়ে শুরু হওয়া কমেন্ট থাকে।",
+  "Root <{r}>": "রুট <{r}>",
+  Semicolons: "সেমিকোলন",
+  "Shortens local names and drops unused code. Global names and /*! license comments stay.":
+    "লোকাল নাম ছোট করে আর অব্যবহৃত কোড বাদ দেয়। গ্লোবাল নাম আর /*! লাইসেন্স কমেন্ট থাকে।",
+  "Something here doesn't fit this dialect. Check the marked line, or pick another dialect.":
+    "এখানে কিছু একটা এই ডায়ালেক্টের সঙ্গে মেলে না। চিহ্নিত লাইনটি দেখুন, অথবা অন্য ডায়ালেক্ট বেছে নিন।",
+  "Standard SQL": "স্ট্যান্ডার্ড SQL",
+  "Tables, task lists and strikethrough work. Scripts in the Markdown never run.":
+    "টেবিল, টাস্ক লিস্ট আর স্ট্রাইকথ্রু কাজ করে। মার্কডাউনের ভেতরের স্ক্রিপ্ট কখনো চলে না।",
+  "The XML ends too early. A tag isn't closed.":
+    "XML আগেই শেষ হয়ে গেছে। একটি ট্যাগ বন্ধ করা হয়নি।",
+  "There's content outside the root element. XML has exactly one root element.":
+    "রুট এলিমেন্টের বাইরে কিছু আছে। XML-এ ঠিক একটি রুট এলিমেন্ট থাকে।",
+  "The closing tag </{a}> doesn't match the open tag <{b}>.":
+    "বন্ধ করার ট্যাগ </{a}> খোলা ট্যাগ <{b}>-এর সঙ্গে মেলে না।",
+  "This isn't expected here: {t}": "এখানে এটি আশা করা হয়নি: {t}",
+  "There's no XML here yet.": "এখানে এখনো কোনো XML নেই।",
+  "Upper case": "বড় হাতের",
+  "Well-formed XML": "XML-এর গঠন ঠিক আছে",
+  "Write Markdown here": "এখানে মার্কডাউন লিখুন",
+  "Write or paste Markdown. The preview updates as you type.":
+    "মার্কডাউন লিখুন বা পেস্ট করুন। লেখার সঙ্গে সঙ্গে প্রিভিউ বদলায়।",
+  "bold text": "বোল্ড লেখা",
+  code: "কোড",
+  "italic text": "ইটালিক লেখা",
+  "link text": "লিংকের লেখা",
+  "{n} elements": "{n}টি এলিমেন্ট",
+  "{n} queries": "{n}টি কোয়েরি",
 
   // -- reference --
+  Second: "সেকেন্ড",
+  Minute: "মিনিট",
+  Hour: "ঘণ্টা",
+  "Day of month": "মাসের দিন",
+  Month: "মাস",
+  "Day of week": "সপ্তাহের দিন",
+  Year: "বছর",
+  second: "সেকেন্ড",
+  minute: "মিনিট",
+  hour: "ঘণ্টা",
+  "day of the month": "মাসের দিন",
+  month: "মাস",
+  "day of the week": "সপ্তাহের দিন",
+  year: "বছর",
+  "{field}: a value is missing": "{field}: একটি মান নেই",
+  '{field}: "{value}" isn\'t a number or a name':
+    '{field}: "{value}" কোনো সংখ্যা বা নাম নয়',
+  "{field}: {value} is out of range ({min}–{max})":
+    "{field}: {value} সীমার বাইরে ({min}–{max})",
+  "{field}: L-{n} goes back too far": "{field}: L-{n} অনেক বেশি পেছনে যায়",
+  '{field}: "{value}" isn\'t a valid L or W value':
+    '{field}: "{value}" সঠিক L বা W মান নয়',
+  "{field}: # must be followed by 1 to 5": "{field}: # এর পরে ১ থেকে ৫ হতে হবে",
+  '{field}: "{value}" has more than one /': '{field}: "{value}"-এ একাধিক / আছে',
+  '{field}: the step "{step}" isn\'t a number':
+    '{field}: ধাপ "{step}" কোনো সংখ্যা নয়',
+  "{field}: a step must be 1 or more": "{field}: ধাপ ১ বা তার বেশি হতে হবে",
+  "{field}: ? is only allowed in day of month and day of week":
+    "{field}: ? শুধু মাসের দিন আর সপ্তাহের দিনে চলে",
+  "Type a cron expression": "একটি ক্রন এক্সপ্রেশন লিখুন",
+  "Type a cron expression.": "একটি ক্রন এক্সপ্রেশন লিখুন।",
+  '"{value}" isn\'t a cron macro. Try @daily, @hourly, @weekly, @monthly, @yearly or @reboot.':
+    '"{value}" কোনো ক্রন ম্যাক্রো নয়। @daily, @hourly, @weekly, @monthly, @yearly বা @reboot ব্যবহার করুন।',
+  "Expected 5 fields (minute, hour, day of month, month, day of week), or 6 with seconds first. Found {n}.":
+    "৫টি ফিল্ড দরকার (মিনিট, ঘণ্টা, মাসের দিন, মাস, সপ্তাহের দিন), অথবা শুরুতে সেকেন্ডসহ ৬টি। পাওয়া গেছে {n}টি।",
+  "Day of month and day of week can't both be ?":
+    "মাসের দিন আর সপ্তাহের দিন দুটোই ? হতে পারে না",
+  "{a} and {b}": "{a} ও {b}",
+  "every {unit}": "প্রতি {unit}",
+  "every {nth} {unit}": "প্রতি {nth} {unit} অন্তর",
+  "{a} through {b}": "{a} থেকে {b}",
+  "every {unit} from {a} through {b}": "{a} থেকে {b} পর্যন্ত প্রতি {unit}",
+  "every {nth} {unit} from {a} through {b}":
+    "{a} থেকে {b} পর্যন্ত প্রতি {nth} {unit} অন্তর",
+  "{n} days before the last day of the month": "মাসের শেষ দিনের {n} দিন আগে",
+  "the last day of the month": "মাসের শেষ দিন",
+  "the last weekday of the month": "মাসের শেষ কর্মদিবস",
+  "the weekday nearest day {n} of the month":
+    "মাসের {n} তারিখের সবচেয়ে কাছের কর্মদিবস",
+  "the last {day} of the month": "মাসের শেষ {day}",
+  "the {nth} {day} of the month": "মাসের {nth} নম্বর {day}",
+  "day {list} of the month": "মাসের {list} তারিখ",
+  "{unit} {list}": "{unit} {list}",
+  "Once, when the cron service starts (usually at boot).":
+    "একবার, যখন ক্রন সার্ভিস চালু হয় (সাধারণত কম্পিউটার চালু হওয়ার সময়)।",
+  "At {what}": "{what}",
+  "{a} past {b}": "{b}, {a}",
+  "{sentence}.": "{sentence}।",
+  "on {a} or on {b}": "{a} অথবা {b}",
+  "on {a}, but only if it's {b}": "{a}, তবে শুধু যদি দিনটি {b} হয়",
+  "on {what}": "{what}",
+  "in {what}": "{what}-এ",
+  "Every 15 minutes in working hours": "অফিস সময়ে প্রতি ১৫ মিনিটে",
+  "Every day at midnight": "প্রতিদিন মাঝরাতে",
+  "Mondays at 9": "সোমবার ৯টায়",
+  "First of every month": "প্রতি মাসের ১ তারিখে",
+  "Sundays at 02:30": "রবিবার ০২:৩০-এ",
+  "Last day of every month": "প্রতি মাসের শেষ দিনে",
+  "Every 10 minutes, with seconds": "প্রতি ১০ মিনিটে, সেকেন্ডসহ",
+  "Every hour": "প্রতি ঘণ্টায়",
+  "Day numbers": "দিনের নম্বর",
+  "0 is Sunday": "০ মানে রবিবার",
+  "1 is Sunday (Quartz)": "১ মানে রবিবার (Quartz)",
+  "Valid macro": "সঠিক ম্যাক্রো",
+  "Valid, {macro} is {expr}": "সঠিক, {macro} মানে {expr}",
+  "Valid, {n} fields": "সঠিক, {n}টি ফিল্ড",
+  "Day of month and day of week are both set, so it runs when either one matches.":
+    "মাসের দিন আর সপ্তাহের দিন দুটোই দেওয়া আছে, তাই যেকোনো একটি মিললেই চলবে।",
+  Expression: "এক্সপ্রেশন",
+  Field: "ফিল্ড",
+  Value: "মান",
+  Means: "মানে",
+  Allowed: "যা চলে",
+  "Five fields: minute, hour, day of month, month, day of week. Six fields add seconds at the start, seven add a year at the end. * means every, a-b a range, */n every nth, and lists use commas.":
+    "পাঁচটি ফিল্ড: মিনিট, ঘণ্টা, মাসের দিন, মাস, সপ্তাহের দিন। ছয়টি হলে শুরুতে সেকেন্ড, সাতটি হলে শেষে বছর যোগ হয়। * মানে প্রতিটি, a-b একটি পরিসর, */n প্রতি n অন্তর, আর তালিকায় কমা ব্যবহার হয়।",
+  "Next runs in {zone}": "{zone}-এ পরের রানগুলো",
+  "@reboot runs once when the cron service starts, so it has no schedule.":
+    "@reboot ক্রন সার্ভিস চালু হলে একবার চলে, তাই এর কোনো সময়সূচি নেই।",
+  "Fix the expression to see the next runs.":
+    "পরের রানগুলো দেখতে এক্সপ্রেশনটি ঠিক করুন।",
+  "The next 10 run times appear here.": "পরের ১০টি রানের সময় এখানে দেখা যাবে।",
+  "This expression never runs. Check the day and month.":
+    "এই এক্সপ্রেশন কখনো চলবে না। দিন আর মাস দেখুন।",
+  "{when}: {n} runs skipped, those times don't exist because the clocks go forward":
+    "{when}: {n}টি রান বাদ গেছে, ঘড়ি এগিয়ে যাওয়ায় ওই সময়গুলো থাকে না",
+  "{when}: skipped, that time doesn't exist because the clocks go forward":
+    "{when}: বাদ গেছে, ঘড়ি এগিয়ে যাওয়ায় ওই সময়টি থাকে না",
+  "Clocks changed": "ঘড়ির সময় বদলেছে",
+  "Times are worked out in {zone}. When the clocks go forward, times that don't exist are skipped; when they go back, a repeated time runs once.":
+    "সময়গুলো {zone} অনুযায়ী হিসাব করা। ঘড়ি এগোলে যে সময়গুলো থাকে না সেগুলো বাদ যায়; ঘড়ি পেছালে দুবার আসা সময়ে একবারই চলে।",
+  Owner: "মালিক",
+  Group: "গ্রুপ",
+  Others: "অন্যরা",
+  Read: "পড়া",
+  Write: "লেখা",
+  Execute: "চালানো",
+  Setuid: "Setuid",
+  Setgid: "Setgid",
+  Sticky: "Sticky",
+  "Runs as the file's owner": "ফাইলের মালিক হিসেবে চলে",
+  "Runs as the group; new files in a folder take its group":
+    "গ্রুপ হিসেবে চলে; ফোল্ডারে নতুন ফাইল এর গ্রুপ পায়",
+  "In a folder, only owners can delete their files":
+    "ফোল্ডারে শুধু মালিকরাই নিজের ফাইল মুছতে পারেন",
+  Symbolic: "প্রতীকী",
+  "As ls shows it": "ls যেভাবে দেখায়",
+  Command: "কমান্ড",
+  "Command, symbolic": "কমান্ড, প্রতীকী",
+  read: "পড়তে",
+  write: "লিখতে",
+  run: "চালাতে",
+  "{who} can't do anything.": "{who} কিছুই করতে পারে না।",
+  "{who} can {what}.": "{who} {what} পারে।",
+  "Setuid: a program runs with its owner's rights.":
+    "Setuid: প্রোগ্রামটি তার মালিকের অধিকার নিয়ে চলে।",
+  "Setgid: a program runs with its group's rights, and new files in a folder get the folder's group.":
+    "Setgid: প্রোগ্রামটি তার গ্রুপের অধিকার নিয়ে চলে, আর ফোল্ডারে নতুন ফাইল ফোল্ডারের গ্রুপ পায়।",
+  "Sticky: in a folder, only a file's owner can rename or delete it.":
+    "Sticky: ফোল্ডারে শুধু ফাইলের মালিকই সেটির নাম বদলাতে বা মুছতে পারেন।",
+  "A capital S or T means the special bit is set without execute, so it has no effect.":
+    "বড় হাতের S বা T মানে বিশেষ বিটটি চালানোর অনুমতি ছাড়া দেওয়া, তাই এর কোনো প্রভাব নেই।",
+  "Anyone on the system can change this file.":
+    "সিস্টেমের যে কেউ এই ফাইল বদলাতে পারে।",
+  "File name": "ফাইলের নাম",
+  "Include subfolders (-R)": "সাবফোল্ডারসহ (-R)",
+  "Read as an octal number": "অক্টাল সংখ্যা হিসেবে পড়া হয়েছে",
+  "Read as symbolic permissions": "প্রতীকী অনুমতি হিসেবে পড়া হয়েছে",
+  "Read as chmod rules, starting from 000":
+    "chmod নিয়ম হিসেবে পড়া হয়েছে, ০০০ থেকে শুরু করে",
+  Permissions: "অনুমতি",
+  "Mode: 755, rwxr-xr-x or u=rwx,g=rx,o=rx":
+    "মোড: 755, rwxr-xr-x বা u=rwx,g=rx,o=rx",
+  Digit: "অঙ্ক",
+  "{who}: {perm}": "{who}: {perm}",
+  "Common modes": "প্রচলিত মোড",
+  "Owner can read and write, everyone else can read. Normal files.":
+    "মালিক পড়তে ও লিখতে পারেন, বাকি সবাই পড়তে পারে। সাধারণ ফাইল।",
+  "Owner can do anything, everyone else can read and run. Scripts, programs and folders.":
+    "মালিক সব করতে পারেন, বাকি সবাই পড়তে ও চালাতে পারে। স্ক্রিপ্ট, প্রোগ্রাম আর ফোল্ডার।",
+  "Only the owner can read and write. Private keys and secrets.":
+    "শুধু মালিক পড়তে ও লিখতে পারেন। প্রাইভেট কি আর গোপন তথ্য।",
+  "Only the owner can do anything. Private folders and scripts.":
+    "শুধু মালিকই সব করতে পারেন। ব্যক্তিগত ফোল্ডার আর স্ক্রিপ্ট।",
+  "Owner and group can read and write, others can read. Shared project files.":
+    "মালিক ও গ্রুপ পড়তে ও লিখতে পারে, অন্যরা পড়তে পারে। শেয়ার করা প্রজেক্ট ফাইল।",
+  "Owner and group can do anything, others can read and run. Shared folders.":
+    "মালিক ও গ্রুপ সব করতে পারে, অন্যরা পড়তে ও চালাতে পারে। শেয়ার করা ফোল্ডার।",
+  "Everyone can do everything. Avoid this: anyone on the system can change the file.":
+    "সবাই সব করতে পারে। এটি এড়িয়ে চলুন: সিস্টেমের যে কেউ ফাইলটি বদলাতে পারে।",
+  "Everyone can add files, but only owners can delete their own. Shared folders like /tmp.":
+    "সবাই ফাইল রাখতে পারে, কিন্তু শুধু মালিকরাই নিজের ফাইল মুছতে পারেন। /tmp-এর মতো শেয়ার করা ফোল্ডার।",
+  "Type a mode like 755, rwxr-xr-x or u=rwx,g=rx,o=rx.":
+    "755, rwxr-xr-x বা u=rwx,g=rx,o=rx-এর মতো একটি মোড লিখুন।",
+  "An octal mode has three or four digits, like 644 or 0755.":
+    "অক্টাল মোডে তিন বা চারটি অঙ্ক থাকে, যেমন 644 বা 0755।",
+  "Octal digits go from 0 to 7, so {value} isn't a mode.":
+    "অক্টাল অঙ্ক ০ থেকে ৭ পর্যন্ত, তাই {value} কোনো মোড নয়।",
+  '"{value}" isn\'t a mode. Use 755, rwxr-xr-x or u=rwx,g=rx,o=rx.':
+    '"{value}" কোনো মোড নয়। 755, rwxr-xr-x বা u=rwx,g=rx,o=rx ব্যবহার করুন।',
+  "X depends on the file (it only applies to folders), so it can't be worked out here. Use x.":
+    "X ফাইলের ওপর নির্ভর করে (শুধু ফোল্ডারে খাটে), তাই এখানে হিসাব করা যায় না। x ব্যবহার করুন।",
+  "Decode %XX and +": "%XX আর + ডিকোড করুন",
+  "Paste a URL to see its parts.": "অংশগুলো দেখতে একটি URL পেস্ট করুন।",
+  "Read as https://, since no scheme was given":
+    "কোনো স্কিম না থাকায় https:// হিসেবে পড়া হয়েছে",
+  "Valid URL": "সঠিক URL",
+  "{n} query parameters": "{n}টি কোয়েরি প্যারামিটার",
+  "Has a username or password": "ইউজারনেম বা পাসওয়ার্ড আছে",
+  "This isn't a full URL. It needs a scheme like https://.":
+    "এটি পূর্ণ URL নয়। https://-এর মতো একটি স্কিম দরকার।",
+  URL: "URL",
+  Parts: "অংশ",
+  "The protocol, host, path, query and hash appear here, ready to edit.":
+    "প্রোটোকল, হোস্ট, পাথ, কোয়েরি আর হ্যাশ এখানে দেখা যাবে, সম্পাদনার জন্য তৈরি।",
+  "This URL has a username or password in it. Anyone who sees the URL, in logs, history or a shared link, can read them.":
+    "এই URL-এ ইউজারনেম বা পাসওয়ার্ড আছে। লগ, হিস্ট্রি বা শেয়ার করা লিংকে যে কেউ URL-টি দেখলে সেগুলো পড়তে পারবে।",
+  Protocol: "প্রোটোকল",
+  Host: "হোস্ট",
+  "International name:": "আন্তর্জাতিক নাম:",
+  Port: "পোর্ট",
+  "Not set, so the default for {scheme} is used: {port}":
+    "দেওয়া নেই, তাই {scheme}-এর ডিফল্ট ব্যবহার হয়: {port}",
+  Origin: "অরিজিন",
+  Path: "পাথ",
+  Hash: "হ্যাশ",
+  "Query parameters": "কোয়েরি প্যারামিটার",
+  Key: "কি",
+  Actions: "কাজ",
+  "Key {n}": "কি {n}",
+  "Value {n}": "মান {n}",
+  "Remove parameter {n}": "প্যারামিটার {n} সরান",
+  "Add a parameter": "প্যারামিটার যোগ করুন",
+  "No query string.": "কোনো কোয়েরি স্ট্রিং নেই।",
+  Search: "খুঁজুন",
+  "404 or not found": "404 বা not found",
+  "Search status codes": "স্ট্যাটাস কোড খুঁজুন",
+  Class: "শ্রেণি",
+  "Show non-standard codes": "অপ্রমিত কোডও দেখান",
+  "No code matches.": "কোনো কোড মেলেনি।",
+  Codes: "কোড",
+  "No code matches “{q}”. Try a number or a word like timeout.":
+    "“{q}”-এর সাথে কোনো কোড মেলেনি। একটি সংখ্যা বা timeout-এর মতো শব্দ লিখে দেখুন।",
+  "Informational: the request was received, keep going":
+    "তথ্যমূলক: অনুরোধ পৌঁছেছে, চালিয়ে যান",
+  "Success: the request worked": "সফল: অনুরোধটি কাজ করেছে",
+  "Redirection: look somewhere else": "রিডাইরেক্ট: অন্য জায়গায় দেখুন",
+  "Client error: the request has a problem":
+    "ক্লায়েন্টের ত্রুটি: অনুরোধে সমস্যা আছে",
+  "Server error: the server failed": "সার্ভারের ত্রুটি: সার্ভার ব্যর্থ হয়েছে",
+  "Non-standard": "অপ্রমিত",
+  Deprecated: "বাতিলপ্রায়",
+  Details: "বিস্তারিত",
+  "Non-standard: {src}": "অপ্রমিত: {src}",
+  "What it means": "এর মানে",
+  "Common causes": "সাধারণ কারণ",
+  "When to use it": "কখন ব্যবহার করবেন",
+  "Defined in": "যেখানে সংজ্ঞায়িত",
+  Registered: "নিবন্ধিত",
+  "No, used by {src}": "না, ব্যবহার করে {src}",
+  "Yes, in the IANA registry": "হ্যাঁ, IANA রেজিস্ট্রিতে",
+  "Copy the code": "কোড কপি করুন",
+  "Copy the code and name": "কোড ও নাম কপি করুন",
+  "Copy a link": "লিংক কপি করুন",
+  "Pick a code to read about it.": "বিস্তারিত পড়তে একটি কোড বেছে নিন।",
+  "Explanations are in English.": "ব্যাখ্যাগুলো ইংরেজিতে।",
+  "Codes marked non-standard aren't in the IANA registry; they come from servers and services such as nginx and Cloudflare.":
+    "অপ্রমিত চিহ্নিত কোডগুলো IANA রেজিস্ট্রিতে নেই; এগুলো nginx ও Cloudflare-এর মতো সার্ভার ও সার্ভিস থেকে আসে।",
 };

@@ -5,6 +5,7 @@
 import type { AppContent } from "./types";
 import { bnPdftool } from "./bn-pdftool.ts";
 import { bnQrtool } from "./bn-qrtool.ts";
+import { bnDevtool } from "./bn-devtool.ts";
 
 export const bn: Record<string, AppContent> = {
   imgtool: {
@@ -643,4 +644,5 @@ export const bn: Record<string, AppContent> = {
   },
   pdftool: bnPdftool,
   qrtool: bnQrtool,
+  devtool: bnDevtool,
 };

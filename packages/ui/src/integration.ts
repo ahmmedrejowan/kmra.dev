@@ -44,7 +44,17 @@ const SKIP = [
 ];
 const MAX_PRECACHE_BYTES = 2_000_000;
 
-export function kmraBuild({ origin }: { origin: string }): AstroIntegration {
+export function kmraBuild({
+  origin,
+  maxPrecache = MAX_PRECACHE_BYTES,
+}: {
+  origin: string;
+  /**
+   * Largest file precached for offline use. Apps with heavy per-tool libraries (devtool's
+   * formatters) set it low: those load on first use and are cached then.
+   */
+  maxPrecache?: number;
+}): AstroIntegration {
   return {
     name: "kmra-build",
     hooks: {
@@ -82,7 +92,7 @@ export function kmraBuild({ origin }: { origin: string }): AstroIntegration {
         for (const f of files.sort()) {
           if (SKIP.some((re) => re.test(f))) continue;
           const size = (await stat(join(root, f))).size;
-          if (size > MAX_PRECACHE_BYTES) continue;
+          if (size > maxPrecache) continue;
           precache.push(f.endsWith(".html") ? cleanUrl(f) : "/" + f);
           hash.update(f + ":" + size);
         }

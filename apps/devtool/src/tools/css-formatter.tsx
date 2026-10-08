@@ -1,6 +1,6 @@
 import type { ToolProps } from ".";
+import { CodeFormatter } from "../lib/codefmt";
 
-/** Not built yet (the tool stays hidden until it's ready). */
-export default function Tool(_: ToolProps) {
-  return null;
+export default function CssFormatter({ preset }: ToolProps) {
+  return <CodeFormatter kind="css" preset={preset} />;
 }

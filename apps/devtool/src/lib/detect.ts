@@ -13,6 +13,18 @@ function printable(s: string) {
   return !/[\x00-\x08\x0e-\x1f]/.test(s);
 }
 
+/** 5 to 7 fields of numbers, stars, ranges, steps or month and day names; mostly numeric */
+function looksLikeCron(t: string): boolean {
+  const f = t.split(/\s+/);
+  if (f.length < 5 || f.length > 7) return false;
+  const field =
+    /^([\d*?/,#LW-]+|(JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC|SUN|MON|TUE|WED|THU|FRI|SAT)([-,][A-Z]{3})*)$/i;
+  return (
+    f.every((x) => field.test(x)) &&
+    f.filter((x) => /[\d*?]/.test(x)).length >= f.length - 2
+  );
+}
+
 export function detect(input: string): Guess | null {
   const t = input.trim();
   if (!t) return null;
@@ -36,8 +48,10 @@ export function detect(input: string): Guess | null {
   if (/^(#[0-9a-f]{3,8}|rgba?\(|hsla?\(|oklch\()/i.test(t))
     return { slug: "color-converter", label: "Color" };
   if (
-    /^(\S+\s+){4}\S+$/.test(t) &&
-    /^[\d*/,\-?LW#A-Z]+(\s+[\d*/,\-?LW#A-Z]+){4}$/i.test(t)
+    /^@(yearly|annually|monthly|weekly|daily|midnight|hourly|reboot)$/i.test(
+      t,
+    ) ||
+    looksLikeCron(t)
   )
     return { slug: "cron-explainer", label: "Cron expression" };
   if (/^[0-7]{3,4}$/.test(t))
