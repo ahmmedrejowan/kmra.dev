@@ -6,7 +6,10 @@ import ToolGrid from "@kmra/ui/components/ToolGrid.astro";
 import { getApp } from "@kmra/registry";
 
 const app = getApp("qrtool");
-const ready = app.tools.filter((t) => t.ready);
+const popular = app.popular ?? [];
+const ready = app.tools
+  .filter((t) => t.ready && popular.includes(t.slug))
+  .slice(0, 6);
 ---
 
 <BaseLayout appId="qrtool" title="Page not found" og="index" noindex>
@@ -20,7 +23,7 @@ const ready = app.tools.filter((t) => t.ready);
       <h2>{ready.length ? "Popular tools" : app.name}</h2>
     </div>
     {ready.length ? (
-      <ToolCards tools={ready} />
+      <ToolCards tools={ready} allHref="/tools" />
     ) : (
       <ToolGrid tools={app.tools} />
     )}

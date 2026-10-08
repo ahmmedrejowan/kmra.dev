@@ -24,7 +24,7 @@ interface Props {
 
 /**
  * Landing-page drop area. Files dropped or pasted anywhere on the page are handed to the tool page
- * through IndexedDB; nothing is uploaded.
+ * through IndexedDB; files stay on the device.
  */
 export default function LandingDrop({
   accept,
