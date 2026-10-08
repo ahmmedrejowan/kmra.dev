@@ -1425,7 +1425,7 @@ export const apps = [
       softLight: "#f3ebfb",
       softDark: "#2a1b3a",
     },
-    live: false,
+    live: true,
     devPort: 4324,
     toolGroups: [
       "Format",
