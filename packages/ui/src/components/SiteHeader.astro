@@ -29,7 +29,7 @@ const langs = langLinks(Astro, app);
 const liveApps = apps.filter((a) => a.live);
 // Menus show the top few of each group (popular first) and link to the full pages
 const TOOLS_PER_GROUP = 3;
-const TASKS_PER_GROUP = 4;
+const TASKS_PER_GROUP = 5;
 const toolSecs = toolSections(appId, locale, true);
 const taskSecs = taskSections(appId, locale, true);
 const readyCount = app.tools.filter((t) => t.ready).length;
@@ -99,19 +99,13 @@ const appHref = (a: App) =>
             <button type="button" aria-expanded="false" aria-controls="m-tasks">
               {T("Use cases")} <Icon name="down" />
             </button>
-            <div class="mega cols" id="m-tasks" hidden>
+            <div class="mega cols tasks-menu" id="m-tasks" hidden>
               {taskSecs.map((sec) => (
                 <div class="mgrp">
                   <h6>{sec.label}</h6>
                   {sec.items.slice(0, TASKS_PER_GROUP).map((t) => (
-                    <a class="mi" href={L(`/${t.slug}`)}>
-                      <span class="tile">
-                        <Icon name={toolIcon(t.tool)} />
-                      </span>
-                      <span>
-                        <strong>{t.name}</strong>
-                        <small>{t.short}</small>
-                      </span>
+                    <a class="mi-task" href={L(`/${t.slug}`)} title={t.short}>
+                      {t.name}
                     </a>
                   ))}
                   {sec.items.length > TASKS_PER_GROUP && (

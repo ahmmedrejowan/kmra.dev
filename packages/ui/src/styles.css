@@ -4908,3 +4908,24 @@ footer.site .fmore {
   justify-content: center;
   margin-top: 22px;
 }
+
+/* Use cases menu: plain names (the task name already says what it does) */
+.tasks-menu .mgrp {
+  margin-bottom: 16px;
+}
+.mi-task {
+  display: block;
+  padding: 6px 10px;
+  border-radius: 8px;
+  font-size: 14.5px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.mi-task:hover {
+  background: var(--raise);
+  color: var(--acc);
+}
+.tasks-menu .mi-more {
+  padding-left: 10px;
+}
