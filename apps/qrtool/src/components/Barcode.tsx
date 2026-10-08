@@ -143,28 +143,8 @@ function BarcodeView({ preset }: { preset?: Preset }) {
   }
 
   return (
-    <div className="toolcard qrcard">
-      <div className="stage qr-stage bc-stage">
-        <figure className="bc-item">
-          <div className="bc-label">
-            <svg
-              ref={svgRef}
-              className={error ? "dim" : ""}
-              role="img"
-              aria-label={T("{format} barcode for {value}")
-                .replace("{format}", f.label)
-                .replace("{value}", code)}
-            />
-          </div>
-          <span className="bc-ruler" aria-hidden="true" />
-          <figcaption className="qr-spec">
-            <span>{f.label}</span>
-            <span>{T("Stays sharp at any width")}</span>
-          </figcaption>
-        </figure>
-        {error && <p className="warn">{error}</p>}
-      </div>
-      <div className="controls">
+    <div className="toolcard qrcard duo">
+      <div className="controls side-l">
         <div className="ctl">
           <span className="lbl">{T("Type")}</span>
           <div className="chips">
@@ -219,7 +199,26 @@ function BarcodeView({ preset }: { preset?: Preset }) {
           on={showText}
           onChange={setShowText}
         />
-        <div className="result">
+      </div>
+      <div className="stage qr-stage qr-plain bc-stage">
+        <figure className="bc-item">
+          <div className="bc-label">
+            <svg
+              ref={svgRef}
+              className={error ? "dim" : ""}
+              role="img"
+              aria-label={T("{format} barcode for {value}")
+                .replace("{format}", f.label)
+                .replace("{value}", code)}
+            />
+          </div>
+          <figcaption className="qr-spec">
+            <span>{f.label}</span>
+            <span>{T("Stays sharp at any width")}</span>
+          </figcaption>
+        </figure>
+        {error && <p className="warn">{error}</p>}
+        <div className="result qr-out">
           <div className="acts">
             <button
               type="button"

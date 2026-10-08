@@ -158,8 +158,87 @@ function FixQrView() {
   ];
 
   return (
-    <div className="toolcard qrcard">
-      <div className={`stage qr-stage fq-stage${dragging ? " over" : ""}`}>
+    <div className={`toolcard qrcard ${!codes ? "solo" : qr ? "tri" : "duo"}`}>
+      {codes && (
+        <div className="controls side-l">
+          {codes && (
+            <button type="button" className="btn sm" onClick={pick}>
+              <Icon name="upload" />
+              {T("Use another image")}
+            </button>
+          )}
+          {codes && codes.length > 1 && (
+            <div className="ctl">
+              <span className="lbl">
+                {T("{n} codes found. Redraw:", { n: codes.length })}
+              </span>
+              <div className="chips">
+                {codes.map((c, i) => (
+                  <button
+                    key={i}
+                    type="button"
+                    aria-pressed={i === sel}
+                    onClick={() => pick0(c, i)}
+                  >
+                    {T("Code {n}", { n: i + 1 })}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+          {codes && !codes.length && (
+            <p className="warn small">
+              {T(
+                "No code could be read. Try a sharper photo, taken straight on, with the code filling more of the picture.",
+              )}
+            </p>
+          )}
+          {code && (
+            <div className="scan-result">
+              <div className="scan-head">
+                <span className="tag">
+                  {fmtName(code.format)} · {T(KIND_LABEL[kind] ?? "Text")}
+                </span>
+                <CopyBtn text={code.text} what="Copied" />
+              </div>
+              <p className="scan-text qc-content">{code.text}</p>
+            </div>
+          )}
+          {code && !qr && (
+            <div className="note">
+              <Icon name="info" />
+              <div>
+                <p className="small fq-note">
+                  {T(
+                    "This is a {f}, not a QR code. Its content was read; copy it, or make a fresh one from it.",
+                  ).replace("{f}", fmtName(code.format))}
+                </p>
+                <a
+                  className="btn sm"
+                  href={lp(isMatrix(code.format) ? "/codes-2d" : "/barcode")}
+                >
+                  {isMatrix(code.format)
+                    ? T("Open the 2D code generator")
+                    : T("Open the barcode generator")}
+                </a>
+              </div>
+            </div>
+          )}
+          {qr && (
+            <div className="note">
+              <Icon name="info" />
+              <span>
+                {T(
+                  "The code is redrawn from its content as plain squares. Colours, rounded dots and logos of the original design aren't kept.",
+                )}
+              </span>
+            </div>
+          )}
+        </div>
+      )}
+      <div
+        className={`stage qr-stage qr-plain fq-stage${dragging ? " over" : ""}`}
+      >
         {preview ? (
           <>
             <div className="fq-pair">
@@ -214,181 +293,101 @@ function FixQrView() {
             )}
           </div>
         )}
-      </div>
-      <div className="controls">
-        {codes && (
-          <button type="button" className="btn sm" onClick={pick}>
-            <Icon name="upload" />
-            {T("Use another image")}
-          </button>
-        )}
-        {codes && codes.length > 1 && (
-          <div className="ctl">
-            <span className="lbl">
-              {T("{n} codes found. Redraw:", { n: codes.length })}
-            </span>
-            <div className="chips">
-              {codes.map((c, i) => (
-                <button
-                  key={i}
-                  type="button"
-                  aria-pressed={i === sel}
-                  onClick={() => pick0(c, i)}
-                >
-                  {T("Code {n}", { n: i + 1 })}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-        {codes && !codes.length && (
-          <p className="warn small">
-            {T(
-              "No code could be read. Try a sharper photo, taken straight on, with the code filling more of the picture.",
-            )}
-          </p>
-        )}
-        {code && (
-          <div className="scan-result">
-            <div className="scan-head">
-              <span className="tag">
-                {fmtName(code.format)} · {T(KIND_LABEL[kind] ?? "Text")}
-              </span>
-              <CopyBtn text={code.text} what="Copied" />
-            </div>
-            <p className="scan-text qc-content">{code.text}</p>
-          </div>
-        )}
-        {code && !qr && (
-          <div className="note">
-            <Icon name="info" />
-            <div>
-              <p className="small fq-note">
-                {T(
-                  "This is a {f}, not a QR code. Its content was read; copy it, or make a fresh one from it.",
-                ).replace("{f}", fmtName(code.format))}
-              </p>
-              <a
-                className="btn sm"
-                href={lp(isMatrix(code.format) ? "/codes-2d" : "/barcode")}
-              >
-                {isMatrix(code.format)
-                  ? T("Open the 2D code generator")
-                  : T("Open the barcode generator")}
-              </a>
-            </div>
-          </div>
-        )}
-        {qr && (
-          <>
-            <Colors
-              label={T("Colour")}
-              value={style.fg}
-              onPick={(v) => put({ fg: v })}
-              list={["#111111", "#1a3d9c", "#0b6e4f", "#7a1fa2", "#c2410c"]}
-            />
-            {style.bg && (
-              <Colors
-                label={T("Background")}
-                value={style.bg}
-                onPick={(v) => put({ bg: v })}
-                list={["#ffffff", "#fff7ed", "#eef4ff", "#f0fdf4"]}
-              />
-            )}
-            <Toggle
-              label={T("Transparent background")}
-              on={!style.bg}
-              onChange={(v) => put({ bg: v ? "" : "#ffffff" })}
-            />
+        {qr && preview && (
+          <div className="result qr-out">
             <Seg<number>
-              label={T("Quiet zone")}
-              options={[
-                [2, T("Tight")],
-                [4, T("Normal")],
-                [6, T("Wide")],
-              ]}
-              value={style.margin}
-              onPick={(v) => put({ margin: v })}
+              label={T("PNG size")}
+              options={SIZES.map(
+                (v) => [v, T("{n} px", { n: v })] as [number, string],
+              )}
+              value={px}
+              onPick={setPx}
             />
-            <Seg<Ecc>
-              label={T("Error correction")}
-              options={eccOptions}
-              value={style.ecc}
-              onPick={(v) => put({ ecc: v })}
-            />
-            {originalEcc && (
-              <small className="muted">
-                {style.ecc === originalEcc
-                  ? T("Same as the original.")
-                  : T("The original used {e}.").replace(
-                      "{e}",
-                      eccOptions.find(([k]) => k === originalEcc)?.[1] ?? "",
-                    )}
-              </small>
-            )}
-            {lowContrast(style.fg, style.bg) && (
-              <small className="warn">
-                {T(
-                  "Low contrast. Use a dark code on a light background, or some phones won't read it.",
-                )}
-              </small>
-            )}
-            <div className="note">
-              <Icon name="info" />
-              <span>
-                {T(
-                  "The code is redrawn from its content as plain squares. Colours, rounded dots and logos of the original design aren't kept.",
-                )}
-              </span>
-            </div>
-            <div className="result">
-              <Seg<number>
-                label={T("PNG size")}
-                options={SIZES.map(
-                  (v) => [v, T("{n} px", { n: v })] as [number, string],
-                )}
-                value={px}
-                onPick={setPx}
-              />
-              <div className="acts">
+            <div className="acts">
+              <button
+                type="button"
+                className="btn acc"
+                disabled={!preview}
+                onClick={() => void savePng()}
+              >
+                <Icon name="download" />
+                {T("Download PNG")}
+              </button>
+              <div className="dl-row">
                 <button
                   type="button"
-                  className="btn acc"
+                  className="btn sm"
                   disabled={!preview}
-                  onClick={() => void savePng()}
+                  onClick={saveSvg}
                 >
-                  <Icon name="download" />
-                  {T("Download PNG")}
+                  SVG
                 </button>
-                <div className="dl-row">
-                  <button
-                    type="button"
-                    className="btn sm"
-                    disabled={!preview}
-                    onClick={saveSvg}
-                  >
-                    SVG
-                  </button>
-                  <CopyBtn
-                    text={code.text}
-                    label={T("Copy text")}
-                    what="Code text copied"
-                  />
-                </div>
+                <CopyBtn
+                  text={code.text}
+                  label={T("Copy text")}
+                  what="Code text copied"
+                />
               </div>
             </div>
-          </>
-        )}
-        {!codes && (
-          <div className="result">
-            <small>
-              {T(
-                "Drop a blurry or low-resolution QR code to get a sharp copy you can print at any size.",
-              )}
-            </small>
           </div>
         )}
       </div>
+      {qr && (
+        <div className="controls side-r">
+          <Colors
+            label={T("Colour")}
+            value={style.fg}
+            onPick={(v) => put({ fg: v })}
+            list={["#111111", "#1a3d9c", "#0b6e4f", "#7a1fa2", "#c2410c"]}
+          />
+          {style.bg && (
+            <Colors
+              label={T("Background")}
+              value={style.bg}
+              onPick={(v) => put({ bg: v })}
+              list={["#ffffff", "#fff7ed", "#eef4ff", "#f0fdf4"]}
+            />
+          )}
+          <Toggle
+            label={T("Transparent background")}
+            on={!style.bg}
+            onChange={(v) => put({ bg: v ? "" : "#ffffff" })}
+          />
+          <Seg<number>
+            label={T("Quiet zone")}
+            options={[
+              [2, T("Tight")],
+              [4, T("Normal")],
+              [6, T("Wide")],
+            ]}
+            value={style.margin}
+            onPick={(v) => put({ margin: v })}
+          />
+          <Seg<Ecc>
+            label={T("Error correction")}
+            options={eccOptions}
+            value={style.ecc}
+            onPick={(v) => put({ ecc: v })}
+          />
+          {originalEcc && (
+            <small className="muted">
+              {style.ecc === originalEcc
+                ? T("Same as the original.")
+                : T("The original used {e}.").replace(
+                    "{e}",
+                    eccOptions.find(([k]) => k === originalEcc)?.[1] ?? "",
+                  )}
+            </small>
+          )}
+          {lowContrast(style.fg, style.bg) && (
+            <small className="warn">
+              {T(
+                "Low contrast. Use a dark code on a light background, or some phones won't read it.",
+              )}
+            </small>
+          )}
+        </div>
+      )}
       <FileInput
         inputRef={pickRef}
         onFiles={take}

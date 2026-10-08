@@ -6561,3 +6561,167 @@ button.sp-face[aria-pressed="true"] .thumb {
     top: 96px;
   }
 }
+
+/* Three-column editor: inputs left, the result big in the middle, style and download right.
+   The middle is plain (no pattern): the result is the only thing there. */
+.toolcard.tri {
+  grid-template-columns: 290px minmax(0, 1fr) 290px;
+}
+.toolcard.tri .controls.side-l {
+  border-left: 0;
+  border-right: 1px solid var(--line);
+  order: 0;
+}
+.toolcard.tri .stage {
+  order: 1;
+  min-height: 0;
+  padding: 28px;
+  background: var(--card);
+  background-image: none;
+  align-content: start;
+}
+.toolcard.tri .controls.side-r {
+  order: 2;
+}
+@media (min-width: 901px) {
+  .toolcard.tri .stage {
+    position: sticky;
+    top: 72px;
+    align-self: start;
+  }
+}
+.qr-plain .qr-sheet {
+  box-shadow: 0 0 0 1px var(--line);
+  border-radius: 12px;
+  padding: 20px;
+}
+.qr-plain .qr-sheet .qr-preview svg {
+  width: min(400px, 100%);
+}
+.qr-plain .qr-proof {
+  gap: 14px;
+  width: 100%;
+}
+@media (max-width: 1100px) {
+  .toolcard.tri {
+    grid-template-columns: 260px minmax(0, 1fr) 260px;
+  }
+}
+@media (max-width: 900px) {
+  .toolcard.tri {
+    grid-template-columns: 1fr;
+  }
+  .toolcard.tri .stage {
+    order: 0;
+  }
+  .toolcard.tri .controls.side-l {
+    order: 1;
+    border-right: 0;
+    border-top: 1px solid var(--line);
+  }
+  .toolcard.tri .controls.side-r {
+    order: 2;
+    border-left: 0;
+    border-top: 1px solid var(--line);
+  }
+}
+/* Downloads sit under the result in the middle column */
+.qr-out {
+  width: min(400px, 100%);
+  margin-top: 4px;
+  border: 0;
+  padding: 0;
+  background: none;
+}
+/* Two-column editor (fewer settings): inputs left, the result big on the right */
+.toolcard.duo {
+  grid-template-columns: 320px minmax(0, 1fr);
+}
+.toolcard.duo .controls.side-l {
+  border-left: 0;
+  border-right: 1px solid var(--line);
+}
+.toolcard.duo .stage {
+  min-height: 0;
+  padding: 28px;
+  background: var(--card);
+  background-image: none;
+  align-content: start;
+}
+@media (min-width: 901px) {
+  .toolcard.duo .stage {
+    position: sticky;
+    top: 72px;
+    align-self: start;
+  }
+}
+@media (max-width: 900px) {
+  .toolcard.duo {
+    grid-template-columns: 1fr;
+  }
+  .toolcard.duo .stage {
+    order: -1;
+  }
+  .toolcard.duo .controls.side-l {
+    border-right: 0;
+    border-top: 1px solid var(--line);
+  }
+}
+/* Plain result areas: no crop marks, bigger results */
+.qr-plain .qr-marks {
+  display: none;
+}
+.qr-plain .c2d-square svg {
+  width: min(380px, 100%);
+}
+.qr-plain .c2d-wide svg {
+  width: min(560px, 100%);
+}
+.qr-plain .bulk-sheet {
+  width: 100%;
+  max-height: 520px;
+  box-shadow: 0 0 0 1px var(--line);
+}
+.qr-plain .bulk-grid {
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+}
+.qr-plain .bulk-grid svg {
+  max-width: 150px;
+}
+/* Cleaner and checker: plain result areas */
+.qr-stage.fq-stage,
+.qr-stage.qc-stage {
+  background: var(--card);
+  background-image: none;
+}
+/* Single-column editor (before a file is added): the drop area uses the full width */
+.toolcard.solo {
+  grid-template-columns: 1fr;
+}
+.toolcard.solo .stage {
+  background: var(--card);
+  background-image: none;
+}
+.qr-plain .fq-pair {
+  width: 100%;
+  justify-content: center;
+}
+.qr-plain .fq-tile {
+  width: min(240px, 38vw);
+  height: auto;
+  aspect-ratio: 1;
+}
+.qr-plain .fq-tile img,
+.qr-plain .fq-tile svg {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+.qr-plain .fq-pair figure {
+  flex: 1 1 0;
+  min-width: 0;
+  max-width: 240px;
+}
+.qr-plain .fq-pair .fq-tile {
+  width: 100%;
+}

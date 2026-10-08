@@ -219,13 +219,14 @@ function GeneratorView({ preset }: { preset?: Preset }) {
   const [style, setStyle] = useState<Style>(DEFAULT_STYLE);
   const [logo, setLogo] = useState<Logo | null>(null);
   const [px, setPx] = useState(1024);
-  const [advanced, setAdvanced] = useState(false);
+  // Advanced is the default here: all style options fit beside the code
+  const [advanced, setAdvanced] = useState(true);
   const logoRef = useRef<HTMLInputElement>(null);
 
   // Simple/Advanced switch in the page header
   useEffect(() => {
     try {
-      if (localStorage.getItem(MODE_KEY) === "advanced") setAdvanced(true);
+      if (localStorage.getItem(MODE_KEY) === "simple") setAdvanced(false);
     } catch {}
     const on = () => setMode(true);
     const off = () => setMode(false);
@@ -349,46 +350,25 @@ function GeneratorView({ preset }: { preset?: Preset }) {
     );
   }
 
+  const colour = (
+    <Colors
+      label={T("Colour")}
+      value={style.fg}
+      onPick={(v) => putStyle({ fg: v })}
+      list={["#111111", "#1a3d9c", "#0b6e4f", "#7a1fa2", "#c2410c", "#e5484d"]}
+    />
+  );
+  const contrastWarn = lowContrast(eff.fg, eff.bg) && (
+    <small className="warn">
+      {T(
+        "Low contrast. Use a dark code on a light background, or some phones won't read it.",
+      )}
+    </small>
+  );
+
   return (
-    <div className="toolcard qrcard">
-      <div className="stage qr-stage qr-print">
-        <figure className={`qr-proof${text ? "" : " placeholder"}`}>
-          <div className="qr-sheet">
-            <span className="qr-marks" aria-hidden="true" />
-            {preview ? (
-              <div
-                className="qr-preview"
-                dangerouslySetInnerHTML={{ __html: preview }}
-              />
-            ) : (
-              <p className="muted qr-long">
-                {T("Too much text for one QR code. Shorten it a little.")}
-              </p>
-            )}
-          </div>
-          {grid > 0 && (
-            <figcaption className="qr-spec">
-              <span>{T(KINDS.find((k) => k.id === kind)!.label)}</span>
-              <span>{T("Version {v}", { v: (grid - 17) / 4 })}</span>
-              <span>{T("{a} × {b} modules", { a: grid, b: grid })}</span>
-              <span>
-                {T("Error correction {e}", { e: T(ECC_NAME[eff.ecc]) })}
-              </span>
-            </figcaption>
-          )}
-        </figure>
-        <p className="qr-caption">
-          {text ? (
-            <>
-              <Icon name="check" />{" "}
-              {T("Ready to scan. It never expires and has no tracking.")}
-            </>
-          ) : (
-            T("Example code. Fill in the details to make yours.")
-          )}
-        </p>
-      </div>
-      <div className="controls">
+    <div className={`toolcard qrcard ${advanced ? "tri" : "duo"}`}>
+      <div className="controls side-l">
         <div className="ctl">
           <span className="lbl">{T("QR code for")}</span>
           <div className="chips">
@@ -506,109 +486,8 @@ function GeneratorView({ preset }: { preset?: Preset }) {
             />
           </>
         )}
-
-        <Colors
-          label={T("Colour")}
-          value={style.fg}
-          onPick={(v) => putStyle({ fg: v })}
-          list={[
-            "#111111",
-            "#1a3d9c",
-            "#0b6e4f",
-            "#7a1fa2",
-            "#c2410c",
-            "#e5484d",
-          ]}
-        />
         {advanced && (
           <>
-            <Colors
-              label={T("Background")}
-              value={style.bg || "#ffffff"}
-              onPick={(v) => putStyle({ bg: v })}
-              list={["#ffffff", "#fff7ed", "#eef4ff", "#f0fdf4"]}
-            />
-            <Toggle
-              label={T("Transparent background")}
-              on={!style.bg}
-              onChange={(v) => putStyle({ bg: v ? "" : "#ffffff" })}
-            />
-            <Seg<Dots>
-              label={T("Dots")}
-              options={[
-                ["square", T("Square")],
-                ["rounded", T("Rounded")],
-                ["dots", T("Dots")],
-                ["fluid", T("Fluid")],
-              ]}
-              value={style.dots}
-              onPick={(v) => putStyle({ dots: v })}
-            />
-            <Seg<Eyes>
-              label={T("Corners")}
-              options={[
-                ["square", T("Square")],
-                ["rounded", T("Rounded")],
-                ["circle", T("Circle")],
-              ]}
-              value={style.eyes}
-              onPick={(v) => putStyle({ eyes: v })}
-            />
-            <div className="ctl">
-              <span className="lbl">{T("Logo in the middle")}</span>
-              {logo ? (
-                <div className="filepill">
-                  <span>{T("Logo added")}</span>
-                  <button
-                    type="button"
-                    className="btn sm"
-                    onClick={() => setLogo(null)}
-                  >
-                    {T("Remove")}
-                  </button>
-                </div>
-              ) : (
-                <button
-                  type="button"
-                  className="btn sm"
-                  onClick={() => logoRef.current?.click()}
-                >
-                  <Icon name="upload" />
-                  {T("Add a logo")}
-                </button>
-              )}
-              <input
-                ref={logoRef}
-                type="file"
-                accept="image/png,image/jpeg,image/webp,image/svg+xml"
-                hidden
-                onChange={(e) => {
-                  const f = e.target.files?.[0];
-                  e.target.value = "";
-                  if (!f) return;
-                  const r = new FileReader();
-                  r.onload = async () => {
-                    const url = r.result as string;
-                    const img = new Image();
-                    img.src = url;
-                    await img.decode();
-                    setLogo({
-                      url,
-                      w: img.naturalWidth || 1,
-                      h: img.naturalHeight || 1,
-                    });
-                  };
-                  r.readAsDataURL(f);
-                }}
-              />
-              {logo && (
-                <small className="muted">
-                  {T(
-                    "Error correction is set to High so the code still scans.",
-                  )}
-                </small>
-              )}
-            </div>
             {!logo && epc && style.ecc === "L" && (
               <small className="muted">
                 {T("Bank transfer codes use at least Medium error correction.")}
@@ -639,14 +518,49 @@ function GeneratorView({ preset }: { preset?: Preset }) {
             />
           </>
         )}
-        {lowContrast(eff.fg, eff.bg) && (
-          <small className="warn">
-            {T(
-              "Low contrast. Use a dark code on a light background, or some phones won't read it.",
-            )}
-          </small>
+        {!advanced && (
+          <>
+            {colour}
+            {contrastWarn}
+          </>
         )}
-        <div className="result">
+      </div>
+      <div className="stage qr-stage qr-plain">
+        <figure className={`qr-proof${text ? "" : " placeholder"}`}>
+          <div className="qr-sheet">
+            {preview ? (
+              <div
+                className="qr-preview"
+                dangerouslySetInnerHTML={{ __html: preview }}
+              />
+            ) : (
+              <p className="muted qr-long">
+                {T("Too much text for one QR code. Shorten it a little.")}
+              </p>
+            )}
+          </div>
+          {grid > 0 && (
+            <figcaption className="qr-spec">
+              <span>{T(KINDS.find((k) => k.id === kind)!.label)}</span>
+              <span>{T("Version {v}", { v: (grid - 17) / 4 })}</span>
+              <span>{T("{a} × {b} modules", { a: grid, b: grid })}</span>
+              <span>
+                {T("Error correction {e}", { e: T(ECC_NAME[eff.ecc]) })}
+              </span>
+            </figcaption>
+          )}
+        </figure>
+        <p className="qr-caption">
+          {text ? (
+            <>
+              <Icon name="check" />{" "}
+              {T("Ready to scan. It never expires and has no tracking.")}
+            </>
+          ) : (
+            T("Example code. Fill in the details to make yours.")
+          )}
+        </p>
+        <div className="result qr-out">
           <Seg<number>
             label={T("PNG size")}
             options={SIZES.map(
@@ -693,6 +607,97 @@ function GeneratorView({ preset }: { preset?: Preset }) {
           </div>
         </div>
       </div>
+      {advanced && (
+        <div className="controls side-r">
+          {colour}
+          <Colors
+            label={T("Background")}
+            value={style.bg || "#ffffff"}
+            onPick={(v) => putStyle({ bg: v })}
+            list={["#ffffff", "#fff7ed", "#eef4ff", "#f0fdf4"]}
+          />
+          <Toggle
+            label={T("Transparent background")}
+            on={!style.bg}
+            onChange={(v) => putStyle({ bg: v ? "" : "#ffffff" })}
+          />
+          <Seg<Dots>
+            label={T("Dots")}
+            options={[
+              ["square", T("Square")],
+              ["rounded", T("Rounded")],
+              ["dots", T("Dots")],
+              ["fluid", T("Fluid")],
+            ]}
+            value={style.dots}
+            onPick={(v) => putStyle({ dots: v })}
+          />
+          <Seg<Eyes>
+            label={T("Corners")}
+            options={[
+              ["square", T("Square")],
+              ["rounded", T("Rounded")],
+              ["circle", T("Circle")],
+            ]}
+            value={style.eyes}
+            onPick={(v) => putStyle({ eyes: v })}
+          />
+          <div className="ctl">
+            <span className="lbl">{T("Logo in the middle")}</span>
+            {logo ? (
+              <div className="filepill">
+                <span>{T("Logo added")}</span>
+                <button
+                  type="button"
+                  className="btn sm"
+                  onClick={() => setLogo(null)}
+                >
+                  {T("Remove")}
+                </button>
+              </div>
+            ) : (
+              <button
+                type="button"
+                className="btn sm"
+                onClick={() => logoRef.current?.click()}
+              >
+                <Icon name="upload" />
+                {T("Add a logo")}
+              </button>
+            )}
+            <input
+              ref={logoRef}
+              type="file"
+              accept="image/png,image/jpeg,image/webp,image/svg+xml"
+              hidden
+              onChange={(e) => {
+                const f = e.target.files?.[0];
+                e.target.value = "";
+                if (!f) return;
+                const r = new FileReader();
+                r.onload = async () => {
+                  const url = r.result as string;
+                  const img = new Image();
+                  img.src = url;
+                  await img.decode();
+                  setLogo({
+                    url,
+                    w: img.naturalWidth || 1,
+                    h: img.naturalHeight || 1,
+                  });
+                };
+                r.readAsDataURL(f);
+              }}
+            />
+            {logo && (
+              <small className="muted">
+                {T("Error correction is set to High so the code still scans.")}
+              </small>
+            )}
+          </div>
+          {contrastWarn}
+        </div>
+      )}
     </div>
   );
 }

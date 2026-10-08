@@ -108,34 +108,8 @@ function BulkView() {
   }
 
   return (
-    <div className="toolcard qrcard">
-      <div className="stage qr-stage bulk-stage">
-        <div className="bulk-sheet">
-          <p className="bulk-count">
-            {list.length === 1
-              ? T("1 code")
-              : T("{n} codes", { n: list.length })}
-          </p>
-          <div className="bulk-grid">
-            {arts.map(({ r, art }) => (
-              <figure key={r.name}>
-                {art ? (
-                  <div dangerouslySetInnerHTML={{ __html: art }} />
-                ) : (
-                  <div className="warn small">{T("Too long")}</div>
-                )}
-                <figcaption>{r.name}</figcaption>
-              </figure>
-            ))}
-          </div>
-          {list.length > SHOWN && (
-            <p className="bulk-more">
-              {T("and {n} more", { n: list.length - SHOWN })}
-            </p>
-          )}
-        </div>
-      </div>
-      <div className="controls">
+    <div className="toolcard qrcard duo">
+      <div className="controls side-l">
         <div className="ctl">
           <label htmlFor="bulk-in">{T("One link or text per line")}</label>
           <textarea
@@ -177,7 +151,33 @@ function BulkView() {
             onPick={setPx}
           />
         )}
-        <div className="result">
+      </div>
+      <div className="stage qr-stage qr-plain bulk-stage">
+        <div className="bulk-sheet">
+          <p className="bulk-count">
+            {list.length === 1
+              ? T("1 code")
+              : T("{n} codes", { n: list.length })}
+          </p>
+          <div className="bulk-grid">
+            {arts.map(({ r, art }) => (
+              <figure key={r.name}>
+                {art ? (
+                  <div dangerouslySetInnerHTML={{ __html: art }} />
+                ) : (
+                  <div className="warn small">{T("Too long")}</div>
+                )}
+                <figcaption>{r.name}</figcaption>
+              </figure>
+            ))}
+          </div>
+          {list.length > SHOWN && (
+            <p className="bulk-more">
+              {T("and {n} more", { n: list.length - SHOWN })}
+            </p>
+          )}
+        </div>
+        <div className="result qr-out">
           <small>
             {list.length === 1
               ? T("1 code")

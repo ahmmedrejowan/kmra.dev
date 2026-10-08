@@ -157,10 +157,10 @@ const schema = [
         </div>
         {tool.ready && !standalone && (
           <div class="modes" role="group" aria-label={T("Mode")}>
-            <button type="button" aria-pressed="true" data-mode="simple">
+            <button type="button" aria-pressed="false" data-mode="simple">
               {T("Simple")}
             </button>
-            <button type="button" aria-pressed="false" data-mode="advanced">
+            <button type="button" aria-pressed="true" data-mode="advanced">
               <Icon name="sliders" />
               {T("Advanced")}
             </button>

@@ -222,27 +222,8 @@ function WifiCardView() {
 
   const S = SIZES[size];
   return (
-    <div className="toolcard qrcard">
-      <div className="stage qr-stage wc-stage">
-        <canvas
-          ref={canvasRef}
-          className={`wc-canvas wc-${size}${ssid ? "" : " placeholder"}`}
-          style={{ width: S.css, aspectRatio: `${S.w} / ${S.h}` }}
-          role="img"
-          aria-label={T("Wi-Fi card preview")}
-        />
-        <p className="qr-caption">
-          {ssid ? (
-            <>
-              <Icon name="check" />{" "}
-              {T("{w} × {h} mm. Prints at real size.", { w: S.w, h: S.h })}
-            </>
-          ) : (
-            T("Example card. Type your network name to make yours.")
-          )}
-        </p>
-      </div>
-      <div className="controls">
+    <div className="toolcard qrcard tri">
+      <div className="controls side-l">
         <div className="ctl">
           <label htmlFor="wc-ssid">{T("Network name (SSID)")}</label>
           <input
@@ -295,6 +276,61 @@ function WifiCardView() {
             onChange={setPrintPass}
           />
         )}
+      </div>
+      <div className="stage qr-stage qr-plain wc-stage">
+        <canvas
+          ref={canvasRef}
+          className={`wc-canvas wc-${size}${ssid ? "" : " placeholder"}`}
+          style={{ width: S.css, aspectRatio: `${S.w} / ${S.h}` }}
+          role="img"
+          aria-label={T("Wi-Fi card preview")}
+        />
+        <p className="qr-caption">
+          {ssid ? (
+            <>
+              <Icon name="check" />{" "}
+              {T("{w} × {h} mm. Prints at real size.", { w: S.w, h: S.h })}
+            </>
+          ) : (
+            T("Example card. Type your network name to make yours.")
+          )}
+        </p>
+        <div className="result qr-out">
+          <div className="acts">
+            <button
+              type="button"
+              className="btn acc"
+              disabled={busy}
+              onClick={() => void print()}
+            >
+              <Icon name="file" />
+              {T("Print")}
+            </button>
+            <div className="dl-row">
+              <button
+                type="button"
+                className="btn sm"
+                disabled={busy}
+                onClick={() => void savePng()}
+              >
+                <Icon name="download" />
+                PNG
+              </button>
+              <button
+                type="button"
+                className="btn sm"
+                disabled={busy}
+                onClick={() => void savePdf()}
+              >
+                <Icon name="download" />
+                PDF
+              </button>
+            </div>
+            <small>{T("PNG and PDF at 300 dpi, ready to print.")}</small>
+          </div>
+        </div>
+      </div>
+      <div className="controls side-r">
         <div className="ctl">
           <label htmlFor="wc-title">{T("Card title")}</label>
           <input
@@ -343,40 +379,6 @@ function WifiCardView() {
           value={dark}
           onPick={setDark}
         />
-        <div className="result">
-          <div className="acts">
-            <button
-              type="button"
-              className="btn acc"
-              disabled={busy}
-              onClick={() => void print()}
-            >
-              <Icon name="file" />
-              {T("Print")}
-            </button>
-            <div className="dl-row">
-              <button
-                type="button"
-                className="btn sm"
-                disabled={busy}
-                onClick={() => void savePng()}
-              >
-                <Icon name="download" />
-                PNG
-              </button>
-              <button
-                type="button"
-                className="btn sm"
-                disabled={busy}
-                onClick={() => void savePdf()}
-              >
-                <Icon name="download" />
-                PDF
-              </button>
-            </div>
-            <small>{T("PNG and PDF at 300 dpi, ready to print.")}</small>
-          </div>
-        </div>
       </div>
     </div>
   );

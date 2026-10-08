@@ -109,52 +109,8 @@ function Codes2dView({ preset }: { preset?: Preset }) {
   }
 
   return (
-    <div className="toolcard qrcard">
-      <div className="stage qr-stage qr-print">
-        <figure
-          className={`qr-proof${ready ? "" : " placeholder"}${
-            error ? " dim" : ""
-          }`}
-        >
-          <div className="qr-sheet">
-            <span className="qr-marks" aria-hidden="true" />
-            {preview && (
-              <div
-                className={`c2d-wrap c2d-${format === "PDF417" || format === "RMQRCode" ? "wide" : "square"}`}
-                role="img"
-                aria-label={T("{format} code for {value}", {
-                  format: f.label,
-                  value,
-                })}
-                dangerouslySetInnerHTML={{ __html: preview }}
-              />
-            )}
-          </div>
-          {shown?.cols ? (
-            <figcaption className="qr-spec">
-              <span>{f.label}</span>
-              <span>
-                {T("{a} × {b} modules", { a: shown.cols, b: shown.rows ?? 0 })}
-              </span>
-            </figcaption>
-          ) : null}
-        </figure>
-        {error ? (
-          <p className="warn c2d-error">{error}</p>
-        ) : (
-          <p className="qr-caption">
-            {ready ? (
-              <>
-                <Icon name="check" />{" "}
-                {T("Ready. The code updates as you type.")}
-              </>
-            ) : (
-              T("Example code. Type your text to make yours.")
-            )}
-          </p>
-        )}
-      </div>
-      <div className="controls">
+    <div className="toolcard qrcard duo">
+      <div className="controls side-l">
         <div className="ctl">
           <span className="lbl">{T("Type")}</span>
           <div className="chips">
@@ -213,7 +169,51 @@ function Codes2dView({ preset }: { preset?: Preset }) {
             )}
           </small>
         )}
-        <div className="result">
+      </div>
+      <div className="stage qr-stage qr-plain">
+        <figure
+          className={`qr-proof${ready ? "" : " placeholder"}${
+            error ? " dim" : ""
+          }`}
+        >
+          <div className="qr-sheet">
+            <span className="qr-marks" aria-hidden="true" />
+            {preview && (
+              <div
+                className={`c2d-wrap c2d-${format === "PDF417" || format === "RMQRCode" ? "wide" : "square"}`}
+                role="img"
+                aria-label={T("{format} code for {value}", {
+                  format: f.label,
+                  value,
+                })}
+                dangerouslySetInnerHTML={{ __html: preview }}
+              />
+            )}
+          </div>
+          {shown?.cols ? (
+            <figcaption className="qr-spec">
+              <span>{f.label}</span>
+              <span>
+                {T("{a} × {b} modules", { a: shown.cols, b: shown.rows ?? 0 })}
+              </span>
+            </figcaption>
+          ) : null}
+        </figure>
+        {error ? (
+          <p className="warn c2d-error">{error}</p>
+        ) : (
+          <p className="qr-caption">
+            {ready ? (
+              <>
+                <Icon name="check" />{" "}
+                {T("Ready. The code updates as you type.")}
+              </>
+            ) : (
+              T("Example code. Type your text to make yours.")
+            )}
+          </p>
+        )}
+        <div className="result qr-out">
           <Seg<number>
             label={T("PNG size")}
             options={SIZES.map(
