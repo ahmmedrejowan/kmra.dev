@@ -2,7 +2,6 @@
 import {
   apps,
   getApp,
-  groupBy,
   localizeApp,
   type App,
   type AppId,
@@ -12,6 +11,7 @@ import Wordmark from "./Wordmark.astro";
 import { markSvg } from "../lib/brand";
 import { appLink, langLinks, pageLocale } from "../lib/locale";
 import { lp, t as tr } from "../lib/i18n";
+import { taskSections, toolSections } from "../lib/sections";
 
 interface Props {
   appId: AppId;
@@ -27,11 +27,19 @@ const dev = import.meta.env.DEV;
 const langs = langLinks(Astro, app);
 // Only apps that are live are listed; others appear once they launch.
 const liveApps = apps.filter((a) => a.live);
-const toolGroups = groupBy(
-  app.tools.filter((t) => t.ready),
-  app.toolGroups,
-);
-const taskGroups = groupBy(app.tasks);
+// Menus show the top few of each group (popular first) and link to the full pages
+const TOOLS_PER_GROUP = 3;
+const TASKS_PER_GROUP = 4;
+const toolSecs = toolSections(appId, locale, true);
+const taskSecs = taskSections(appId, locale, true);
+const readyCount = app.tools.filter((t) => t.ready).length;
+const popular = app.popular ?? [];
+const rank = (slug: string) =>
+  popular.includes(slug) ? popular.indexOf(slug) : 999;
+const drawerTools = app.tools
+  .filter((t) => t.ready)
+  .sort((a, b) => rank(a.slug) - rank(b.slug))
+  .slice(0, 8);
 const toolIcon = (slug: string) =>
   app.tools.find((t) => t.slug === slug)?.icon ?? "file";
 const appHref = (a: App) =>
@@ -57,38 +65,45 @@ const appHref = (a: App) =>
             {T("Tools")} <Icon name="down" />
           </button>
           <div class="mega cols" id="m-tools" hidden>
-            {toolGroups.map(([group, tools]) => (
+            {toolSecs.map((sec) => (
               <div class="mgrp">
-                <h6>{group}</h6>
-                {tools.map((t) => (
+                <h6>{sec.label}</h6>
+                {sec.items.slice(0, TOOLS_PER_GROUP).map((t) => (
                   <a class="mi" href={L(`/${t.slug}`)}>
                     <span class="tile">
                       <Icon name={t.icon} />
                     </span>
                     <span>
-                      <strong>
-                        {t.name}
-                        {!t.ready && <span class="soon">Soon</span>}
-                      </strong>
+                      <strong>{t.name}</strong>
                       <small>{t.blurb}</small>
                     </span>
                   </a>
                 ))}
+                {sec.items.length > TOOLS_PER_GROUP && (
+                  <a class="mi-more" href={L(`/tools#${sec.id}`)}>
+                    {T("+ {n} more", { n: sec.items.length - TOOLS_PER_GROUP })}
+                  </a>
+                )}
               </div>
             ))}
+            <a class="mega-all" href={L("/tools")}>
+              <Icon name="grid" />
+              {T("All {n} tools", { n: readyCount })}
+              <Icon name="right" />
+            </a>
           </div>
         </div>
 
-        {taskGroups.length > 0 && (
+        {taskSecs.length > 0 && (
           <div class="menu">
             <button type="button" aria-expanded="false" aria-controls="m-tasks">
               {T("Use cases")} <Icon name="down" />
             </button>
             <div class="mega cols" id="m-tasks" hidden>
-              {taskGroups.map(([group, tasks]) => (
+              {taskSecs.map((sec) => (
                 <div class="mgrp">
-                  <h6>{group}</h6>
-                  {tasks.map((t) => (
+                  <h6>{sec.label}</h6>
+                  {sec.items.slice(0, TASKS_PER_GROUP).map((t) => (
                     <a class="mi" href={L(`/${t.slug}`)}>
                       <span class="tile">
                         <Icon name={toolIcon(t.tool)} />
@@ -99,8 +114,20 @@ const appHref = (a: App) =>
                       </span>
                     </a>
                   ))}
+                  {sec.items.length > TASKS_PER_GROUP && (
+                    <a class="mi-more" href={L(`/use-cases#${sec.id}`)}>
+                      {T("+ {n} more", {
+                        n: sec.items.length - TASKS_PER_GROUP,
+                      })}
+                    </a>
+                  )}
                 </div>
               ))}
+              <a class="mega-all" href={L("/use-cases")}>
+                <Icon name="layers" />
+                {T("All {n} use cases", { n: app.tasks.length })}
+                <Icon name="right" />
+              </a>
             </div>
           </div>
         )}
@@ -244,19 +271,17 @@ const appHref = (a: App) =>
           </div>
         </>
       )}
-      <h6>{T("Tools")}</h6>
-      {app.tools
-        .filter((t) => t.ready)
-        .map((t) => (
-          <a href={L(`/${t.slug}`)}>{t.name}</a>
-        ))}
+      <h6>{T("Popular tools")}</h6>
+      {drawerTools.map((t) => (
+        <a href={L(`/${t.slug}`)}>{t.name}</a>
+      ))}
+      <a class="drawer-all" href={L("/tools")}>
+        {T("All {n} tools", { n: readyCount })}
+      </a>
       {app.tasks.length > 0 && (
-        <>
-          <h6>{T("Use cases")}</h6>
-          {app.tasks.map((t) => (
-            <a href={L(`/${t.slug}`)}>{t.name}</a>
-          ))}
-        </>
+        <a class="drawer-all" href={L("/use-cases")}>
+          {T("All {n} use cases", { n: app.tasks.length })}
+        </a>
       )}
       <h6>{T("Apps")}</h6>
       {liveApps.map((a) => {

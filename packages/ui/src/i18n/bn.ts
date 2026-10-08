@@ -686,4 +686,7 @@ export const BN: Record<string, string> = {
   "The same free, private tools for other kinds of files.":
     "অন্য ধরনের ফাইলের জন্যও একই রকম বিনামূল্যের, ব্যক্তিগত টুল।",
   "See all kmra tools": "kmra-র সব টুল দেখুন",
+  "+ {n} more": "+ আরও {n}টি",
+  "Popular tools": "জনপ্রিয় টুল",
+  "Browse all {n} tools": "সব {n}টি টুল দেখুন",
 };

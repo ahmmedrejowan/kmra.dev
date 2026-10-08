@@ -246,9 +246,11 @@ const paletteItems: PaletteItem[] = [
     <main id="main">
       <slot />
     </main>
-    <aside class="wrap cta-wrap" aria-label={T("More from kmra")}>
-      <MoreAppsCta appId={appId} />
-    </aside>
+    {!/^\/(?:[a-z]{2}\/)?more-tools$/.test(path) && (
+      <aside class="wrap cta-wrap" aria-label={T("More from kmra")}>
+        <MoreAppsCta appId={appId} />
+      </aside>
+    )}
     <SiteFooter appId={appId} />
     <CommandPalette client:idle items={paletteItems} lang={lang} />
     <Shortcuts client:idle lang={lang} />

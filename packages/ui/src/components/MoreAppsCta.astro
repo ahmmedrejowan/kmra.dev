@@ -5,7 +5,7 @@ import { markSvg } from "../lib/brand";
 import { appLink, pageLocale } from "../lib/locale";
 import { lp, t as tr } from "../lib/i18n";
 
-/** One card above the footer: up to three other kmra apps, and a link to all of them. */
+/** One card above the footer: up to two other kmra apps, and a link to all of them. */
 interface Props {
   appId: AppId;
 }
@@ -17,7 +17,7 @@ const T = (s: string, v?: Record<string, string | number>) => tr(locale, s, v);
 const others = apps
   .filter((a) => a.live && a.id !== appId)
   .map((a) => localizeApp(a, locale));
-const shown = others.slice(0, 3);
+const shown = others.slice(0, 2);
 ---
 
 {others.length > 0 && (

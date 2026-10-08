@@ -4868,3 +4868,43 @@ footer.site .fmore {
   display: flex;
   gap: 16px;
 }
+
+/* Mega menu: "+ N more" per group and an "All" row */
+.mi-more {
+  display: block;
+  padding: 4px 10px 2px 56px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--acc);
+}
+.mi-more:hover {
+  text-decoration: underline;
+}
+.mega-all {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: center;
+  column-span: all;
+  margin-top: 6px;
+  padding: 10px;
+  border-radius: 10px;
+  background: var(--acc-soft);
+  color: var(--acc);
+  font-weight: 600;
+  font-size: 14px;
+}
+.mega-all .ico {
+  width: 16px;
+  height: 16px;
+}
+.drawer-all {
+  color: var(--acc) !important;
+  font-weight: 600;
+}
+
+.showcase-all {
+  display: flex;
+  justify-content: center;
+  margin-top: 22px;
+}

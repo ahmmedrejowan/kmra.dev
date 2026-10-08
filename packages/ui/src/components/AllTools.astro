@@ -1,37 +1,28 @@
 ---
-import { getApp, groupBy, localizeApp, type AppId } from "@kmra/registry";
+import type { AppId } from "@kmra/registry";
 import ToolCards from "./ToolCards.astro";
 import { pageLocale } from "../lib/locale";
-import { num, t as tr } from "../lib/i18n";
+import { t as tr } from "../lib/i18n";
+import { toolSections } from "../lib/sections";
 
-/** Every tool of an app, as card grids grouped by category. */
+/** Every tool of an app, as card grids grouped by category (anchors: /tools#<group>). */
 interface Props {
   appId: AppId;
 }
 
 const { appId } = Astro.props;
 const locale = pageLocale(Astro);
-const app = localizeApp(getApp(appId), locale);
-const groups = groupBy(
-  app.tools.filter((t) => t.ready),
-  app.toolGroups,
-);
+const groups = toolSections(appId, locale);
+const total = groups.reduce((a, g) => a + g.items.length, 0);
 ---
 
-{groups.map(([group, list]) => (
-  <section class="block cat">
+{groups.map(({ id, label, items }) => (
+  <section class="block cat" id={id}>
     <div class="sechead primary">
-      <h2>{group}</h2>
-      <p>{tr(locale, "{n} tools", { n: list.length })}</p>
+      <h2>{label}</h2>
+      <p>{tr(locale, "{n} tools", { n: items.length })}</p>
     </div>
-    <ToolCards tools={list} />
+    <ToolCards tools={items} />
   </section>
 ))}
-<p class="muted cat-count">
-  {tr(locale, "{n} tools in all", {
-    n: num(
-      locale,
-      groups.reduce((a, [, l]) => a + l.length, 0),
-    ),
-  })}
-</p>
+<p class="muted cat-count">{tr(locale, "{n} tools in all", { n: total })}</p>

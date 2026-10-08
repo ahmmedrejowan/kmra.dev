@@ -5,10 +5,11 @@ import TaskList from "@kmra/ui/components/TaskList.astro";
 import PrivacySection from "@kmra/ui/components/PrivacySection.astro";
 import HeroChips from "@kmra/ui/components/HeroChips.astro";
 import LandingDrop from "@kmra/ui/components/LandingDrop";
+import Icon from "@kmra/ui/components/Icon.astro";
 import { getApp } from "@kmra/registry";
 
 const app = getApp("qrtool");
-// Five popular tasks; the rest are on /use-cases
+// Eleven popular tasks and an "All use cases" card; the rest are on /use-cases
 const popularSlugs = app.popular ?? [];
 const tasks = app.tasks
   .slice()
@@ -17,7 +18,7 @@ const tasks = app.tasks
       (popularSlugs.includes(a.slug) ? popularSlugs.indexOf(a.slug) : 99) -
       (popularSlugs.includes(b.slug) ? popularSlugs.indexOf(b.slug) : 99),
   )
-  .slice(0, 5);
+  .slice(0, 11);
 const icons = Object.fromEntries(app.tools.map((t) => [t.slug, t.icon]));
 // A short popular list (tools and tasks); the full set is in the menu and the showcase below
 const chips = (app.popular ?? []).flatMap((slug) => {
@@ -63,6 +64,12 @@ const chips = (app.popular ?? []).flatMap((slug) => {
       </div>
     </div>
     <ToolShowcase tools={app.tools} />
+    <div class="wrap showcase-all">
+      <a class="btn" href="/tools">
+        <Icon name="grid" />
+        Browse all {app.tools.filter((t) => t.ready).length} tools
+      </a>
+    </div>
   </section>
 
   <section class="screen">
