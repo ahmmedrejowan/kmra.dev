@@ -34,6 +34,8 @@ function rows(text: string): Row[] {
     });
 }
 
+const SHOWN = 48;
+
 export default function Bulk({ lang }: { lang?: Locale }) {
   return (
     <LangProvider lang={lang}>
@@ -54,6 +56,18 @@ function BulkView() {
   const [working, setWorking] = useState(false);
   const list = useMemo(() => rows(text), [text]);
   const style: Style = { ...DEFAULT_STYLE, fg };
+  // The sheet previews the first few dozen; the zip has them all
+  const arts = useMemo(
+    () =>
+      list.slice(0, SHOWN).map((r) => {
+        let art = "";
+        try {
+          art = svg(r.value, { ...DEFAULT_STYLE, fg }, null, 120);
+        } catch {}
+        return { r, art };
+      }),
+    [list, fg],
+  );
 
   async function save() {
     setWorking(true);
@@ -95,14 +109,15 @@ function BulkView() {
 
   return (
     <div className="toolcard qrcard">
-      <div className="stage qr-stage">
-        <div className="bulk-grid">
-          {list.slice(0, 12).map((r) => {
-            let art = "";
-            try {
-              art = svg(r.value, style, null, 120);
-            } catch {}
-            return (
+      <div className="stage qr-stage bulk-stage">
+        <div className="bulk-sheet">
+          <p className="bulk-count">
+            {list.length === 1
+              ? T("1 code")
+              : T("{n} codes", { n: list.length })}
+          </p>
+          <div className="bulk-grid">
+            {arts.map(({ r, art }) => (
               <figure key={r.name}>
                 {art ? (
                   <div dangerouslySetInnerHTML={{ __html: art }} />
@@ -111,14 +126,14 @@ function BulkView() {
                 )}
                 <figcaption>{r.name}</figcaption>
               </figure>
-            );
-          })}
+            ))}
+          </div>
+          {list.length > SHOWN && (
+            <p className="bulk-more">
+              {T("and {n} more", { n: list.length - SHOWN })}
+            </p>
+          )}
         </div>
-        {list.length > 12 && (
-          <p className="muted small">
-            {T("and {n} more", { n: list.length - 12 })}
-          </p>
-        )}
       </div>
       <div className="controls">
         <div className="ctl">

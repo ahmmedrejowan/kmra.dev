@@ -5,7 +5,6 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import type { PDFDocumentProxy } from "pdfjs-dist";
 import { Icon } from "@kmra/ui/components/Icon";
 import { Seg, Slider, Colors, Toggle } from "@kmra/ui/components/controls";
 import {
@@ -40,14 +39,21 @@ import {
 } from "../lib/ops";
 import Thumb from "./Thumb";
 import type { Preset } from "@kmra/registry";
-
-interface Doc {
-  key: string;
-  file: File;
-  bytes: Uint8Array;
-  pdf: PDFDocumentProxy;
-  pages: number;
-}
+import { DocBar, refsOf, type Doc } from "./stages/common";
+import MergeStack from "./stages/MergeStack";
+import {
+  CompressView,
+  GrayView,
+  MetaView,
+  RotateView,
+} from "./stages/DocViews";
+import {
+  PrintsView,
+  ReadView,
+  RemoveView,
+  SplitView,
+} from "./stages/PageViews";
+import { NumbersView, WatermarkView } from "./stages/Overlays";
 
 interface Out {
   name: string;
@@ -129,6 +135,8 @@ function PdfToolView({ tool, preset }: { tool: string; preset?: Preset }) {
   const [busy, setBusy] = useState<string | null>(null);
   const [outs, setOuts] = useState<Out[] | null>(null);
   const [dragId, setDragId] = useState<string | null>(null);
+  /** The file shown in per-file workspaces */
+  const [activeKey, setActiveKey] = useState<string | null>(null);
   const docsRef = useRef(docs);
   docsRef.current = docs;
 
@@ -164,10 +172,15 @@ function PdfToolView({ tool, preset }: { tool: string; preset?: Preset }) {
   });
   const [meta, setMeta] = useState<Meta | null>(null);
   const [text, setText] = useState<string | null>(null);
+  /** Extracted text per file, one entry per page */
+  const [pageTexts, setPageTexts] = useState<Record<string, string[]> | null>(
+    null,
+  );
 
   const reset = () => {
     setOuts(null);
     setText(null);
+    setPageTexts(null);
   };
 
   /* ---------- Files ---------- */
@@ -478,6 +491,7 @@ function PdfToolView({ tool, preset }: { tool: string; preset?: Preset }) {
           setBusy(T("Reading page {n}…", { n: p.index + 1 }));
           parts.push(await pageText(doc.pdf, p.index + 1));
         }
+        setPageTexts((t) => ({ ...t, [doc.key]: parts }));
         const all = parts.join("\n\n\f\n\n");
         return [
           {
@@ -582,58 +596,6 @@ function PdfToolView({ tool, preset }: { tool: string; preset?: Preset }) {
   const totalIn = docs.reduce((a, d) => a + d.file.size, 0);
   const totalOut = outs?.reduce((a, o) => a + o.blob.size, 0) ?? 0;
   const pickHint = PICK[tool] ? T(PICK[tool]) : undefined;
-
-  const fileList = (
-    <div className="pdf-files">
-      {docs.map((d, i) => (
-        <div key={d.key} className="pdf-file">
-          <Thumb fileKey={d.key} doc={d.pdf} index={0} width={84} alt="" />
-          <div className="pdf-file-text">
-            <strong>{d.file.name}</strong>
-            <small>
-              {T(d.pages > 1 ? "{n} pages" : "{n} page", { n: d.pages })},{" "}
-              {formatBytes(d.file.size)}
-            </small>
-          </div>
-          <div className="pdf-file-acts">
-            {tool === "merge" && docs.length > 1 && (
-              <>
-                <button
-                  type="button"
-                  className="iconbtn"
-                  aria-label={T("Move up")}
-                  disabled={i === 0}
-                  onClick={() => moveDoc(d.key, -1)}
-                >
-                  <Icon name="down" className="ico up" />
-                </button>
-                <button
-                  type="button"
-                  className="iconbtn"
-                  aria-label={T("Move down")}
-                  disabled={i === docs.length - 1}
-                  onClick={() => moveDoc(d.key, 1)}
-                >
-                  <Icon name="down" />
-                </button>
-              </>
-            )}
-            <button
-              type="button"
-              className="iconbtn"
-              aria-label={T("Remove {name}", { name: d.file.name })}
-              onClick={() => removeDoc(d.key)}
-            >
-              <Icon name="x" />
-            </button>
-          </div>
-        </div>
-      ))}
-      <button type="button" className="fchip add" onClick={pick}>
-        {T(tool === "merge" ? "+ Add PDFs" : "+ Add another PDF")}
-      </button>
-    </div>
-  );
 
   const pageGrid = (
     <div className="page-grid">
@@ -761,15 +723,9 @@ function PdfToolView({ tool, preset }: { tool: string; preset?: Preset }) {
         return (
           <>
             {pagesField(T("Pages to remove"), T("e.g. {v}", { v: "2, 5-7" }))}
-            {advanced ? (
-              <small className="muted">
-                {pickHint} {T("Picked: {n}", { n: picked.size })}
-              </small>
-            ) : (
-              <small className="muted">
-                {T("Or switch to Advanced and click the pages.")}
-              </small>
-            )}
+            <small className="muted">
+              {pickHint} {T("Picked: {n}", { n: picked.size })}
+            </small>
           </>
         );
       case "rotate":
@@ -815,11 +771,9 @@ function PdfToolView({ tool, preset }: { tool: string; preset?: Preset }) {
                   T("Pages to keep in one PDF"),
                   T("e.g. {v}", { v: "1, 3-4" }),
                 )}
-                {advanced && (
-                  <small className="muted">
-                    {T("Or click pages. Picked: {n}", { n: picked.size })}
-                  </small>
-                )}
+                <small className="muted">
+                  {T("Or click pages. Picked: {n}", { n: picked.size })}
+                </small>
               </>
             )}
             {splitMode === "each" && (
@@ -911,11 +865,9 @@ function PdfToolView({ tool, preset }: { tool: string; preset?: Preset }) {
                 reset();
               }}
             />
-            {advanced && (
-              <small className="muted">
-                {pickHint} {T("Picked: {n}", { n: picked.size })}
-              </small>
-            )}
+            <small className="muted">
+              {pickHint} {T("Picked: {n}", { n: picked.size })}
+            </small>
           </>
         );
       case "to-text":
@@ -1102,6 +1054,114 @@ function PdfToolView({ tool, preset }: { tool: string; preset?: Preset }) {
     }
   }
 
+  /** Simple mode: a workspace built for each tool's job */
+  const grid = advanced || tool === "organize";
+  const doc = docs.find((d) => d.key === activeKey) ?? docs[0]!;
+  const refs = refsOf(pages, doc.key);
+  function simpleStage(): ReactNode {
+    if (tool === "merge")
+      return (
+        <MergeStack
+          docs={docs}
+          pages={pages}
+          onMove={moveDoc}
+          onRemove={removeDoc}
+          onAdd={pick}
+        />
+      );
+    const view = (() => {
+      switch (tool) {
+        case "compress":
+          return (
+            <CompressView
+              doc={doc}
+              first={refs[0]}
+              level={level}
+              target={target}
+              outSize={outs?.[docs.indexOf(doc)]?.blob.size}
+            />
+          );
+        case "grayscale":
+          return <GrayView doc={doc} first={refs[0]} />;
+        case "rotate":
+          return <RotateView doc={doc} refs={refs} turn={turn} />;
+        case "split":
+          return (
+            <SplitView
+              doc={doc}
+              refs={refs}
+              mode={splitMode}
+              ranges={ranges}
+              picked={picked}
+              onPick={(id) => {
+                togglePick(id);
+                reset();
+              }}
+              parse={parseRanges}
+            />
+          );
+        case "remove-pages":
+          return (
+            <RemoveView
+              doc={doc}
+              refs={refs}
+              ranges={ranges}
+              picked={picked}
+              onPick={(id) => {
+                togglePick(id);
+                reset();
+              }}
+              onRanges={(v) => {
+                setRanges(v);
+                reset();
+              }}
+              parse={parseRanges}
+            />
+          );
+        case "to-image":
+          return (
+            <PrintsView
+              doc={doc}
+              refs={refs}
+              ext={imgType === "image/png" ? "PNG" : "JPG"}
+              dpi={dpi}
+              picked={picked}
+              onPick={(id) => {
+                togglePick(id);
+                reset();
+              }}
+            />
+          );
+        case "to-text":
+          return (
+            <ReadView doc={doc} refs={refs} texts={pageTexts?.[doc.key]} />
+          );
+        case "page-numbers":
+          return <NumbersView doc={doc} refs={refs} o={num} />;
+        case "watermark":
+          return <WatermarkView doc={doc} first={refs[0]} o={wm} />;
+        case "metadata":
+          return (
+            <MetaView doc={doc} first={refs[0]} meta={meta} strip={metaStrip} />
+          );
+        default:
+          return null;
+      }
+    })();
+    return (
+      <>
+        <DocBar
+          docs={docs}
+          active={doc.key}
+          onActive={setActiveKey}
+          onRemove={removeDoc}
+          onAdd={pick}
+        />
+        <div className="desk-view">{view}</div>
+      </>
+    );
+  }
+
   const actionLabel: Record<string, string> = {
     merge:
       docs.length > 1
@@ -1123,8 +1183,10 @@ function PdfToolView({ tool, preset }: { tool: string; preset?: Preset }) {
   return (
     <>
       <div className={`toolcard pdfcard${advanced ? " adv" : ""}`}>
-        <div className={`stage pdf-stage${dragging ? " over" : ""}`}>
-          {advanced ? (
+        <div
+          className={`stage pdf-stage${grid ? " grid" : ` desk-${tool}`}${dragging ? " over" : ""}`}
+        >
+          {grid ? (
             <>
               {pickHint && <p className="pg-hint">{pickHint}</p>}
               {pageGrid}
@@ -1135,7 +1197,7 @@ function PdfToolView({ tool, preset }: { tool: string; preset?: Preset }) {
               </div>
             </>
           ) : (
-            fileList
+            simpleStage()
           )}
         </div>
         <div className="controls">
@@ -1230,27 +1292,23 @@ function PdfToolView({ tool, preset }: { tool: string; preset?: Preset }) {
                   what={T("Text copied")}
                 />
               )}
-              <button
-                type="button"
-                className="advlink"
-                onClick={() => setMode(!advanced)}
-              >
-                <Icon name="sliders" />
-                {T(advanced ? "Back to Simple" : "See every page in Advanced")}
-              </button>
+              {/* Organize shows every page in both modes */}
+              {tool !== "organize" && (
+                <button
+                  type="button"
+                  className="advlink"
+                  onClick={() => setMode(!advanced)}
+                >
+                  <Icon name="sliders" />
+                  {T(
+                    advanced ? "Back to Simple" : "See every page in Advanced",
+                  )}
+                </button>
+              )}
             </div>
           </div>
         </div>
       </div>
-      {text !== null && (
-        <textarea
-          className="num code-in pdf-text"
-          readOnly
-          value={text}
-          rows={14}
-          aria-label={T("Extracted text")}
-        />
-      )}
       {input}
     </>
   );

@@ -287,6 +287,9 @@ export const BN_QRTOOL: Record<string, string> = {
   "A4 poster": "A4 পোস্টার",
 
   // -- checker, cleaner, batch scanner --
+  "{n} image": "{n}টি ছবি",
+  "{n} images": "{n}টি ছবি",
+  "{n} code": "{n}টি কোড",
   "UPI payment": "UPI পেমেন্ট",
   "Bank transfer": "ব্যাংক ট্রান্সফার",
   Bitcoin: "বিটকয়েন",
@@ -441,4 +444,10 @@ export const BN_QRTOOL: Record<string, string> = {
   "Clear list": "তালিকা মুছুন",
   "One code per line when copied. The CSV opens in Excel and Google Sheets.":
     "কপি করলে প্রতি লাইনে একটি কোড থাকে। CSV ফাইল এক্সেল আর গুগল শিটসে খোলা যায়।",
+  // Workspaces
+  "Version {v}": "ভার্সন {v}",
+  "Error correction {e}": "এরর কারেকশন {e}",
+  "Stays sharp at any width": "যেকোনো চওড়ায় ঝকঝকে থাকে",
+  "Blank margin a scanner needs: {n} modules":
+    "স্ক্যানারের দরকারি ফাঁকা মার্জিন: {n} মডিউল",
 };

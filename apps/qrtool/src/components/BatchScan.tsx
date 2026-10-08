@@ -276,7 +276,13 @@ function BatchScanView() {
             </>
           ) : (
             <span className="lbl">
-              {T("{n} images, {c} codes", { n: items.length, c: codes.length })}
+              {T(items.length === 1 ? "{n} image" : "{n} images", {
+                n: items.length,
+              })}
+              ,{" "}
+              {T(codes.length === 1 ? "{n} code" : "{n} codes", {
+                n: codes.length,
+              })}
             </span>
           )}
           {failed > 0 && (

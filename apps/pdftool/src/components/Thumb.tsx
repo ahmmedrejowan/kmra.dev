@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import type { PDFDocumentProxy } from "pdfjs-dist";
 import { renderPage } from "../lib/pdfjs";
 
@@ -93,6 +93,86 @@ export default function Thumb({
       ) : (
         <span className="thumb-wait" aria-hidden="true" />
       )}
+    </div>
+  );
+}
+
+/** Size of a page in points as it displays (the page's own /Rotate applied); null while loading */
+export function usePageBox(doc: PDFDocumentProxy | null, index: number) {
+  const [box, setBox] = useState<{ w: number; h: number } | null>(null);
+  useEffect(() => {
+    if (!doc) return;
+    let live = true;
+    void doc
+      .getPage(index + 1)
+      .then((p) => {
+        const v = p.getViewport({ scale: 1 });
+        if (live) setBox({ w: v.width, h: v.height });
+      })
+      .catch(() => {});
+    return () => {
+      live = false;
+    };
+  }, [doc, index]);
+  return box;
+}
+
+/**
+ * A page as a white sheet at its real shape (A4, Letter, landscape…), for previews that draw on top
+ * of the page. `children` gets the sheet's size in points, so overlays can use an SVG viewBox.
+ */
+export function Sheet({
+  fileKey,
+  doc,
+  index,
+  rotate = 0,
+  width = 360,
+  alt,
+  className = "",
+  children,
+}: {
+  fileKey: string;
+  doc: PDFDocumentProxy | null;
+  index: number;
+  rotate?: number;
+  width?: number;
+  alt: string;
+  className?: string;
+  children?: (box: { vw: number; vh: number }) => ReactNode;
+}) {
+  const box = usePageBox(doc, index) ?? { w: 595.28, h: 841.89 };
+  const [url, setUrl] = useState<string | null>(null);
+  useEffect(() => {
+    if (!doc) return;
+    let live = true;
+    void thumb(fileKey, doc, index, width).then((u) => live && setUrl(u));
+    return () => {
+      live = false;
+    };
+  }, [doc, fileKey, index, width]);
+  const turned = rotate % 180 !== 0;
+  const vw = turned ? box.h : box.w;
+  const vh = turned ? box.w : box.h;
+  return (
+    <div
+      className={`sheet ${className}`}
+      style={{ aspectRatio: `${vw} / ${vh}` }}
+    >
+      {url ? (
+        <img
+          src={url}
+          alt={alt}
+          draggable={false}
+          style={{
+            width: `${(box.w / vw) * 100}%`,
+            height: `${(box.h / vh) * 100}%`,
+            transform: `translate(-50%, -50%) rotate(${rotate}deg)`,
+          }}
+        />
+      ) : (
+        <span className="thumb-wait" aria-hidden="true" />
+      )}
+      {children?.({ vw, vh })}
     </div>
   );
 }

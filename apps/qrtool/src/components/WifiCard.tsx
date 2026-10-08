@@ -223,7 +223,7 @@ function WifiCardView() {
   const S = SIZES[size];
   return (
     <div className="toolcard qrcard">
-      <div className="stage qr-stage">
+      <div className="stage qr-stage wc-stage">
         <canvas
           ref={canvasRef}
           className={`wc-canvas wc-${size}${ssid ? "" : " placeholder"}`}

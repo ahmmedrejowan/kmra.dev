@@ -25,6 +25,8 @@ function zxing(): Promise<Reader> {
 export interface Found {
   text: string;
   format: string;
+  /** Corners in image pixels (top-left, top-right, bottom-right, bottom-left), when known */
+  corners?: { x: number; y: number }[];
 }
 
 /** Every code in an image (file, blob or frame). */
@@ -39,7 +41,19 @@ export async function read(input: Blob | ImageData): Promise<Found[]> {
   });
   return results
     .filter((r) => r.isValid && r.text)
-    .map((r) => ({ text: r.text, format: r.format }));
+    .map((r) => {
+      const p = r.position;
+      return {
+        text: r.text,
+        format: r.format,
+        corners: p
+          ? [p.topLeft, p.topRight, p.bottomRight, p.bottomLeft].map((q) => ({
+              x: q.x,
+              y: q.y,
+            }))
+          : undefined,
+      };
+    });
 }
 
 /* ---------- Understanding what was read ---------- */

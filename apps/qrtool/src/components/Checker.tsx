@@ -16,6 +16,7 @@ import {
   quietZone,
   readDetailed,
   type Detail,
+  type Pt,
   type Px,
 } from "../lib/scan";
 
@@ -44,6 +45,36 @@ function quietNeed(format: string): number {
   if (/QRCode/.test(format)) return 4;
   if (format === "DataMatrix") return 1;
   return 0;
+}
+
+/** The blank margin a code needs, drawn as a frame around it, plus a tick across its top side */
+function quietFrame(code: Detail) {
+  const need = quietNeed(code.format);
+  if (!need || !(code.cols > 1 && code.rows > 1)) return null;
+  const [a, b, c, d] = code.corners;
+  const len = (p: Pt, q: Pt) => Math.hypot(q.x - p.x, q.y - p.y);
+  const modulePx =
+    ((len(a, b) + len(d, c)) / 2 / code.cols +
+      (len(a, d) + len(b, c)) / 2 / code.rows) /
+    2;
+  const q = need * modulePx;
+  const ux = (b.x - a.x) / len(a, b);
+  const uy = (b.y - a.y) / len(a, b);
+  const vx = (d.x - a.x) / len(a, d);
+  const vy = (d.y - a.y) / len(a, d);
+  const at = (p: Pt, su: number, sv: number): Pt => ({
+    x: p.x + (ux * su + vx * sv) * q,
+    y: p.y + (uy * su + vy * sv) * q,
+  });
+  const frame = [at(a, -1, -1), at(b, 1, -1), at(c, 1, 1), at(d, -1, 1)];
+  // Measuring tick: from the code's top edge out to the frame, with end caps
+  const m = { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
+  const out = at(m, 0, -1);
+  const cap = q * 0.35;
+  const capAt = (p: Pt) =>
+    `M${p.x - ux * cap} ${p.y - uy * cap}L${p.x + ux * cap} ${p.y + uy * cap}`;
+  const tick = `M${m.x} ${m.y}L${out.x} ${out.y}${capAt(m)}${capAt(out)}`;
+  return { need, frame, tick };
 }
 
 const isQr = (format: string) => /QRCode/.test(format);
@@ -142,6 +173,11 @@ function CheckerView() {
   }, [loaded, sel]);
 
   const code = loaded?.codes[sel];
+  // Overlay line widths scale with the image; the quiet zone frame sits `need` modules outside
+  const unit = loaded
+    ? Math.max(loaded.canvas.width, loaded.canvas.height) / 200
+    : 1;
+  const zone = code ? quietFrame(code) : null;
   const kind = code ? parse(code.text).kind : "text";
   const counts = checks
     ? {
@@ -152,28 +188,44 @@ function CheckerView() {
 
   return (
     <div className="toolcard qrcard wide-panel checker-card">
-      <div className={`stage qr-stage${dragging ? " over" : ""}`}>
+      <div className={`stage qr-stage qc-stage${dragging ? " over" : ""}`}>
         {loaded ? (
-          <div className="qc-view" onClick={pick}>
-            <img src={loaded.url} alt={T("Checked image")} />
-            <svg
-              viewBox={`0 0 ${loaded.canvas.width} ${loaded.canvas.height}`}
-              preserveAspectRatio="none"
-              aria-hidden="true"
-            >
-              {loaded.codes.map((c, i) => (
-                <polygon
-                  key={i}
-                  className={i === sel ? "on" : ""}
-                  points={c.corners.map((p) => `${p.x},${p.y}`).join(" ")}
-                  style={{
-                    strokeWidth:
-                      Math.max(loaded.canvas.width, loaded.canvas.height) / 160,
-                  }}
-                />
-              ))}
-            </svg>
-          </div>
+          <figure className="qc-fig">
+            <div className="qc-view" onClick={pick}>
+              <img src={loaded.url} alt={T("Checked image")} />
+              <svg
+                viewBox={`0 0 ${loaded.canvas.width} ${loaded.canvas.height}`}
+                preserveAspectRatio="none"
+                aria-hidden="true"
+              >
+                {loaded.codes.map((c, i) => (
+                  <polygon
+                    key={i}
+                    className={i === sel ? "on" : ""}
+                    points={c.corners.map((p) => `${p.x},${p.y}`).join(" ")}
+                    style={{ strokeWidth: unit * 1.2 }}
+                  />
+                ))}
+                {zone && (
+                  <g className="qc-zone" style={{ strokeWidth: unit * 0.8 }}>
+                    <polygon
+                      points={zone.frame.map((p) => `${p.x},${p.y}`).join(" ")}
+                      style={{ strokeDasharray: `${unit * 2.4} ${unit * 1.6}` }}
+                    />
+                    <path d={zone.tick} />
+                  </g>
+                )}
+              </svg>
+            </div>
+            {zone && (
+              <figcaption className="qc-legend">
+                <span className="qc-key" aria-hidden="true" />
+                {T("Blank margin a scanner needs: {n} modules", {
+                  n: zone.need,
+                })}
+              </figcaption>
+            )}
+          </figure>
         ) : (
           <div className="dropzone scan-drop" onClick={pick}>
             <div className="big">

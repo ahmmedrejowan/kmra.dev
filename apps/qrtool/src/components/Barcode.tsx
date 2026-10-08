@@ -144,17 +144,24 @@ function BarcodeView({ preset }: { preset?: Preset }) {
 
   return (
     <div className="toolcard qrcard">
-      <div className="stage qr-stage">
-        <div className="barcode-wrap">
-          <svg
-            ref={svgRef}
-            className={error ? "dim" : ""}
-            role="img"
-            aria-label={T("{format} barcode for {value}")
-              .replace("{format}", f.label)
-              .replace("{value}", code)}
-          />
-        </div>
+      <div className="stage qr-stage bc-stage">
+        <figure className="bc-item">
+          <div className="bc-label">
+            <svg
+              ref={svgRef}
+              className={error ? "dim" : ""}
+              role="img"
+              aria-label={T("{format} barcode for {value}")
+                .replace("{format}", f.label)
+                .replace("{value}", code)}
+            />
+          </div>
+          <span className="bc-ruler" aria-hidden="true" />
+          <figcaption className="qr-spec">
+            <span>{f.label}</span>
+            <span>{T("Stays sharp at any width")}</span>
+          </figcaption>
+        </figure>
         {error && <p className="warn">{error}</p>}
       </div>
       <div className="controls">

@@ -57,7 +57,7 @@ const related = [
   ...app.tasks.filter((t) => t.tool === tool.slug && t.slug !== task?.slug),
   ...app.tasks.filter((t) => t.tool !== tool.slug && t.slug !== task?.slug),
 ].slice(0, 3);
-// Eight other tools: same group first, then the popular ones, then the rest
+// Five other tools (same group first, then popular ones), then an "All tools" card
 const popular = app.popular ?? [];
 const others = app.tools
   .filter((t) => t.slug !== tool.slug && t.ready)
@@ -71,7 +71,7 @@ const others = app.tools
           : 2,
   }))
   .sort((a, b) => a.rank - b.rank)
-  .slice(0, 8)
+  .slice(0, 5)
   .map((x) => x.t);
 const icons = Object.fromEntries(app.tools.map((t) => [t.slug, t.icon]));
 const railTools = app.tools.map(({ slug, name, icon, ready }) => ({

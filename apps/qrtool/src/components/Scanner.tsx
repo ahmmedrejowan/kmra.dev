@@ -372,6 +372,9 @@ function ScannerView({ preset }: { preset?: Preset }) {
   const [camError, setCamError] = useState<string | null>(null);
   const [running, setRunning] = useState(false);
   const [preview, setPreview] = useState<string | null>(null);
+  /** Outlines of the codes found in the shown image, and its size in pixels */
+  const [marks, setMarks] = useState<{ x: number; y: number }[][]>([]);
+  const [dims, setDims] = useState<[number, number] | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
 
@@ -381,7 +384,14 @@ function ScannerView({ preset }: { preset?: Preset }) {
     setBusy(true);
     try {
       const all: Found[] = [];
-      for (const f of files) all.push(...(await read(f)));
+      let first: Found[] = [];
+      for (const [i, f] of files.entries()) {
+        const r = await read(f);
+        if (i === 0) first = r;
+        all.push(...r);
+      }
+      setMarks(first.flatMap((c) => (c.corners ? [c.corners] : [])));
+      setDims(null);
       setPreview((old) => {
         if (old) URL.revokeObjectURL(old);
         return URL.createObjectURL(files[0]!);
@@ -479,7 +489,7 @@ function ScannerView({ preset }: { preset?: Preset }) {
   );
   return (
     <div className="toolcard qrcard">
-      <div className={`stage qr-stage${dragging ? " over" : ""}`}>
+      <div className={`stage qr-stage scan-stage${dragging ? " over" : ""}`}>
         {mode === "camera" ? (
           <div className="cam">
             <video
@@ -488,7 +498,12 @@ function ScannerView({ preset }: { preset?: Preset }) {
               muted
               className={running ? "" : "off"}
             />
-            {running && <span className="cam-frame" aria-hidden="true" />}
+            <span
+              className={`cam-frame${running ? " live" : ""}`}
+              aria-hidden="true"
+            >
+              {running && <span className="cam-line" />}
+            </span>
             {!running && (
               <div className="cam-idle">
                 {camError ? (
@@ -513,23 +528,45 @@ function ScannerView({ preset }: { preset?: Preset }) {
               </div>
             )}
           </div>
+        ) : preview ? (
+          <div className="scan-view" onClick={pick}>
+            <img
+              src={preview}
+              alt={T("Scanned image")}
+              onLoad={(e) =>
+                setDims([
+                  e.currentTarget.naturalWidth,
+                  e.currentTarget.naturalHeight,
+                ])
+              }
+            />
+            {dims && marks.length > 0 && (
+              <svg
+                viewBox={`0 0 ${dims[0]} ${dims[1]}`}
+                preserveAspectRatio="none"
+                aria-hidden="true"
+              >
+                {marks.map((c, i) => (
+                  <polygon
+                    key={i}
+                    points={c.map((p) => `${p.x},${p.y}`).join(" ")}
+                    style={{ strokeWidth: Math.max(dims[0], dims[1]) / 140 }}
+                  />
+                ))}
+              </svg>
+            )}
+          </div>
         ) : (
           <div className="dropzone scan-drop" onClick={pick}>
-            {preview ? (
-              <img src={preview} alt={T("Scanned image")} className="still" />
-            ) : (
-              <>
-                <div className="big">
-                  <Icon name="upload" />
-                </div>
-                <strong>
-                  {busy ? T("Reading…") : T("Drop an image with a code")}
-                </strong>
-                <span className="muted">
-                  {T("Or paste a screenshot, or click to choose.")}
-                </span>
-              </>
-            )}
+            <div className="big">
+              <Icon name="upload" />
+            </div>
+            <strong>
+              {busy ? T("Reading…") : T("Drop an image with a code")}
+            </strong>
+            <span className="muted">
+              {T("Or paste a screenshot, or click to choose.")}
+            </span>
           </div>
         )}
       </div>

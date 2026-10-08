@@ -9,6 +9,7 @@ import type { Locale } from "@kmra/ui/lib/i18n";
 import { LangProvider, useLp, useT } from "@kmra/ui/lib/i18n-react";
 import { DEFAULT_STYLE, lowContrast, png, svg, type Style } from "../lib/qr";
 import {
+  boxOf,
   KIND_LABEL,
   parse,
   pixelsOf,
@@ -48,12 +49,16 @@ function FixQrView() {
   const [style, setStyle] = useState<Style>({ ...DEFAULT_STYLE, margin: 4 });
   const [px, setPx] = useState(2048);
   const urlRef = useRef<string | null>(null);
+  /** The decoded original, to show just the code next to the redraw */
+  const [srcCanvas, setSrcCanvas] = useState<HTMLCanvasElement | null>(null);
 
   async function load(files: File[]) {
     const file = files[0]!;
     setBusy(true);
     try {
-      const found = await readDetailed((await pixelsOf(file)).pixels);
+      const { canvas, pixels } = await pixelsOf(file);
+      const found = await readDetailed(pixels);
+      setSrcCanvas(canvas);
       // QR codes first: they're the ones redrawn here
       found.sort((a, b) => +isQr(b.format) - +isQr(a.format));
       const url = URL.createObjectURL(file);
@@ -99,6 +104,35 @@ function FixQrView() {
       return null;
     }
   }, [code, qr, style]);
+  // The original, cropped to the selected code with a little margin
+  const crop = useMemo(() => {
+    if (!code || !srcCanvas) return source;
+    const b = boxOf(code.corners);
+    const pad = Math.max(b.x1 - b.x0, b.y1 - b.y0) * 0.12;
+    const x0 = Math.max(0, Math.floor(b.x0 - pad));
+    const y0 = Math.max(0, Math.floor(b.y0 - pad));
+    const x1 = Math.min(srcCanvas.width, Math.ceil(b.x1 + pad));
+    const y1 = Math.min(srcCanvas.height, Math.ceil(b.y1 + pad));
+    const w = x1 - x0;
+    const h = y1 - y0;
+    if (w < 8 || h < 8) return source;
+    const k = Math.min(1, 640 / Math.max(w, h));
+    const c = document.createElement("canvas");
+    c.width = Math.round(w * k);
+    c.height = Math.round(h * k);
+    c.getContext("2d")!.drawImage(
+      srcCanvas,
+      x0,
+      y0,
+      w,
+      h,
+      0,
+      0,
+      c.width,
+      c.height,
+    );
+    return c.toDataURL("image/png");
+  }, [code, srcCanvas, source]);
   const put = (p: Partial<Style>) => setStyle((s) => ({ ...s, ...p }));
   const name = "qr-code-clean";
 
@@ -125,19 +159,24 @@ function FixQrView() {
 
   return (
     <div className="toolcard qrcard">
-      <div className={`stage qr-stage${dragging ? " over" : ""}`}>
+      <div className={`stage qr-stage fq-stage${dragging ? " over" : ""}`}>
         {preview ? (
           <>
             <div className="fq-pair">
-              {source && (
-                <figure>
-                  <img src={source} alt={T("Original image")} />
-                  <figcaption>{T("Before")}</figcaption>
+              {crop && (
+                <figure className="fq-old">
+                  <div className="fq-tile">
+                    <img src={crop} alt={T("Original image")} />
+                  </div>
+                  <figcaption>{T("Original")}</figcaption>
                 </figure>
               )}
-              <figure>
+              <span className="fq-arrow" aria-hidden="true">
+                <Icon name="right" />
+              </span>
+              <figure className="fq-new">
                 <div
-                  className={`qr-preview fq-new${style.bg ? "" : " clear"}`}
+                  className={`fq-tile${style.bg ? "" : " clear"}`}
                   dangerouslySetInnerHTML={{ __html: preview }}
                 />
                 <figcaption>{T("Redrawn")}</figcaption>

@@ -110,24 +110,35 @@ function Codes2dView({ preset }: { preset?: Preset }) {
 
   return (
     <div className="toolcard qrcard">
-      <div className="stage qr-stage">
-        <div
-          className={`c2d-wrap${ready ? "" : " placeholder"}${
+      <div className="stage qr-stage qr-print">
+        <figure
+          className={`qr-proof${ready ? "" : " placeholder"}${
             error ? " dim" : ""
-          }${bg ? "" : " clear"}`}
+          }`}
         >
-          {preview && (
-            <div
-              className={`c2d-${format === "PDF417" || format === "RMQRCode" ? "wide" : "square"}`}
-              role="img"
-              aria-label={T("{format} code for {value}", {
-                format: f.label,
-                value,
-              })}
-              dangerouslySetInnerHTML={{ __html: preview }}
-            />
-          )}
-        </div>
+          <div className="qr-sheet">
+            <span className="qr-marks" aria-hidden="true" />
+            {preview && (
+              <div
+                className={`c2d-wrap c2d-${format === "PDF417" || format === "RMQRCode" ? "wide" : "square"}`}
+                role="img"
+                aria-label={T("{format} code for {value}", {
+                  format: f.label,
+                  value,
+                })}
+                dangerouslySetInnerHTML={{ __html: preview }}
+              />
+            )}
+          </div>
+          {shown?.cols ? (
+            <figcaption className="qr-spec">
+              <span>{f.label}</span>
+              <span>
+                {T("{a} × {b} modules", { a: shown.cols, b: shown.rows ?? 0 })}
+              </span>
+            </figcaption>
+          ) : null}
+        </figure>
         {error ? (
           <p className="warn c2d-error">{error}</p>
         ) : (

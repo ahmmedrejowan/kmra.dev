@@ -23,6 +23,7 @@ import {
   type Platform,
   upiValid,
   png,
+  shape,
   svg,
   type Dots,
   type Eyes,
@@ -265,6 +266,20 @@ function GeneratorView({ preset }: { preset?: Preset }) {
     }
   }, [sample, eff.fg, eff.bg, eff.dots, eff.eyes, eff.margin, eff.ecc, logo]);
   const tooLong = preview === null;
+  // Grid size for the proof caption: version 1 is 21 modules, each version adds 4
+  const grid = useMemo(() => {
+    try {
+      return shape(sample, eff).n;
+    } catch {
+      return 0;
+    }
+  }, [sample, eff.ecc]);
+  const ECC_NAME = {
+    L: "Low (7%)",
+    M: "Medium (15%)",
+    Q: "High (25%)",
+    H: "Max (30%)",
+  } as const;
 
   const put = (k: string, v: string) =>
     setFields((f) => {
@@ -336,16 +351,32 @@ function GeneratorView({ preset }: { preset?: Preset }) {
 
   return (
     <div className="toolcard qrcard">
-      <div className="stage qr-stage">
-        <div className={`qr-preview${text ? "" : " placeholder"}`}>
-          {preview ? (
-            <div dangerouslySetInnerHTML={{ __html: preview }} />
-          ) : (
-            <p className="muted">
-              {T("Too much text for one QR code. Shorten it a little.")}
-            </p>
+      <div className="stage qr-stage qr-print">
+        <figure className={`qr-proof${text ? "" : " placeholder"}`}>
+          <div className="qr-sheet">
+            <span className="qr-marks" aria-hidden="true" />
+            {preview ? (
+              <div
+                className="qr-preview"
+                dangerouslySetInnerHTML={{ __html: preview }}
+              />
+            ) : (
+              <p className="muted qr-long">
+                {T("Too much text for one QR code. Shorten it a little.")}
+              </p>
+            )}
+          </div>
+          {grid > 0 && (
+            <figcaption className="qr-spec">
+              <span>{T(KINDS.find((k) => k.id === kind)!.label)}</span>
+              <span>{T("Version {v}", { v: (grid - 17) / 4 })}</span>
+              <span>{T("{a} × {b} modules", { a: grid, b: grid })}</span>
+              <span>
+                {T("Error correction {e}", { e: T(ECC_NAME[eff.ecc]) })}
+              </span>
+            </figcaption>
           )}
-        </div>
+        </figure>
         <p className="qr-caption">
           {text ? (
             <>

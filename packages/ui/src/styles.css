@@ -4502,24 +4502,6 @@ footer.site .fmore {
 }
 
 /* ---------- QR tools ---------- */
-.qr-stage {
-  gap: 14px;
-  align-content: center;
-}
-.qr-preview {
-  background: #fff;
-  padding: 18px;
-  border-radius: 16px;
-  box-shadow: 0 16px 40px -20px rgb(0 0 0 / 0.45);
-  line-height: 0;
-}
-.qr-preview svg {
-  width: min(320px, 70vw);
-  height: auto;
-}
-.qr-preview.placeholder {
-  opacity: 0.35;
-}
 .qr-caption {
   margin: 0;
   font-size: 13.5px;
@@ -4532,57 +4514,6 @@ footer.site .fmore {
   width: 15px;
   height: 15px;
   color: var(--good);
-}
-.cam {
-  position: relative;
-  width: 100%;
-  max-width: 560px;
-  aspect-ratio: 4 / 3;
-  border-radius: 14px;
-  overflow: hidden;
-  background: #0d0f14;
-  display: grid;
-  place-items: center;
-}
-.cam video {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-.cam video.off {
-  display: none;
-}
-.cam-frame {
-  position: absolute;
-  inset: 18% 24%;
-  border: 3px solid rgb(255 255 255 / 0.9);
-  border-radius: 18px;
-  box-shadow: 0 0 0 9999px rgb(0 0 0 / 0.35);
-}
-.cam-idle {
-  position: relative;
-  display: grid;
-  gap: 12px;
-  justify-items: center;
-  text-align: center;
-  padding: 20px;
-  color: #e8eaee;
-}
-.cam-idle .muted {
-  color: #b9bec8;
-  max-width: 320px;
-  margin: 0;
-}
-.cam-idle .warn {
-  margin: 0;
-  max-width: 340px;
-}
-.scan-drop {
-  width: 100%;
-  min-height: 300px;
-  cursor: pointer;
 }
 .scan-results {
   display: grid;
@@ -4628,51 +4559,6 @@ footer.site .fmore {
 }
 .scan-result .kv {
   width: 100%;
-}
-.barcode-wrap {
-  background: #fff;
-  padding: 18px;
-  border-radius: 14px;
-  box-shadow: 0 16px 40px -20px rgb(0 0 0 / 0.45);
-  max-width: 100%;
-  overflow: auto;
-  line-height: 0;
-}
-.barcode-wrap svg {
-  max-width: 100%;
-  height: auto;
-}
-.barcode-wrap svg.dim {
-  opacity: 0.25;
-}
-.bulk-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
-  gap: 12px;
-  width: 100%;
-}
-.bulk-grid figure {
-  margin: 0;
-  display: grid;
-  gap: 6px;
-  justify-items: center;
-}
-.bulk-grid figure > div {
-  background: #fff;
-  padding: 6px;
-  border-radius: 8px;
-  line-height: 0;
-}
-.bulk-grid svg {
-  width: 100%;
-  height: auto;
-  max-width: 120px;
-}
-.bulk-grid figcaption {
-  font-size: 11.5px;
-  color: var(--muted);
-  overflow-wrap: anywhere;
-  text-align: center;
 }
 /* PDF and QR card art */
 .art-pdf {
@@ -5105,48 +4991,10 @@ footer.site .fmore {
 }
 
 /* qrtool: 2D codes and Wi-Fi card */
-.c2d-wrap {
-  background: #fff;
-  padding: 18px;
-  border-radius: 16px;
-  box-shadow: 0 16px 40px -20px rgb(0 0 0 / 0.45);
-  line-height: 0;
-  max-width: 100%;
-  transition: opacity 0.15s;
-}
-.c2d-wrap.clear {
-  background: transparent;
-  box-shadow: none;
-}
-.c2d-wrap.placeholder {
-  opacity: 0.4;
-}
-.c2d-wrap.dim {
-  opacity: 0.2;
-}
-.c2d-square svg {
-  width: min(280px, 64vw);
-  height: auto;
-}
-.c2d-wide svg {
-  width: min(460px, 76vw);
-  height: auto;
-}
 .c2d-error {
   margin: 0;
   max-width: 420px;
   text-align: center;
-}
-.wc-canvas {
-  display: block;
-  max-width: 100%;
-  height: auto;
-  border-radius: 6px;
-  box-shadow: 0 18px 44px -20px rgb(0 0 0 / 0.5);
-  transition: opacity 0.15s;
-}
-.wc-canvas.placeholder {
-  opacity: 0.55;
 }
 .wc-pass {
   display: flex;
@@ -5293,44 +5141,6 @@ footer.site .fmore {
 .qc-item.fail .qc-mark {
   background: var(--qc-bad);
 }
-.fq-pair {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 18px;
-  justify-content: center;
-  align-items: center;
-}
-.fq-pair figure {
-  margin: 0;
-  display: grid;
-  gap: 8px;
-  justify-items: center;
-}
-.fq-pair figcaption {
-  font-size: 12.5px;
-  color: var(--muted);
-}
-.fq-pair img {
-  display: block;
-  max-width: min(220px, 70vw);
-  max-height: 220px;
-  border-radius: 6px;
-  box-shadow: 0 12px 30px -16px rgb(0 0 0 / 0.5);
-}
-.fq-new.clear {
-  background-color: #fff;
-  background-image:
-    linear-gradient(45deg, #ececec 25%, transparent 25%),
-    linear-gradient(-45deg, #ececec 25%, transparent 25%),
-    linear-gradient(45deg, transparent 75%, #ececec 75%),
-    linear-gradient(-45deg, transparent 75%, #ececec 75%);
-  background-size: 16px 16px;
-  background-position:
-    0 0,
-    0 8px,
-    8px -8px,
-    -8px 0;
-}
 .fq-note {
   margin: 0 0 8px;
 }
@@ -5436,5 +5246,1318 @@ footer.site .fmore {
 @media (min-width: 900px) {
   .toolcard.checker-card .stage {
     align-items: flex-start;
+  }
+}
+
+/* pdftool: desk and per-tool workspaces */
+:root {
+  --desk: #e8e9ed;
+  --desk-line: #d6d8de;
+  --sheet-shadow:
+    0 1px 2px rgb(24 24 27 / 0.12), 0 8px 22px -12px rgb(24 24 27 / 0.35);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --desk: #19191c;
+    --desk-line: #2c2c31;
+    --sheet-shadow:
+      0 1px 2px rgb(0 0 0 / 0.5), 0 10px 26px -12px rgb(0 0 0 / 0.8);
+  }
+}
+:root[data-theme="dark"] {
+  --desk: #19191c;
+  --desk-line: #2c2c31;
+  --sheet-shadow:
+    0 1px 2px rgb(0 0 0 / 0.5), 0 10px 26px -12px rgb(0 0 0 / 0.8);
+}
+/* A plain viewer desk: no checkerboard, no pattern */
+.stage.pdf-stage {
+  background-color: var(--desk);
+  background-image: none;
+  place-items: stretch;
+  align-content: start;
+  min-width: 0;
+}
+.stage.pdf-stage:not(.grid) {
+  padding: 14px 18px 22px;
+}
+.pdf-stage .thumb,
+.sheet {
+  box-shadow: var(--sheet-shadow);
+  border-radius: 3px;
+}
+.desk-note {
+  margin: 0;
+  font-size: 13.5px;
+  color: var(--muted);
+}
+.desk-view {
+  min-width: 0;
+  display: grid;
+  align-content: start;
+}
+/* Open files */
+.desk-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+  margin-bottom: 14px;
+}
+.desk-doc {
+  display: inline-flex;
+  align-items: center;
+  max-width: 100%;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  min-width: 0;
+}
+.desk-doc.on {
+  border-color: var(--acc);
+  box-shadow: 0 0 0 1px var(--acc);
+}
+.desk-doc-pick {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  border: 0;
+  background: transparent;
+  padding: 5px 4px 5px 8px;
+  font-size: 13px;
+  cursor: pointer;
+  color: var(--fg);
+}
+.desk-doc-pick .ico {
+  width: 15px;
+  height: 15px;
+  flex: none;
+  color: var(--muted);
+}
+.desk-doc-pick .nm {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 220px;
+}
+.desk-doc-pick small {
+  color: var(--muted);
+  font-size: 12px;
+  white-space: nowrap;
+}
+.desk-doc-x {
+  border: 0;
+  background: transparent;
+  width: 26px;
+  height: 26px;
+  display: grid;
+  place-items: center;
+  border-radius: 6px;
+  color: var(--muted);
+  cursor: pointer;
+  flex: none;
+}
+.desk-doc-x:hover {
+  color: var(--fg);
+  background: var(--raise);
+}
+.desk-doc-x .ico {
+  width: 14px;
+  height: 14px;
+}
+/* A page at its real shape */
+.sheet {
+  position: relative;
+  display: block;
+  width: 100%;
+  background: #fff;
+  overflow: hidden;
+}
+.sheet > img {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  max-width: none;
+  transition: transform 0.15s;
+}
+.sheet > .thumb-wait {
+  position: absolute;
+  inset: 0;
+}
+.sheet-over {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+.sheet.gray > img {
+  filter: grayscale(1);
+}
+.pdf-stage figure {
+  margin: 0;
+}
+.pdf-stage figcaption {
+  margin-top: 8px;
+  font-size: 13px;
+  color: var(--muted);
+  text-align: center;
+}
+/* Page grid (Advanced, organize): white pages on the desk */
+.pdf-stage .pg {
+  background: transparent;
+  border: 0;
+  border-radius: 6px;
+  padding: 4px;
+}
+.pdf-stage .pg:hover {
+  background: rgb(127 127 127 / 0.1);
+}
+.pdf-stage .pg.picked {
+  box-shadow: none;
+}
+.pdf-stage .pg.picked .thumb {
+  outline: 2px solid var(--acc);
+  outline-offset: 2px;
+}
+.pdf-stage .pg-hint {
+  color: var(--muted);
+}
+/* Merge: a stack of documents in join order */
+.merge-stack {
+  display: grid;
+  gap: 0;
+  max-width: 560px;
+  width: 100%;
+  margin: 0 auto;
+}
+.merge-stack ol {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 18px;
+}
+.merge-doc {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 10px 10px 10px 12px;
+}
+/* The join between two files */
+.merge-doc + .merge-doc::before {
+  content: "";
+  position: absolute;
+  left: 23px;
+  top: -19px;
+  height: 18px;
+  border-left: 2px dashed var(--desk-line);
+}
+.merge-n {
+  flex: none;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--acc-soft);
+  color: var(--acc);
+  font-size: 12.5px;
+  font-weight: 600;
+}
+.merge-doc .thumb {
+  width: 48px;
+  flex: none;
+}
+.merge-text {
+  flex: 1;
+  min-width: 0;
+  display: grid;
+}
+.merge-text strong {
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.merge-text small {
+  color: var(--muted);
+  font-size: 13px;
+}
+.merge-acts {
+  display: flex;
+  gap: 2px;
+}
+.merge-acts .iconbtn {
+  width: 30px;
+  height: 30px;
+}
+.merge-add {
+  justify-self: start;
+  margin: 12px 0 0 0;
+}
+.merge-sum {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 16px;
+  padding: 12px 14px;
+  border-top: 2px solid var(--desk-line);
+  font-size: 14px;
+  color: var(--muted);
+}
+.merge-sum strong {
+  color: var(--fg);
+  font-weight: 600;
+}
+.merge-sum .ico {
+  width: 18px;
+  height: 18px;
+  color: var(--acc);
+}
+/* Compress: page and size gauge */
+.squeeze {
+  display: grid;
+  grid-template-columns: minmax(0, 220px) minmax(0, 1fr);
+  gap: 24px;
+  align-items: center;
+}
+.gauge {
+  display: grid;
+  gap: 8px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 16px;
+}
+.g-row {
+  display: grid;
+  grid-template-columns: 92px minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+  font-size: 13.5px;
+}
+.g-row b {
+  font-weight: 600;
+  min-width: 64px;
+  text-align: right;
+}
+.g-lab {
+  color: var(--muted);
+}
+.g-track {
+  position: relative;
+  height: 12px;
+  border-radius: 6px;
+  background: var(--raise);
+}
+.g-track i {
+  position: absolute;
+  inset: 0 auto 0 0;
+  border-radius: 6px;
+  background: var(--muted);
+  opacity: 0.55;
+  transition: width 0.3s;
+}
+.g-row.new .g-track i {
+  background: var(--acc);
+  opacity: 1;
+}
+.g-row.ghost .g-track {
+  background: transparent;
+  border: 1px dashed var(--line);
+}
+.g-aim {
+  position: absolute;
+  top: -5px;
+  bottom: -5px;
+  width: 2px;
+  margin-left: -1px;
+  background: var(--acc);
+  border-radius: 1px;
+}
+.g-note {
+  margin: 0 0 4px;
+  padding-left: 102px;
+  font-size: 13px;
+  color: var(--muted);
+}
+/* Black and white: before and after */
+.pair {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 260px));
+  gap: 22px;
+  justify-content: center;
+}
+/* Rotate: pages turning */
+.turns {
+  display: grid;
+  gap: 14px;
+}
+.turn-angle {
+  font-weight: 600;
+  color: var(--fg);
+}
+.turn-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 16px;
+}
+.turn-hold {
+  aspect-ratio: 1;
+  display: grid;
+  place-items: center;
+}
+.turn-spin {
+  width: 70%;
+  transition: transform 0.35s ease;
+}
+/* Split, remove, to-image: page strips */
+.split-view {
+  display: grid;
+  gap: 12px;
+}
+.strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px 12px;
+  align-items: flex-start;
+}
+.run {
+  display: grid;
+  gap: 6px;
+  padding: 8px 8px 6px;
+  border-radius: 10px;
+  background: rgb(127 127 127 / 0.08);
+  border-bottom: 3px solid var(--run, var(--desk-line));
+}
+.run.c0 {
+  --run: #3b82f6;
+}
+.run.c1 {
+  --run: #10b981;
+}
+.run.c2 {
+  --run: #f59e0b;
+}
+.run.c3 {
+  --run: #8b5cf6;
+}
+.run.c4 {
+  --run: #ec4899;
+}
+.run.c5 {
+  --run: #14b8a6;
+}
+.run.left {
+  opacity: 0.55;
+  border-bottom-style: dashed;
+}
+.run.left.plain {
+  opacity: 1;
+  background: transparent;
+  border: 0;
+  padding: 0;
+}
+.run-pages {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.run-lab {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--run, var(--muted));
+}
+.run.left .run-lab {
+  font-weight: 500;
+  color: var(--muted);
+}
+.sp {
+  display: grid;
+  gap: 4px;
+  width: 66px;
+  text-align: center;
+}
+.strip.flat .sp {
+  width: 84px;
+}
+.sp small {
+  font-size: 12px;
+  color: var(--muted);
+}
+.sp-face {
+  display: block;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  border-radius: 3px;
+}
+button.sp-face {
+  cursor: pointer;
+}
+button.sp-face[aria-pressed="true"] .thumb {
+  outline: 2px solid var(--acc);
+  outline-offset: 2px;
+}
+.sp.out button.sp-face[aria-pressed="true"] .thumb {
+  outline: 0;
+}
+.sp.out .thumb img {
+  opacity: 0.3;
+}
+.sp.out .thumb::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(
+      45deg,
+      transparent 48.5%,
+      var(--warn) 49.5% 50.5%,
+      transparent 51.5%
+    ),
+    linear-gradient(
+      -45deg,
+      transparent 48.5%,
+      var(--warn) 49.5% 50.5%,
+      transparent 51.5%
+    );
+}
+.sp.out small {
+  color: var(--warn);
+}
+/* To images: photo prints */
+.prints {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(118px, 1fr));
+  gap: 16px;
+}
+.print {
+  position: relative;
+  display: grid;
+  gap: 6px;
+  background: #fff;
+  padding: 8px 8px 6px;
+  border-radius: 3px;
+  box-shadow: var(--sheet-shadow);
+  cursor: pointer;
+  color: #52525b;
+}
+.print .thumb {
+  box-shadow: none;
+  border-radius: 0;
+  outline: 1px solid #ececef;
+}
+.print.on {
+  outline: 2px solid var(--acc);
+  outline-offset: 2px;
+}
+.print input {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  z-index: 1;
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  accent-color: var(--acc);
+  cursor: pointer;
+}
+.print-foot {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+}
+.print-foot > span:first-child {
+  margin-right: auto;
+}
+.print .badge {
+  font-size: 10.5px;
+  font-weight: 600;
+  padding: 1px 5px;
+  border-radius: 4px;
+  background: #f1f1f4;
+  color: #52525b;
+  white-space: nowrap;
+}
+/* To text: page rail and reading paper */
+.reader {
+  display: grid;
+  grid-template-columns: 76px minmax(0, 1fr);
+  gap: 16px;
+  height: 520px;
+}
+.reader-rail {
+  display: grid;
+  align-content: start;
+  gap: 10px;
+  overflow-y: auto;
+  padding: 2px 6px 2px 2px;
+}
+.reader-rail button {
+  display: grid;
+  gap: 3px;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  cursor: pointer;
+  text-align: center;
+  color: var(--muted);
+}
+.reader-rail button:disabled {
+  cursor: default;
+}
+.reader-rail small {
+  font-size: 11.5px;
+}
+.reader-paper {
+  position: relative;
+  overflow-y: auto;
+  background: #fff;
+  color: #27272a;
+  border-radius: 3px;
+  box-shadow: var(--sheet-shadow);
+  padding: 22px 26px;
+  font-size: 14px;
+  line-height: 1.6;
+}
+.reader-paper section + section {
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid #ececef;
+}
+.reader-paper h4 {
+  margin: 0 0 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #71717a;
+}
+.reader-paper p {
+  margin: 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.reader-paper .muted {
+  color: #a1a1aa;
+}
+.reader-wait {
+  display: grid;
+  align-content: start;
+  justify-items: center;
+  gap: 12px;
+  overflow: hidden;
+}
+.reader-wait .sheet {
+  width: min(100%, 300px);
+}
+/* Page numbers, watermark: the page with the result drawn live */
+.overlay-view {
+  display: flex;
+  gap: 22px;
+  align-items: flex-end;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+.overlay-view .big {
+  width: min(100%, 380px);
+}
+.overlay-view .small {
+  width: min(42%, 170px);
+}
+.num-mark {
+  paint-order: stroke;
+  stroke: color-mix(in srgb, var(--acc-l, #0057ff) 22%, transparent);
+  stroke-width: 6px;
+  stroke-linejoin: round;
+}
+/* Metadata: a document properties sheet */
+.props {
+  display: grid;
+  grid-template-columns: minmax(0, 170px) minmax(0, 1fr);
+  gap: 22px;
+  align-items: start;
+}
+.props-card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 16px 18px;
+  min-width: 0;
+}
+.props-card h3 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+}
+.props-file {
+  margin: 2px 0 12px;
+  font-size: 13px;
+  color: var(--muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.props-card dl {
+  margin: 0;
+  display: grid;
+}
+.props-card dl > div {
+  display: grid;
+  grid-template-columns: 110px minmax(0, 1fr);
+  gap: 10px;
+  padding: 7px 0;
+  border-top: 1px solid var(--line);
+  font-size: 13.5px;
+}
+.props-card dt {
+  color: var(--muted);
+}
+.props-card dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+/* Images to PDF: each image on its page */
+.paper-grid .pg-face {
+  display: grid;
+  place-items: center;
+  aspect-ratio: 1 / 1.414;
+}
+.paper-area {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+.paper-area img {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  max-width: none;
+  transition: transform 0.15s;
+}
+@media (max-width: 600px) {
+  .stage.pdf-stage:not(.grid) {
+    padding: 12px 12px 18px;
+  }
+  .squeeze,
+  .props {
+    grid-template-columns: 1fr;
+  }
+  .squeeze-page,
+  .props-page {
+    width: min(60%, 200px);
+    justify-self: center;
+  }
+  .g-row {
+    grid-template-columns: 76px minmax(0, 1fr) auto;
+  }
+  .g-note {
+    padding-left: 0;
+  }
+  .pair {
+    gap: 12px;
+  }
+  .reader {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto minmax(0, 1fr);
+    height: 560px;
+  }
+  .reader-rail {
+    grid-auto-flow: column;
+    grid-auto-columns: 54px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding-bottom: 4px;
+  }
+  .props-card dl > div {
+    grid-template-columns: 92px minmax(0, 1fr);
+  }
+  .desk-doc-pick .nm {
+    max-width: 150px;
+  }
+  .desk-doc-pick small {
+    display: none;
+  }
+}
+
+/* qrtool: print surface and per-tool workspaces */
+/*
+ * QR stages never use the image checkerboard. The base is a plain neutral surface; tools that
+ * make a printable code put it on a quiet dot grid that echoes QR modules. The scanner is a dark
+ * viewfinder, the batch scanner is a plain results table.
+ */
+:root {
+  --qr-surface: #f4f4f5;
+  --qr-dot: #d4d4d8;
+  --qr-mark: #a1a1aa;
+  --qr-desk: #efefef;
+  --qr-glow: rgb(255 255 255 / 0.7);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --qr-surface: #18181b;
+    --qr-dot: #2f2f35;
+    --qr-mark: #52525b;
+    --qr-desk: #1a1a1d;
+    --qr-glow: rgb(255 255 255 / 0.045);
+  }
+}
+:root[data-theme="dark"] {
+  --qr-surface: #18181b;
+  --qr-dot: #2f2f35;
+  --qr-mark: #52525b;
+  --qr-desk: #1a1a1d;
+  --qr-glow: rgb(255 255 255 / 0.045);
+}
+.qr-stage,
+.bs-stage {
+  background-image: none;
+  background-size: auto;
+  background-position: 0 0;
+}
+.qr-stage {
+  background-color: var(--qr-surface);
+  padding: 32px 22px;
+  gap: 16px;
+  align-content: center;
+}
+/* Dot grid: generator, 2D codes and the cleaner */
+.qr-print,
+.fq-stage {
+  background-image: radial-gradient(
+    circle at center,
+    var(--qr-dot) 1.2px,
+    transparent 1.5px
+  );
+  background-size: 18px 18px;
+  background-position: center;
+}
+.qr-caption {
+  margin: 0;
+  font-size: 13.5px;
+  color: var(--muted);
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+.qr-caption .ico {
+  width: 15px;
+  height: 15px;
+  flex: none;
+  color: var(--good);
+}
+/* Details under a code: type, version, grid, error correction */
+.qr-spec {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  row-gap: 2px;
+  max-width: 440px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+.qr-spec span + span::before {
+  content: "·";
+  margin: 0 7px;
+  opacity: 0.6;
+}
+.scan-drop {
+  width: 100%;
+  min-height: 300px;
+  cursor: pointer;
+}
+
+/* Generator and 2D codes: a print proof with crop marks */
+.qr-proof {
+  margin: 0;
+  display: grid;
+  justify-items: center;
+  gap: 28px;
+  max-width: 100%;
+}
+.qr-sheet {
+  position: relative;
+  background: #fff;
+  padding: 18px;
+  border-radius: 2px;
+  line-height: 0;
+  max-width: 100%;
+  box-shadow:
+    0 1px 2px rgb(0 0 0 / 0.06),
+    0 14px 32px -20px rgb(0 0 0 / 0.4);
+}
+.qr-sheet > :not(.qr-marks) {
+  transition: opacity 0.15s;
+}
+.qr-proof.placeholder .qr-sheet > :not(.qr-marks) {
+  opacity: 0.4;
+}
+.qr-proof.dim .qr-sheet > :not(.qr-marks) {
+  opacity: 0.2;
+}
+.qr-sheet .qr-preview svg {
+  display: block;
+  width: min(300px, 62vw);
+  height: auto;
+}
+.qr-long {
+  margin: 0;
+  max-width: 240px;
+  padding: 48px 12px;
+  line-height: 1.5;
+  text-align: center;
+  color: #71717a;
+}
+/* Eight short lines just outside the sheet's corners, in line with its edges */
+.qr-marks {
+  --g: linear-gradient(var(--qr-mark), var(--qr-mark));
+  position: absolute;
+  inset: -18px;
+  pointer-events: none;
+  background:
+    var(--g) 0 18px / 12px 1px,
+    var(--g) 18px 0 / 1px 12px,
+    var(--g) 100% 18px / 12px 1px,
+    var(--g) calc(100% - 18px) 0 / 1px 12px,
+    var(--g) 0 calc(100% - 18px) / 12px 1px,
+    var(--g) 18px 100% / 1px 12px,
+    var(--g) 100% calc(100% - 18px) / 12px 1px,
+    var(--g) calc(100% - 18px) 100% / 1px 12px;
+  background-repeat: no-repeat;
+}
+.c2d-wrap {
+  line-height: 0;
+}
+.c2d-wrap svg {
+  display: block;
+  height: auto;
+}
+.c2d-square svg {
+  width: min(260px, 58vw);
+}
+.c2d-wide svg {
+  width: min(440px, 66vw);
+}
+
+/* Barcode: a label sticker, with a ruler because it scales to any width */
+.bc-item {
+  margin: 0;
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+  width: fit-content;
+  max-width: 100%;
+}
+.bc-label {
+  background: #fff;
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1px solid rgb(0 0 0 / 0.08);
+  box-shadow: 0 12px 26px -18px rgb(0 0 0 / 0.4);
+  line-height: 0;
+  max-width: 100%;
+  overflow: auto;
+}
+.bc-label svg {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  transition: opacity 0.15s;
+}
+.bc-label svg.dim {
+  opacity: 0.25;
+}
+.bc-ruler {
+  width: 100%;
+  height: 9px;
+  border-bottom: 1px solid var(--qr-mark);
+  background:
+    repeating-linear-gradient(
+        to right,
+        var(--qr-mark) 0 1px,
+        transparent 1px 50px
+      )
+      left bottom / 100% 9px no-repeat,
+    repeating-linear-gradient(
+        to right,
+        var(--qr-mark) 0 1px,
+        transparent 1px 10px
+      )
+      left bottom / 100% 4px no-repeat;
+}
+
+/* Bulk: a sticker sheet, scrolling when there are many */
+.bulk-stage {
+  padding-block: 24px;
+}
+.bulk-sheet {
+  width: min(100%, 600px);
+  max-height: 600px;
+  overflow: auto;
+  background: #fff;
+  color: #3f3f46;
+  border-radius: 3px;
+  padding: 16px;
+  box-shadow:
+    0 1px 2px rgb(0 0 0 / 0.06),
+    0 18px 40px -24px rgb(0 0 0 / 0.45);
+}
+.bulk-count {
+  margin: 0 0 12px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #71717a;
+}
+.bulk-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(104px, 1fr));
+  gap: 8px;
+}
+.bulk-grid figure {
+  margin: 0;
+  display: grid;
+  gap: 6px;
+  justify-items: center;
+  align-content: start;
+  padding: 10px 8px 8px;
+  border: 1px dashed #d4d4d8;
+  border-radius: 8px;
+}
+.bulk-grid figure > div {
+  line-height: 0;
+  width: 100%;
+  display: grid;
+  justify-items: center;
+}
+.bulk-grid svg {
+  width: 100%;
+  max-width: 112px;
+  height: auto;
+}
+.bulk-grid figcaption {
+  font-size: 11px;
+  line-height: 1.35;
+  color: #52525b;
+  overflow-wrap: anywhere;
+  text-align: center;
+}
+.bulk-grid .warn {
+  line-height: 1.4;
+  padding: 30px 0;
+}
+.bulk-more {
+  margin: 12px 0 0;
+  font-size: 12px;
+  color: #71717a;
+  text-align: center;
+}
+
+/* Wi-Fi card: the card at its real proportions on a soft table top */
+.wc-stage {
+  background-color: var(--qr-desk);
+  background-image: radial-gradient(
+    ellipse 70% 60% at 50% 42%,
+    var(--qr-glow),
+    transparent
+  );
+  background-size: auto;
+  background-repeat: no-repeat;
+}
+.wc-canvas {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  border-radius: 5px;
+  box-shadow:
+    0 1px 2px rgb(0 0 0 / 0.08),
+    0 24px 44px -24px rgb(0 0 0 / 0.5);
+  transition:
+    opacity 0.15s,
+    width 0.2s;
+}
+.wc-canvas.placeholder {
+  opacity: 0.55;
+}
+
+/* Scanner: a dark viewfinder in both themes */
+.scan-stage {
+  background-color: #0b0c0f;
+  padding: 0;
+  place-items: stretch;
+  color: #e8eaee;
+  overflow: hidden;
+}
+.cam {
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-height: 100%;
+}
+.cam video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.cam video.off {
+  display: none;
+}
+/* Corner brackets: faint while idle, accent while the camera runs */
+.cam-frame {
+  --c: rgb(255 255 255 / 0.22);
+  --g: linear-gradient(var(--c), var(--c));
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: min(64%, 300px);
+  aspect-ratio: 1;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  border-radius: 6px;
+  background:
+    var(--g) 0 0 / 30px 3px,
+    var(--g) 0 0 / 3px 30px,
+    var(--g) 100% 0 / 30px 3px,
+    var(--g) 100% 0 / 3px 30px,
+    var(--g) 0 100% / 30px 3px,
+    var(--g) 0 100% / 3px 30px,
+    var(--g) 100% 100% / 30px 3px,
+    var(--g) 100% 100% / 3px 30px;
+  background-repeat: no-repeat;
+}
+.cam-frame.live {
+  --c: var(--acc);
+  box-shadow: 0 0 0 100vmax rgb(0 0 0 / 0.38);
+}
+.cam-line {
+  position: absolute;
+  left: 8%;
+  right: 8%;
+  top: 6%;
+  height: 2px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, transparent, var(--acc), transparent);
+  box-shadow: 0 0 14px var(--acc);
+  animation: qr-scan 2.2s ease-in-out infinite alternate;
+}
+@keyframes qr-scan {
+  to {
+    top: 94%;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cam-line {
+    animation: none;
+    top: 50%;
+  }
+}
+.cam-idle {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  gap: 14px;
+  justify-items: center;
+  text-align: center;
+  padding: 24px;
+  max-width: 300px;
+}
+.cam-idle .muted {
+  margin: 0;
+  font-size: 13.5px;
+  color: #a1a1aa;
+}
+.cam-idle .warn {
+  margin: 0;
+  color: #fbbf24;
+}
+.scan-stage .scan-drop {
+  place-self: stretch;
+  align-content: center;
+  min-height: 0;
+  margin: 18px;
+  width: auto;
+  border-color: rgb(255 255 255 / 0.18);
+  color: #e8eaee;
+}
+.scan-stage .scan-drop:hover,
+.scan-stage.over .scan-drop {
+  border-color: var(--acc);
+}
+.scan-stage .scan-drop .muted {
+  color: #a1a1aa;
+}
+.scan-stage .scan-drop .big {
+  background: rgb(255 255 255 / 0.08);
+  color: #fff;
+}
+.scan-view {
+  position: relative;
+  place-self: center;
+  margin: 22px;
+  max-width: calc(100% - 44px);
+  line-height: 0;
+  cursor: pointer;
+}
+.scan-view img {
+  display: block;
+  max-width: 100%;
+  max-height: 480px;
+  border-radius: 4px;
+}
+.scan-view svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+.scan-view polygon {
+  fill: color-mix(in srgb, var(--acc) 18%, transparent);
+  stroke: var(--acc);
+  stroke-linejoin: round;
+}
+
+/* Batch scanner: the results table owns the area */
+.bs-stage {
+  background-color: var(--card);
+}
+.bs-table tbody tr:hover td {
+  background: var(--raise);
+}
+
+/* Checker: an inspection view with the required blank margin drawn around the code */
+.qc-fig {
+  margin: 0;
+  display: grid;
+  gap: 12px;
+  justify-items: center;
+  max-width: 100%;
+}
+.qc-view svg {
+  overflow: visible;
+}
+.qc-zone polygon,
+.qc-zone path {
+  fill: none;
+  stroke: var(--acc);
+  stroke-linecap: round;
+}
+.qc-zone polygon {
+  stroke-opacity: 0.8;
+}
+.qc-legend {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12.5px;
+  line-height: 1.4;
+  color: var(--muted);
+  text-align: left;
+}
+.qc-key {
+  flex: none;
+  width: 22px;
+  border-top: 2px dashed var(--acc);
+}
+
+/* Cleaner: the original next to the redraw */
+.fq-pair {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+}
+.fq-pair figure {
+  margin: 0;
+  display: grid;
+  gap: 8px;
+  justify-items: center;
+}
+.fq-pair figcaption {
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--muted);
+}
+.fq-tile {
+  width: min(220px, 34vw);
+  aspect-ratio: 1;
+  display: grid;
+  place-items: center;
+  line-height: 0;
+  overflow: hidden;
+  border-radius: 4px;
+  box-shadow:
+    0 1px 2px rgb(0 0 0 / 0.06),
+    0 14px 30px -20px rgb(0 0 0 / 0.45);
+}
+.fq-tile.clear {
+  box-shadow: none;
+}
+.fq-old .fq-tile {
+  background: #fff;
+}
+.fq-tile img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+.fq-tile svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.fq-arrow {
+  display: grid;
+  place-items: center;
+  margin-bottom: 26px;
+  color: var(--muted);
+}
+.fq-arrow .ico {
+  width: 20px;
+  height: 20px;
+}
+@media (max-width: 600px) {
+  .qr-stage {
+    padding: 28px 16px;
+  }
+  .scan-stage {
+    padding: 0;
+    min-height: 340px;
+  }
+  .fq-pair {
+    gap: 8px;
+  }
+  .fq-tile {
+    width: min(150px, 38vw);
+  }
+}
+/* The checker's image stays at the top while its report grows */
+.toolcard.checker-card .qc-stage {
+  align-content: start;
+}
+
+/* QR print stages: the proof stays near the top and in view while long settings scroll */
+@media (min-width: 900px) {
+  .qr-stage.qr-print {
+    align-content: start;
+    padding-top: 48px;
+  }
+  .qr-stage.qr-print > .qr-proof {
+    position: sticky;
+    top: 96px;
   }
 }

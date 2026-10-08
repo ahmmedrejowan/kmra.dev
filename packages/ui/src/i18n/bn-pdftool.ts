@@ -236,4 +236,44 @@ export const BN_PDFTOOL: Record<string, string> = {
   "{name} couldn't be read and was skipped.":
     "{name} পড়া যায়নি, তাই বাদ দেওয়া হয়েছে।",
   "Saved a {n}-page PDF, {size}.": "{n} পেজের পিডিএফ সেভ হয়েছে, {size}।",
+
+  // Workspaces (desk)
+  "Aim: under {size}": "লক্ষ্য: {size}-এর নিচে",
+  "Already under {size}. It's re-saved without loss.":
+    "আগে থেকেই {size}-এর নিচে। মান না কমিয়ে আবার সেভ করা হবে।",
+  Compressed: "কম্প্রেস করা",
+  "The new size shows here after you compress.":
+    "কম্প্রেস করার পর নতুন সাইজ এখানে দেখা যাবে।",
+  "Light: pages redrawn at 150 dpi, sharp text":
+    "হালকা: পেজ ১৫০ dpi-তে নতুন করে আঁকা হয়, লেখা স্পষ্ট থাকে",
+  "Strong: pages redrawn at 110 dpi, good for email":
+    "জোরালো: পেজ ১১০ dpi-তে নতুন করে আঁকা হয়, ইমেইলের জন্য ভালো",
+  "Smallest: pages redrawn at 80 dpi, for tight upload limits":
+    "সবচেয়ে ছোট: পেজ ৮০ dpi-তে নতুন করে আঁকা হয়, কড়া আপলোড সীমার জন্য",
+  "Black and white": "সাদাকালো",
+  "The other {n} pages turn the same way.": "বাকি {n}টি পেজও একইভাবে ঘুরবে।",
+  "Document properties": "ডকুমেন্টের তথ্য",
+  Removed: "সরানো হয়েছে",
+  "Not set": "দেওয়া নেই",
+  "PDF version": "পিডিএফ সংস্করণ",
+  "One PDF": "একটি পিডিএফ",
+  "no number (cover)": "নম্বর নেই (কভার)",
+  "Every page gets the same watermark.": "প্রতিটি পেজে একই ওয়াটারমার্ক বসবে।",
+  "Click pages or type them to pick what goes in the new PDF.":
+    "নতুন পিডিএফে কোন পেজ যাবে, ক্লিক করে বা লিখে বেছে নিন।",
+  "Type ranges to see how the pages split.":
+    "পেজগুলো কীভাবে ভাগ হবে দেখতে রেঞ্জ লিখুন।",
+  "Makes {n} PDF": "{n}টি পিডিএফ হবে",
+  "Makes {n} PDFs": "{n}টি পিডিএফ হবে",
+  "File {n}": "ফাইল {n}",
+  "Not included": "বাদ থাকবে",
+  "{k} kept, {r} removed": "{k}টি থাকবে, {r}টি সরবে",
+  "{n} page picked": "{n}টি পেজ বাছা হয়েছে",
+  "{n} pages picked": "{n}টি পেজ বাছা হয়েছে",
+  "Every page is saved. Tick pages to save only those.":
+    "প্রতিটি পেজ সেভ হবে। শুধু কিছু পেজ চাইলে সেগুলোতে টিক দিন।",
+  "{n} dpi": "{n} dpi",
+  "No text on this page.": "এই পেজে কোনো লেখা নেই।",
+  "Extract the text to read it here, page by page.":
+    "লেখা বের করুন, তারপর এখানে পেজ ধরে ধরে পড়ুন।",
 };

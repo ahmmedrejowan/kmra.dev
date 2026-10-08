@@ -90,6 +90,9 @@ export interface Matrix {
   h: number;
   /** Dark modules as one SVG path (module units) */
   d: string;
+  /** The symbol alone, without the quiet zone, in modules */
+  cols?: number;
+  rows?: number;
 }
 
 export type Made =
@@ -131,7 +134,13 @@ export async function make(
   }
   return {
     ok: true,
-    m: { w: width + 2 * q, h: height + 2 * q, d: parts.join("") },
+    m: {
+      w: width + 2 * q,
+      h: height + 2 * q,
+      d: parts.join(""),
+      cols: width,
+      rows: height,
+    },
   };
 }
 

@@ -11,7 +11,7 @@ import {
 import { toast } from "@kmra/ui/lib/toast";
 import { num, type Locale } from "@kmra/ui/lib/i18n";
 import { LangProvider, useLang, useT } from "@kmra/ui/lib/i18n-react";
-import { imagesToPdf, save, type ImageOpts } from "../lib/ops";
+import { imagesToPdf, PAPER, save, type ImageOpts } from "../lib/ops";
 
 /** Photos and scans into one PDF, in the order you choose. */
 interface Pic {
@@ -19,6 +19,72 @@ interface Pic {
   file: File;
   url: string;
   rotate: number;
+  /** Natural size, once the preview has loaded */
+  w?: number;
+  h?: number;
+}
+
+/** Page size in points for an image, the same way imagesToPdf() picks it */
+function pageFor(p: Pic, o: ImageOpts): [number, number] {
+  const turned = p.rotate % 180 !== 0;
+  const iw = (turned ? p.h : p.w) ?? 3;
+  const ih = (turned ? p.w : p.h) ?? 4;
+  if (o.paper === "fit")
+    return [iw * 0.75 + o.margin * 2, ih * 0.75 + o.margin * 2];
+  let [pw, ph] = PAPER[o.paper]!;
+  const landscape =
+    o.orientation === "landscape" || (o.orientation === "auto" && iw > ih);
+  if (landscape) [pw, ph] = [ph, pw];
+  return [pw, ph];
+}
+
+/** An image placed on its page: paper shape, orientation and margins as they'll come out */
+function PaperPage({
+  p,
+  o,
+  onSize,
+}: {
+  p: Pic;
+  o: ImageOpts;
+  onSize: (w: number, h: number) => void;
+}) {
+  const [pw, ph] = pageFor(p, o);
+  const turned = p.rotate % 180 !== 0;
+  const cw = pw - o.margin * 2;
+  const ch = ph - o.margin * 2;
+  const iw = (turned ? p.h : p.w) ?? cw;
+  const ih = (turned ? p.w : p.h) ?? ch;
+  const s = Math.min(cw / iw, ch / ih);
+  const dw = iw * s;
+  const dh = ih * s;
+  return (
+    <div
+      className="sheet paper-page"
+      style={{
+        aspectRatio: `${pw} / ${ph}`,
+        // Fit inside the A4-shaped cell, so pages of every shape line up
+        width: `${Math.min(1, (pw / ph) * Math.SQRT2) * 100}%`,
+        padding: `${(o.margin / pw) * 100}%`,
+      }}
+    >
+      <div className="paper-area">
+        <img
+          src={p.url}
+          alt={p.file.name}
+          draggable={false}
+          onLoad={(e) =>
+            !p.w &&
+            onSize(e.currentTarget.naturalWidth, e.currentTarget.naturalHeight)
+          }
+          style={{
+            width: `${((turned ? dh : dw) / cw) * 100}%`,
+            height: `${((turned ? dw : dh) / ch) * 100}%`,
+            transform: `translate(-50%, -50%) rotate(${p.rotate}deg)`,
+          }}
+        />
+      </div>
+    </div>
+  );
 }
 
 /** Image as JPEG (or PNG when it has transparency), rotated, at most `max` px on the long side */
@@ -162,7 +228,7 @@ function ImagesToPdfView() {
     <>
       <div className="toolcard pdfcard">
         <div className={`stage pdf-stage${dragging ? " over" : ""}`}>
-          <div className="page-grid">
+          <div className="page-grid paper-grid">
             {pics.map((p, i) => (
               <div
                 key={p.key}
@@ -172,12 +238,15 @@ function ImagesToPdfView() {
                 onDragOver={(e) => e.preventDefault()}
                 onDrop={() => drop(p.key)}
               >
-                <div className={`thumb paper ${o.paper}`}>
-                  <img
-                    src={p.url}
-                    alt={p.file.name}
-                    style={{ transform: `rotate(${p.rotate}deg)` }}
-                    draggable={false}
+                <div className="pg-face">
+                  <PaperPage
+                    p={p}
+                    o={o}
+                    onSize={(w, h) =>
+                      setPics((l) =>
+                        l.map((x) => (x.key === p.key ? { ...x, w, h } : x)),
+                      )
+                    }
                   />
                 </div>
                 <div className="pg-bar">
