@@ -1,25 +1,5 @@
 ---
-import BaseLayout from "@kmra/ui/layouts/BaseLayout.astro";
-import PageHead from "@kmra/ui/components/PageHead.astro";
-import AboutContent from "@kmra/ui/components/AboutContent.astro";
-import { brandName, getApp } from "@kmra/registry";
-
-const app = getApp("qrtool");
-const brand = brandName(app);
+import InfoPage from "../views/InfoPage.astro";
 ---
 
-<BaseLayout
-  appId="qrtool"
-  title="About"
-  description="Small, private tools for everyday files, from kmra.dev."
->
-  <PageHead
-    crumbs={[{ label: app.name, href: "/" }, { label: "About" }]}
-    icon="layers"
-    title={`About ${brand}`}
-    intro="Small, private tools for everyday files."
-  />
-  <div class="wrap page-body">
-    <AboutContent />
-  </div>
-</BaseLayout>
+<InfoPage page="about" />

@@ -9,6 +9,8 @@ import {
   isImageFile,
 } from "@kmra/ui/lib/files";
 import { toast } from "@kmra/ui/lib/toast";
+import { num, type Locale } from "@kmra/ui/lib/i18n";
+import { LangProvider, useLang, useT } from "@kmra/ui/lib/i18n-react";
 import { imagesToPdf, save, type ImageOpts } from "../lib/ops";
 
 /** Photos and scans into one PDF, in the order you choose. */
@@ -48,7 +50,18 @@ async function prepare(p: Pic, quality: number, max: number) {
   };
 }
 
-export default function ImagesToPdf() {
+/** Island entry: sets the interface language for everything inside. */
+export default function ImagesToPdf(props: { lang?: Locale }) {
+  return (
+    <LangProvider lang={props.lang}>
+      <ImagesToPdfView />
+    </LangProvider>
+  );
+}
+
+function ImagesToPdfView() {
+  const T = useT();
+  const lang = useLang();
   const [pics, setPics] = useState<Pic[]>([]);
   const [o, setO] = useState<ImageOpts>({
     paper: "a4",
@@ -88,7 +101,7 @@ export default function ImagesToPdf() {
   }
 
   async function make() {
-    setBusy("Preparing…");
+    setBusy(T("Preparing…"));
     try {
       const [quality, max] = {
         high: [0.92, 3000],
@@ -97,11 +110,15 @@ export default function ImagesToPdf() {
       }[q] as [number, number];
       const images = [];
       for (let i = 0; i < pics.length; i++) {
-        setBusy(`Image ${i + 1} of ${pics.length}…`);
+        setBusy(T("Image {n} of {t}…", { n: i + 1, t: pics.length }));
         try {
           images.push(await prepare(pics[i]!, quality, max));
         } catch {
-          toast(`${pics[i]!.file.name} couldn't be read and was skipped.`);
+          toast(
+            T("{name} couldn't be read and was skipped.", {
+              name: pics[i]!.file.name,
+            }),
+          );
         }
       }
       if (!images.length) return;
@@ -112,7 +129,12 @@ export default function ImagesToPdf() {
           ? "images-kmra.pdf"
           : `${pics[0]!.file.name.replace(/\.[^.]+$/, "")}.pdf`,
       );
-      toast(`Saved a ${images.length}-page PDF, ${formatBytes(blob.size)}.`);
+      toast(
+        T("Saved a {n}-page PDF, {size}.", {
+          n: images.length,
+          size: formatBytes(blob.size),
+        }),
+      );
     } finally {
       setBusy(null);
     }
@@ -127,8 +149,8 @@ export default function ImagesToPdf() {
         <DropCard
           dragging={dragging}
           onPick={pick}
-          title="Drop photos or scans"
-          button="Choose images"
+          title={T("Drop photos or scans")}
+          button={T("Choose images")}
           formats={["JPG", "PNG", "WebP", "GIF"]}
         />
         {input}
@@ -159,12 +181,12 @@ export default function ImagesToPdf() {
                   />
                 </div>
                 <div className="pg-bar">
-                  <span>{i + 1}</span>
+                  <span>{num(lang, i + 1)}</span>
                   <span className="pg-acts">
                     <button
                       type="button"
-                      aria-label="Rotate"
-                      title="Rotate"
+                      aria-label={T("Rotate")}
+                      title={T("Rotate")}
                       onClick={() =>
                         setPics((l) =>
                           l.map((x) =>
@@ -179,8 +201,8 @@ export default function ImagesToPdf() {
                     </button>
                     <button
                       type="button"
-                      aria-label="Remove"
-                      title="Remove"
+                      aria-label={T("Remove")}
+                      title={T("Remove")}
                       onClick={() =>
                         setPics((l) => l.filter((x) => x.key !== p.key))
                       }
@@ -194,61 +216,63 @@ export default function ImagesToPdf() {
           </div>
           <div className="filebar">
             <button type="button" className="fchip add" onClick={pick}>
-              + Add images
+              {T("+ Add images")}
             </button>
           </div>
         </div>
         <div className="controls">
           <p className="muted small">
-            Drag images to change the order. Each image becomes one page.
+            {T("Drag images to change the order. Each image becomes one page.")}
           </p>
           <Seg<ImageOpts["paper"]>
-            label="Page size"
+            label={T("Page size")}
             options={[
               ["a4", "A4"],
               ["letter", "Letter"],
               ["legal", "Legal"],
-              ["fit", "Same as image"],
+              ["fit", T("Same as image")],
             ]}
             value={o.paper}
             onPick={(v) => put({ paper: v })}
           />
           {o.paper !== "fit" && (
             <Seg<ImageOpts["orientation"]>
-              label="Orientation"
+              label={T("Orientation")}
               options={[
-                ["auto", "Auto"],
-                ["portrait", "Portrait"],
-                ["landscape", "Landscape"],
+                ["auto", T("Auto")],
+                ["portrait", T("Portrait")],
+                ["landscape", T("Landscape")],
               ]}
               value={o.orientation}
               onPick={(v) => put({ orientation: v })}
             />
           )}
           <Seg<number>
-            label="Margin"
+            label={T("Margin")}
             options={[
-              [0, "None"],
-              [18, "Small"],
-              [40, "Large"],
+              [0, T("None")],
+              [18, T("Small")],
+              [40, T("Large")],
             ]}
             value={o.margin}
             onPick={(v) => put({ margin: v })}
           />
           <Seg<typeof q>
-            label="Image quality"
+            label={T("Image quality")}
             options={[
-              ["high", "High"],
-              ["medium", "Medium"],
-              ["small", "Small file"],
+              ["high", T("High")],
+              ["medium", T("Medium")],
+              ["small", T("Small file")],
             ]}
             value={q}
             onPick={setQ}
           />
           <div className="result">
             <small>
-              {pics.length} image{pics.length > 1 ? "s" : ""},{" "}
-              {formatBytes(pics.reduce((a, p) => a + p.file.size, 0))}
+              {T(pics.length > 1 ? "{n} images" : "{n} image", {
+                n: pics.length,
+              })}
+              , {formatBytes(pics.reduce((a, p) => a + p.file.size, 0))}
             </small>
             {busy && <small>{busy}</small>}
             <div className="acts">
@@ -259,7 +283,7 @@ export default function ImagesToPdf() {
                 onClick={() => void make()}
               >
                 <Icon name="download" />
-                {busy ? "Working…" : "Make PDF and download"}
+                {T(busy ? "Working…" : "Make PDF and download")}
               </button>
             </div>
           </div>

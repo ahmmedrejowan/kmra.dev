@@ -5,19 +5,24 @@ import { Seg } from "@kmra/ui/components/controls";
 import { CopyBtn, FileInput, useFiles } from "@kmra/ui/components/kit";
 import { downloadBlob, IMAGE_ACCEPT } from "@kmra/ui/lib/files";
 import { toast } from "@kmra/ui/lib/toast";
+import type { Locale } from "@kmra/ui/lib/i18n";
+import { LangProvider, useT } from "@kmra/ui/lib/i18n-react";
 import { linkWarnings, parse, read, type Found } from "../lib/scan";
 
 /** Scan QR codes and barcodes from the camera or an image. Everything is read on this device. */
 type Mode = "camera" | "image";
 
 function Result({ f }: { f: Found }) {
+  // Scanned values (numbers, subjects) are filled in with .replace(), not T()'s vars, so their
+  // digits stay exactly as encoded.
+  const T = useT();
   const p = parse(f.text);
   const fmt = f.format.replace(/([a-z])([A-Z])/g, "$1 $2");
   return (
     <div className="scan-result">
       <div className="scan-head">
         <span className="tag">{fmt}</span>
-        <CopyBtn text={f.text} label="Copy" what="Copied" />
+        <CopyBtn text={f.text} what="Copied" />
       </div>
       {p.kind === "url" ? (
         <>
@@ -25,7 +30,7 @@ function Result({ f }: { f: Found }) {
           <p className="scan-text mono">{f.text}</p>
           {linkWarnings(p.url).map((w) => (
             <small key={w} className="warn block">
-              {w}
+              {T(w)}
             </small>
           ))}
           <a
@@ -34,37 +39,36 @@ function Result({ f }: { f: Found }) {
             target="_blank"
             rel="noopener noreferrer nofollow"
           >
-            Open link
+            {T("Open link")}
           </a>
         </>
       ) : p.kind === "wifi" ? (
         <dl className="kv">
           <div>
-            <dt>Network</dt>
-            <dd>{p.ssid || "(hidden)"}</dd>
+            <dt>{T("Network")}</dt>
+            <dd>{p.ssid || T("(hidden)")}</dd>
           </div>
           <div>
-            <dt>Password</dt>
+            <dt>{T("Password")}</dt>
             <dd>
               {p.password ? (
                 <>
                   <span className="mono">{p.password}</span>{" "}
                   <CopyBtn
                     text={p.password}
-                    label="Copy"
                     what="Password copied"
                     className="linkbtn"
                   />
                 </>
               ) : (
-                "None"
+                T("None")
               )}
             </dd>
           </div>
           <div>
-            <dt>Security</dt>
+            <dt>{T("Security")}</dt>
             <dd>
-              {p.security === "nopass" || !p.security ? "Open" : p.security}
+              {p.security === "nopass" || !p.security ? T("Open") : p.security}
             </dd>
           </div>
         </dl>
@@ -72,24 +76,24 @@ function Result({ f }: { f: Found }) {
         <>
           <dl className="kv">
             <div>
-              <dt>Name</dt>
-              <dd>{p.name}</dd>
+              <dt>{T("Name")}</dt>
+              <dd>{p.name === "Contact" ? T("Contact") : p.name}</dd>
             </div>
             {p.phone && (
               <div>
-                <dt>Phone</dt>
+                <dt>{T("Phone")}</dt>
                 <dd>{p.phone}</dd>
               </div>
             )}
             {p.email && (
               <div>
-                <dt>Email</dt>
+                <dt>{T("Email")}</dt>
                 <dd>{p.email}</dd>
               </div>
             )}
             {p.org && (
               <div>
-                <dt>Company</dt>
+                <dt>{T("Company")}</dt>
                 <dd>{p.org}</dd>
               </div>
             )}
@@ -105,26 +109,26 @@ function Result({ f }: { f: Found }) {
             }
           >
             <Icon name="download" />
-            Save contact (.vcf)
+            {T("Save contact (.vcf)")}
           </button>
         </>
       ) : p.kind === "email" ? (
         <>
           <p className="scan-text">
-            Email to <b>{p.to}</b>
-            {p.subject ? `, subject “${p.subject}”` : ""}
+            {T("Email to")} <b>{p.to}</b>
+            {p.subject ? T(", subject “{s}”").replace("{s}", p.subject) : ""}
           </p>
           <a className="btn sm" href={f.text}>
-            Write email
+            {T("Write email")}
           </a>
         </>
       ) : p.kind === "phone" ? (
         <a className="btn sm" href={f.text}>
-          Call {p.number}
+          {T("Call {n}").replace("{n}", p.number)}
         </a>
       ) : p.kind === "sms" ? (
         <p className="scan-text">
-          Text {p.number}
+          {T("Text {n}").replace("{n}", p.number)}
           {p.message ? `: “${p.message}”` : ""}
         </p>
       ) : p.kind === "geo" ? (
@@ -138,7 +142,7 @@ function Result({ f }: { f: Found }) {
             target="_blank"
             rel="noopener noreferrer"
           >
-            See on a map
+            {T("See on a map")}
           </a>
         </>
       ) : (
@@ -148,7 +152,22 @@ function Result({ f }: { f: Found }) {
   );
 }
 
-export default function Scanner({ preset }: { preset?: Preset }) {
+export default function Scanner({
+  preset,
+  lang,
+}: {
+  preset?: Preset;
+  lang?: Locale;
+}) {
+  return (
+    <LangProvider lang={lang}>
+      <ScannerView preset={preset} />
+    </LangProvider>
+  );
+}
+
+function ScannerView({ preset }: { preset?: Preset }) {
+  const T = useT();
   const [mode, setMode] = useState<Mode>((preset?.mode as Mode) ?? "camera");
   const [found, setFound] = useState<Found[]>([]);
   const [busy, setBusy] = useState(false);
@@ -170,9 +189,10 @@ export default function Scanner({ preset }: { preset?: Preset }) {
         return URL.createObjectURL(files[0]!);
       });
       setFound(all);
-      if (!all.length) toast("No code found. Try a sharper or closer picture.");
+      if (!all.length)
+        toast(T("No code found. Try a sharper or closer picture."));
     } catch {
-      toast("That image couldn't be read.");
+      toast(T("That image couldn't be read."));
     } finally {
       setBusy(false);
     }
@@ -209,10 +229,12 @@ export default function Scanner({ preset }: { preset?: Preset }) {
       const name = (err as { name?: string }).name;
       setCamError(
         name === "NotAllowedError"
-          ? "Camera access was blocked. Allow it in your browser's site settings, or use an image instead."
+          ? T(
+              "Camera access was blocked. Allow it in your browser's site settings, or use an image instead.",
+            )
           : name === "NotFoundError"
-            ? "No camera found. Use an image instead."
-            : "The camera couldn't start. Use an image instead.",
+            ? T("No camera found. Use an image instead.")
+            : T("The camera couldn't start. Use an image instead."),
       );
     }
   }
@@ -274,11 +296,12 @@ export default function Scanner({ preset }: { preset?: Preset }) {
                 {camError ? (
                   <p className="warn">{camError}</p>
                 ) : found.length ? (
-                  <p className="muted">Code read. Scan another?</p>
+                  <p className="muted">{T("Code read. Scan another?")}</p>
                 ) : (
                   <p className="muted">
-                    The camera is used only on this device. Nothing is recorded
-                    or sent.
+                    {T(
+                      "The camera is used only on this device. Nothing is recorded or sent.",
+                    )}
                   </p>
                 )}
                 <button
@@ -287,7 +310,7 @@ export default function Scanner({ preset }: { preset?: Preset }) {
                   onClick={() => void start()}
                 >
                   <Icon name="camera" />
-                  {found.length ? "Scan another" : "Start camera"}
+                  {found.length ? T("Scan another") : T("Start camera")}
                 </button>
               </div>
             )}
@@ -295,17 +318,17 @@ export default function Scanner({ preset }: { preset?: Preset }) {
         ) : (
           <div className="dropzone scan-drop" onClick={pick}>
             {preview ? (
-              <img src={preview} alt="Scanned image" className="still" />
+              <img src={preview} alt={T("Scanned image")} className="still" />
             ) : (
               <>
                 <div className="big">
                   <Icon name="upload" />
                 </div>
                 <strong>
-                  {busy ? "Reading…" : "Drop an image with a code"}
+                  {busy ? T("Reading…") : T("Drop an image with a code")}
                 </strong>
                 <span className="muted">
-                  Or paste a screenshot, or click to choose.
+                  {T("Or paste a screenshot, or click to choose.")}
                 </span>
               </>
             )}
@@ -314,10 +337,10 @@ export default function Scanner({ preset }: { preset?: Preset }) {
       </div>
       <div className="controls">
         <Seg<Mode>
-          label="Scan from"
+          label={T("Scan from")}
           options={[
-            ["camera", "Camera"],
-            ["image", "Image or screenshot"],
+            ["camera", T("Camera")],
+            ["image", T("Image or screenshot")],
           ]}
           value={mode}
           onPick={setMode}
@@ -325,19 +348,21 @@ export default function Scanner({ preset }: { preset?: Preset }) {
         {mode === "image" && (
           <button type="button" className="btn sm" onClick={pick}>
             <Icon name="upload" />
-            Choose an image
+            {T("Choose an image")}
           </button>
         )}
         {running && (
           <button type="button" className="btn sm" onClick={stop}>
-            Stop camera
+            {T("Stop camera")}
           </button>
         )}
         <div className="result scan-results" aria-live="polite">
           {found.length ? (
             <>
               <small>
-                {found.length} code{found.length > 1 ? "s" : ""} found
+                {found.length > 1
+                  ? T("{n} codes found", { n: found.length })
+                  : T("1 code found")}
               </small>
               {found.map((f, i) => (
                 <Result key={i} f={f} />
@@ -346,8 +371,8 @@ export default function Scanner({ preset }: { preset?: Preset }) {
           ) : (
             <small>
               {busy
-                ? "Reading…"
-                : "Results appear here. Links are never opened without you."}
+                ? T("Reading…")
+                : T("Results appear here. Links are never opened without you.")}
             </small>
           )}
         </div>

@@ -2,6 +2,8 @@ import { useMemo, useState } from "react";
 import { Icon } from "@kmra/ui/components/Icon";
 import { Colors, Seg } from "@kmra/ui/components/controls";
 import { downloadZip } from "@kmra/ui/components/kit";
+import type { Locale } from "@kmra/ui/lib/i18n";
+import { LangProvider, useT } from "@kmra/ui/lib/i18n-react";
 import { DEFAULT_STYLE, png, svg, type Style } from "../lib/qr";
 
 /** One QR code per line, all zipped. "Name | value" (or a tab) names the file. */
@@ -32,7 +34,16 @@ function rows(text: string): Row[] {
     });
 }
 
-export default function Bulk() {
+export default function Bulk({ lang }: { lang?: Locale }) {
+  return (
+    <LangProvider lang={lang}>
+      <BulkView />
+    </LangProvider>
+  );
+}
+
+function BulkView() {
+  const T = useT();
   const [text, setText] = useState(
     "https://kmra.dev\nTable 1 | https://example.com/menu?table=1\nTable 2 | https://example.com/menu?table=2",
   );
@@ -40,16 +51,19 @@ export default function Bulk() {
   const [px, setPx] = useState(1024);
   const [type, setType] = useState<"png" | "svg">("png");
   const [busy, setBusy] = useState<string | null>(null);
+  const [working, setWorking] = useState(false);
   const list = useMemo(() => rows(text), [text]);
   const style: Style = { ...DEFAULT_STYLE, fg };
 
   async function save() {
-    setBusy("Making codes…");
+    setWorking(true);
+    setBusy(T("Making codes…"));
     try {
       const files: { name: string; blob: Blob }[] = [];
       for (let i = 0; i < list.length; i++) {
         const r = list[i]!;
-        if (i % 20 === 0) setBusy(`Code ${i + 1} of ${list.length}…`);
+        if (i % 20 === 0)
+          setBusy(T("Code {i} of {n}…", { i: i + 1, n: list.length }));
         try {
           files.push({
             name: `${r.name}.${type}`,
@@ -67,11 +81,15 @@ export default function Bulk() {
       await downloadZip(files, "qr-codes-kmra.zip");
       setBusy(
         files.length < list.length
-          ? `${list.length - files.length} lines were too long and were skipped.`
+          ? T("{n} lines were too long and were skipped.", {
+              n: list.length - files.length,
+            })
           : null,
       );
     } catch {
       setBusy(null);
+    } finally {
+      setWorking(false);
     }
   }
 
@@ -89,7 +107,7 @@ export default function Bulk() {
                 {art ? (
                   <div dangerouslySetInnerHTML={{ __html: art }} />
                 ) : (
-                  <div className="warn small">Too long</div>
+                  <div className="warn small">{T("Too long")}</div>
                 )}
                 <figcaption>{r.name}</figcaption>
               </figure>
@@ -97,12 +115,14 @@ export default function Bulk() {
           })}
         </div>
         {list.length > 12 && (
-          <p className="muted small">and {list.length - 12} more</p>
+          <p className="muted small">
+            {T("and {n} more", { n: list.length - 12 })}
+          </p>
         )}
       </div>
       <div className="controls">
         <div className="ctl">
-          <label htmlFor="bulk-in">One link or text per line</label>
+          <label htmlFor="bulk-in">{T("One link or text per line")}</label>
           <textarea
             id="bulk-in"
             className="num code-in"
@@ -112,17 +132,17 @@ export default function Bulk() {
             spellCheck={false}
           />
           <small className="muted">
-            Add a file name first with “ | ”, like Table 1 | https://…
+            {T("Add a file name first with “ | ”, like Table 1 | https://…")}
           </small>
         </div>
         <Colors
-          label="Colour"
+          label={T("Colour")}
           value={fg}
           onPick={setFg}
           list={["#111111", "#1a3d9c", "#0b6e4f", "#7a1fa2", "#c2410c"]}
         />
         <Seg<"png" | "svg">
-          label="Format"
+          label={T("Format")}
           options={[
             ["png", "PNG"],
             ["svg", "SVG"],
@@ -132,7 +152,7 @@ export default function Bulk() {
         />
         {type === "png" && (
           <Seg<number>
-            label="Size"
+            label={T("Size")}
             options={[
               [512, "512"],
               [1024, "1024"],
@@ -144,18 +164,20 @@ export default function Bulk() {
         )}
         <div className="result">
           <small>
-            {list.length} code{list.length === 1 ? "" : "s"}
+            {list.length === 1
+              ? T("1 code")
+              : T("{n} codes", { n: list.length })}
           </small>
           {busy && <small>{busy}</small>}
           <div className="acts">
             <button
               type="button"
               className="btn acc"
-              disabled={!list.length || !!busy?.endsWith("…")}
+              disabled={!list.length || working}
               onClick={() => void save()}
             >
               <Icon name="download" />
-              Download {list.length} as zip
+              {T("Download {n} as zip", { n: list.length })}
             </button>
           </div>
         </div>

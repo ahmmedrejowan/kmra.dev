@@ -689,4 +689,8 @@ export const BN: Record<string, string> = {
   "+ {n} more": "+ আরও {n}টি",
   "Popular tools": "জনপ্রিয় টুল",
   "Browse all {n} tools": "সব {n}টি টুল দেখুন",
+  "Pick any colour": "যেকোনো রং বেছে নিন",
+  "Start with a tool": "একটি টুল দিয়ে শুরু করুন",
+  Main: "প্রধান",
+  "© your name": "© আপনার নাম",
 };

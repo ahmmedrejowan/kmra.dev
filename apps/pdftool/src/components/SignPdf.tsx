@@ -5,6 +5,8 @@ import { Seg } from "@kmra/ui/components/controls";
 import { DropCard, FileInput, useFiles } from "@kmra/ui/components/kit";
 import { downloadBlob, formatBytes, isImageFile } from "@kmra/ui/lib/files";
 import { toast } from "@kmra/ui/lib/toast";
+import type { Locale } from "@kmra/ui/lib/i18n";
+import { LangProvider, useT } from "@kmra/ui/lib/i18n-react";
 import { openPdf, PasswordError, renderPage } from "../lib/pdfjs";
 import { build, LockedError, save, stamp, textPng } from "../lib/ops";
 import Thumb from "./Thumb";
@@ -118,7 +120,17 @@ async function cleanUpload(
   return trim(c);
 }
 
-export default function SignPdf() {
+/** Island entry: sets the interface language for everything inside. */
+export default function SignPdf(props: { lang?: Locale }) {
+  return (
+    <LangProvider lang={props.lang}>
+      <SignPdfView />
+    </LangProvider>
+  );
+}
+
+function SignPdfView() {
+  const T = useT();
   const [doc, setDoc] = useState<{
     key: string;
     file: File;
@@ -160,15 +172,15 @@ export default function SignPdf() {
     } catch (err) {
       toast(
         err instanceof PasswordError
-          ? `${file.name} is password-protected.`
-          : `${file.name} couldn't be opened.`,
+          ? T("{name} is password-protected.", { name: file.name })
+          : T("{name} couldn't be opened.", { name: file.name }),
       );
     }
   }
   const { dragging, pickRef, pick, take } = useFiles({
     onFiles: (f) => void open(f),
     accept: isPdf,
-    reject: "That isn't a PDF.",
+    reject: T("That isn't a PDF."),
   });
 
   // Draw the current page large
@@ -277,11 +289,11 @@ export default function SignPdf() {
   }
   async function addSignature() {
     if (mode === "draw") {
-      if (!hasInk) return toast("Draw your signature in the box first.");
-      return place(trim(padRef.current!), "Signature", 0.3);
+      if (!hasInk) return toast(T("Draw your signature in the box first."));
+      return place(trim(padRef.current!), T("Signature"), 0.3);
     }
     if (mode === "type") {
-      if (!typed.trim()) return toast("Type your name first.");
+      if (!typed.trim()) return toast(T("Type your name first."));
       await document.fonts.load(`64px ${SCRIPT}`);
       const art = await textPng(typed.trim(), 120, ink, `400 {px}px ${SCRIPT}`);
       const img = await createImageBitmap(
@@ -291,12 +303,12 @@ export default function SignPdf() {
       c.width = img.width;
       c.height = img.height;
       c.getContext("2d")!.drawImage(img, 0, 0);
-      return place(trim(c), "Signature", 0.3);
+      return place(trim(c), T("Signature"), 0.3);
     }
     upRef.current?.click();
   }
   async function addText(t: string, label: string) {
-    if (!t.trim()) return toast("Type the text first.");
+    if (!t.trim()) return toast(T("Type the text first."));
     const art = await textPng(
       t,
       64,
@@ -362,12 +374,12 @@ export default function SignPdf() {
       );
       const blob = await save(out);
       downloadBlob(blob, `${doc.file.name.replace(/\.pdf$/i, "")}-signed.pdf`);
-      toast(`Saved, ${formatBytes(blob.size)}.`);
+      toast(T("Saved, {size}.", { size: formatBytes(blob.size) }));
     } catch (err) {
       toast(
         err instanceof LockedError
-          ? "This PDF is password-protected and can't be changed."
-          : "Couldn't save. The PDF may be damaged.",
+          ? T("This PDF is password-protected and can't be changed.")
+          : T("Couldn't save. The PDF may be damaged."),
       );
     } finally {
       setBusy(false);
@@ -388,8 +400,8 @@ export default function SignPdf() {
         <DropCard
           dragging={dragging}
           onPick={pick}
-          title="Drop the PDF to sign"
-          button="Choose a PDF"
+          title={T("Drop the PDF to sign")}
+          button={T("Choose a PDF")}
           formats={["PDF"]}
         />
         {input}
@@ -413,7 +425,11 @@ export default function SignPdf() {
               onPointerDown={() => setSel(null)}
             >
               {pageUrl && (
-                <img src={pageUrl} alt={`Page ${page + 1}`} draggable={false} />
+                <img
+                  src={pageUrl}
+                  alt={T("Page {n}", { n: page + 1 })}
+                  draggable={false}
+                />
               )}
               {onPage.map((i) => (
                 <div
@@ -431,7 +447,7 @@ export default function SignPdf() {
                   <button
                     type="button"
                     className="region-x"
-                    aria-label={`Remove ${i.label}`}
+                    aria-label={T("Remove {name}", { name: i.label })}
                     onPointerDown={(e) => e.stopPropagation()}
                     onClick={() =>
                       setItems((l) => l.filter((x) => x.id !== i.id))
@@ -454,19 +470,17 @@ export default function SignPdf() {
               className="iconbtn"
               disabled={page === 0}
               onClick={() => setPage(page - 1)}
-              aria-label="Previous page"
+              aria-label={T("Previous page")}
             >
               <Icon name="back" />
             </button>
-            <span>
-              Page {page + 1} of {n}
-            </span>
+            <span>{T("Page {n} of {t}", { n: page + 1, t: n })}</span>
             <button
               type="button"
               className="iconbtn"
               disabled={page >= n - 1}
               onClick={() => setPage(page + 1)}
-              aria-label="Next page"
+              aria-label={T("Next page")}
             >
               <Icon name="right" />
             </button>
@@ -485,7 +499,7 @@ export default function SignPdf() {
                     doc={doc.pdf}
                     index={i}
                     width={60}
-                    alt={`Page ${i + 1}`}
+                    alt={T("Page {n}", { n: i + 1 })}
                   />
                   {items.some((it) => it.page === i) && <i className="dot" />}
                 </button>
@@ -495,11 +509,11 @@ export default function SignPdf() {
         </div>
         <div className="controls">
           <Seg<typeof mode>
-            label="Signature"
+            label={T("Signature")}
             options={[
-              ["draw", "Draw"],
-              ["type", "Type"],
-              ["upload", "Photo"],
+              ["draw", T("Draw")],
+              ["type", T("Type")],
+              ["upload", T("Photo")],
             ]}
             value={mode}
             onPick={setMode}
@@ -513,11 +527,11 @@ export default function SignPdf() {
                 onPointerMove={padMove}
                 onPointerUp={padUp}
                 onPointerCancel={padUp}
-                aria-label="Draw your signature here"
+                aria-label={T("Draw your signature here")}
               />
               <div className="acts-row" style={{ marginTop: 6 }}>
                 <button type="button" className="btn sm" onClick={clearPad}>
-                  Clear
+                  {T("Clear")}
                 </button>
               </div>
             </div>
@@ -526,7 +540,7 @@ export default function SignPdf() {
             <div className="ctl">
               <input
                 className="num"
-                placeholder="Your name"
+                placeholder={T("Your name")}
                 value={typed}
                 onChange={(e) => setTyped(e.target.value)}
               />
@@ -542,20 +556,28 @@ export default function SignPdf() {
           )}
           {mode === "upload" && (
             <small className="muted">
-              A photo of your signature on white paper. The paper is removed for
-              you.
+              {T(
+                "A photo of your signature on white paper. The paper is removed for you.",
+              )}
             </small>
           )}
-          <Seg<string> label="Ink" options={INKS} value={ink} onPick={setInk} />
+          <Seg<string>
+            label={T("Ink")}
+            options={INKS.map(([c, name]) => [c, T(name)] as [string, string])}
+            value={ink}
+            onPick={setInk}
+          />
           <button
             type="button"
             className="btn"
             onClick={() => void addSignature()}
           >
             <Icon name="signature" />
-            {mode === "upload"
-              ? "Choose photo and place it"
-              : "Place on this page"}
+            {T(
+              mode === "upload"
+                ? "Choose photo and place it"
+                : "Place on this page",
+            )}
           </button>
           <input
             ref={upRef}
@@ -566,50 +588,64 @@ export default function SignPdf() {
               const f = e.target.files?.[0];
               e.target.value = "";
               if (!f || !isImageFile(f)) return;
-              await place(await cleanUpload(f, ink), "Signature", 0.3);
+              await place(await cleanUpload(f, ink), T("Signature"), 0.3);
             }}
           />
           <div className="ctl">
-            <label htmlFor="sg-text">Text (name, date, initials)</label>
+            <label htmlFor="sg-text">{T("Text (name, date, initials)")}</label>
             <div className="row-btn">
               <input
                 id="sg-text"
                 className="num"
                 value={extra}
-                placeholder="Type text to add"
+                placeholder={T("Type text to add")}
                 onChange={(e) => setExtra(e.target.value)}
               />
               <button
                 type="button"
                 className="btn sm"
-                onClick={() => void addText(extra, "Text")}
+                onClick={() => void addText(extra, T("Text"))}
               >
-                Add
+                {T("Add")}
               </button>
             </div>
             <div className="chips" style={{ marginTop: 8 }}>
               <button
                 type="button"
                 onClick={() =>
-                  void addText(new Date().toLocaleDateString(), "Date")
+                  void addText(new Date().toLocaleDateString(), T("Date"))
                 }
               >
-                + Today's date
+                {T("+ Today's date")}
               </button>
-              <button type="button" onClick={() => void addText("✓", "Tick")}>
-                + Tick ✓
+              <button
+                type="button"
+                onClick={() => void addText("✓", T("Tick"))}
+              >
+                {T("+ Tick ✓")}
               </button>
             </div>
           </div>
           <small className="muted">
-            Drag to move. Use the corner to resize. Everything stays on your
-            device.
+            {T(
+              "Drag to move. Use the corner to resize. Everything stays on your device.",
+            )}
           </small>
           <div className="result">
             <small>
-              {items.length} item{items.length === 1 ? "" : "s"} on{" "}
-              {new Set(items.map((i) => i.page)).size} page
-              {new Set(items.map((i) => i.page)).size === 1 ? "" : "s"}
+              {T(
+                items.length === 1
+                  ? new Set(items.map((i) => i.page)).size === 1
+                    ? "{n} item on {p} page"
+                    : "{n} item on {p} pages"
+                  : new Set(items.map((i) => i.page)).size === 1
+                    ? "{n} items on {p} page"
+                    : "{n} items on {p} pages",
+                {
+                  n: items.length,
+                  p: new Set(items.map((i) => i.page)).size,
+                },
+              )}
             </small>
             <div className="acts">
               <button
@@ -619,10 +655,10 @@ export default function SignPdf() {
                 onClick={() => void download()}
               >
                 <Icon name="download" />
-                {busy ? "Saving…" : "Download signed PDF"}
+                {T(busy ? "Saving…" : "Download signed PDF")}
               </button>
               <button type="button" className="advlink" onClick={pick}>
-                Use another PDF
+                {T("Use another PDF")}
               </button>
             </div>
           </div>

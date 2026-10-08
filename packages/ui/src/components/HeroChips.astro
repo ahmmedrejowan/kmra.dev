@@ -1,15 +1,18 @@
 ---
 import type { IconName } from "@kmra/registry";
 import Icon from "./Icon.astro";
+import { pageLocale } from "../lib/locale";
+import { t } from "../lib/i18n";
 
 interface Props {
   items: readonly { href: string; label: string; icon: IconName }[];
 }
 
 const { items } = Astro.props;
+const locale = pageLocale(Astro);
 ---
 
-<nav class="hero-chips" aria-label="Start with a tool">
+<nav class="hero-chips" aria-label={t(locale, "Start with a tool")}>
   {items.map((i) => (
     <a href={i.href}>
       <Icon name={i.icon} />

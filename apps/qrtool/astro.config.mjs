@@ -9,6 +9,13 @@ export default defineConfig({
   site: appOrigin("qrtool"),
   trailingSlash: "never",
   build: { format: "file" },
+  // English at the root, other languages under a prefix (/bn/...). Keep in sync with the
+  // registry's qrtool `locales` and @kmra/ui's LOCALES.
+  i18n: {
+    locales: ["en", "bn"],
+    defaultLocale: "en",
+    routing: { prefixDefaultLocale: false },
+  },
   server: { port: 4325 },
   integrations: [react(), kmraBuild({ origin: appOrigin("qrtool") })],
   vite: {

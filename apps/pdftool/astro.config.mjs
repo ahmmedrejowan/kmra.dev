@@ -25,6 +25,13 @@ export default defineConfig({
   site: appOrigin("pdftool"),
   trailingSlash: "never",
   build: { format: "file" },
+  // English at the root, other languages under a prefix (/bn/...). Keep in sync with the
+  // registry's pdftool `locales` and @kmra/ui's LOCALES.
+  i18n: {
+    locales: ["en", "bn"],
+    defaultLocale: "en",
+    routing: { prefixDefaultLocale: false },
+  },
   server: { port: 4322 },
   integrations: [react(), kmraBuild({ origin: appOrigin("pdftool") })],
   vite: {

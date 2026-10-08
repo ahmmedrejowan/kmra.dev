@@ -1,24 +1,5 @@
 ---
-import BaseLayout from "@kmra/ui/layouts/BaseLayout.astro";
-import PageHead from "@kmra/ui/components/PageHead.astro";
-import AllTools from "@kmra/ui/components/AllTools.astro";
-import { getApp } from "@kmra/registry";
-
-const app = getApp("pdftool");
+import InfoPage from "../views/InfoPage.astro";
 ---
 
-<BaseLayout
-  appId="pdftool"
-  title="All PDF tools"
-  description="Every PDF tool, by category. All free, and everything runs on your device."
->
-  <PageHead
-    crumbs={[{ label: app.name, href: "/" }, { label: "All tools" }]}
-    icon="grid"
-    title="All PDF tools"
-    intro="Every PDF tool, by category. All free, and everything runs on your device."
-  />
-  <div class="wrap page-body">
-    <AllTools appId="pdftool" />
-  </div>
-</BaseLayout>
+<InfoPage page="tools" />

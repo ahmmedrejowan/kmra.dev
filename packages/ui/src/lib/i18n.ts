@@ -1,4 +1,6 @@
 import { BN } from "../i18n/bn";
+import { BN_PDFTOOL } from "../i18n/bn-pdftool";
+import { BN_QRTOOL } from "../i18n/bn-qrtool";
 
 /**
  * Languages. English lives at the root (/resize); every other language gets a path prefix
@@ -13,7 +15,9 @@ export const LOCALES = [
 export type Locale = (typeof LOCALES)[number]["code"];
 export const DEFAULT_LOCALE: Locale = "en";
 
-const DICTS: Partial<Record<Locale, Record<string, string>>> = { bn: BN };
+const DICTS: Partial<Record<Locale, Record<string, string>>> = {
+  bn: { ...BN, ...BN_PDFTOOL, ...BN_QRTOOL },
+};
 
 export function isLocale(v: unknown): v is Locale {
   return LOCALES.some((l) => l.code === v);

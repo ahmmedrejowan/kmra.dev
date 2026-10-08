@@ -3,6 +3,8 @@
  * task slugs, group names). Anything missing falls back to English.
  */
 import type { AppContent } from "./types";
+import { bnPdftool } from "./bn-pdftool.ts";
+import { bnQrtool } from "./bn-qrtool.ts";
 
 export const bn: Record<string, AppContent> = {
   imgtool: {
@@ -639,4 +641,6 @@ export const bn: Record<string, AppContent> = {
       },
     },
   },
+  pdftool: bnPdftool,
+  qrtool: bnQrtool,
 };

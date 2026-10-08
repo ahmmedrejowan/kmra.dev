@@ -4,6 +4,8 @@ import type { Preset } from "@kmra/registry";
 import { Icon } from "@kmra/ui/components/Icon";
 import { Seg, Toggle } from "@kmra/ui/components/controls";
 import { downloadBlob } from "@kmra/ui/lib/files";
+import type { Locale } from "@kmra/ui/lib/i18n";
+import { LangProvider, useT } from "@kmra/ui/lib/i18n-react";
 
 /** Barcodes (JsBarcode, MIT). Check digits for EAN/UPC are added automatically. */
 const FORMATS: {
@@ -64,7 +66,22 @@ const FORMATS: {
   },
 ];
 
-export default function Barcode({ preset }: { preset?: Preset }) {
+export default function Barcode({
+  preset,
+  lang,
+}: {
+  preset?: Preset;
+  lang?: Locale;
+}) {
+  return (
+    <LangProvider lang={lang}>
+      <BarcodeView preset={preset} />
+    </LangProvider>
+  );
+}
+
+function BarcodeView({ preset }: { preset?: Preset }) {
+  const T = useT();
   const [format, setFormat] = useState((preset?.format as string) ?? "CODE128");
   const f = FORMATS.find((x) => x.id === format)!;
   const [value, setValue] = useState(f.sample);
@@ -87,8 +104,9 @@ export default function Barcode({ preset }: { preset?: Preset }) {
 
   useEffect(() => {
     if (!svgRef.current) return;
+    const misfit = `${T("That doesn't fit this barcode type.")} ${T(f.hint)}`;
     if (!f.test.test(value)) {
-      setError("That doesn't fit this barcode type. " + f.hint);
+      setError(misfit);
       return;
     }
     try {
@@ -97,9 +115,9 @@ export default function Barcode({ preset }: { preset?: Preset }) {
         ...opts(),
         valid: (v: boolean) => (ok = v),
       });
-      setError(ok ? null : "That doesn't fit this barcode type. " + f.hint);
+      setError(ok ? null : misfit);
     } catch {
-      setError("That doesn't fit this barcode type. " + f.hint);
+      setError(misfit);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [format, value, showText, height, color]);
@@ -128,14 +146,16 @@ export default function Barcode({ preset }: { preset?: Preset }) {
             ref={svgRef}
             className={error ? "dim" : ""}
             role="img"
-            aria-label={`${f.label} barcode for ${value}`}
+            aria-label={T("{format} barcode for {value}")
+              .replace("{format}", f.label)
+              .replace("{value}", value)}
           />
         </div>
         {error && <p className="warn">{error}</p>}
       </div>
       <div className="controls">
         <div className="ctl">
-          <span className="lbl">Type</span>
+          <span className="lbl">{T("Type")}</span>
           <div className="chips">
             {FORMATS.map((x) => (
               <button
@@ -152,11 +172,11 @@ export default function Barcode({ preset }: { preset?: Preset }) {
             ))}
           </div>
           <small className="muted" style={{ display: "block", marginTop: 8 }}>
-            {f.hint}
+            {T(f.hint)}
           </small>
         </div>
         <div className="ctl">
-          <label htmlFor="bc-val">Number or text</label>
+          <label htmlFor="bc-val">{T("Number or text")}</label>
           <input
             id="bc-val"
             className="num mono"
@@ -165,26 +185,26 @@ export default function Barcode({ preset }: { preset?: Preset }) {
           />
         </div>
         <Seg<number>
-          label="Height"
+          label={T("Height")}
           options={[
-            [60, "Short"],
-            [100, "Normal"],
-            [150, "Tall"],
+            [60, T("Short")],
+            [100, T("Normal")],
+            [150, T("Tall")],
           ]}
           value={height}
           onPick={setHeight}
         />
         <Seg<string>
-          label="Colour"
+          label={T("Colour")}
           options={[
-            ["#000000", "Black"],
-            ["#1a3d9c", "Navy"],
+            ["#000000", T("Black")],
+            ["#1a3d9c", T("Navy")],
           ]}
           value={color}
           onPick={setColor}
         />
         <Toggle
-          label="Show the number under the bars"
+          label={T("Show the number under the bars")}
           on={showText}
           onChange={setShowText}
         />
@@ -197,7 +217,7 @@ export default function Barcode({ preset }: { preset?: Preset }) {
               onClick={savePng}
             >
               <Icon name="download" />
-              Download PNG
+              {T("Download PNG")}
             </button>
             <button
               type="button"
@@ -205,7 +225,7 @@ export default function Barcode({ preset }: { preset?: Preset }) {
               disabled={!!error}
               onClick={saveSvg}
             >
-              Download SVG
+              {T("Download SVG")}
             </button>
           </div>
         </div>

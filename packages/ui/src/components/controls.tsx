@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { useT } from "../lib/i18n-react";
 
 /** Small form controls shared by the tools: sliders, segmented buttons, colour swatches, toggles. */
 
@@ -100,6 +101,7 @@ export function Colors({
   list?: string[];
   extra?: ReactNode;
 }) {
+  const T = useT();
   return (
     <div className="ctl">
       <span className="lbl">{label}</span>
@@ -116,12 +118,12 @@ export function Colors({
             onClick={() => onPick(c)}
           />
         ))}
-        <label className="sw pick" title="Pick any colour">
+        <label className="sw pick" title={T("Pick any colour")}>
           <input
             type="color"
             value={/^#[0-9a-f]{6}$/i.test(value) ? value : "#ffffff"}
             onChange={(e) => onPick(e.target.value)}
-            aria-label={`${label}: pick any colour`}
+            aria-label={`${label}: ${T("Pick any colour")}`}
           />
         </label>
       </div>

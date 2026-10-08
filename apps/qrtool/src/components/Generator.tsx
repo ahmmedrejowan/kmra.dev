@@ -5,6 +5,8 @@ import { Colors, Seg, Toggle } from "@kmra/ui/components/controls";
 import { CopyBtn } from "@kmra/ui/components/kit";
 import { downloadBlob } from "@kmra/ui/lib/files";
 import { toast } from "@kmra/ui/lib/toast";
+import type { Locale } from "@kmra/ui/lib/i18n";
+import { LangProvider, useT } from "@kmra/ui/lib/i18n-react";
 import {
   DEFAULT_STYLE,
   KINDS,
@@ -93,7 +95,22 @@ const FIELDS: Record<
 const SIZES = [512, 1024, 2048];
 const MODE_KEY = "kmra-mode";
 
-export default function Generator({ preset }: { preset?: Preset }) {
+export default function Generator({
+  preset,
+  lang,
+}: {
+  preset?: Preset;
+  lang?: Locale;
+}) {
+  return (
+    <LangProvider lang={lang}>
+      <GeneratorView preset={preset} />
+    </LangProvider>
+  );
+}
+
+function GeneratorView({ preset }: { preset?: Preset }) {
+  const T = useT();
   const [kind, setKind] = useState<Kind>((preset?.type as Kind) ?? "url");
   const [fields, setFields] = useState<Fields>({ security: "WPA" });
   const [style, setStyle] = useState<Style>(DEFAULT_STYLE);
@@ -145,11 +162,11 @@ export default function Generator({ preset }: { preset?: Preset }) {
   const name = `qr-${kind}`;
 
   async function savePng() {
-    if (!text) return toast("Fill in the details first.");
+    if (!text) return toast(T("Fill in the details first."));
     downloadBlob(await png(text, eff, logo, px), `${name}.png`);
   }
   function saveSvg() {
-    if (!text) return toast("Fill in the details first.");
+    if (!text) return toast(T("Fill in the details first."));
     downloadBlob(
       new Blob([svg(text, eff, logo, px)], { type: "image/svg+xml" }),
       `${name}.svg`,
@@ -164,24 +181,24 @@ export default function Generator({ preset }: { preset?: Preset }) {
             <div dangerouslySetInnerHTML={{ __html: preview }} />
           ) : (
             <p className="muted">
-              Too much text for one QR code. Shorten it a little.
+              {T("Too much text for one QR code. Shorten it a little.")}
             </p>
           )}
         </div>
         <p className="qr-caption">
           {text ? (
             <>
-              <Icon name="check" /> Ready to scan. It never expires and has no
-              tracking.
+              <Icon name="check" />{" "}
+              {T("Ready to scan. It never expires and has no tracking.")}
             </>
           ) : (
-            "Example code. Fill in the details to make yours."
+            T("Example code. Fill in the details to make yours.")
           )}
         </p>
       </div>
       <div className="controls">
         <div className="ctl">
-          <span className="lbl">QR code for</span>
+          <span className="lbl">{T("QR code for")}</span>
           <div className="chips">
             {KINDS.map((k) => (
               <button
@@ -190,21 +207,21 @@ export default function Generator({ preset }: { preset?: Preset }) {
                 aria-pressed={kind === k.id}
                 onClick={() => setKind(k.id)}
               >
-                {k.label}
+                {T(k.label)}
               </button>
             ))}
           </div>
         </div>
         {FIELDS[kind].map((f) => (
           <div className="ctl" key={`${kind}-${f.key}`}>
-            <label htmlFor={`qf-${f.key}`}>{f.label}</label>
+            <label htmlFor={`qf-${f.key}`}>{T(f.label)}</label>
             {f.area ? (
               <textarea
                 id={`qf-${f.key}`}
                 className="num"
                 rows={3}
                 value={fields[f.key] ?? ""}
-                placeholder={f.placeholder}
+                placeholder={f.placeholder && T(f.placeholder)}
                 onChange={(e) => put(f.key, e.target.value)}
               />
             ) : (
@@ -213,7 +230,7 @@ export default function Generator({ preset }: { preset?: Preset }) {
                 className="num"
                 type={f.type ?? "text"}
                 value={fields[f.key] ?? ""}
-                placeholder={f.placeholder}
+                placeholder={f.placeholder && T(f.placeholder)}
                 onChange={(e) => put(f.key, e.target.value)}
               />
             )}
@@ -222,17 +239,17 @@ export default function Generator({ preset }: { preset?: Preset }) {
         {kind === "wifi" && (
           <>
             <Seg<string>
-              label="Security"
+              label={T("Security")}
               options={[
                 ["WPA", "WPA/WPA2/WPA3"],
                 ["WEP", "WEP"],
-                ["none", "None"],
+                ["none", T("None")],
               ]}
               value={fields.security ?? "WPA"}
               onPick={(v) => put("security", v)}
             />
             <Toggle
-              label="Hidden network"
+              label={T("Hidden network")}
               on={fields.hidden === "1"}
               onChange={(v) => put("hidden", v ? "1" : "")}
             />
@@ -240,7 +257,7 @@ export default function Generator({ preset }: { preset?: Preset }) {
         )}
 
         <Colors
-          label="Colour"
+          label={T("Colour")}
           value={style.fg}
           onPick={(v) => putStyle({ fg: v })}
           list={[
@@ -255,48 +272,48 @@ export default function Generator({ preset }: { preset?: Preset }) {
         {advanced && (
           <>
             <Colors
-              label="Background"
+              label={T("Background")}
               value={style.bg || "#ffffff"}
               onPick={(v) => putStyle({ bg: v })}
               list={["#ffffff", "#fff7ed", "#eef4ff", "#f0fdf4"]}
             />
             <Toggle
-              label="Transparent background"
+              label={T("Transparent background")}
               on={!style.bg}
               onChange={(v) => putStyle({ bg: v ? "" : "#ffffff" })}
             />
             <Seg<Dots>
-              label="Dots"
+              label={T("Dots")}
               options={[
-                ["square", "Square"],
-                ["rounded", "Rounded"],
-                ["dots", "Dots"],
-                ["fluid", "Fluid"],
+                ["square", T("Square")],
+                ["rounded", T("Rounded")],
+                ["dots", T("Dots")],
+                ["fluid", T("Fluid")],
               ]}
               value={style.dots}
               onPick={(v) => putStyle({ dots: v })}
             />
             <Seg<Eyes>
-              label="Corners"
+              label={T("Corners")}
               options={[
-                ["square", "Square"],
-                ["rounded", "Rounded"],
-                ["circle", "Circle"],
+                ["square", T("Square")],
+                ["rounded", T("Rounded")],
+                ["circle", T("Circle")],
               ]}
               value={style.eyes}
               onPick={(v) => putStyle({ eyes: v })}
             />
             <div className="ctl">
-              <span className="lbl">Logo in the middle</span>
+              <span className="lbl">{T("Logo in the middle")}</span>
               {logo ? (
                 <div className="filepill">
-                  <span>Logo added</span>
+                  <span>{T("Logo added")}</span>
                   <button
                     type="button"
                     className="btn sm"
                     onClick={() => setLogo(null)}
                   >
-                    Remove
+                    {T("Remove")}
                   </button>
                 </div>
               ) : (
@@ -306,7 +323,7 @@ export default function Generator({ preset }: { preset?: Preset }) {
                   onClick={() => logoRef.current?.click()}
                 >
                   <Icon name="upload" />
-                  Add a logo
+                  {T("Add a logo")}
                 </button>
               )}
               <input
@@ -335,29 +352,31 @@ export default function Generator({ preset }: { preset?: Preset }) {
               />
               {logo && (
                 <small className="muted">
-                  Error correction is set to High so the code still scans.
+                  {T(
+                    "Error correction is set to High so the code still scans.",
+                  )}
                 </small>
               )}
             </div>
             {!logo && (
               <Seg<Style["ecc"]>
-                label="Error correction"
+                label={T("Error correction")}
                 options={[
-                  ["L", "Low"],
-                  ["M", "Medium"],
-                  ["Q", "High"],
-                  ["H", "Max"],
+                  ["L", T("Low")],
+                  ["M", T("Medium")],
+                  ["Q", T("High")],
+                  ["H", T("Max")],
                 ]}
                 value={style.ecc}
                 onPick={(v) => putStyle({ ecc: v })}
               />
             )}
             <Seg<number>
-              label="Quiet zone"
+              label={T("Quiet zone")}
               options={[
-                [1, "Tight"],
-                [3, "Normal"],
-                [5, "Wide"],
+                [1, T("Tight")],
+                [3, T("Normal")],
+                [5, T("Wide")],
               ]}
               value={style.margin}
               onPick={(v) => putStyle({ margin: v })}
@@ -366,14 +385,17 @@ export default function Generator({ preset }: { preset?: Preset }) {
         )}
         {lowContrast(eff.fg, eff.bg) && (
           <small className="warn">
-            Low contrast. Use a dark code on a light background, or some phones
-            won't read it.
+            {T(
+              "Low contrast. Use a dark code on a light background, or some phones won't read it.",
+            )}
           </small>
         )}
         <div className="result">
           <Seg<number>
-            label="PNG size"
-            options={SIZES.map((v) => [v, `${v} px`] as [number, string])}
+            label={T("PNG size")}
+            options={SIZES.map(
+              (v) => [v, T("{n} px", { n: v })] as [number, string],
+            )}
             value={px}
             onPick={setPx}
           />
@@ -385,7 +407,7 @@ export default function Generator({ preset }: { preset?: Preset }) {
               onClick={() => void savePng()}
             >
               <Icon name="download" />
-              Download PNG
+              {T("Download PNG")}
             </button>
             <div className="dl-row">
               <button
@@ -396,7 +418,11 @@ export default function Generator({ preset }: { preset?: Preset }) {
               >
                 SVG
               </button>
-              <CopyBtn text={text} label="Copy text" what="Code text copied" />
+              <CopyBtn
+                text={text}
+                label={T("Copy text")}
+                what="Code text copied"
+              />
             </div>
             <button
               type="button"
@@ -404,7 +430,9 @@ export default function Generator({ preset }: { preset?: Preset }) {
               onClick={() => setMode(!advanced)}
             >
               <Icon name="sliders" />
-              {advanced ? "Fewer options" : "Style, logo and more in Advanced"}
+              {advanced
+                ? T("Fewer options")
+                : T("Style, logo and more in Advanced")}
             </button>
           </div>
         </div>

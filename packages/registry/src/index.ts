@@ -1012,6 +1012,7 @@ export const apps = [
     id: "pdftool",
     name: "PDF tools",
     brand: ["PDF", "Tool"],
+    locales: ["en", "bn"],
     short: "PDF",
     tagline:
       "Merge, split, compress and sign PDFs. Everything runs on your device.",
@@ -1417,6 +1418,7 @@ export const apps = [
     id: "qrtool",
     name: "QR tools",
     brand: ["QR", "Tool"],
+    locales: ["en", "bn"],
     short: "QR",
     tagline:
       "Make and scan QR codes and barcodes in your browser. No sign-up, no tracking links.",

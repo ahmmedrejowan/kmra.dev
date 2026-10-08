@@ -17,6 +17,8 @@ import {
 } from "@kmra/ui/components/kit";
 import { downloadBlob, formatBytes } from "@kmra/ui/lib/files";
 import { toast } from "@kmra/ui/lib/toast";
+import { num as digits, type Locale } from "@kmra/ui/lib/i18n";
+import { LangProvider, useLang, useT } from "@kmra/ui/lib/i18n-react";
 import { openPdf, pageText, PasswordError } from "../lib/pdfjs";
 import {
   build,
@@ -54,7 +56,7 @@ interface Out {
 
 /** Tools whose output combines every file into one PDF */
 const COMBINED = new Set(["merge", "organize"]);
-/** Tools where picking pages in the grid means something, and what it means */
+/** Tools where picking pages in the grid means something, and what it means (translated where shown) */
 const PICK: Record<string, string> = {
   "remove-pages": "Click pages to remove them.",
   split: "Click pages to pick which ones to extract.",
@@ -65,6 +67,23 @@ const isPdf = (f: File) =>
   f.type === "application/pdf" || /\.pdf$/i.test(f.name);
 const base = (name: string) => name.replace(/\.pdf$/i, "") || "document";
 const MODE_KEY = "kmra-mode";
+/** Page-number spots, for screen readers */
+const CORNERS: Record<Corner, string> = {
+  tl: "Top left",
+  tc: "Top centre",
+  tr: "Top right",
+  bl: "Bottom left",
+  bc: "Bottom centre",
+  br: "Bottom right",
+};
+const META_LABELS: Record<keyof Meta, string> = {
+  title: "Title",
+  author: "Author",
+  subject: "Subject",
+  keywords: "Keywords",
+  creator: "Creator",
+  producer: "Producer",
+};
 
 /** "1-3, 5" → [0,1,2,4] within 1..max; null when the text is empty or invalid */
 export function parseRanges(text: string, max: number): number[][] | null {
@@ -87,13 +106,22 @@ export function parseRanges(text: string, max: number): number[][] | null {
   return out;
 }
 
-export default function PdfTool({
-  tool,
-  preset,
-}: {
+/** Island entry: sets the interface language for everything inside. */
+export default function PdfTool(props: {
   tool: string;
   preset?: Preset;
+  lang?: Locale;
 }) {
+  return (
+    <LangProvider lang={props.lang}>
+      <PdfToolView tool={props.tool} preset={props.preset} />
+    </LangProvider>
+  );
+}
+
+function PdfToolView({ tool, preset }: { tool: string; preset?: Preset }) {
+  const T = useT();
+  const lang = useLang();
   const [docs, setDocs] = useState<Doc[]>([]);
   const [pages, setPages] = useState<PageRef[]>([]);
   const [picked, setPicked] = useState<Set<string>>(new Set());
@@ -159,8 +187,13 @@ export default function PdfTool({
       } catch (err) {
         toast(
           err instanceof PasswordError
-            ? `${file.name} is password-protected. Remove the password in the app that made it, then try again.`
-            : `${file.name} couldn't be opened. It may be damaged or not a PDF.`,
+            ? T(
+                "{name} is password-protected. Remove the password in the app that made it, then try again.",
+                { name: file.name },
+              )
+            : T("{name} couldn't be opened. It may be damaged or not a PDF.", {
+                name: file.name,
+              }),
         );
       }
     }
@@ -178,12 +211,13 @@ export default function PdfTool({
       ),
     ]);
     reset();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const { dragging, pickRef, pick, take } = useFiles({
     onFiles: (f) => void add(f),
     accept: isPdf,
-    reject: "That isn't a PDF. Drop a .pdf file.",
+    reject: T("That isn't a PDF. Drop a .pdf file."),
   });
 
   function removeDoc(key: string) {
@@ -309,14 +343,14 @@ export default function PdfTool({
             dpi,
             quality: q,
             gray,
-            onPage: (n, t) => setBusy(`Page ${n} of ${t}…`),
+            onPage: (n, t) => setBusy(T("Page {n} of {t}…", { n, t })),
           },
           list.map((p) => ({ index: p.index, rotate: p.rotate })),
         ),
       );
     if (tool === "grayscale") return run(settings.dpi, 0.8);
     // A lossless re-save keeps text selectable; use it whenever it's small enough
-    setBusy("Re-saving…");
+    setBusy(T("Re-saving…"));
     const lossless = await save(await build(list, bytesOf));
     if (!target) {
       const raster = await run(settings.dpi, settings.q);
@@ -334,7 +368,8 @@ export default function PdfTool({
         d,
         QS,
         list.map((p) => ({ index: p.index, rotate: p.rotate })),
-        (n, total) => setBusy(`${d} dpi: page ${n} of ${total}…`),
+        (n, total) =>
+          setBusy(T("{d} dpi: page {n} of {t}…", { d, n, t: total })),
       );
       const blobs = await Promise.all(docs.map(save));
       for (const b of blobs) if (b.size < best.size) best = b;
@@ -363,7 +398,7 @@ export default function PdfTool({
         const keep = list.filter(
           (p) => !drop.has(p.id) && !fromText.includes(p.index),
         );
-        if (!keep.length) throw new Error("That would remove every page.");
+        if (!keep.length) throw new Error(T("That would remove every page."));
         return [await one(keep, "-kmra")];
       }
       case "rotate":
@@ -385,11 +420,11 @@ export default function PdfTool({
               ? list.filter((p) => fromText.includes(p.index))
               : [];
           if (!refs.length)
-            throw new Error("Pick pages, or type them like 1-3, 5.");
+            throw new Error(T("Pick pages, or type them like 1-3, 5."));
           return [await one(refs, "-extract")];
         }
         const groups = parseRanges(ranges, doc.pages);
-        if (!groups) throw new Error("Type page ranges like 1-3, 4-6.");
+        if (!groups) throw new Error(T("Type page ranges like 1-3, 4-6."));
         return Promise.all(
           groups.map((g) =>
             one(
@@ -426,7 +461,7 @@ export default function PdfTool({
         const outs: Out[] = [];
         const { renderPage } = await import("../lib/pdfjs");
         for (let i = 0; i < refs.length; i++) {
-          setBusy(`Page ${i + 1} of ${refs.length}…`);
+          setBusy(T("Page {n} of {t}…", { n: i + 1, t: refs.length }));
           const p = refs[i]!;
           const c = await renderPage(doc.pdf, p.index + 1, dpi / 72, p.rotate);
           const blob = await new Promise<Blob>((r) =>
@@ -440,7 +475,7 @@ export default function PdfTool({
       case "to-text": {
         const parts: string[] = [];
         for (const p of list) {
-          setBusy(`Reading page ${p.index + 1}…`);
+          setBusy(T("Reading page {n}…", { n: p.index + 1 }));
           parts.push(await pageText(doc.pdf, p.index + 1));
         }
         const all = parts.join("\n\n\f\n\n");
@@ -467,12 +502,12 @@ export default function PdfTool({
   });
 
   async function run() {
-    setBusy("Working…");
+    setBusy(T("Working…"));
     setOuts(null);
     try {
       let results: Out[];
       if (COMBINED.has(tool)) {
-        if (!pages.length) throw new Error("There are no pages left.");
+        if (!pages.length) throw new Error(T("There are no pages left."));
         const name =
           docs.length > 1 ? "merged-kmra" : `${base(docs[0]!.file.name)}-kmra`;
         results = [
@@ -495,10 +530,10 @@ export default function PdfTool({
     } catch (err) {
       toast(
         err instanceof LockedError
-          ? "This PDF is password-protected and can't be changed here."
+          ? T("This PDF is password-protected and can't be changed here.")
           : err instanceof Error && err.message.length < 120
             ? err.message
-            : "Something went wrong. The PDF may be damaged.",
+            : T("Something went wrong. The PDF may be damaged."),
       );
     } finally {
       setBusy(null);
@@ -529,14 +564,14 @@ export default function PdfTool({
         <DropCard
           dragging={dragging}
           onPick={pick}
-          title={tool === "merge" ? "Drop PDFs to merge" : "Drop a PDF here"}
-          button={tool === "merge" ? "Choose PDFs" : "Choose a PDF"}
+          title={T(tool === "merge" ? "Drop PDFs to merge" : "Drop a PDF here")}
+          button={T(tool === "merge" ? "Choose PDFs" : "Choose a PDF")}
           formats={["PDF"]}
         >
           {advanced && (
             <span className="mode-note">
               <Icon name="sliders" />
-              Opens with every page shown
+              {T("Opens with every page shown")}
             </span>
           )}
         </DropCard>
@@ -546,7 +581,7 @@ export default function PdfTool({
 
   const totalIn = docs.reduce((a, d) => a + d.file.size, 0);
   const totalOut = outs?.reduce((a, o) => a + o.blob.size, 0) ?? 0;
-  const pickHint = PICK[tool];
+  const pickHint = PICK[tool] ? T(PICK[tool]) : undefined;
 
   const fileList = (
     <div className="pdf-files">
@@ -556,7 +591,8 @@ export default function PdfTool({
           <div className="pdf-file-text">
             <strong>{d.file.name}</strong>
             <small>
-              {d.pages} page{d.pages > 1 ? "s" : ""}, {formatBytes(d.file.size)}
+              {T(d.pages > 1 ? "{n} pages" : "{n} page", { n: d.pages })},{" "}
+              {formatBytes(d.file.size)}
             </small>
           </div>
           <div className="pdf-file-acts">
@@ -565,7 +601,7 @@ export default function PdfTool({
                 <button
                   type="button"
                   className="iconbtn"
-                  aria-label="Move up"
+                  aria-label={T("Move up")}
                   disabled={i === 0}
                   onClick={() => moveDoc(d.key, -1)}
                 >
@@ -574,7 +610,7 @@ export default function PdfTool({
                 <button
                   type="button"
                   className="iconbtn"
-                  aria-label="Move down"
+                  aria-label={T("Move down")}
                   disabled={i === docs.length - 1}
                   onClick={() => moveDoc(d.key, 1)}
                 >
@@ -585,7 +621,7 @@ export default function PdfTool({
             <button
               type="button"
               className="iconbtn"
-              aria-label={`Remove ${d.file.name}`}
+              aria-label={T("Remove {name}", { name: d.file.name })}
               onClick={() => removeDoc(d.key)}
             >
               <Icon name="x" />
@@ -594,7 +630,7 @@ export default function PdfTool({
         </div>
       ))}
       <button type="button" className="fchip add" onClick={pick}>
-        {tool === "merge" ? "+ Add PDFs" : "+ Add another PDF"}
+        {T(tool === "merge" ? "+ Add PDFs" : "+ Add another PDF")}
       </button>
     </div>
   );
@@ -618,7 +654,7 @@ export default function PdfTool({
               className="pg-face"
               onClick={() => pickHint && togglePick(p.id)}
               aria-pressed={pickHint ? isPicked : undefined}
-              aria-label={`Page ${i + 1}`}
+              aria-label={T("Page {n}", { n: i + 1 })}
             >
               {p.file ? (
                 <Thumb
@@ -626,15 +662,15 @@ export default function PdfTool({
                   doc={d?.pdf ?? null}
                   index={p.index}
                   rotate={p.rotate}
-                  alt={`Page ${p.index + 1}`}
+                  alt={T("Page {n}", { n: p.index + 1 })}
                 />
               ) : (
-                <div className="thumb blank">Blank</div>
+                <div className="thumb blank">{T("Blank")}</div>
               )}
             </button>
             <div className="pg-bar">
               <span>
-                {i + 1}
+                {digits(lang, i + 1)}
                 {docs.length > 1 && p.file && (
                   <small className="pg-file">
                     {String.fromCharCode(
@@ -646,8 +682,8 @@ export default function PdfTool({
               <span className="pg-acts">
                 <button
                   type="button"
-                  title="Rotate"
-                  aria-label="Rotate page"
+                  title={T("Rotate")}
+                  aria-label={T("Rotate page")}
                   onClick={() => {
                     rotatePage(p.id, 90);
                     reset();
@@ -658,8 +694,8 @@ export default function PdfTool({
                 {(tool === "organize" || tool === "merge") && (
                   <button
                     type="button"
-                    title="Insert a blank page after"
-                    aria-label="Insert blank page after"
+                    title={T("Insert a blank page after")}
+                    aria-label={T("Insert blank page after")}
                     onClick={() => insertBlank(p.id)}
                   >
                     <Icon name="plus" />
@@ -667,8 +703,8 @@ export default function PdfTool({
                 )}
                 <button
                   type="button"
-                  title="Delete"
-                  aria-label="Delete page"
+                  title={T("Delete")}
+                  aria-label={T("Delete page")}
                   onClick={() => {
                     deletePage(p.id);
                     reset();
@@ -705,30 +741,33 @@ export default function PdfTool({
       case "merge":
         return (
           <p className="muted small">
-            Files are joined in the order shown.{" "}
-            {advanced
-              ? "Drag pages to reorder them, rotate or delete any page."
-              : "Switch to Advanced to arrange single pages."}
+            {T("Files are joined in the order shown.")}{" "}
+            {T(
+              advanced
+                ? "Drag pages to reorder them, rotate or delete any page."
+                : "Switch to Advanced to arrange single pages.",
+            )}
           </p>
         );
       case "organize":
         return (
           <p className="muted small">
-            Drag pages to reorder them. Rotate, delete or add blank pages, then
-            download.
+            {T(
+              "Drag pages to reorder them. Rotate, delete or add blank pages, then download.",
+            )}
           </p>
         );
       case "remove-pages":
         return (
           <>
-            {pagesField("Pages to remove", "e.g. 2, 5-7")}
+            {pagesField(T("Pages to remove"), T("e.g. {v}", { v: "2, 5-7" }))}
             {advanced ? (
               <small className="muted">
-                {PICK[tool]} Picked: {picked.size}
+                {pickHint} {T("Picked: {n}", { n: picked.size })}
               </small>
             ) : (
               <small className="muted">
-                Or switch to Advanced and click the pages.
+                {T("Or switch to Advanced and click the pages.")}
               </small>
             )}
           </>
@@ -736,11 +775,11 @@ export default function PdfTool({
       case "rotate":
         return (
           <Seg<number>
-            label="Rotate every page"
+            label={T("Rotate every page")}
             options={[
-              [270, "Left"],
-              [90, "Right"],
-              [180, "Upside down"],
+              [270, T("Left")],
+              [90, T("Right")],
+              [180, T("Upside down")],
             ]}
             value={turn}
             onPick={(v) => {
@@ -753,11 +792,11 @@ export default function PdfTool({
         return (
           <>
             <Seg<typeof splitMode>
-              label="Split"
+              label={T("Split")}
               options={[
-                ["ranges", "By ranges"],
-                ["each", "Every page"],
-                ["extract", "Extract pages"],
+                ["ranges", T("By ranges")],
+                ["each", T("Every page")],
+                ["extract", T("Extract pages")],
               ]}
               value={splitMode}
               onPick={(v) => {
@@ -766,20 +805,26 @@ export default function PdfTool({
               }}
             />
             {splitMode === "ranges" &&
-              pagesField("Ranges (one PDF each)", "e.g. 1-3, 4-8, 9-end")}
+              pagesField(
+                T("Ranges (one PDF each)"),
+                T("e.g. {v}", { v: "1-3, 4-8, 9-end" }),
+              )}
             {splitMode === "extract" && (
               <>
-                {pagesField("Pages to keep in one PDF", "e.g. 1, 3-4")}
+                {pagesField(
+                  T("Pages to keep in one PDF"),
+                  T("e.g. {v}", { v: "1, 3-4" }),
+                )}
                 {advanced && (
                   <small className="muted">
-                    Or click pages. Picked: {picked.size}
+                    {T("Or click pages. Picked: {n}", { n: picked.size })}
                   </small>
                 )}
               </>
             )}
             {splitMode === "each" && (
               <small className="muted">
-                Every page becomes its own PDF, saved in one zip.
+                {T("Every page becomes its own PDF, saved in one zip.")}
               </small>
             )}
           </>
@@ -788,11 +833,11 @@ export default function PdfTool({
         return (
           <>
             <Seg<typeof level>
-              label="Compression"
+              label={T("Compression")}
               options={[
-                ["light", "Light"],
-                ["strong", "Strong"],
-                ["max", "Smallest"],
+                ["light", T("Light")],
+                ["strong", T("Strong")],
+                ["max", T("Smallest")],
               ]}
               value={level}
               onPick={(v) => {
@@ -802,7 +847,7 @@ export default function PdfTool({
               }}
             />
             <div className="ctl">
-              <span className="lbl">Or fit under a size</span>
+              <span className="lbl">{T("Or fit under a size")}</span>
               <div className="chips">
                 {[null, 100, 200, 500, 1024, 2048].map((v) => (
                   <button
@@ -814,29 +859,35 @@ export default function PdfTool({
                       reset();
                     }}
                   >
-                    {v ? (v >= 1024 ? `${v / 1024} MB` : `${v} KB`) : "Off"}
+                    {v
+                      ? v >= 1024
+                        ? T("{n} MB", { n: v / 1024 })
+                        : T("{n} KB", { n: v })
+                      : T("Off")}
                   </button>
                 ))}
               </div>
             </div>
             <small className="muted">
-              Pages are redrawn as images, which shrinks scans and photos a lot.
-              Text can't be selected afterwards.
+              {T(
+                "Pages are redrawn as images, which shrinks scans and photos a lot. Text can't be selected afterwards.",
+              )}
             </small>
           </>
         );
       case "grayscale":
         return (
           <small className="muted">
-            Every page is redrawn in black and white. Good for printing and
-            smaller files. Text can't be selected afterwards.
+            {T(
+              "Every page is redrawn in black and white. Good for printing and smaller files. Text can't be selected afterwards.",
+            )}
           </small>
         );
       case "to-image":
         return (
           <>
             <Seg<typeof imgType>
-              label="Save pages as"
+              label={T("Save pages as")}
               options={[
                 ["image/jpeg", "JPG"],
                 ["image/png", "PNG"],
@@ -848,11 +899,11 @@ export default function PdfTool({
               }}
             />
             <Seg<number>
-              label="Quality"
+              label={T("Quality")}
               options={[
-                [72, "Screen (72 dpi)"],
-                [150, "Good (150)"],
-                [300, "Print (300)"],
+                [72, T("Screen ({n} dpi)", { n: 72 })],
+                [150, T("Good ({n})", { n: 150 })],
+                [300, T("Print ({n})", { n: 300 })],
               ]}
               value={dpi}
               onPick={(v) => {
@@ -862,7 +913,7 @@ export default function PdfTool({
             />
             {advanced && (
               <small className="muted">
-                {PICK[tool]} Picked: {picked.size}
+                {pickHint} {T("Picked: {n}", { n: picked.size })}
               </small>
             )}
           </>
@@ -870,8 +921,9 @@ export default function PdfTool({
       case "to-text":
         return (
           <small className="muted">
-            Copies the text layer. Scanned pages (pictures of text) have none;
-            they'd need OCR.
+            {T(
+              "Copies the text layer. Scanned pages (pictures of text) have none; they'd need OCR.",
+            )}
           </small>
         );
       case "page-numbers": {
@@ -882,13 +934,17 @@ export default function PdfTool({
         return (
           <>
             <div className="ctl">
-              <span className="lbl">Position</span>
-              <div className="spots six" role="group" aria-label="Position">
+              <span className="lbl">{T("Position")}</span>
+              <div
+                className="spots six"
+                role="group"
+                aria-label={T("Position")}
+              >
                 {(["tl", "tc", "tr", "bl", "bc", "br"] as Corner[]).map((c) => (
                   <button
                     key={c}
                     type="button"
-                    aria-label={c}
+                    aria-label={T(CORNERS[c])}
                     aria-pressed={num.pos === c}
                     onClick={() => put({ pos: c })}
                   />
@@ -896,7 +952,7 @@ export default function PdfTool({
               </div>
             </div>
             <Seg<NumberOpts["format"]>
-              label="Format"
+              label={T("Format")}
               options={[
                 ["n", "1"],
                 ["page-n", "Page 1"],
@@ -907,7 +963,7 @@ export default function PdfTool({
               onPick={(v) => put({ format: v })}
             />
             <div className="ctl">
-              <label htmlFor="pn-start">Start at</label>
+              <label htmlFor="pn-start">{T("Start at")}</label>
               <input
                 id="pn-start"
                 className="num"
@@ -920,7 +976,7 @@ export default function PdfTool({
               />
             </div>
             <Slider
-              label="Size"
+              label={T("Size")}
               value={num.size}
               min={7}
               max={24}
@@ -928,7 +984,7 @@ export default function PdfTool({
               onChange={(v) => put({ size: v })}
             />
             <Toggle
-              label="Skip the first page (cover)"
+              label={T("Skip the first page (cover)")}
               on={num.skipFirst}
               onChange={(v) => put({ skipFirst: v })}
             />
@@ -943,7 +999,7 @@ export default function PdfTool({
         return (
           <>
             <div className="ctl">
-              <label htmlFor="wm-text">Text</label>
+              <label htmlFor="wm-text">{T("Text")}</label>
               <input
                 id="wm-text"
                 className="num"
@@ -952,26 +1008,26 @@ export default function PdfTool({
               />
             </div>
             <Seg<boolean>
-              label="Layout"
+              label={T("Layout")}
               options={[
-                [false, "Once, centred"],
-                [true, "Repeat across"],
+                [false, T("Once, centred")],
+                [true, T("Repeat across the page")],
               ]}
               value={wm.tile}
               onPick={(v) => put({ tile: v, size: v ? 5 : 9 })}
             />
             <Seg<number>
-              label="Angle"
+              label={T("Angle")}
               options={[
-                [0, "Flat"],
-                [45, "Diagonal"],
-                [90, "Upright"],
+                [0, T("Flat")],
+                [45, T("Diagonal")],
+                [90, T("Upright")],
               ]}
               value={wm.angle}
               onPick={(v) => put({ angle: v })}
             />
             <Slider
-              label="Size"
+              label={T("Size")}
               value={wm.size}
               min={2}
               max={25}
@@ -979,14 +1035,14 @@ export default function PdfTool({
               onChange={(v) => put({ size: v })}
             />
             <Slider
-              label="Opacity"
+              label={T("Opacity")}
               value={wm.opacity}
               min={5}
               unit="%"
               onChange={(v) => put({ opacity: v })}
             />
             <Colors
-              label="Colour"
+              label={T("Colour")}
               value={wm.color}
               onPick={(v) => put({ color: v })}
               list={["#e5484d", "#000000", "#8a8f98", "#0057ff", "#30a46c"]}
@@ -998,7 +1054,7 @@ export default function PdfTool({
         return (
           <>
             <Toggle
-              label="Remove all document info"
+              label={T("Remove all document info")}
               on={metaStrip}
               onChange={(v) => {
                 setMetaStrip(v);
@@ -1018,9 +1074,7 @@ export default function PdfTool({
                   ] as (keyof Meta)[]
                 ).map((k) => (
                   <div className="ctl" key={k}>
-                    <label htmlFor={`m-${k}`}>
-                      {k[0]!.toUpperCase() + k.slice(1)}
-                    </label>
+                    <label htmlFor={`m-${k}`}>{T(META_LABELS[k])}</label>
                     <input
                       id={`m-${k}`}
                       className="num"
@@ -1034,8 +1088,9 @@ export default function PdfTool({
                 ))}
                 {docs.length > 1 && (
                   <small className="muted">
-                    These fields come from the first file and are written to
-                    every file.
+                    {T(
+                      "These fields come from the first file and are written to every file.",
+                    )}
                   </small>
                 )}
               </>
@@ -1048,18 +1103,21 @@ export default function PdfTool({
   }
 
   const actionLabel: Record<string, string> = {
-    merge: `Merge ${docs.length > 1 ? `${docs.length} PDFs` : "PDF"}`,
-    organize: "Save PDF",
-    "remove-pages": "Remove pages",
-    rotate: "Rotate",
-    split: "Split",
-    compress: "Compress",
-    grayscale: "Make black and white",
-    "to-image": "Convert to images",
-    "to-text": "Extract text",
-    "page-numbers": "Add page numbers",
-    watermark: "Add watermark",
-    metadata: metaStrip ? "Remove info" : "Save info",
+    merge:
+      docs.length > 1
+        ? T("Merge {n} PDFs", { n: docs.length })
+        : T("Merge PDF"),
+    organize: T("Save PDF"),
+    "remove-pages": T("Remove pages"),
+    rotate: T("Rotate"),
+    split: T("Split"),
+    compress: T("Compress"),
+    grayscale: T("Make black and white"),
+    "to-image": T("Convert to images"),
+    "to-text": T("Extract text"),
+    "page-numbers": T("Add page numbers"),
+    watermark: T("Add watermark"),
+    metadata: T(metaStrip ? "Remove info" : "Save info"),
   };
 
   return (
@@ -1072,7 +1130,7 @@ export default function PdfTool({
               {pageGrid}
               <div className="filebar">
                 <button type="button" className="fchip add" onClick={pick}>
-                  + Add PDF
+                  {T("+ Add PDF")}
                 </button>
               </div>
             </>
@@ -1084,8 +1142,14 @@ export default function PdfTool({
           {controls()}
           <div className={`result${busy ? " working" : ""}`} aria-live="polite">
             <small>
-              {docs.length} file{docs.length > 1 ? "s" : ""}, {pages.length}{" "}
-              page{pages.length === 1 ? "" : "s"}, {formatBytes(totalIn)}
+              {T(docs.length > 1 ? "{n} files" : "{n} file", {
+                n: docs.length,
+              })}
+              ,{" "}
+              {T(pages.length === 1 ? "{n} page" : "{n} pages", {
+                n: pages.length,
+              })}
+              , {formatBytes(totalIn)}
             </small>
             {outs && (
               <div className="sz">
@@ -1093,25 +1157,32 @@ export default function PdfTool({
                 {(tool === "compress" || tool === "grayscale") && (
                   <span className={`delta${totalOut > totalIn ? " up" : ""}`}>
                     {totalOut <= totalIn
-                      ? `${Math.round((1 - totalOut / totalIn) * 100)}% smaller`
-                      : `${Math.round((totalOut / totalIn - 1) * 100)}% larger`}
+                      ? T("{n}% smaller", {
+                          n: Math.round((1 - totalOut / totalIn) * 100),
+                        })
+                      : T("{n}% larger", {
+                          n: Math.round((totalOut / totalIn - 1) * 100),
+                        })}
                   </span>
                 )}
               </div>
             )}
-            {outs && outs.length > 1 && <small>{outs.length} files</small>}
+            {outs && outs.length > 1 && (
+              <small>{T("{n} files", { n: outs.length })}</small>
+            )}
             {outs &&
               target &&
               tool === "compress" &&
               totalOut > target * 1024 && (
                 <small className="warn">
-                  Couldn't get under the limit even at the lowest setting. This
-                  is the smallest version.
+                  {T(
+                    "Couldn't get under the limit even at the lowest setting. This is the smallest version.",
+                  )}
                 </small>
               )}
             {outs && tool === "compress" && totalOut > totalIn && (
               <small className="warn">
-                This PDF is already well compressed. Keep your original.
+                {T("This PDF is already well compressed. Keep your original.")}
               </small>
             )}
             {busy && <small>{busy}</small>}
@@ -1124,7 +1195,7 @@ export default function PdfTool({
                   onClick={() => void run()}
                 >
                   <Icon name={tool === "to-text" ? "type" : "zap"} />
-                  {busy ? "Working…" : (actionLabel[tool] ?? "Save")}
+                  {busy ? T("Working…") : (actionLabel[tool] ?? T("Save"))}
                 </button>
               ) : (
                 <button
@@ -1134,8 +1205,8 @@ export default function PdfTool({
                 >
                   <Icon name="download" />
                   {outs.length > 1
-                    ? `Download ${outs.length} files (zip)`
-                    : "Download"}
+                    ? T("Download {n} files (zip)", { n: outs.length })
+                    : T("Download")}
                 </button>
               )}
               {outs && outs.length > 1 && (
@@ -1149,11 +1220,15 @@ export default function PdfTool({
                     }
                   }}
                 >
-                  Save each separately
+                  {T("Save each separately")}
                 </button>
               )}
               {text !== null && (
-                <CopyBtn text={text} label="Copy text" what="Text copied" />
+                <CopyBtn
+                  text={text}
+                  label={T("Copy text")}
+                  what={T("Text copied")}
+                />
               )}
               <button
                 type="button"
@@ -1161,7 +1236,7 @@ export default function PdfTool({
                 onClick={() => setMode(!advanced)}
               >
                 <Icon name="sliders" />
-                {advanced ? "Back to Simple" : "See every page in Advanced"}
+                {T(advanced ? "Back to Simple" : "See every page in Advanced")}
               </button>
             </div>
           </div>
@@ -1173,7 +1248,7 @@ export default function PdfTool({
           readOnly
           value={text}
           rows={14}
-          aria-label="Extracted text"
+          aria-label={T("Extracted text")}
         />
       )}
       {input}

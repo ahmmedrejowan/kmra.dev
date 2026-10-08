@@ -1,24 +1,5 @@
 ---
-import BaseLayout from "@kmra/ui/layouts/BaseLayout.astro";
-import PageHead from "@kmra/ui/components/PageHead.astro";
-import UseCases from "@kmra/ui/components/UseCases.astro";
-import { getApp } from "@kmra/registry";
-
-const app = getApp("qrtool");
+import InfoPage from "../views/InfoPage.astro";
 ---
 
-<BaseLayout
-  appId="qrtool"
-  title="Use cases"
-  description="Ready-made settings for everyday jobs. Pick one and drop your file."
->
-  <PageHead
-    crumbs={[{ label: app.name, href: "/" }, { label: "Use cases" }]}
-    icon="layers"
-    title="Use cases"
-    intro="Ready-made settings for everyday jobs. Pick one and drop your file."
-  />
-  <div class="wrap page-body">
-    <UseCases appId="qrtool" />
-  </div>
-</BaseLayout>
+<InfoPage page="use-cases" />
