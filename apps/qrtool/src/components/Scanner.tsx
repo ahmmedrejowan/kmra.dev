@@ -6,17 +6,69 @@ import { CopyBtn, FileInput, useFiles } from "@kmra/ui/components/kit";
 import { downloadBlob, IMAGE_ACCEPT } from "@kmra/ui/lib/files";
 import { toast } from "@kmra/ui/lib/toast";
 import type { Locale } from "@kmra/ui/lib/i18n";
-import { LangProvider, useT } from "@kmra/ui/lib/i18n-react";
+import { LangProvider, useLang, useT } from "@kmra/ui/lib/i18n-react";
 import { linkWarnings, parse, read, type Found } from "../lib/scan";
 
 /** Scan QR codes and barcodes from the camera or an image. Everything is read on this device. */
 type Mode = "camera" | "image";
 
+/** RFC 5545 lines are folded at 75 octets */
+function fold(line: string): string {
+  const enc = new TextEncoder();
+  let out = "";
+  let cur = "";
+  let bytes = 0;
+  for (const ch of line) {
+    const n = enc.encode(ch).length;
+    if (bytes + n > (out ? 74 : 75)) {
+      out += (out ? "\r\n " : "") + cur;
+      cur = "";
+      bytes = 0;
+    }
+    cur += ch;
+    bytes += n;
+  }
+  return out ? `${out}\r\n ${cur}` : cur;
+}
+
+/** A calendar file around a scanned VEVENT, with the fields calendar apps insist on */
+function icsFile(vevent: string): Blob {
+  const lines = vevent
+    .replace(/\r?\n[ \t]/g, "")
+    .split(/\r?\n/)
+    .filter((l) => l.trim());
+  if (!/^END:VEVENT/i.test(lines.at(-1) ?? "")) lines.push("END:VEVENT");
+  const stamp =
+    new Date().toISOString().replace(/[-:]/g, "").slice(0, 15) + "Z";
+  const extra: string[] = [];
+  if (!lines.some((l) => /^UID[;:]/i.test(l)))
+    extra.push(`UID:${crypto.randomUUID()}@qrtool.kmra.dev`);
+  if (!lines.some((l) => /^DTSTAMP[;:]/i.test(l)))
+    extra.push(`DTSTAMP:${stamp}`);
+  lines.splice(1, 0, ...extra);
+  const file = [
+    "BEGIN:VCALENDAR",
+    "VERSION:2.0",
+    "PRODID:-//kmra.dev//QR Tool//EN",
+    ...lines,
+    "END:VCALENDAR",
+  ]
+    .map(fold)
+    .join("\r\n");
+  return new Blob([file + "\r\n"], { type: "text/calendar" });
+}
+
 function Result({ f }: { f: Found }) {
   // Scanned values (numbers, subjects) are filled in with .replace(), not T()'s vars, so their
   // digits stay exactly as encoded.
   const T = useT();
+  const lang = useLang();
   const p = parse(f.text);
+  const loc = lang === "bn" ? "bn-BD" : undefined;
+  const when = (d: Date, day: boolean) =>
+    day
+      ? d.toLocaleDateString(loc, { dateStyle: "full" })
+      : d.toLocaleString(loc, { dateStyle: "full", timeStyle: "short" });
   const fmt = f.format.replace(/([a-z])([A-Z])/g, "$1 $2");
   return (
     <div className="scan-result">
@@ -144,6 +196,152 @@ function Result({ f }: { f: Found }) {
           >
             {T("See on a map")}
           </a>
+        </>
+      ) : p.kind === "event" ? (
+        <>
+          <dl className="kv">
+            <div>
+              <dt>{T("Event")}</dt>
+              <dd>{p.title || T("(no name)")}</dd>
+            </div>
+            {p.start && (
+              <div>
+                <dt>{T("Starts")}</dt>
+                <dd>{when(p.start, p.allDay)}</dd>
+              </div>
+            )}
+            {p.end && (
+              <div>
+                <dt>{T("Ends")}</dt>
+                <dd>{when(p.end, p.allDay)}</dd>
+              </div>
+            )}
+            {p.location && (
+              <div>
+                <dt>{T("Place")}</dt>
+                <dd>{p.location}</dd>
+              </div>
+            )}
+          </dl>
+          {p.notes && <p className="scan-text">{p.notes}</p>}
+          <button
+            type="button"
+            className="btn sm"
+            onClick={() =>
+              downloadBlob(
+                icsFile(p.raw),
+                `${p.title.replace(/\W+/g, "-").replace(/^-|-$/g, "") || "event"}.ics`,
+              )
+            }
+          >
+            <Icon name="download" />
+            {T("Add to calendar (.ics)")}
+          </button>
+        </>
+      ) : p.kind === "upi" ? (
+        <>
+          <dl className="kv">
+            <div>
+              <dt>{T("Pay to")}</dt>
+              <dd>{p.pn || T("(no name)")}</dd>
+            </div>
+            <div>
+              <dt>{T("UPI ID")}</dt>
+              <dd>
+                <span className="mono">{p.pa}</span>{" "}
+                <CopyBtn text={p.pa} what="Copied" className="linkbtn" />
+              </dd>
+            </div>
+            {p.amount && (
+              <div>
+                <dt>{T("Amount")}</dt>
+                <dd>
+                  {p.amount} {p.currency || "INR"}
+                </dd>
+              </div>
+            )}
+            {p.note && (
+              <div>
+                <dt>{T("Note")}</dt>
+                <dd>{p.note}</dd>
+              </div>
+            )}
+          </dl>
+          <small className="warn block">
+            {T(
+              "Anyone can write any name in a payment code. Check that your UPI app shows the payee you expect before you pay.",
+            )}
+          </small>
+        </>
+      ) : p.kind === "epc" ? (
+        <>
+          <dl className="kv">
+            <div>
+              <dt>{T("Pay to")}</dt>
+              <dd>{p.name || T("(no name)")}</dd>
+            </div>
+            <div>
+              <dt>IBAN</dt>
+              <dd>
+                <span className="mono">
+                  {p.iban.replace(/(.{4})(?=.)/g, "$1 ")}
+                </span>{" "}
+                <CopyBtn text={p.iban} what="Copied" className="linkbtn" />
+              </dd>
+            </div>
+            {p.bic && (
+              <div>
+                <dt>BIC</dt>
+                <dd className="mono">{p.bic}</dd>
+              </div>
+            )}
+            {p.amount && (
+              <div>
+                <dt>{T("Amount")}</dt>
+                <dd>{p.amount} EUR</dd>
+              </div>
+            )}
+            {p.reference && (
+              <div>
+                <dt>{T("Reference")}</dt>
+                <dd>{p.reference}</dd>
+              </div>
+            )}
+          </dl>
+          <small className="muted block">
+            {T(
+              "A SEPA bank transfer code. Scan it with your banking app to fill in the transfer.",
+            )}
+          </small>
+        </>
+      ) : p.kind === "bitcoin" ? (
+        <>
+          <dl className="kv">
+            <div>
+              <dt>{T("Address")}</dt>
+              <dd>
+                <span className="mono">{p.address}</span>{" "}
+                <CopyBtn text={p.address} what="Copied" className="linkbtn" />
+              </dd>
+            </div>
+            {p.amount && (
+              <div>
+                <dt>{T("Amount")}</dt>
+                <dd>{p.amount} BTC</dd>
+              </div>
+            )}
+            {(p.label || p.message) && (
+              <div>
+                <dt>{T("Note")}</dt>
+                <dd>{[p.label, p.message].filter(Boolean).join(" · ")}</dd>
+              </div>
+            )}
+          </dl>
+          <small className="warn block">
+            {T(
+              "Check the address in your wallet before sending. Bitcoin payments can't be undone.",
+            )}
+          </small>
         </>
       ) : (
         <p className="scan-text">{f.text}</p>

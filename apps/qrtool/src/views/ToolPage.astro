@@ -12,6 +12,11 @@ import Generator from "../components/Generator";
 import Scanner from "../components/Scanner";
 import Barcode from "../components/Barcode";
 import Bulk from "../components/Bulk";
+import Codes2d from "../components/Codes2d";
+import WifiCard from "../components/WifiCard";
+import BatchScan from "../components/BatchScan";
+import Checker from "../components/Checker";
+import FixQr from "../components/FixQr";
 
 interface Props {
   /** Tool or task slug */
@@ -176,6 +181,13 @@ const schema = [
       <Barcode client:load lang={locale} preset={task?.preset} />
     )}
     {tool.slug === "bulk" && <Bulk client:load lang={locale} />}
+    {tool.slug === "codes-2d" && (
+      <Codes2d client:load lang={locale} preset={task?.preset} />
+    )}
+    {tool.slug === "wifi-card" && <WifiCard client:load lang={locale} />}
+    {tool.slug === "batch-scan" && <BatchScan client:load lang={locale} />}
+    {tool.slug === "checker" && <Checker client:load lang={locale} />}
+    {tool.slug === "fix-qr" && <FixQr client:load lang={locale} />}
 
     {tool.ready && tool.steps && <InfoCard steps={tool.steps} items={info} />}
 

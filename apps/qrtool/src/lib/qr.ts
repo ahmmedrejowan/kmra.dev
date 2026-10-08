@@ -10,7 +10,10 @@ export type Kind =
   | "phone"
   | "sms"
   | "whatsapp"
-  | "geo";
+  | "geo"
+  | "event"
+  | "social"
+  | "pay";
 
 export const KINDS: { id: Kind; label: string }[] = [
   { id: "url", label: "Link" },
@@ -22,6 +25,37 @@ export const KINDS: { id: Kind; label: string }[] = [
   { id: "phone", label: "Phone" },
   { id: "sms", label: "SMS" },
   { id: "geo", label: "Location" },
+  { id: "event", label: "Event" },
+  { id: "social", label: "Social" },
+  { id: "pay", label: "Payment" },
+];
+
+export type Platform =
+  | "instagram"
+  | "facebook"
+  | "youtube"
+  | "tiktok"
+  | "x"
+  | "linkedin"
+  | "telegram";
+
+export const PLATFORMS: { id: Platform; label: string }[] = [
+  { id: "instagram", label: "Instagram" },
+  { id: "facebook", label: "Facebook" },
+  { id: "youtube", label: "YouTube" },
+  { id: "tiktok", label: "TikTok" },
+  { id: "x", label: "X" },
+  { id: "linkedin", label: "LinkedIn" },
+  { id: "telegram", label: "Telegram" },
+];
+
+export type PayMethod = "upi" | "epc" | "bitcoin" | "paypal";
+
+export const PAY_METHODS: { id: PayMethod; label: string }[] = [
+  { id: "upi", label: "UPI" },
+  { id: "epc", label: "SEPA (EPC)" },
+  { id: "bitcoin", label: "Bitcoin" },
+  { id: "paypal", label: "PayPal" },
 ];
 
 export type Fields = Record<string, string>;
@@ -86,6 +120,231 @@ export function payload(kind: Kind, f: Fields): string {
         f.coords ?? "",
       );
       return m ? `geo:${m[1]},${m[2]}` : "";
+    }
+    case "event":
+      return eventPayload(f);
+    case "social":
+      return socialUrl((f.platform as Platform) || "instagram", f.handle ?? "");
+    case "pay":
+      return payPayload(f);
+  }
+}
+
+/* ---------- Event (iCalendar VEVENT) ---------- */
+
+/** RFC 5545 text escaping: \ ; , and newlines */
+export const icsEsc = (s: string) =>
+  s
+    .replace(/\\/g, "\\\\")
+    .replace(/;/g, "\\;")
+    .replace(/,/g, "\\,")
+    .replace(/\r?\n/g, "\\n");
+
+const pad = (n: number) => String(n).padStart(2, "0");
+
+/** "2026-10-09T10:00" (datetime-local) → Date in local time */
+export function localDate(v: string): Date | null {
+  const m = /^(\d{4})-(\d{2})-(\d{2})(?:T(\d{2}):(\d{2}))?/.exec(v);
+  if (!m) return null;
+  return new Date(+m[1]!, +m[2]! - 1, +m[3]!, +(m[4] ?? 0), +(m[5] ?? 0));
+}
+
+/** Date → "2026-10-09T10:00" for <input type="datetime-local"> */
+export function inputDate(d: Date): string {
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+const icsDay = (d: Date) =>
+  `${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}`;
+const icsTime = (d: Date) =>
+  `${icsDay(d)}T${pad(d.getHours())}${pad(d.getMinutes())}00`;
+
+function eventPayload(f: Fields): string {
+  const title = (f.title ?? "").trim();
+  const start = localDate(f.start ?? "");
+  if (!title || !start) return "";
+  let end = localDate(f.end ?? "");
+  const allDay = f.allday === "1";
+  let when: string[];
+  if (allDay) {
+    // DTEND is exclusive: the day after the last day
+    const s = new Date(start.getFullYear(), start.getMonth(), start.getDate());
+    let e = end
+      ? new Date(end.getFullYear(), end.getMonth(), end.getDate() + 1)
+      : null;
+    if (!e || e <= s)
+      e = new Date(s.getFullYear(), s.getMonth(), s.getDate() + 1);
+    when = [`DTSTART;VALUE=DATE:${icsDay(s)}`, `DTEND;VALUE=DATE:${icsDay(e)}`];
+  } else {
+    if (!end || end <= start) end = new Date(start.getTime() + 3600_000);
+    when = [`DTSTART:${icsTime(start)}`, `DTEND:${icsTime(end)}`];
+  }
+  return [
+    "BEGIN:VEVENT",
+    `SUMMARY:${icsEsc(title)}`,
+    ...when,
+    f.location?.trim() && `LOCATION:${icsEsc(f.location.trim())}`,
+    f.notes?.trim() && `DESCRIPTION:${icsEsc(f.notes.trim())}`,
+    "END:VEVENT",
+  ]
+    .filter(Boolean)
+    .join("\n");
+}
+
+/* ---------- Social profiles ---------- */
+
+const SOCIAL_HOSTS: Record<Platform, RegExp> = {
+  instagram: /^(www\.)?instagram\.com$/i,
+  facebook: /^((www|m|web)\.)?(facebook|fb)\.com$/i,
+  youtube: /^((www|m)\.)?(youtube\.com|youtu\.be)$/i,
+  tiktok: /^((www|vm)\.)?tiktok\.com$/i,
+  x: /^(www\.|mobile\.)?(x|twitter)\.com$/i,
+  linkedin: /^([a-z]{2,3}\.|www\.)?linkedin\.com$/i,
+  telegram: /^(t\.me|telegram\.me)$/i,
+};
+
+/** Tracking parameters added by share buttons */
+const TRACKING = /^(utm_\w+|igsh|igshid|si|fbclid|ref_src|s)$/i;
+
+/** The handle as typed or pulled out of a pasted link ("" if none) */
+export function socialHandle(input: string): string {
+  return input.trim().replace(/^@+/, "").replace(/\/+$/, "");
+}
+
+/** Profile link for a username, or a pasted link to that platform kept as it is */
+export function socialUrl(p: Platform, input: string): string {
+  const v = input.trim();
+  if (!v) return "";
+  try {
+    const u = new URL(/^https?:\/\//i.test(v) ? v : `https://${v}`);
+    if (SOCIAL_HOSTS[p].test(u.hostname) && /[./]/.test(v)) {
+      u.protocol = "https:";
+      for (const k of [...u.searchParams.keys()])
+        if (TRACKING.test(k)) u.searchParams.delete(k);
+      return u.toString().replace(/\/$/, "");
+    }
+  } catch {}
+  const h = encodeURIComponent(socialHandle(v.replace(/^.*\//, "")));
+  if (!h) return "";
+  switch (p) {
+    case "instagram":
+      return `https://instagram.com/${h}`;
+    case "facebook":
+      return `https://facebook.com/${h}`;
+    case "youtube":
+      return `https://youtube.com/@${h}`;
+    case "tiktok":
+      return `https://tiktok.com/@${h}`;
+    case "x":
+      return `https://x.com/${h}`;
+    case "linkedin":
+      return `https://linkedin.com/in/${h}`;
+    case "telegram":
+      return `https://t.me/${h}`;
+  }
+}
+
+/* ---------- Payments ---------- */
+
+const num = (s: string | undefined) => {
+  const n = Number((s ?? "").replace(",", ".").trim());
+  return Number.isFinite(n) && n > 0 ? n : 0;
+};
+/** encodeURIComponent, but keep @ readable (UPI IDs) */
+const enc = (s: string) => encodeURIComponent(s).replace(/%40/g, "@");
+
+/** ISO 13616 check: move the first four characters to the end, letters → numbers, mod 97 = 1 */
+function mod97(s: string): number {
+  let r = 0;
+  for (const c of s) {
+    const v = /\d/.test(c) ? c : String(c.charCodeAt(0) - 55);
+    for (const d of v) r = (r * 10 + +d) % 97;
+  }
+  return r;
+}
+export const cleanIban = (s: string) => s.replace(/\s+/g, "").toUpperCase();
+export function ibanValid(iban: string): boolean {
+  const s = cleanIban(iban);
+  if (!/^[A-Z]{2}\d{2}[A-Z0-9]{11,30}$/.test(s)) return false;
+  return mod97(s.slice(4) + s.slice(0, 4)) === 1;
+}
+/** ISO 11649 creditor reference (RF…), which EPC codes carry as a structured reference */
+function rfValid(ref: string): boolean {
+  return (
+    /^RF\d{2}[A-Z0-9]{1,21}$/.test(ref) &&
+    mod97(ref.slice(4) + ref.slice(0, 4)) === 1
+  );
+}
+
+export const upiValid = (pa: string) =>
+  /^[\w.\-]{2,}@[a-z][\w.\-]*$/i.test(pa.trim());
+export const btcValid = (a: string) =>
+  /^(bc1[02-9ac-hj-np-z]{8,87}|BC1[02-9AC-HJ-NP-Z]{8,87}|[13][1-9A-HJ-NP-Za-km-z]{25,34})$/.test(
+    a.trim(),
+  );
+export const EPC_MAX = 999999999.99;
+
+function payPayload(f: Fields): string {
+  switch ((f.method as PayMethod) || "upi") {
+    case "upi": {
+      const pa = (f.upi ?? "").trim();
+      if (!pa.includes("@")) return "";
+      const am = num(f.upi_amount);
+      const q = [
+        `pa=${enc(pa)}`,
+        f.payee?.trim() && `pn=${enc(f.payee.trim())}`,
+        am && `am=${am.toFixed(2)}`,
+        "cu=INR",
+        f.upi_note?.trim() && `tn=${enc(f.upi_note.trim())}`,
+      ];
+      return `upi://pay?${q.filter(Boolean).join("&")}`;
+    }
+    case "epc": {
+      const name = (f.payee ?? "").trim().slice(0, 70);
+      const iban = cleanIban(f.iban ?? "");
+      if (!name || !iban) return "";
+      const am = num(f.eur);
+      const ref = (f.ref ?? "").trim();
+      const rf = cleanIban(ref);
+      const structured = rfValid(rf);
+      const lines = [
+        "BCD",
+        "002",
+        "1",
+        "SCT",
+        cleanIban(f.bic ?? ""),
+        name,
+        iban,
+        am >= 0.01 && am <= EPC_MAX ? `EUR${am.toFixed(2)}` : "",
+        "",
+        structured ? rf : "",
+        structured ? "" : ref.slice(0, 140),
+      ];
+      // The last filled line must not be followed by a line break
+      return lines.join("\n").replace(/\n+$/, "");
+    }
+    case "bitcoin": {
+      const addr = (f.btc ?? "").trim().replace(/^bitcoin:/i, "");
+      if (!addr) return "";
+      const am = num(f.btc_amount);
+      const q = [
+        am && `amount=${am.toFixed(8).replace(/\.?0+$/, "")}`,
+        f.btc_label?.trim() &&
+          `label=${encodeURIComponent(f.btc_label.trim())}`,
+        f.btc_message?.trim() &&
+          `message=${encodeURIComponent(f.btc_message.trim())}`,
+      ].filter(Boolean);
+      return `bitcoin:${addr}${q.length ? `?${q.join("&")}` : ""}`;
+    }
+    case "paypal": {
+      const user = (f.paypal ?? "")
+        .trim()
+        .replace(/^(https?:\/\/)?(www\.)?paypal\.me\//i, "")
+        .replace(/^@/, "")
+        .split("/")[0]!;
+      if (!user) return "";
+      const am = num(f.pp_amount);
+      return `https://paypal.me/${encodeURIComponent(user)}${am ? `/${am.toFixed(2)}` : ""}`;
     }
   }
 }

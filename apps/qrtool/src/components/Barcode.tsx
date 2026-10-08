@@ -90,6 +90,10 @@ function BarcodeView({ preset }: { preset?: Preset }) {
   const [color, setColor] = useState("#000000");
   const [error, setError] = useState<string | null>(null);
   const svgRef = useRef<SVGSVGElement>(null);
+  // Number-only formats accept spaces and dashes as typed (e.g. ISBN 978-1-4028-9462-6)
+  const code = /^(EAN13|EAN8|UPC|ITF14)$/.test(format)
+    ? value.replace(/[\s-]/g, "")
+    : value;
 
   const opts = (scale = 1) => ({
     format,
@@ -105,13 +109,13 @@ function BarcodeView({ preset }: { preset?: Preset }) {
   useEffect(() => {
     if (!svgRef.current) return;
     const misfit = `${T("That doesn't fit this barcode type.")} ${T(f.hint)}`;
-    if (!f.test.test(value)) {
+    if (!f.test.test(code)) {
       setError(misfit);
       return;
     }
     try {
       let ok = true;
-      JsBarcode(svgRef.current, value, {
+      JsBarcode(svgRef.current, code, {
         ...opts(),
         valid: (v: boolean) => (ok = v),
       });
@@ -124,7 +128,7 @@ function BarcodeView({ preset }: { preset?: Preset }) {
 
   function savePng() {
     const c = document.createElement("canvas");
-    JsBarcode(c, value, opts(3));
+    JsBarcode(c, code, opts(3));
     c.toBlob(
       (b) => b && downloadBlob(b, `barcode-${format.toLowerCase()}.png`),
       "image/png",
@@ -148,7 +152,7 @@ function BarcodeView({ preset }: { preset?: Preset }) {
             role="img"
             aria-label={T("{format} barcode for {value}")
               .replace("{format}", f.label)
-              .replace("{value}", value)}
+              .replace("{value}", code)}
           />
         </div>
         {error && <p className="warn">{error}</p>}

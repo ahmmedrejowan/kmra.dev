@@ -17,8 +17,10 @@ const L = (p: string) => lp(locale, p);
 const app = localizeApp(getApp(appId), locale);
 const langs = langLinks(Astro, app);
 const dev = import.meta.env.DEV;
-// Only apps that are live are listed; others appear once they launch.
-const liveApps = apps.filter((a) => a.live);
+// Only apps that are live are listed; others appear once they launch. The current app comes first.
+const liveApps = apps
+  .filter((a) => a.live)
+  .sort((a, b) => Number(b.id === appId) - Number(a.id === appId));
 const year = new Date().getFullYear();
 const readyTools = app.tools.filter((t) => t.ready);
 // Popular tools first, then the rest, seven in all; the sitemap page has everything

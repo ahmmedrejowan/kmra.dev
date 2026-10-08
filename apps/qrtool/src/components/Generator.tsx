@@ -8,10 +8,20 @@ import { toast } from "@kmra/ui/lib/toast";
 import type { Locale } from "@kmra/ui/lib/i18n";
 import { LangProvider, useT } from "@kmra/ui/lib/i18n-react";
 import {
+  btcValid,
   DEFAULT_STYLE,
+  EPC_MAX,
+  ibanValid,
+  inputDate,
   KINDS,
+  localDate,
   lowContrast,
+  PAY_METHODS,
   payload,
+  PLATFORMS,
+  type PayMethod,
+  type Platform,
+  upiValid,
   png,
   svg,
   type Dots,
@@ -23,16 +33,93 @@ import {
 } from "../lib/qr";
 
 /** QR code generator: pick a type, fill it in, style it, download. */
-const FIELDS: Record<
-  Kind,
-  {
-    key: string;
-    label: string;
-    type?: string;
-    placeholder?: string;
-    area?: boolean;
-  }[]
-> = {
+interface Field {
+  key: string;
+  label: string;
+  type?: string;
+  placeholder?: string;
+  area?: boolean;
+  /** Checkbox stored as "1" / "" */
+  toggle?: boolean;
+  /** Number typed as text, so commas and empty values work */
+  decimal?: boolean;
+  max?: number;
+}
+
+const PAY_FIELDS: Record<PayMethod, Field[]> = {
+  upi: [
+    { key: "upi", label: "UPI ID", placeholder: "name@bank" },
+    { key: "payee", label: "Payee name" },
+    {
+      key: "upi_amount",
+      label: "Amount in rupees (optional)",
+      decimal: true,
+      placeholder: "250.00",
+    },
+    { key: "upi_note", label: "Note (optional)", max: 80 },
+  ],
+  epc: [
+    { key: "payee", label: "Account holder name", max: 70 },
+    { key: "iban", label: "IBAN", placeholder: "DE89 3704 0044 0532 0130 00" },
+    { key: "bic", label: "BIC (optional)", max: 11 },
+    {
+      key: "eur",
+      label: "Amount in euros (optional)",
+      decimal: true,
+      placeholder: "12.50",
+    },
+    { key: "ref", label: "Reference (optional)", max: 140 },
+  ],
+  bitcoin: [
+    { key: "btc", label: "Bitcoin address", placeholder: "bc1q…" },
+    {
+      key: "btc_amount",
+      label: "Amount in BTC (optional)",
+      decimal: true,
+      placeholder: "0.001",
+    },
+    { key: "btc_label", label: "Label (optional)" },
+    { key: "btc_message", label: "Message (optional)" },
+  ],
+  paypal: [
+    { key: "paypal", label: "PayPal.me username", placeholder: "yourname" },
+    {
+      key: "pp_amount",
+      label: "Amount (optional)",
+      decimal: true,
+      placeholder: "10.00",
+    },
+  ],
+};
+
+function fieldsFor(kind: Kind, f: Fields): Field[] {
+  if (kind === "pay") return PAY_FIELDS[(f.method as PayMethod) || "upi"];
+  if (kind === "event") {
+    const type = f.allday === "1" ? "date" : "datetime-local";
+    return [
+      { key: "title", label: "Event name", placeholder: "Team meeting" },
+      { key: "allday", label: "All day", toggle: true },
+      { key: "start", label: "Starts", type },
+      { key: "end", label: "Ends", type },
+      { key: "location", label: "Place (optional)" },
+      { key: "notes", label: "Details (optional)", area: true },
+    ];
+  }
+  return FIELDS[kind];
+}
+
+/** Tomorrow at 10:00, for a new event */
+function tomorrow(): Fields {
+  const d = new Date();
+  d.setDate(d.getDate() + 1);
+  d.setHours(10, 0, 0, 0);
+  return {
+    start: inputDate(d),
+    end: inputDate(new Date(d.getTime() + 3600_000)),
+  };
+}
+
+const FIELDS: Record<Exclude<Kind, "event" | "pay">, Field[]> = {
   url: [
     {
       key: "url",
@@ -90,7 +177,17 @@ const FIELDS: Record<
   geo: [
     { key: "coords", label: "Coordinates", placeholder: "23.8103, 90.4125" },
   ],
+  social: [
+    {
+      key: "handle",
+      label: "Username or profile link",
+      placeholder: "yourname",
+    },
+  ],
 };
+
+const amountOf = (s: string | undefined) =>
+  Number((s ?? "").replace(",", ".").trim());
 
 const SIZES = [512, 1024, 2048];
 const MODE_KEY = "kmra-mode";
@@ -112,7 +209,12 @@ export default function Generator({
 function GeneratorView({ preset }: { preset?: Preset }) {
   const T = useT();
   const [kind, setKind] = useState<Kind>((preset?.type as Kind) ?? "url");
-  const [fields, setFields] = useState<Fields>({ security: "WPA" });
+  const [fields, setFields] = useState<Fields>(() => ({
+    security: "WPA",
+    platform: (preset?.platform as Platform) ?? "instagram",
+    method: (preset?.method as PayMethod) ?? "upi",
+    ...tomorrow(),
+  }));
   const [style, setStyle] = useState<Style>(DEFAULT_STYLE);
   const [logo, setLogo] = useState<Logo | null>(null);
   const [px, setPx] = useState(1024);
@@ -147,7 +249,14 @@ function GeneratorView({ preset }: { preset?: Preset }) {
 
   const text = payload(kind, fields);
   const sample = text || (kind === "url" ? "https://kmra.dev" : "kmra.dev");
-  const eff: Style = logo ? { ...style, ecc: "H" } : style;
+  const method = (fields.method as PayMethod) || "upi";
+  const epc = kind === "pay" && method === "epc";
+  // A logo needs High; EPC bank transfer codes require at least Medium
+  const eff: Style = logo
+    ? { ...style, ecc: "H" }
+    : epc && style.ecc === "L"
+      ? { ...style, ecc: "M" }
+      : style;
   const preview = useMemo(() => {
     try {
       return svg(sample, eff, logo, 320);
@@ -157,9 +266,61 @@ function GeneratorView({ preset }: { preset?: Preset }) {
   }, [sample, eff.fg, eff.bg, eff.dots, eff.eyes, eff.margin, eff.ecc, logo]);
   const tooLong = preview === null;
 
-  const put = (k: string, v: string) => setFields((f) => ({ ...f, [k]: v }));
+  const put = (k: string, v: string) =>
+    setFields((f) => {
+      if (k !== "start") return { ...f, [k]: v };
+      // Moving the start moves the end too, keeping the length (1 hour by default)
+      const s0 = localDate(f.start ?? "");
+      const e0 = localDate(f.end ?? "");
+      const s1 = localDate(v);
+      const len = s0 && e0 && e0 > s0 ? e0.getTime() - s0.getTime() : 3600_000;
+      return {
+        ...f,
+        start: v,
+        end: s1 ? inputDate(new Date(s1.getTime() + len)) : (f.end ?? ""),
+      };
+    });
   const putStyle = (p: Partial<Style>) => setStyle((s) => ({ ...s, ...p }));
-  const name = `qr-${kind}`;
+  const name = `qr-${
+    kind === "social"
+      ? fields.platform || "social"
+      : kind === "pay"
+        ? method
+        : kind
+  }`;
+
+  // Gentle checks: a warning, never a block
+  const warns: string[] = [];
+  const has = (k: string) => !!fields[k]?.trim();
+  if (kind === "social" && has("handle")) {
+    const h = fields.handle!.trim();
+    if (!/[./]/.test(h) && !/^@?[\w.\-]+$/.test(h))
+      warns.push(
+        "A username has no spaces. Check it, or paste the profile link.",
+      );
+  }
+  if (
+    kind === "pay" &&
+    method === "upi" &&
+    has("upi") &&
+    !upiValid(fields.upi!)
+  )
+    warns.push("Enter a UPI ID like name@bank.");
+  if (epc) {
+    if (has("iban") && !ibanValid(fields.iban!))
+      warns.push("This IBAN doesn't add up. Check it for typos.");
+    if (has("eur")) {
+      const a = amountOf(fields.eur);
+      if (!(a >= 0.01 && a <= EPC_MAX))
+        warns.push("Amounts go from 0.01 to 999,999,999.99 euros.");
+    }
+  }
+  if (kind === "pay" && method === "bitcoin" && has("btc")) {
+    if (!btcValid(fields.btc!.replace(/^bitcoin:/i, "")))
+      warns.push(
+        "This doesn't look like a Bitcoin address. Check it carefully: payments can't be undone.",
+      );
+  }
 
   async function savePng() {
     if (!text) return toast(T("Fill in the details first."));
@@ -212,29 +373,88 @@ function GeneratorView({ preset }: { preset?: Preset }) {
             ))}
           </div>
         </div>
-        {FIELDS[kind].map((f) => (
-          <div className="ctl" key={`${kind}-${f.key}`}>
-            <label htmlFor={`qf-${f.key}`}>{T(f.label)}</label>
-            {f.area ? (
-              <textarea
-                id={`qf-${f.key}`}
-                className="num"
-                rows={3}
-                value={fields[f.key] ?? ""}
-                placeholder={f.placeholder && T(f.placeholder)}
-                onChange={(e) => put(f.key, e.target.value)}
-              />
-            ) : (
-              <input
-                id={`qf-${f.key}`}
-                className="num"
-                type={f.type ?? "text"}
-                value={fields[f.key] ?? ""}
-                placeholder={f.placeholder && T(f.placeholder)}
-                onChange={(e) => put(f.key, e.target.value)}
-              />
-            )}
+        {kind === "social" && (
+          <div className="ctl">
+            <span className="lbl">{T("Platform")}</span>
+            <div className="chips">
+              {PLATFORMS.map((p) => (
+                <button
+                  key={p.id}
+                  type="button"
+                  aria-pressed={fields.platform === p.id}
+                  onClick={() => put("platform", p.id)}
+                >
+                  {p.label}
+                </button>
+              ))}
+            </div>
           </div>
+        )}
+        {kind === "pay" && (
+          <Seg<PayMethod>
+            label={T("Payment type")}
+            options={PAY_METHODS.map(
+              (m) => [m.id, m.label] as [PayMethod, string],
+            )}
+            value={method}
+            onPick={(v) => put("method", v)}
+          />
+        )}
+        {fieldsFor(kind, fields).map((f) =>
+          f.toggle ? (
+            <Toggle
+              key={`${kind}-${f.key}`}
+              label={T(f.label)}
+              on={fields[f.key] === "1"}
+              onChange={(v) => put(f.key, v ? "1" : "")}
+            />
+          ) : (
+            <div className="ctl" key={`${kind}-${f.key}`}>
+              <label htmlFor={`qf-${f.key}`}>{T(f.label)}</label>
+              {f.area ? (
+                <textarea
+                  id={`qf-${f.key}`}
+                  className="num"
+                  rows={3}
+                  value={fields[f.key] ?? ""}
+                  placeholder={f.placeholder && T(f.placeholder)}
+                  onChange={(e) => put(f.key, e.target.value)}
+                />
+              ) : f.type === "date" ? (
+                // All-day events keep the time part, so switching back restores it
+                <input
+                  id={`qf-${f.key}`}
+                  className="num"
+                  type="date"
+                  value={(fields[f.key] ?? "").slice(0, 10)}
+                  onChange={(e) =>
+                    put(
+                      f.key,
+                      e.target.value &&
+                        e.target.value +
+                          ((fields[f.key] ?? "").slice(10) || "T10:00"),
+                    )
+                  }
+                />
+              ) : (
+                <input
+                  id={`qf-${f.key}`}
+                  className="num"
+                  type={f.type ?? "text"}
+                  inputMode={f.decimal ? "decimal" : undefined}
+                  maxLength={f.max}
+                  value={fields[f.key] ?? ""}
+                  placeholder={f.placeholder && T(f.placeholder)}
+                  onChange={(e) => put(f.key, e.target.value)}
+                />
+              )}
+            </div>
+          ),
+        )}
+        {warns.map((w) => (
+          <small key={w} className="warn">
+            {T(w)}
+          </small>
         ))}
         {kind === "wifi" && (
           <>
@@ -358,6 +578,11 @@ function GeneratorView({ preset }: { preset?: Preset }) {
                 </small>
               )}
             </div>
+            {!logo && epc && style.ecc === "L" && (
+              <small className="muted">
+                {T("Bank transfer codes use at least Medium error correction.")}
+              </small>
+            )}
             {!logo && (
               <Seg<Style["ecc"]>
                 label={T("Error correction")}

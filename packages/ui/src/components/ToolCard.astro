@@ -16,6 +16,28 @@ const T = (s: string) => tr(locale, s);
 // Each app is built with its own site URL (imgtool.kmra.dev, pdftool.kmra.dev, ...)
 const app = Astro.site?.hostname.split(".")[0] ?? "imgtool";
 const page = (lines = 3) => Array.from({ length: lines });
+// Small QR mark reused by the QR tool cards
+const QR = `<svg viewBox="0 0 21 21"><path fill="currentColor" fill-rule="evenodd" d="M0 0h7v7H0zM1 1v5h5V1zM2 2h3v3H2zM14 0h7v7h-7zM15 1v5h5V1zM16 2h3v3h-3zM0 14h7v7H0zM1 15v5h5v-5zM2 16h3v3H2zM9 1h2v2H9zM9 5h1v3H9zM12 9h3v1h-3zM9 9h2v2H9zM17 9h3v2h-3zM9 13h3v2H9zM14 14h2v3h-2zM18 16h3v2h-3zM10 18h3v3h-3zM16 19h2v2h-2zM1 9h3v2H1zM5 10h2v1H5z"/></svg>`;
+// A 14×14 Data Matrix look: solid L finder (left, bottom), dotted clock track (top, right)
+const dm = (() => {
+  const n = 14;
+  let d = "";
+  for (let y = 0; y < n; y++)
+    for (let x = 0; x < n; x++) {
+      const on =
+        x === 0 ||
+        y === n - 1 ||
+        (y === 0 && x % 2 === 0) ||
+        (x === n - 1 && y % 2 === 1) ||
+        (x > 0 &&
+          y > 0 &&
+          x < n - 1 &&
+          y < n - 1 &&
+          (x * 7 + y * 13 + x * y) % 5 < 2);
+      if (on) d += `M${x} ${y}h1v1h-1z`;
+    }
+  return `<svg viewBox="0 0 ${n} ${n}" shape-rendering="crispEdges"><path fill="currentColor" d="${d}"/></svg>`;
+})();
 ---
 
 <a
@@ -126,10 +148,48 @@ const page = (lines = 3) => Array.from({ length: lines });
       (tool.slug === "generator" || tool.slug === "bulk") ? (
       <div class="art-qr">
         {(tool.slug === "bulk" ? [0, 1, 2] : [0]).map(() => (
-          <span
-            set:html={`<svg viewBox="0 0 21 21"><path fill="currentColor" fill-rule="evenodd" d="M0 0h7v7H0zM1 1v5h5V1zM2 2h3v3H2zM14 0h7v7h-7zM15 1v5h5V1zM16 2h3v3h-3zM0 14h7v7H0zM1 15v5h5v-5zM2 16h3v3H2zM9 1h2v2H9zM9 5h1v3H9zM12 9h3v1h-3zM9 9h2v2H9zM17 9h3v2h-3zM9 13h3v2H9zM14 14h2v3h-2zM18 16h3v2h-3zM10 18h3v3h-3zM16 19h2v2h-2zM1 9h3v2H1zM5 10h2v1H5z"/></svg>`}
-          />
+          <span set:html={QR} />
         ))}
+      </div>
+    ) : app === "qrtool" && tool.slug === "codes-2d" ? (
+      <div class="art-qr">
+        <span set:html={dm} />
+      </div>
+    ) : app === "qrtool" && tool.slug === "wifi-card" ? (
+      <div class="art-wifi-card">
+        <b>Wi-Fi</b>
+        <span set:html={QR} />
+        <i />
+        <i class="short" />
+      </div>
+    ) : app === "qrtool" && tool.slug === "batch-scan" ? (
+      <div class="art-batch">
+        <div class="art-qr stack">
+          <span set:html={QR} />
+          <span set:html={QR} />
+          <span set:html={QR} />
+        </div>
+        <ul>
+          {[0, 1, 2, 3].map(() => (
+            <li>
+              <Icon name="check" />
+              <i />
+            </li>
+          ))}
+        </ul>
+      </div>
+    ) : app === "qrtool" && tool.slug === "checker" ? (
+      <div class="art-qr art-check">
+        <span set:html={QR} />
+        <em>
+          <Icon name="check" />
+        </em>
+      </div>
+    ) : app === "qrtool" && tool.slug === "fix-qr" ? (
+      <div class="art-qr art-fix">
+        <span class="blurry" set:html={QR} />
+        <Icon name="right" />
+        <span set:html={QR} />
       </div>
     ) : app === "qrtool" && tool.slug === "scanner" ? (
       <div class="art-scan">
