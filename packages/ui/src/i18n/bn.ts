@@ -228,6 +228,8 @@ export const BN: Record<string, string> = {
   smaller: "ছোট",
   larger: "বড়",
   "Best quality that fits": "সীমার মধ্যে সেরা মান",
+  "Can't get under {n} KB at this size. Make the image smaller in Advanced.":
+    "এই মাপে {n} KB-এর নিচে নামানো যাচ্ছে না। Advanced-এ ছবিটি ছোট করুন।",
   "+ Add": "+ আরও",
   "Opens in the Advanced workspace": "Advanced ওয়ার্কস্পেসে খুলবে",
   "That isn't an image. Try JPEG, PNG, WebP, HEIC, GIF or AVIF.":
@@ -693,4 +695,6 @@ export const BN: Record<string, string> = {
   "Start with a tool": "একটি টুল দিয়ে শুরু করুন",
   Main: "প্রধান",
   "© your name": "© আপনার নাম",
+  "Under {n} KB": "{n} কেবির নিচে",
+  "Taken at {place}.": "ছবিটি তোলা হয়েছে {place}-এ।",
 };

@@ -23,8 +23,10 @@ function rows(text: string): Row[] {
       const m = /^(.+?)\s*(?:\t|\s\|\s)\s*(.+)$/.exec(line);
       const value = m ? m[2]! : line;
       let name =
-        (m ? m[1]! : `${String(i + 1).padStart(3, "0")}-${value}`)
-          .replace(/^https?:\/\//, "")
+        (m
+          ? m[1]!
+          : `${String(i + 1).padStart(3, "0")}-${value.replace(/^https?:\/\//, "")}`
+        )
           .replace(/[^\w.-]+/g, "-")
           .replace(/^-+|-+$/g, "")
           .slice(0, 60) || `qr-${i + 1}`;

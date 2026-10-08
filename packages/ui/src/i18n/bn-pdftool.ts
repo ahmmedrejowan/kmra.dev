@@ -36,6 +36,7 @@ export const BN_PDFTOOL: Record<string, string> = {
   "That isn't a PDF. Drop a .pdf file.": "এটি পিডিএফ নয়। একটি .pdf ফাইল দিন।",
   "{name} is password-protected.": "{name} পাসওয়ার্ড দিয়ে সুরক্ষিত।",
   "That isn't a PDF.": "এটি পিডিএফ নয়।",
+  "{name} has no pages.": "{name} ফাইলে কোনো পেজ নেই।",
 
   // Files and pages
   "{n} page": "{n} পেজ",

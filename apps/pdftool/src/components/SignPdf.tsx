@@ -7,7 +7,12 @@ import { downloadBlob, formatBytes, isImageFile } from "@kmra/ui/lib/files";
 import { toast } from "@kmra/ui/lib/toast";
 import type { Locale } from "@kmra/ui/lib/i18n";
 import { LangProvider, useT } from "@kmra/ui/lib/i18n-react";
-import { openPdf, PasswordError, renderPage } from "../lib/pdfjs";
+import {
+  EmptyPdfError,
+  openPdf,
+  PasswordError,
+  renderPage,
+} from "../lib/pdfjs";
 import { build, LockedError, save, stamp, textPng } from "../lib/ops";
 import Thumb from "./Thumb";
 
@@ -173,7 +178,9 @@ function SignPdfView() {
       toast(
         err instanceof PasswordError
           ? T("{name} is password-protected.", { name: file.name })
-          : T("{name} couldn't be opened.", { name: file.name }),
+          : err instanceof EmptyPdfError
+            ? T("{name} has no pages.", { name: file.name })
+            : T("{name} couldn't be opened.", { name: file.name }),
       );
     }
   }

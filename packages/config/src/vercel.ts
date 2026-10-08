@@ -7,7 +7,7 @@ import { routes, type VercelConfig } from "@vercel/config/v1";
  * instead of loading them from a CDN; if a third-party origin is ever truly needed, add it here
  * deliberately.
  */
-const CSP = [
+export const CSP = [
   "default-src 'self'",
   // Astro inlines small island bootstrap scripts; WASM codecs need wasm-unsafe-eval.
   "script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval'",

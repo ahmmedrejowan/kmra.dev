@@ -224,8 +224,11 @@ export function canvasBlob(
   );
 }
 
-/** Decode any image the browser can show (SVG included) to a bitmap. */
-export async function decode(file: Blob): Promise<ImageBitmap> {
+/**
+ * Decode any image the browser can show (SVG included) to a bitmap. `svgSide` draws SVGs at least
+ * that many pixels on the long side (vectors stay sharp when scaled up).
+ */
+export async function decode(file: Blob, svgSide = 0): Promise<ImageBitmap> {
   try {
     return await createImageBitmap(file, { imageOrientation: "from-image" });
   } catch {
@@ -235,7 +238,16 @@ export async function decode(file: Blob): Promise<ImageBitmap> {
       const img = new Image();
       img.src = url;
       await img.decode();
-      return await createImageBitmap(img);
+      // An SVG with only a viewBox has no size of its own, which createImageBitmap refuses
+      // without one, so always give it a size.
+      const w = img.naturalWidth || 300;
+      const h = img.naturalHeight || 150;
+      const k = Math.max(1, svgSide / Math.max(w, h));
+      return await createImageBitmap(img, {
+        resizeWidth: Math.round(w * k),
+        resizeHeight: Math.round(h * k),
+        resizeQuality: "high",
+      });
     } finally {
       URL.revokeObjectURL(url);
     }

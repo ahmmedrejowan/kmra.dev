@@ -18,7 +18,7 @@ import { downloadBlob, formatBytes } from "@kmra/ui/lib/files";
 import { toast } from "@kmra/ui/lib/toast";
 import { num as digits, type Locale } from "@kmra/ui/lib/i18n";
 import { LangProvider, useLang, useT } from "@kmra/ui/lib/i18n-react";
-import { openPdf, pageText, PasswordError } from "../lib/pdfjs";
+import { EmptyPdfError, openPdf, pageText, PasswordError } from "../lib/pdfjs";
 import {
   build,
   forget,
@@ -204,9 +204,14 @@ function PdfToolView({ tool, preset }: { tool: string; preset?: Preset }) {
                 "{name} is password-protected. Remove the password in the app that made it, then try again.",
                 { name: file.name },
               )
-            : T("{name} couldn't be opened. It may be damaged or not a PDF.", {
-                name: file.name,
-              }),
+            : err instanceof EmptyPdfError
+              ? T("{name} has no pages.", { name: file.name })
+              : T(
+                  "{name} couldn't be opened. It may be damaged or not a PDF.",
+                  {
+                    name: file.name,
+                  },
+                ),
         );
       }
     }

@@ -16,3 +16,10 @@ apps/*/public/test-fixtures/
 
 # pdf.js runtime files, copied from node_modules at build time
 apps/pdftool/public/pdfjs/
+
+# Test files: generated each run, or local-only (unknown licences)
+tests/fixtures/gen/
+tests/fixtures/local/
+test-results/
+playwright-report/
+tests/test-results/

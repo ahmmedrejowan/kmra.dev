@@ -7,7 +7,7 @@ import { downloadBlob, IMAGE_ACCEPT } from "@kmra/ui/lib/files";
 import { toast } from "@kmra/ui/lib/toast";
 import type { Locale } from "@kmra/ui/lib/i18n";
 import { LangProvider, useLang, useT } from "@kmra/ui/lib/i18n-react";
-import { linkWarnings, parse, read, type Found } from "../lib/scan";
+import { linkWarnings, parse, pixelsOf, read, type Found } from "../lib/scan";
 
 /** Scan QR codes and barcodes from the camera or an image. Everything is read on this device. */
 type Mode = "camera" | "image";
@@ -69,7 +69,9 @@ function Result({ f }: { f: Found }) {
     day
       ? d.toLocaleDateString(loc, { dateStyle: "full" })
       : d.toLocaleString(loc, { dateStyle: "full", timeStyle: "short" });
-  const fmt = f.format.replace(/([a-z])([A-Z])/g, "$1 $2");
+  const fmt = f.format
+    .replace(/([a-z])([A-Z])/g, "$1 $2")
+    .replace("QRCode", "QR Code");
   return (
     <div className="scan-result">
       <div className="scan-head">
@@ -385,13 +387,21 @@ function ScannerView({ preset }: { preset?: Preset }) {
     try {
       const all: Found[] = [];
       let first: Found[] = [];
+      let size: [number, number] | null = null;
       for (const [i, f] of files.entries()) {
-        const r = await read(f);
-        if (i === 0) first = r;
+        // Decode in the browser first: the reader alone can't open WebP, AVIF or SVG, and
+        // ignores a phone photo's EXIF rotation
+        const { canvas, pixels } = await pixelsOf(f);
+        const r = await read(pixels);
+        if (i === 0) {
+          first = r;
+          size = [canvas.width, canvas.height];
+        }
         all.push(...r);
       }
       setMarks(first.flatMap((c) => (c.corners ? [c.corners] : [])));
-      setDims(null);
+      // Outlines are in the decoded image's pixels, which keep the shown image's shape
+      setDims(size);
       setPreview((old) => {
         if (old) URL.revokeObjectURL(old);
         return URL.createObjectURL(files[0]!);
@@ -530,16 +540,7 @@ function ScannerView({ preset }: { preset?: Preset }) {
           </div>
         ) : preview ? (
           <div className="scan-view" onClick={pick}>
-            <img
-              src={preview}
-              alt={T("Scanned image")}
-              onLoad={(e) =>
-                setDims([
-                  e.currentTarget.naturalWidth,
-                  e.currentTarget.naturalHeight,
-                ])
-              }
-            />
+            <img src={preview} alt={T("Scanned image")} />
             {dims && marks.length > 0 && (
               <svg
                 viewBox={`0 0 ${dims[0]} ${dims[1]}`}

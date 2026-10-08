@@ -1,5 +1,5 @@
 import { LangProvider, useT } from "@kmra/ui/lib/i18n-react";
-import type { Locale } from "@kmra/ui/lib/i18n";
+import { num, type Locale } from "@kmra/ui/lib/i18n";
 import {
   useCallback,
   useEffect,
@@ -537,8 +537,16 @@ function ImageToolView({ tool, preset, tools, lang = "en" }: Props) {
       downloadBlob(out.blob, outName(it.file, out.type));
       return;
     }
-    const r = await engine.encode(it.key, it.file.type, settingsFor(it));
-    downloadBlob(r.blob, outName(it.file, r.type));
+    try {
+      const r = await engine.encode(it.key, it.file.type, settingsFor(it));
+      downloadBlob(r.blob, outName(it.file, r.type));
+    } catch {
+      toast(
+        T(
+          "Processing failed. The image may be too large for this device's memory.",
+        ),
+      );
+    }
   }
 
   async function downloadZip() {
@@ -680,7 +688,7 @@ function ImageToolView({ tool, preset, tools, lang = "en" }: Props) {
     isLossy(type) ? (
       <div className="ctl">
         <label htmlFor={id}>
-          Quality <span>{s.target ? T("Auto") : s.quality}</span>
+          {T("Quality")} <span>{s.target ? T("Auto") : s.quality}</span>
         </label>
         <input
           id={id}
@@ -695,9 +703,7 @@ function ImageToolView({ tool, preset, tools, lang = "en" }: Props) {
     ) : (
       <p className="muted" style={{ margin: 0, fontSize: 14 }}>
         {T(
-          T(
-            "PNG is lossless, so there's no quality setting. Pick JPEG or WebP for smaller files.",
-          ),
+          "PNG is lossless, so there's no quality setting. Pick JPEG or WebP for smaller files.",
         )}
       </p>
     );
@@ -706,7 +712,13 @@ function ImageToolView({ tool, preset, tools, lang = "en" }: Props) {
     <div className="ctl">
       <span className="lbl">{T("Exact size")}</span>
       <div className="chips">
-        {[null, ...TARGETS].map((v) => (
+        {/* A preset's own target (e.g. 20 or 240 KB) is listed too, so it stays visible and selectable */}
+        {[
+          null,
+          ...[...new Set([...TARGETS, ...(s.target ? [s.target] : [])])].sort(
+            (a, b) => a - b,
+          ),
+        ].map((v) => (
           <button
             key={String(v)}
             type="button"
@@ -714,7 +726,9 @@ function ImageToolView({ tool, preset, tools, lang = "en" }: Props) {
             onClick={() => set({ target: v, form: null })}
           >
             {v
-              ? `${short ? "≤" : T("Under")} ${v} KB`
+              ? short
+                ? `≤ ${num(lang, v)} KB`
+                : T("Under {n} KB", { n: v })
               : short
                 ? T("Any size")
                 : T("Off")}
@@ -1282,8 +1296,10 @@ function ImageToolView({ tool, preset, tools, lang = "en" }: Props) {
         </small>
         {outForItem.over ? (
           <small className="warn">
-            Can't get under {s.target} KB at this size. Make the image smaller
-            in Advanced.
+            {T(
+              "Can't get under {n} KB at this size. Make the image smaller in Advanced.",
+              { n: s.target ?? 0 },
+            )}
           </small>
         ) : s.target && isLossy(type) ? (
           <small>

@@ -116,7 +116,8 @@ function FaviconView() {
 
   async function open(files: File[]) {
     try {
-      setSrc({ file: files[0]!, bmp: await decode(files[0]!) });
+      // SVGs are drawn large so the 512 px icons stay sharp
+      setSrc({ file: files[0]!, bmp: await decode(files[0]!, 1024) });
     } catch {
       toast(T("{name} couldn't be opened.", { name: files[0]!.name }));
     }

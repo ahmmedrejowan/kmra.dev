@@ -22,14 +22,22 @@ export class PasswordError extends Error {
   }
 }
 
-/** Open a PDF for drawing. Throws PasswordError for protected files. */
+/** A PDF without a single page. */
+export class EmptyPdfError extends Error {
+  constructor() {
+    super("empty");
+  }
+}
+
+/** Open a PDF for drawing. Throws PasswordError for protected files, EmptyPdfError for no pages. */
 export async function openPdf(
   bytes: Uint8Array,
   password?: string,
 ): Promise<PDFDocumentProxy> {
   const m = await pdfjs();
+  let doc: PDFDocumentProxy;
   try {
-    return await m.getDocument({
+    doc = await m.getDocument({
       // pdf.js takes ownership of the buffer, so give it a copy
       data: bytes.slice(),
       password,
@@ -44,6 +52,11 @@ export async function openPdf(
       throw new PasswordError();
     throw err;
   }
+  if (doc.numPages < 1) {
+    void doc.loadingTask.destroy();
+    throw new EmptyPdfError();
+  }
+  return doc;
 }
 
 /**

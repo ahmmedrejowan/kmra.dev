@@ -511,7 +511,7 @@ function PickerView({
           {picked.length > 0 && (
             <div className="ctl">
               <span className="lbl">
-                Kept <span>{picked.length}</span>
+                {T("Kept")} <span>{picked.length}</span>
               </span>
               <div className="swatch-grid sm">
                 {picked.map((c) => (

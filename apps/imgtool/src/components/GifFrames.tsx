@@ -69,6 +69,8 @@ async function decodeGif(file: File): Promise<Gif> {
     if (f.disposalType === 2) ctx.clearRect(left, top, width, height);
     else if (f.disposalType === 3 && restore) ctx.putImageData(restore, 0, 0);
   }
+  // A damaged file can parse without a single readable frame
+  if (!frames.length || !W || !H) throw new Error("no frames");
   return { file, w: W, h: H, frames, canvases };
 }
 

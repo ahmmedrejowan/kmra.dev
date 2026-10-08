@@ -19,6 +19,8 @@ function ort(): Promise<typeof Ort> {
     o.env.wasm.wasmPaths = { wasm };
     // Threads need cross-origin isolation, which the site doesn't use
     o.env.wasm.numThreads = 1;
+    // Only real errors in the console, not the models' optimisation notes
+    o.env.logLevel = "error";
     return o;
   })();
   return ortP;
@@ -32,6 +34,8 @@ function session(file: string): Promise<Ort.InferenceSession> {
       o.InferenceSession.create(`/models/${file}`, {
         executionProviders: ["wasm"],
         graphOptimizationLevel: "all",
+        // 3 = errors only (the models log a warning per weight otherwise)
+        logSeverityLevel: 3,
       }),
     );
     // Let a failed download be retried later

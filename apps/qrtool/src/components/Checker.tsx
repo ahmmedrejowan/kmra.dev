@@ -606,7 +606,8 @@ async function runChecks(
       !code.inverted,
       need + 2,
     );
-    const m = Math.floor(q.min * 2) / 2;
+    // Judge the measured margin (with a quarter-module tolerance); round only for display
+    const m = q.min;
     const edge = q.atEdge
       ? " " +
         T(
@@ -625,7 +626,7 @@ async function runChecks(
         T(
           "About {n} modules of blank space around the code; {need} is the standard.",
           {
-            n: m,
+            n: Math.round(m * 2) / 2,
             need,
           },
         ) + edge,

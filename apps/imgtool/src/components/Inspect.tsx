@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Icon } from "@kmra/ui/components/Icon";
 import { downloadBlob, formatBytes, isImageFile } from "@kmra/ui/lib/files";
 import { stashFiles } from "@kmra/ui/lib/handoff";
+import { toast } from "@kmra/ui/lib/toast";
 import {
   baseName,
   CopyBtn,
@@ -244,6 +245,13 @@ function InspectView({ mode }: { mode: Mode }) {
             stats: analyse(await createImageBitmap(new ImageData(1, 1))),
             meta,
           });
+        else
+          toast(
+            T(
+              "{name} couldn't be opened. It may be damaged or in a format your browser can't read.",
+              { name: file.name },
+            ),
+          );
       }
     }
     setBusy(false);
@@ -479,7 +487,10 @@ function ExifPanel({ e }: { e: Entry }) {
         <div className="note warn">
           <Icon name="shield" />
           <span>
-            Taken at {lat.toFixed(5)}, {lon.toFixed(5)}.{" "}
+            {T("Taken at {place}.").replace(
+              "{place}",
+              `${lat.toFixed(5)}, ${lon.toFixed(5)}`,
+            )}{" "}
             <a
               href={`https://www.openstreetmap.org/?mlat=${lat}&mlon=${lon}#map=15/${lat}/${lon}`}
               target="_blank"
