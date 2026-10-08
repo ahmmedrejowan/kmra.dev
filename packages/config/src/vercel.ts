@@ -28,6 +28,11 @@ export function appConfig(opts: { camera?: boolean } = {}): VercelConfig {
   return {
     framework: "astro",
     buildCommand: "turbo run build",
+    // Skip the build (exit 0) when a push doesn't touch this app or the shared packages, so one
+    // push doesn't spend a deployment on every app (the free plan allows 100 a day). Runs in
+    // apps/<id>; exit 1 means "build".
+    ignoreCommand:
+      'git diff --quiet "${VERCEL_GIT_PREVIOUS_SHA:-HEAD^}" HEAD -- . ../../packages ../../pnpm-lock.yaml',
     outputDirectory: "dist",
     cleanUrls: true,
     trailingSlash: false,
