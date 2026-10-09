@@ -1,6 +1,5 @@
 ---
 import {
-  apps,
   CONTACT,
   getApp,
   HUB,
@@ -11,6 +10,7 @@ import Wordmark from "./Wordmark.astro";
 import Icon from "./Icon.astro";
 import { markSvg } from "../lib/brand";
 import { appLink, hubLink, langLinks, pageLocale } from "../lib/locale";
+import { footerApps } from "../lib/related";
 import { lp, t as tr } from "../lib/i18n";
 
 interface Props {
@@ -24,10 +24,6 @@ const L = (p: string) => lp(locale, p);
 const app = localizeApp(getApp(appId), locale);
 const langs = langLinks(Astro, app);
 const dev = import.meta.env.DEV;
-// Only apps that are live are listed; others appear once they launch. The current app comes first.
-const liveApps = apps
-  .filter((a) => a.live)
-  .sort((a, b) => Number(b.id === appId) - Number(a.id === appId));
 const year = new Date().getFullYear();
 const readyTools = app.tools.filter((t) => t.ready);
 // Popular tools first, then the rest, seven in all; the sitemap page has everything
@@ -109,11 +105,10 @@ const taskList = app.tasks
       <div>
         <strong>{T("kmra apps")}</strong>
         <ul class="fapps">
-          {liveApps.map((a) => (
+          {footerApps(appId).map((a) => (
             <li>
               <a
                 href={appLink(appId, locale, a.id as AppId, "/", dev)}
-                aria-current={a.id === appId ? "true" : undefined}
                 style={`--app:${a.accent.light}`}
               >
                 <span
@@ -131,6 +126,11 @@ const taskList = app.tasks
               </a>
             </li>
           ))}
+          <li>
+            <a class="fmore" href={L("/more-tools")}>
+              {T("See all kmra tools")}
+            </a>
+          </li>
         </ul>
       </div>
       <div>

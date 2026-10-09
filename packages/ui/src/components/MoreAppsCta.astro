@@ -1,5 +1,6 @@
 ---
-import { apps, localizeApp, type AppId } from "@kmra/registry";
+import { localizeApp, type AppId } from "@kmra/registry";
+import { ctaApps, otherApps } from "../lib/related";
 import Icon from "./Icon.astro";
 import { markSvg } from "../lib/brand";
 import { appLink, pageLocale } from "../lib/locale";
@@ -14,10 +15,9 @@ const { appId } = Astro.props;
 const dev = import.meta.env.DEV;
 const locale = pageLocale(Astro);
 const T = (s: string, v?: Record<string, string | number>) => tr(locale, s, v);
-const others = apps
-  .filter((a) => a.live && a.id !== appId)
-  .map((a) => localizeApp(a, locale));
-const shown = others.slice(0, 2);
+// Two other apps; the footer lists the next three (lib/related)
+const others = otherApps(appId);
+const shown = ctaApps(appId).map((a) => localizeApp(a, locale));
 ---
 
 {others.length > 0 && (

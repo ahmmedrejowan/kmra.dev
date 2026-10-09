@@ -270,3 +270,24 @@ test("every app links back to kmra.dev (footer, Apps menu, more-tools)", async (
   const bn = await (await page.request.get("http://localhost:4601/bn")).text();
   expect(bn).toContain('href="https://kmra.dev/bn"');
 });
+
+test("each app shows 2 other apps above the footer and 3 more in it: 5 different, never itself", async ({
+  page,
+}) => {
+  for (const [host, port] of Object.entries(PORTS)) {
+    if (host === "kmra.dev") continue;
+    await page.goto(`http://localhost:${port}/`);
+    const host_ = (h: string) => new URL(h).hostname;
+    const cta = await page
+      .locator(".cta-more-app")
+      .evaluateAll((els) => els.map((e) => (e as HTMLAnchorElement).href));
+    const foot = await page
+      .locator(".fapps a:not(.fmore)")
+      .evaluateAll((els) => els.map((e) => (e as HTMLAnchorElement).href));
+    expect(cta, host).toHaveLength(2);
+    expect(foot, host).toHaveLength(3);
+    const all = [...cta, ...foot].map(host_);
+    expect(new Set(all).size, host).toBe(5);
+    expect(all, host).not.toContain(host);
+  }
+});

@@ -190,14 +190,14 @@ const appHref = (a: App) =>
                 </a>
               );
             })}
-            <a class="apps-more" href={L("/more-tools")}>
-              {T("See all kmra tools")}
-            </a>
-            {HUB.live && (
-              <a class="apps-more" href={hubLink(locale, "/", dev)}>
-                {T("Every app on kmra.dev")}
-              </a>
-            )}
+            <div class="apps-more">
+              <a href={L("/more-tools")}>{T("See all kmra tools")}</a>
+              {HUB.live && (
+                <a href={hubLink(locale, "/", dev)}>
+                  {T("Every app on kmra.dev")}
+                </a>
+              )}
+            </div>
           </div>
         </div>
 
