@@ -4,12 +4,16 @@
  *
  *   pnpm indexnow            # all live apps
  *   pnpm indexnow devtool    # one app
+ *   pnpm indexnow kmra       # the hub, kmra.dev
  */
-import { apps, INDEXNOW_KEY } from "../packages/registry/src/index.ts";
+import { apps, HUB, INDEXNOW_KEY } from "../packages/registry/src/index.ts";
 
 const only = process.argv[2];
-for (const app of apps.filter((a) => a.live && (!only || a.id === only))) {
-  const host = `${app.id}.kmra.dev`;
+const hosts = [
+  ...apps.filter((a) => a.live).map((a) => ({ id: a.id, host: `${a.id}.kmra.dev` })),
+  ...(HUB.live ? [{ id: HUB.id, host: "kmra.dev" }] : []),
+];
+for (const { host } of hosts.filter((h) => !only || h.id === only)) {
   const xml = await (await fetch(`https://${host}/sitemap.xml`)).text();
   const urlList = [...xml.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1]!);
   const res = await fetch("https://api.indexnow.org/indexnow", {
