@@ -3389,7 +3389,7 @@ export const HUB = {
     softLight: "#f4f4f5",
     softDark: "#1d1d21",
   },
-  live: false,
+  live: true,
   devPort: 4320,
   locales: ["en", "bn"],
 } as const;

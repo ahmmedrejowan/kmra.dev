@@ -252,3 +252,21 @@ test("privacy, about, 404, icons, share images, sitemap and robots", async ({
   ).trim();
   expect(key).toBe("0f0695727b67e3fb00b1dc4dd4f0ff4f");
 });
+
+test("every app links back to kmra.dev (footer, Apps menu, more-tools)", async ({
+  page,
+}) => {
+  for (const [id, port] of Object.entries(PORTS)) {
+    if (id === "kmra.dev") continue;
+    const home = await (await page.request.get(`http://localhost:${port}/`)).text();
+    expect(home, id).toContain('href="https://kmra.dev/"');
+    expect(home, id).toContain("Every app on kmra.dev");
+    const more = await (
+      await page.request.get(`http://localhost:${port}/more-tools`)
+    ).text();
+    expect(more, id).toContain("Drop any file on kmra.dev");
+  }
+  // Bangla pages link to the hub's Bangla home
+  const bn = await (await page.request.get("http://localhost:4601/bn")).text();
+  expect(bn).toContain('href="https://kmra.dev/bn"');
+});
