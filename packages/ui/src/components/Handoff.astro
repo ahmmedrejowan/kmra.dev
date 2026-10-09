@@ -1,0 +1,39 @@
+---
+/**
+ * /handoff in every app: the kmra.dev hub frames this page (only kmra.dev may, see
+ * @kmra/config) and posts the file someone dropped on the hub. The file is kept in this app's own
+ * storage (lib/handoff, as the home page's drop box does) and the hub then opens the tool, which
+ * takes it on load. Nothing is uploaded: the file goes from one tab's memory to this site's storage.
+ */
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>Handoff</title>
+  </head>
+  <body>
+    <script>
+      import { hubOrigin } from "@kmra/registry";
+      import { stashFiles } from "../lib/handoff";
+
+      const allowed = [hubOrigin(false), ...(import.meta.env.DEV ? [hubOrigin(true)] : [])];
+      addEventListener("message", async (e: MessageEvent) => {
+        if (!allowed.includes(e.origin) || e.data?.type !== "kmra:files") return;
+        const files = (e.data.files as unknown[]).filter(
+          (f): f is File => f instanceof File,
+        );
+        let ok = files.length > 0;
+        if (ok) await stashFiles(files).catch(() => (ok = false));
+        (e.source as Window | null)?.postMessage(
+          { type: "kmra:stored", ok },
+          { targetOrigin: e.origin },
+        );
+      });
+      if (parent !== window)
+        for (const o of allowed) parent.postMessage({ type: "kmra:ready" }, o);
+    </script>
+  </body>
+</html>

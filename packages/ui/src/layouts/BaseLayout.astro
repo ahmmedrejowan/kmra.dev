@@ -6,6 +6,7 @@ import {
   apps,
   brandName,
   getApp,
+  HUB,
   type AppId,
 } from "@kmra/registry";
 import SiteHeader from "../components/SiteHeader.astro";
@@ -16,7 +17,7 @@ import Shortcuts from "../components/Shortcuts";
 // Cookieless page counts, served from the site's own domain on Vercel (allowed by the CSP)
 import Analytics from "@vercel/analytics/astro";
 import { localizeApp } from "@kmra/registry";
-import { appLink, langLinks, pageLocale } from "../lib/locale";
+import { appLink, hubLink, langLinks, pageLocale } from "../lib/locale";
 import { LOCALES, lp, t as tr } from "../lib/i18n";
 import "@fontsource/noto-sans-bengali/400.css";
 import "@fontsource/noto-sans-bengali/600.css";
@@ -138,6 +139,17 @@ const paletteItems: PaletteItem[] = [
     href: lp(lang, "/more-tools"),
     icon: "zap",
   },
+  ...(HUB.live
+    ? [
+        {
+          group: T("Help"),
+          name: T("Every app on kmra.dev"),
+          hint: "kmra.dev",
+          href: hubLink(lang, "/", dev),
+          icon: "grid" as const,
+        },
+      ]
+    : []),
   {
     group: T("Help"),
     name: T("How it works"),

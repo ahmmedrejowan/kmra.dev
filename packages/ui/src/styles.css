@@ -1119,6 +1119,22 @@ a:hover .feat-body > .ico.go {
     display: none;
   }
 }
+/* An element in another app's colour (set --acc-l/-d and --acc-soft-l/-d on it) */
+.hue {
+  --acc: var(--acc-l);
+  --acc-soft: var(--acc-soft-l);
+}
+:root[data-theme="dark"] .hue {
+  --acc: var(--acc-d);
+  --acc-soft: var(--acc-soft-d);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .hue {
+    --acc: var(--acc-d);
+    --acc-soft: var(--acc-soft-d);
+  }
+}
+
 .feat {
   width: 360px;
   flex: none;
@@ -1681,6 +1697,11 @@ a:hover .feat-body > .ico.go {
 }
 .task-all strong {
   color: var(--acc);
+}
+.more-hub {
+  margin: 28px 0 0;
+  text-align: center;
+  font-weight: 600;
 }
 .more-apps {
   display: grid;

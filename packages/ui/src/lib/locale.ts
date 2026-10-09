@@ -1,4 +1,11 @@
-import { appUrl, getApp, type App, type AppId } from "@kmra/registry";
+import {
+  appUrl,
+  getApp,
+  HUB,
+  hubUrl,
+  type App,
+  type AppId,
+} from "@kmra/registry";
 import { LOCALES, lp, localeOf, parsePath, type Locale } from "./i18n";
 
 /** What Astro components need from `Astro` */
@@ -46,4 +53,10 @@ export function appLink(
   const has = (getApp(target).locales ?? ["en"]).includes(locale);
   const p = has ? lp(locale, path) : path;
   return current === target ? p : appUrl(target, p, dev);
+}
+
+/** Link to a page on kmra.dev (the hub), in the reader's language when the hub has it */
+export function hubLink(locale: Locale, path = "/", dev = false): string {
+  const has = (HUB.locales as readonly string[]).includes(locale);
+  return hubUrl(has ? lp(locale, path) : path, dev);
 }

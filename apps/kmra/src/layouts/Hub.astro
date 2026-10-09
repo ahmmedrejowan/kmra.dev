@@ -1,0 +1,356 @@
+---
+import "@kmra/ui/styles.css";
+import "../hub.css";
+import { allPages, CONTACT, HUB } from "@kmra/registry";
+import Icon from "@kmra/ui/components/Icon.astro";
+import CommandPalette, {
+  type PaletteItem,
+} from "@kmra/ui/components/CommandPalette";
+import Shortcuts from "@kmra/ui/components/Shortcuts";
+import Analytics from "@vercel/analytics/astro";
+import { markSvg } from "@kmra/ui/lib/brand";
+import { langLinks, pageLocale } from "@kmra/ui/lib/locale";
+import { LOCALES, lp, t as tr } from "@kmra/ui/lib/i18n";
+import "@fontsource/noto-sans-bengali/400.css";
+import "@fontsource/noto-sans-bengali/600.css";
+import "@fontsource/noto-sans-bengali/700.css";
+import { appsIn, link, toolsOf, totalTools } from "../lib/hub";
+
+interface Props {
+  /** Full page title */
+  title: string;
+  description?: string;
+  /** OG image slug under /og/ */
+  og?: string;
+  noindex?: boolean;
+  schema?: Record<string, unknown>[];
+}
+
+const { title, description, og, noindex = false, schema = [] } = Astro.props;
+const lang = pageLocale(Astro);
+const T = (s: string, v?: Record<string, string | number>) => tr(lang, s, v);
+const L = (p: string) => lp(lang, p);
+const apps = appsIn(lang);
+const site = Astro.site ?? new URL("https://kmra.dev");
+const desc =
+  description ??
+  T(
+    "{n} free tools for images, PDFs, video, QR codes, text in pictures and code. Everything runs in your browser, so your files stay on your device.",
+    { n: totalTools },
+  );
+const path = Astro.url.pathname
+  .replace(/(index)?\.html$/, "")
+  .replace(/(.)\/$/, "$1");
+const canonical = new URL(path, site).toString();
+const basePath = path.replace(new RegExp(`^/${lang}(?=/|$)`), "") || "/";
+const ogSlug = og ?? (basePath === "/" ? "index" : basePath.slice(1));
+const ogImage = new URL(`/og/${ogSlug}.png`, site).toString();
+const alternates = langLinks(Astro, HUB as never);
+const mark = markSvg("kmra", HUB.accent.light);
+
+const jsonLd = [
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    name: "kmra.dev",
+    url: site.toString(),
+    description: desc,
+    publisher: { "@type": "Organization", name: "kmra.dev", url: "https://kmra.dev" },
+  },
+  ...schema,
+];
+
+const palette: PaletteItem[] = [
+  ...allPages(lang).map((p) => {
+    const app = apps.find((a) => a.id === p.app)!;
+    return {
+      group: T("{app} tools", { app: app.short }),
+      name: p.name,
+      hint: p.kind === "task" ? p.hint : app.short,
+      href: link(p.app, `/${p.slug}`, lang),
+      icon: p.icon,
+    };
+  }),
+  { group: T("Help"), name: T("All tools"), hint: "kmra.dev", href: L("/tools"), icon: "grid" },
+  { group: T("Help"), name: T("Privacy"), hint: T("What we store"), href: L("/privacy"), icon: "shield" },
+  { group: T("Help"), name: T("About"), hint: "kmra.dev", href: L("/about"), icon: "layers" },
+  { group: T("Help"), name: T("Keyboard shortcuts"), hint: "?", href: "#shortcuts", icon: "sliders" },
+];
+const year = new Date().getFullYear();
+---
+
+<!doctype html>
+<html lang={lang}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <!-- Bing Webmaster Tools ownership (same code for every kmra site); keep it to stay verified -->
+    <meta name="msvalidate.01" content="1A20507FD30F025DFEDE13A418175F01" />
+    <title>{title}</title>
+    <meta name="description" content={desc} />
+    <meta name="robots" content={noindex ? "noindex, follow" : "index, follow"} />
+    {!noindex && <link rel="canonical" href={canonical} />}
+    <meta name="application-name" content="kmra.dev" />
+    <meta name="apple-mobile-web-app-title" content="kmra.dev" />
+    <meta name="theme-color" content="#fafafa" />
+    <meta name="color-scheme" content="light dark" />
+    <link rel="icon" href="/favicon.ico" sizes="48x48" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="sitemap" type="application/xml" href="/sitemap.xml" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="kmra.dev" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={desc} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:locale" content={LOCALES.find((l) => l.code === lang)?.og ?? "en_US"} />
+    {!noindex && alternates.map((a) => (
+      <link rel="alternate" hreflang={a.code} href={new URL(a.href, site).toString()} />
+    ))}
+    {!noindex && (
+      <link rel="alternate" hreflang="x-default" href={new URL(alternates.find((a) => a.code === "en")!.href, site).toString()} />
+    )}
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={desc} />
+    <meta name="twitter:image" content={ogImage} />
+    <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+    <script is:inline>
+      try {
+        const t = localStorage.getItem("kmra-theme");
+        if (t === "dark" || t === "light")
+          document.documentElement.dataset.theme = t;
+      } catch {}
+    </script>
+  </head>
+  <body class="hub">
+    <a href="#main" class="sr-only skip">{T("Skip to content")}</a>
+    <header class="site">
+      <div class="wrap">
+        <div class="hd">
+          <a class="logo" href={L("/")} aria-label={T("kmra.dev home")}>
+            <span class="wm">
+              <span class="wm-mark" set:html={mark} aria-hidden="true" />
+              <span class="wm-text"><span class="wm-b">kmra</span><span class="hub-dot">.dev</span></span>
+            </span>
+          </a>
+          <nav aria-label={T("Main")} style="display: contents">
+            <div class="menu">
+              <button type="button" aria-expanded="false" aria-controls="m-tools">
+                {T("Tools")} <Icon name="down" />
+              </button>
+              <div class="mega cols" id="m-tools" style="--cols: 3" hidden>
+                {apps.map((a) => {
+                  const list = toolsOf(a, lang);
+                  return (
+                    <div class="mgrp hue" style={`--acc-l:${a.accent.light};--acc-d:${a.accent.dark};--acc-soft-l:${a.accent.softLight};--acc-soft-d:${a.accent.softDark}`}>
+                      <h6>{a.short}</h6>
+                      {list.slice(0, 3).map((e) => (
+                        <a class="mi" href={e.href}>
+                          <span class="tile"><Icon name={e.tool.icon} /></span>
+                          <span>
+                            <strong>{e.tool.name}</strong>
+                            <small>{e.tool.blurb}</small>
+                          </span>
+                        </a>
+                      ))}
+                      <a class="mi-more" href={link(a.id, "/tools", lang)}>
+                        {T("All {n} in {app}", { n: list.length, app: a.brand.join("") })}
+                      </a>
+                    </div>
+                  );
+                })}
+                <a class="mega-all" href={L("/tools")}>
+                  <Icon name="grid" />
+                  {T("All {n} tools", { n: totalTools })}
+                  <Icon name="right" />
+                </a>
+              </div>
+            </div>
+            <div class="menu">
+              <button type="button" aria-expanded="false" aria-controls="m-apps">
+                {T("Apps")} <Icon name="down" />
+              </button>
+              <div class="mega apps-menu" id="m-apps" hidden>
+                <h6>{T("kmra apps")}</h6>
+                {apps.map((a) => (
+                  <a class="app-item" href={link(a.id, "/", lang)} style={`--app:${a.accent.light}`}>
+                    <span class="app-item-mark" set:html={markSvg(a.id, a.accent.light)} aria-hidden="true" />
+                    <span class="app-item-text">
+                      <span class="app-item-name"><span set:html={`<span style="color:var(--app)">${a.brand[0]}</span>${a.brand[1]}`} /></span>
+                      <small>{a.tagline.split(/[.।]/)[0]}{lang === "bn" ? "।" : "."}</small>
+                      <span class="app-item-meta">
+                        <span>{T("{n} tools", { n: toolsOf(a).length })}</span>
+                        <span>{a.id}.kmra.dev</span>
+                      </span>
+                    </span>
+                  </a>
+                ))}
+              </div>
+            </div>
+            <a class="navlink" href={L("/privacy")}>{T("Privacy")}</a>
+            <a class="navlink" href={L("/about")}>{T("About")}</a>
+          </nav>
+          <div class="right">
+            <button class="kbtn" type="button" data-palette aria-label={T("Search tools")}>
+              <Icon name="search" />
+              <span>{T("Search {n} tools", { n: totalTools })}</span>
+              <kbd data-keys="mod+K">⌘K</kbd>
+            </button>
+            <div class="menu lang">
+              <button type="button" class="iconbtn" aria-expanded="false" aria-controls="m-lang" aria-label={T("Language")} title={T("Language")}>
+                <Icon name="languages" />
+              </button>
+              <div class="mega single lang-menu" id="m-lang" hidden>
+                <h6>{T("Language")}</h6>
+                {alternates.map((l) => (
+                  <a class="mi" href={l.href} hreflang={l.code} lang={l.code} aria-current={l.current ? "true" : undefined}>
+                    <span>
+                      <strong>{l.native}</strong>
+                      {l.native !== l.name && <small>{l.name}</small>}
+                    </span>
+                    {l.current && <Icon name="check" class="ico lang-check" />}
+                  </a>
+                ))}
+              </div>
+            </div>
+            <button class="iconbtn" type="button" id="theme-toggle" aria-label={T("Switch light or dark theme")}>
+              <Icon name="moon" class="ico theme-moon" />
+              <Icon name="sun" class="ico theme-sun" />
+            </button>
+            <button class="iconbtn burger" type="button" id="burger" aria-label={T("Menu")} aria-expanded="false" aria-controls="drawer">
+              <Icon name="menu" />
+            </button>
+          </div>
+        </div>
+        <nav class="drawer" id="drawer" aria-label={T("Menu")} hidden>
+          <div class="drawer-langs">
+            {alternates.map((l) => (
+              <a href={l.href} hreflang={l.code} lang={l.code} aria-current={l.current ? "true" : undefined}>{l.native}</a>
+            ))}
+          </div>
+          <h6>{T("kmra apps")}</h6>
+          {apps.map((a) => (
+            <a href={link(a.id, "/", lang)}>
+              <span class="appdot" style={`background:${a.accent.light}`} />
+              {a.brand.join("")}
+              <small class="muted">{T("{n} tools", { n: toolsOf(a).length })}</small>
+            </a>
+          ))}
+          <a class="drawer-all" href={L("/tools")}>{T("All {n} tools", { n: totalTools })}</a>
+          <a href={L("/privacy")}>{T("Privacy")}</a>
+          <a href={L("/about")}>{T("About")}</a>
+        </nav>
+      </div>
+    </header>
+    <main id="main">
+      <slot />
+    </main>
+    <footer class="site">
+      <div class="wrap">
+        <div class="fgrid hub-fgrid">
+          <div class="fbrand">
+            <a href={L("/")} aria-label={T("kmra.dev home")}>
+              <span class="wm lg">
+                <span class="wm-mark" set:html={mark} aria-hidden="true" />
+                <span class="wm-text"><span class="wm-b">kmra</span><span class="hub-dot">.dev</span></span>
+              </span>
+            </a>
+            <p>{T("Small tools for everyday files. Everything runs in your browser, so your files stay on your device.")}</p>
+            <a class="fmail" href={`mailto:${CONTACT.email}`}>{CONTACT.email}</a>
+          </div>
+          {apps.map((a) => {
+            const list = toolsOf(a, lang);
+            return (
+              <div>
+                <strong>
+                  <a class="fapp-title" href={link(a.id, "/", lang)} set:html={`<span style="color:${a.accent.light}">${a.brand[0]}</span>${a.brand[1]}`} />
+                </strong>
+                <ul>
+                  {list.slice(0, 4).map((e) => (
+                    <li><a href={e.href}>{e.tool.name}</a></li>
+                  ))}
+                  <li><a class="fmore" href={link(a.id, "/tools", lang)}>{T("All {n} tools", { n: list.length })}</a></li>
+                </ul>
+              </div>
+            );
+          })}
+        </div>
+        <div class="fbottom">
+          <span>© {year} kmra.dev</span>
+          <span class="flangs">
+            <Icon name="languages" />
+            {alternates.map((l) => (
+              <a href={l.href} hreflang={l.code} lang={l.code} aria-current={l.current ? "true" : undefined}>{l.native}</a>
+            ))}
+          </span>
+          <span>
+            <a href={L("/privacy")}>{T("Privacy")}</a> ·{" "}
+            {T("Made by")} <a href={CONTACT.portfolio}>{CONTACT.maker}</a>
+          </span>
+        </div>
+      </div>
+    </footer>
+    <CommandPalette client:idle items={palette} lang={lang} />
+    <Shortcuts client:idle lang={lang} />
+    <Analytics />
+    <script is:inline>
+      if ("serviceWorker" in navigator && !/^(localhost|127\.0\.0\.1)$/.test(location.hostname)) {
+        addEventListener("load", () => navigator.serviceWorker.register("/sw.js").catch(() => {}));
+      }
+    </script>
+    <script>
+      import { formatKeys } from "@kmra/ui/lib/keys";
+      document.querySelectorAll<HTMLElement>("[data-keys]").forEach((el) => {
+        el.textContent = formatKeys(el.dataset.keys ?? "");
+      });
+      const menus = () => [...document.querySelectorAll<HTMLButtonElement>(".menu > button")];
+      function setMenu(btn: HTMLButtonElement, open: boolean) {
+        btn.setAttribute("aria-expanded", String(open));
+        const panel = document.getElementById(btn.getAttribute("aria-controls") ?? "");
+        if (panel) panel.hidden = !open;
+      }
+      const closeAll = (except?: Element) => menus().forEach((b) => b !== except && setMenu(b, false));
+      document.addEventListener("click", (e) => {
+        const target = e.target as Element;
+        const btn = target.closest<HTMLButtonElement>(".menu > button");
+        if (btn) {
+          closeAll(btn);
+          setMenu(btn, btn.getAttribute("aria-expanded") !== "true");
+          return;
+        }
+        if (!target.closest(".mega")) closeAll();
+      });
+      document.addEventListener("keydown", (e) => e.key === "Escape" && closeAll());
+      const burger = document.getElementById("burger")!;
+      const drawer = document.getElementById("drawer")!;
+      burger.addEventListener("click", () => {
+        drawer.hidden = !drawer.hidden;
+        burger.setAttribute("aria-expanded", String(!drawer.hidden));
+      });
+      document.getElementById("theme-toggle")!.addEventListener("click", () => {
+        const root = document.documentElement;
+        const dark = root.dataset.theme ? root.dataset.theme === "dark" : matchMedia("(prefers-color-scheme: dark)").matches;
+        root.dataset.theme = dark ? "light" : "dark";
+        try { localStorage.setItem("kmra-theme", root.dataset.theme); } catch {}
+      });
+      document.querySelectorAll("[data-palette]").forEach((b) =>
+        b.addEventListener("click", () => window.dispatchEvent(new CustomEvent("kmra:palette"))),
+      );
+    </script>
+  </body>
+</html>
+
+<style is:global>
+  .theme-sun { display: none; }
+  :root[data-theme="dark"] .theme-sun { display: block; }
+  :root[data-theme="dark"] .theme-moon { display: none; }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) .theme-sun { display: block; }
+    :root:not([data-theme="light"]) .theme-moon { display: none; }
+  }
+</style>

@@ -1,9 +1,16 @@
 ---
-import { apps, CONTACT, getApp, localizeApp, type AppId } from "@kmra/registry";
+import {
+  apps,
+  CONTACT,
+  getApp,
+  HUB,
+  localizeApp,
+  type AppId,
+} from "@kmra/registry";
 import Wordmark from "./Wordmark.astro";
 import Icon from "./Icon.astro";
 import { markSvg } from "../lib/brand";
-import { appLink, langLinks, pageLocale } from "../lib/locale";
+import { appLink, hubLink, langLinks, pageLocale } from "../lib/locale";
 import { lp, t as tr } from "../lib/i18n";
 
 interface Props {
@@ -157,7 +164,14 @@ const taskList = app.tasks
       </div>
     </div>
     <div class="fbottom">
-      <span>© {year} kmra.dev</span>
+      <span>
+        © {year}{" "}
+        {HUB.live ? (
+          <a href={hubLink(locale, "/", dev)}>kmra.dev</a>
+        ) : (
+          "kmra.dev"
+        )}
+      </span>
       {langs.length > 1 && (
         <nav class="flangs" aria-label={T("Language")}>
           <Icon name="languages" />

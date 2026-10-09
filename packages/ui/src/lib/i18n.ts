@@ -4,6 +4,7 @@ import { BN_QRTOOL } from "../i18n/bn-qrtool";
 import { BN_DEVTOOL } from "../i18n/bn-devtool";
 import { BN_OCRTOOL } from "../i18n/bn-ocrtool";
 import { BN_VIDTOOL } from "../i18n/bn-vidtool";
+import { BN_KMRA } from "../i18n/bn-kmra";
 
 /**
  * Languages. English lives at the root (/resize); every other language gets a path prefix
@@ -20,6 +21,8 @@ export const DEFAULT_LOCALE: Locale = "en";
 
 const DICTS: Partial<Record<Locale, Record<string, string>>> = {
   bn: {
+    // Hub strings first: an app's own translation of a shared word wins
+    ...BN_KMRA,
     ...BN,
     ...BN_PDFTOOL,
     ...BN_QRTOOL,

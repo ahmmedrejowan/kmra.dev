@@ -1,8 +1,8 @@
 ---
-import { apps, localizeApp, type AppId } from "@kmra/registry";
+import { apps, HUB, localizeApp, type AppId } from "@kmra/registry";
 import Icon from "./Icon.astro";
 import { markSvg } from "../lib/brand";
-import { appLink, pageLocale } from "../lib/locale";
+import { appLink, hubLink, pageLocale } from "../lib/locale";
 import { t as tr } from "../lib/i18n";
 
 /** The other kmra apps, each with what it does and its main tools. */
@@ -72,3 +72,11 @@ const others = apps
     );
   })}
 </div>
+
+{HUB.live && (
+  <p class="more-hub">
+    <a href={hubLink(locale, "/", dev)}>
+      {T("Drop any file on kmra.dev to see every tool that opens it")}
+    </a>
+  </p>
+)}

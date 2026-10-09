@@ -3372,6 +3372,47 @@ export function appOrigin(id: AppId, dev = false): string {
     : `https://${app.id}.${ROOT_DOMAIN}`;
 }
 
+/**
+ * kmra.dev itself: the hub that lists every app (apps/kmra). It isn't in `apps` because it has no
+ * tools of its own. Apps link to it only once `live` is true (the domain serves).
+ */
+export const HUB = {
+  id: "kmra",
+  name: "kmra.dev",
+  brand: ["kmra", ".dev"],
+  short: "kmra.dev",
+  tagline:
+    "Free tools for images, PDFs, video, QR codes, text in pictures and code. Everything runs in your browser.",
+  accent: {
+    light: "#18181b",
+    dark: "#f4f4f5",
+    softLight: "#f4f4f5",
+    softDark: "#1d1d21",
+  },
+  live: false,
+  devPort: 4320,
+  locales: ["en", "bn"],
+} as const;
+
+export type BrandId = AppId | "kmra";
+
+/** Name, colours and wordmark of an app or of the hub */
+export function brandOf(id: BrandId): Pick<
+  App,
+  "id" | "name" | "brand" | "tagline" | "accent"
+> {
+  return id === "kmra" ? HUB : getApp(id);
+}
+
+/** http://localhost:4320 in dev, https://kmra.dev in production */
+export function hubOrigin(dev = false): string {
+  return dev ? `http://localhost:${HUB.devPort}` : `https://${ROOT_DOMAIN}`;
+}
+
+export function hubUrl(path = "/", dev = false): string {
+  return new URL(path, hubOrigin(dev)).toString();
+}
+
 /** Absolute URL to a page in any app. Use for cross-app links. */
 export function appUrl(id: AppId, path = "/", dev = false): string {
   return new URL(path, appOrigin(id, dev)).toString();

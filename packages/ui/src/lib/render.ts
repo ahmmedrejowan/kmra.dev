@@ -7,7 +7,7 @@ import { createRequire } from "node:module";
 import { dirname, join } from "node:path";
 import satori from "satori";
 import { Resvg } from "@resvg/resvg-js";
-import { getApp, type AppId } from "@kmra/registry";
+import { brandOf, type BrandId } from "@kmra/registry";
 import { ICONS, type IconKey } from "./icons";
 import { markSvg } from "./brand";
 
@@ -64,7 +64,7 @@ const h = (
 });
 
 export interface OgInput {
-  appId: AppId;
+  appId: BrandId;
   title: string;
   subtitle: string;
   /** Small label above the title, e.g. "Image tool" */
@@ -79,7 +79,8 @@ export async function ogPng({
   kicker,
   icon,
 }: OgInput): Promise<Uint8Array> {
-  const app = getApp(appId);
+  const app = brandOf(appId);
+  const hub = appId === "kmra";
   const acc = app.accent.light;
   const tree = h(
     "div",
@@ -92,7 +93,9 @@ export async function ogPng({
       fontFamily: "Geist",
       color: "#18181b",
       backgroundColor: "#fafafa",
-      backgroundImage: `radial-gradient(circle at 85% 20%, ${acc}2e, transparent 45%), radial-gradient(circle at 0% 100%, ${acc}1a, transparent 40%)`,
+      backgroundImage: hub
+        ? "radial-gradient(circle at 88% 12%, #0057ff26, transparent 40%), radial-gradient(circle at 62% 105%, #12a59424, transparent 40%), radial-gradient(circle at 100% 70%, #e5484d1f, transparent 35%), radial-gradient(circle at 0% 100%, #8e4ec61a, transparent 40%)"
+        : `radial-gradient(circle at 85% 20%, ${acc}2e, transparent 45%), radial-gradient(circle at 0% 100%, ${acc}1a, transparent 40%)`,
     },
     [
       h("div", { display: "flex", alignItems: "center", gap: 18 }, [
@@ -111,14 +114,18 @@ export async function ogPng({
           },
           [
             h("span", { color: acc }, app.brand[0]),
-            h("span", { color: "#18181b" }, app.brand[1]),
+            h("span", { color: hub ? "#71717a" : "#18181b" }, app.brand[1]),
           ],
         ),
-        h(
-          "span",
-          { fontSize: 26, color: "#71717a", marginLeft: 4, marginTop: 8 },
-          "kmra.dev",
-        ),
+        ...(hub
+          ? []
+          : [
+              h(
+                "span",
+                { fontSize: 26, color: "#71717a", marginLeft: 4, marginTop: 8 },
+                "kmra.dev",
+              ),
+            ]),
       ]),
       h("div", { display: "flex", flex: 1 }),
       h(
@@ -247,11 +254,11 @@ export function ogResponse(input: OgInput) {
 
 /** PNG app icon. `maskable` keeps the glyph inside the safe zone on a full-bleed background. */
 export function iconPng(
-  appId: AppId,
+  appId: BrandId,
   size: number,
   maskable = false,
 ): Uint8Array {
-  const app = getApp(appId);
+  const app = brandOf(appId);
   return svgToPng(
     markSvg(appId, app.accent.light, {
       rounded: !maskable && size < 180,
@@ -262,7 +269,7 @@ export function iconPng(
 }
 
 /** favicon.ico containing a 32px and 48px PNG. */
-export function faviconIco(appId: AppId): Uint8Array {
+export function faviconIco(appId: BrandId): Uint8Array {
   const images = [32, 48].map((s) => ({ s, data: iconPng(appId, s) }));
   const header = 6 + 16 * images.length;
   const total = header + images.reduce((n, i) => n + i.data.length, 0);

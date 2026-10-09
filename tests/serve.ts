@@ -8,7 +8,14 @@
 import { createServer } from "node:http";
 import { readFile, stat } from "node:fs/promises";
 import { extname, join, normalize } from "node:path";
-import { CSP, permissionsPolicy } from "../packages/config/src/vercel.ts";
+import {
+  CSP,
+  CSP_HANDOFF,
+  HANDOFF_PATH,
+  HUB_FRAMES,
+  csp,
+  permissionsPolicy,
+} from "../packages/config/src/vercel.ts";
 
 const [appId, portArg] = process.argv.slice(2);
 if (!appId || !portArg) throw new Error("usage: serve.ts <appId> <port>");
@@ -41,12 +48,16 @@ const TYPES: Record<string, string> = {
 };
 
 const HEADERS = {
-  "Content-Security-Policy": CSP,
+  "Content-Security-Policy":
+    appId === "kmra" ? csp({ frameSrc: HUB_FRAMES }) : CSP,
   "X-Content-Type-Options": "nosniff",
   "Referrer-Policy": "strict-origin-when-cross-origin",
   "Permissions-Policy": permissionsPolicy({ camera, screen }),
   "Cross-Origin-Opener-Policy": "same-origin",
 };
+// The page the hub frames to hand a file over: framed by kmra.dev only, no COOP
+const { "Cross-Origin-Opener-Policy": _, ...rest } = HEADERS;
+const HANDOFF_HEADERS = { ...rest, "Content-Security-Policy": CSP_HANDOFF };
 
 async function file(path: string): Promise<string | null> {
   try {
@@ -86,7 +97,7 @@ createServer(async (req, res) => {
   try {
     const body = await readFile(path);
     res.writeHead(status, {
-      ...HEADERS,
+      ...(url.pathname === HANDOFF_PATH ? HANDOFF_HEADERS : HEADERS),
       "Content-Type": TYPES[extname(path)] ?? "application/octet-stream",
     });
     res.end(body);

@@ -1,5 +1,5 @@
 ---
-import type { Tool } from "@kmra/registry";
+import type { Accent, Tool } from "@kmra/registry";
 import Icon from "./Icon.astro";
 import { pageLocale } from "../lib/locale";
 import { lp, t as tr } from "../lib/i18n";
@@ -8,13 +8,20 @@ interface Props {
   tool: Tool;
   /** Duplicate copy in a scrolling row: hidden from assistive tech and keyboard */
   hidden?: boolean;
+  /** A tool of another app (the kmra.dev hub): its app, full link and colour */
+  appId?: string;
+  href?: string;
+  accent?: Accent;
 }
 
-const { tool, hidden = false } = Astro.props;
+const { tool, hidden = false, appId, href, accent } = Astro.props;
 const locale = pageLocale(Astro);
 const T = (s: string) => tr(locale, s);
 // Each app is built with its own site URL (imgtool.kmra.dev, pdftool.kmra.dev, ...)
-const app = Astro.site?.hostname.split(".")[0] ?? "imgtool";
+const app = appId ?? Astro.site?.hostname.split(".")[0] ?? "imgtool";
+const hue = accent
+  ? `--acc-l:${accent.light};--acc-d:${accent.dark};--acc-soft-l:${accent.softLight};--acc-soft-d:${accent.softDark}`
+  : undefined;
 const page = (lines = 3) => Array.from({ length: lines });
 // A few lines of code per developer tool card
 const SNIPS: Record<string, string[]> = {
@@ -82,8 +89,9 @@ const dm = (() => {
 ---
 
 <a
-  class="feat"
-  href={lp(locale, `/${tool.slug}`)}
+  class:list={["feat", { hue: !!accent }]}
+  style={hue}
+  href={href ?? lp(locale, `/${tool.slug}`)}
   aria-hidden={hidden ? "true" : undefined}
   tabindex={hidden ? -1 : undefined}
 >

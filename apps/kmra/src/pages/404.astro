@@ -1,0 +1,22 @@
+---
+import Hub from "../layouts/Hub.astro";
+import NotFound from "@kmra/ui/components/NotFound.astro";
+import ToolCard from "@kmra/ui/components/ToolCard.astro";
+import { mixed } from "../lib/hub";
+---
+
+<Hub title="Page not found · kmra.dev" og="index" noindex>
+  <section class="hero-band hub-hero">
+    <div class="wrap">
+      <NotFound />
+    </div>
+  </section>
+  <div class="wrap page-body">
+    <div class="sechead primary">
+      <h2>Popular tools</h2>
+    </div>
+    <div class="hub-grid">
+      {mixed(1).map((e) => <ToolCard {...e} />)}
+    </div>
+  </div>
+</Hub>

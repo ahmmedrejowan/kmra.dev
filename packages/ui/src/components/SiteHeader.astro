@@ -2,6 +2,7 @@
 import {
   apps,
   getApp,
+  HUB,
   localizeApp,
   type App,
   type AppId,
@@ -9,7 +10,7 @@ import {
 import Icon from "./Icon.astro";
 import Wordmark from "./Wordmark.astro";
 import { markSvg } from "../lib/brand";
-import { appLink, langLinks, pageLocale } from "../lib/locale";
+import { appLink, hubLink, langLinks, pageLocale } from "../lib/locale";
 import { lp, t as tr } from "../lib/i18n";
 import { taskSections, toolSections } from "../lib/sections";
 
@@ -192,6 +193,11 @@ const appHref = (a: App) =>
             <a class="apps-more" href={L("/more-tools")}>
               {T("See all kmra tools")}
             </a>
+            {HUB.live && (
+              <a class="apps-more" href={hubLink(locale, "/", dev)}>
+                {T("Every app on kmra.dev")}
+              </a>
+            )}
           </div>
         </div>
 

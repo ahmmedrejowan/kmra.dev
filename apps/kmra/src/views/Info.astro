@@ -1,0 +1,38 @@
+---
+import Hub from "../layouts/Hub.astro";
+import PageHead from "@kmra/ui/components/PageHead.astro";
+import PrivacyContent from "@kmra/ui/components/PrivacyContent.astro";
+import AboutContent from "@kmra/ui/components/AboutContent.astro";
+import { pageLocale } from "@kmra/ui/lib/locale";
+import { lp, t as tr } from "@kmra/ui/lib/i18n";
+
+/** Privacy and About, in any language */
+interface Props {
+  page: "privacy" | "about";
+}
+const { page } = Astro.props;
+const locale = pageLocale(Astro);
+const T = (s: string) => tr(locale, s);
+const home = { label: "kmra.dev", href: lp(locale, "/") };
+const P = {
+  privacy: {
+    title: T("Privacy"),
+    description: T("Your files stay on your device. No accounts, no cookies. What kmra stores, and what it doesn't."),
+    icon: "shield" as const,
+    intro: T("Short version: your files never leave your device, and nothing identifies you."),
+  },
+  about: {
+    title: T("About"),
+    description: T("Small, private tools for everyday files, from kmra.dev."),
+    icon: "layers" as const,
+    intro: T("Small, private tools for everyday files."),
+  },
+}[page];
+---
+
+<Hub title={`${P.title} · kmra.dev`} description={P.description}>
+  <PageHead crumbs={[home, { label: P.title }]} icon={P.icon} title={P.title} intro={P.intro} />
+  <div class="wrap page-body">
+    {page === "privacy" ? <PrivacyContent brand="kmra.dev" ai /> : <AboutContent />}
+  </div>
+</Hub>

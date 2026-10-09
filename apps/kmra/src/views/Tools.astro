@@ -1,0 +1,94 @@
+---
+import Hub from "../layouts/Hub.astro";
+import ToolCard from "@kmra/ui/components/ToolCard.astro";
+import Icon from "@kmra/ui/components/Icon.astro";
+import { pageLocale } from "@kmra/ui/lib/locale";
+import { t as tr } from "@kmra/ui/lib/i18n";
+import { appsIn, hueStyle, toolsOf, totalTools } from "../lib/hub";
+
+const locale = pageLocale(Astro);
+const T = (s: string, v?: Record<string, string | number>) => tr(locale, s, v);
+const apps = appsIn(locale);
+const all = apps.flatMap((a) => toolsOf(a, locale));
+---
+
+<Hub
+  title={T("All {n} tools · kmra.dev", { n: totalTools })}
+  description={T("Every kmra tool in one place: images, PDFs, video, QR codes, text in pictures and code. Search or filter by app.")}
+>
+  <section class="hero-band hub-hero" style="padding-block: 64px 44px">
+    <div class="wrap hero-center">
+      <h1 class="display">{T("What do you need to do?")}</h1>
+      <p class="lede">
+        {T("{n} free tools. Search them, or pick an app.", { n: totalTools })}
+      </p>
+      <label class="hub-search">
+        <Icon name="search" />
+        <input
+          id="q"
+          type="search"
+          placeholder={T("Compress a PDF, remove a background, format JSON")}
+          autocomplete="off"
+          aria-label={T("Search tools")}
+        />
+      </label>
+      <div class="hub-filters" role="group" aria-label={T("Apps")}>
+        <button type="button" data-app="" aria-pressed="true">
+          {T("All")} <small>{tr(locale, "{n}", { n: totalTools })}</small>
+        </button>
+        {apps.map((a) => (
+          <button type="button" class="hue" style={hueStyle(a.accent)} data-app={a.id} aria-pressed="false">
+            <i />{a.short} <small>{tr(locale, "{n}", { n: toolsOf(a).length })}</small>
+          </button>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section style="padding-block: 36px 48px">
+    <div class="wrap">
+      <div class="hub-grid" id="grid">
+        {all.map((e) => (
+          <div
+            class="hub-cell"
+            data-app={e.appId}
+            data-text={`${e.tool.name} ${e.tool.blurb} ${e.tool.description ?? ""} ${e.appId}`.toLowerCase()}
+          >
+            <ToolCard {...e} />
+          </div>
+        ))}
+      </div>
+      <p class="hub-empty" id="empty" hidden>
+        {T("No tool matches that. Try fewer words, or search with ⌘K for use cases too.")}
+      </p>
+    </div>
+  </section>
+</Hub>
+
+<script>
+  const q = document.getElementById("q") as HTMLInputElement;
+  const cells = [...document.querySelectorAll<HTMLElement>("#grid > .hub-cell")];
+  const pills = [...document.querySelectorAll<HTMLButtonElement>(".hub-filters button")];
+  let app = new URLSearchParams(location.search).get("app") ?? "";
+  function apply() {
+    const words = q.value.toLowerCase().split(/\s+/).filter(Boolean);
+    let shown = 0;
+    for (const el of cells) {
+      const ok =
+        (!app || el.dataset.app === app) &&
+        words.every((w) => el.dataset.text!.includes(w));
+      el.hidden = !ok;
+      if (ok) shown++;
+    }
+    pills.forEach((p) => p.setAttribute("aria-pressed", String((p.dataset.app ?? "") === app)));
+    document.getElementById("empty")!.hidden = shown > 0;
+  }
+  q.addEventListener("input", apply);
+  pills.forEach((b) =>
+    b.addEventListener("click", () => {
+      app = b.dataset.app ?? "";
+      apply();
+    }),
+  );
+  apply();
+</script>

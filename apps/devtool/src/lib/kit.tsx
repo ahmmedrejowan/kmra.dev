@@ -20,6 +20,7 @@ import { downloadBlob } from "@kmra/ui/lib/files";
 import { toast } from "@kmra/ui/lib/toast";
 import { useT } from "@kmra/ui/lib/i18n-react";
 import { takeText } from "./handoff";
+import { takeFiles } from "@kmra/ui/lib/handoff";
 
 export function Workspace({
   bar,
@@ -301,7 +302,8 @@ export function BarField({
 }
 
 /**
- * Input state for a tool: starts from text handed over by the home page's smart paste box,
+ * Input state for a tool: starts from text handed over by the home page's smart paste box, or
+ * from a text file dropped on kmra.dev (kept in this site's storage through /handoff),
  * otherwise from `initial`.
  */
 export function useInput(
@@ -311,7 +313,11 @@ export function useInput(
   const [v, set] = useState(initial);
   useEffect(() => {
     const t = takeText(slug);
-    if (t !== null) set(t);
+    if (t !== null) return set(t);
+    void takeFiles().then(async (files) => {
+      const f = files[0];
+      if (f && f.size < 20_000_000) set(await f.text());
+    });
   }, [slug]);
   return [v, set];
 }

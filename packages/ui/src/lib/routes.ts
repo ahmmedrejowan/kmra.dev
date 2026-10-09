@@ -1,5 +1,12 @@
 /** Shared build-time routes (icons, manifest, robots, OG images). Each app re-exports these. */
-import { appOrigin, brandName, getApp, type AppId } from "@kmra/registry";
+import {
+  appOrigin,
+  brandOf,
+  getApp,
+  hubOrigin,
+  type AppId,
+  type BrandId,
+} from "@kmra/registry";
 import type { IconKey } from "./icons";
 import { markSvg } from "./brand";
 import { faviconIco, iconPng, ogResponse } from "./render";
@@ -9,21 +16,22 @@ const bin = (body: Uint8Array, type: string) =>
     headers: { "Content-Type": type },
   });
 
-export const faviconSvg = (appId: AppId) =>
-  new Response(markSvg(appId, getApp(appId).accent.light), {
+export const faviconSvg = (appId: BrandId) =>
+  new Response(markSvg(appId, brandOf(appId).accent.light), {
     headers: { "Content-Type": "image/svg+xml" },
   });
-export const favicon = (appId: AppId) => bin(faviconIco(appId), "image/x-icon");
-export const icon = (appId: AppId, size: number, maskable = false) =>
+export const favicon = (appId: BrandId) => bin(faviconIco(appId), "image/x-icon");
+export const icon = (appId: BrandId, size: number, maskable = false) =>
   bin(iconPng(appId, size, maskable), "image/png");
 
-export function manifest(appId: AppId) {
-  const app = getApp(appId);
+export function manifest(appId: BrandId) {
+  const app = brandOf(appId);
+  const full = appId === "kmra" ? "kmra.dev" : `${app.brand.join("")} by kmra.dev`;
   return new Response(
     JSON.stringify(
       {
-        name: `${brandName(app)} by kmra.dev`,
-        short_name: brandName(app),
+        name: full,
+        short_name: app.brand.join(""),
         description: app.tagline,
         start_url: "/",
         scope: "/",
@@ -48,8 +56,8 @@ export function manifest(appId: AppId) {
   );
 }
 
-export function robots(appId: AppId) {
-  const origin = appOrigin(appId);
+export function robots(appId: BrandId) {
+  const origin = appId === "kmra" ? hubOrigin() : appOrigin(appId);
   return new Response(
     `User-agent: *\nAllow: /\n\nSitemap: ${origin}/sitemap.xml\n`,
     {
@@ -120,12 +128,12 @@ export function ogPages(appId: AppId): OgPage[] {
     {
       slug: "more-tools",
       title: "More tools from kmra",
-      subtitle: "Free, private tools for images, PDFs and QR codes.",
+      subtitle: "Free, private tools for images, PDFs, video, QR codes, text in pictures and code.",
       icon: "zap",
     },
     {
       slug: "about",
-      title: `About ${brandName(app)}`,
+      title: `About ${app.brand.join("")}`,
       subtitle: "Small, private tools for everyday files.",
       icon: "layers",
     },
@@ -139,5 +147,5 @@ export function ogPaths(appId: AppId) {
   }));
 }
 
-export const og = (appId: AppId, page: OgPage) =>
+export const og = (appId: BrandId, page: OgPage) =>
   ogResponse({ appId, ...page });

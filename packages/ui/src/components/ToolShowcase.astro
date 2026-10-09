@@ -1,13 +1,22 @@
 ---
-import type { Tool } from "@kmra/registry";
+import type { Accent, Tool } from "@kmra/registry";
 import ToolCard from "./ToolCard.astro";
 
+interface Entry {
+  tool: Tool;
+  appId?: string;
+  href?: string;
+  accent?: Accent;
+}
 interface Props {
-  tools: readonly Tool[];
+  tools: readonly Tool[] | readonly Entry[];
 }
 
 const { tools } = Astro.props;
-const live = tools.filter((t) => t.ready);
+// Plain tools (this app's), or entries from several apps (the hub)
+const live = (tools as readonly (Tool | Entry)[])
+  .map((t): Entry => ("tool" in t ? t : { tool: t }))
+  .filter((e) => e.tool.ready);
 const half = Math.ceil(live.length / 2);
 const rows = [live.slice(0, half), live.slice(half)].filter((r) => r.length);
 ---
@@ -20,8 +29,8 @@ const rows = [live.slice(0, half), live.slice(half)].filter((r) => r.length);
   {rows.map((row, ri) => (
     <div class:list={["mq-row", { rev: ri % 2 === 1 }]}>
       <div class="mq-track">
-        {row.map((t) => (
-          <ToolCard tool={t} />
+        {row.map((e) => (
+          <ToolCard {...e} />
         ))}
       </div>
     </div>

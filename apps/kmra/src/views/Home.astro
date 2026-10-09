@@ -1,0 +1,171 @@
+---
+import Hub from "../layouts/Hub.astro";
+import HubDrop, { type DropKind } from "../components/HubDrop";
+import ToolShowcase from "@kmra/ui/components/ToolShowcase.astro";
+import PrivacySection from "@kmra/ui/components/PrivacySection.astro";
+import Icon from "@kmra/ui/components/Icon.astro";
+import { markSvg } from "@kmra/ui/lib/brand";
+import { pageLocale } from "@kmra/ui/lib/locale";
+import { lp, t as tr } from "@kmra/ui/lib/i18n";
+import {
+  KINDS,
+  appsIn,
+  hueStyle,
+  label,
+  link,
+  mixed,
+  mixedTasks,
+  toolsOf,
+  totalTasks,
+  totalTools,
+} from "../lib/hub";
+
+const locale = pageLocale(Astro);
+const T = (s: string, v?: Record<string, string | number>) => tr(locale, s, v);
+const apps = appsIn(locale);
+
+const kinds: DropKind[] = KINDS.map((k) => ({
+  key: k.key,
+  label: k.label,
+  mime: k.mime,
+  ext: k.ext,
+  apps: k.tools.map(([id, slugs]) => {
+    const a = apps.find((x) => x.id === id)!;
+    const list = toolsOf(a, locale);
+    return {
+      id,
+      brand: [a.brand[0], a.brand[1]] as [string, string],
+      color: a.accent.light,
+      mark: markSvg(id, a.accent.light),
+      tools: slugs.flatMap((slug) => {
+        const e = list.find((x) => x.tool.slug === slug);
+        return e ? [{ name: e.tool.name, href: e.href, icon: e.tool.icon }] : [];
+      }),
+    };
+  }),
+}));
+const chips = mixed(2, locale).slice(0, 10);
+const tasks = mixedTasks(12, locale);
+const schema = [
+  {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    name: "kmra apps",
+    itemListElement: apps.map((a, i) => ({
+      "@type": "ListItem",
+      position: i + 1,
+      url: link(a.id, "/", locale),
+      name: a.brand.join(""),
+    })),
+  },
+];
+---
+
+<Hub title={T("kmra.dev · Free tools that run in your browser")} schema={schema}>
+  <section class="hero-band hub-hero screen">
+    <div class="wrap hero-center">
+      <h1 class="display">{T("Free tools for every file")}</h1>
+      <p class="lede">
+        {T(
+          "{n} tools for images, PDFs, video, QR codes, text in pictures and code. They all run in your browser, so your files stay on your device.",
+          { n: totalTools },
+        )}
+      </p>
+      <HubDrop
+        client:load
+        lang={locale}
+        kinds={kinds}
+        marks={apps.map((a) => markSvg(a.id, a.accent.light))}
+        formats={["JPG", "PNG", "HEIC", "PDF", "MP4", "MOV", "GIF", "JSON", "CSV"]}
+      />
+      <nav class="hub-chips" aria-label={T("Popular tools")}>
+        {chips.map((e) => (
+          <a class="hue" style={hueStyle(e.accent)} href={e.href}>
+            <Icon name={e.tool.icon} />
+            {label(e, chips, locale)}
+          </a>
+        ))}
+      </nav>
+    </div>
+  </section>
+
+  <section class="screen">
+    <div class="wrap">
+      <div class="sechead primary">
+        <h2>{T("Six apps, one way of working")}</h2>
+        <p>{T("Each app has its own site. All of them are free, need no account and add no watermark.")}</p>
+      </div>
+      <div class="hub-apps">
+        {apps.map((a) => {
+          const list = toolsOf(a, locale);
+          return (
+            <a class="hub-app hue" style={hueStyle(a.accent)} href={link(a.id, "/", locale)}>
+              <div class="hub-app-top">
+                <div class="hub-app-head">
+                  <span class="hub-app-mark" set:html={markSvg(a.id, a.accent.light)} aria-hidden="true" />
+                  <span class="hub-app-name"><b>{a.brand[0]}</b>{a.brand[1]}</span>
+                  <span class="hub-app-count"><strong>{tr(locale, "{n}", { n: list.length })}</strong>{T("tools")}</span>
+                </div>
+                <p>{a.tagline.split(/[.।]/)[0]}{locale === "bn" ? "।" : "."}</p>
+              </div>
+              <ul>
+                {list.slice(0, 4).map((e) => (
+                  <li>
+                    <span class="tile"><Icon name={e.tool.icon} /></span>
+                    {e.tool.name}
+                    <small>{e.tool.blurb}</small>
+                  </li>
+                ))}
+              </ul>
+              <div class="hub-app-foot">
+                {T("Open {app}", { app: a.brand.join("") })}
+                <Icon name="right" />
+                <span>{a.id}.kmra.dev</span>
+              </div>
+            </a>
+          );
+        })}
+      </div>
+    </div>
+  </section>
+
+  <section class="screen">
+    <div class="wrap">
+      <div class="sechead primary">
+        <h2>{T("Popular tools from every app")}</h2>
+        <p>{T("Every tool opens in its app, ready for your file.")}</p>
+      </div>
+    </div>
+    <ToolShowcase tools={mixed(6, locale)} />
+    <div class="wrap" style="display: flex; justify-content: center; margin-top: 20px">
+      <a class="btn lg" href={lp(locale, "/tools")}>
+        <Icon name="grid" />
+        {T("Browse all {n} tools", { n: totalTools })}
+      </a>
+    </div>
+  </section>
+
+  <section class="screen">
+    <div class="wrap">
+      <div class="sechead primary">
+        <h2>{T("Popular tasks")}</h2>
+        <p>{T("Ready-made settings for everyday jobs, from {n} across the apps.", { n: totalTasks })}</p>
+      </div>
+      <div class="tasks">
+        {tasks.map((t) => (
+          <a class="task hue" style={hueStyle(t.app.accent)} href={t.href}>
+            <span class="tile"><Icon name={t.icon} /></span>
+            <span class="task-text">
+              <strong>{t.task.name}</strong>
+              <small>{t.task.short}</small>
+            </span>
+            <Icon name="right" class="ico go" />
+          </a>
+        ))}
+      </div>
+      <div style="margin-top: 32px">
+        <PrivacySection />
+      </div>
+    </div>
+  </section>
+</Hub>

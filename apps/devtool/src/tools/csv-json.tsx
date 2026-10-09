@@ -6,6 +6,7 @@ import { toast } from "@kmra/ui/lib/toast";
 import type { ToolProps } from ".";
 import { BarCheck, BarSeg, Pane, Workspace, type PaneError } from "../lib/kit";
 import { takeText } from "../lib/handoff";
+import { takeFiles } from "@kmra/ui/lib/handoff";
 import { lineCol } from "../lib/encode";
 import { jsonError } from "../lib/json";
 import {
@@ -112,10 +113,11 @@ export default function CsvJson({ preset }: ToolProps) {
     }
   }
 
-  // Text from the home page's smart paste box
+  // Text from the home page's smart paste box, or a file dropped on kmra.dev
   useEffect(() => {
     const t = takeText("csv-json");
-    if (t !== null) setInput(t);
+    if (t !== null) return setInput(t);
+    void takeFiles().then((files) => files[0] && open(files[0]));
   }, []);
 
   // Files can be dropped anywhere on the page
