@@ -55,8 +55,7 @@
 .hub-chips a:hover { border-color: var(--acc); }
 
 /* App panels */
-.hub-apps { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
-.hub-app li small { display: none; }
+.hub-apps { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
 .hub-app {
   position: relative; display: flex; flex-direction: column; border-radius: 20px; overflow: hidden;
   border: 1px solid var(--line); background: var(--card); text-decoration: none; color: var(--fg);
@@ -91,8 +90,7 @@
 .task.hue .tile { background: var(--acc-soft); color: var(--acc); }
 .task-app { display: block; font-size: 11.5px; color: var(--acc); font-weight: 600; margin-top: 2px; }
 
-@media (max-width: 1100px) { .hub-apps { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
-@media (max-width: 860px) { .hub-apps { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 1000px) { .hub-apps { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 640px) {
   .hub-apps { grid-template-columns: 1fr; }
   .hub-match-tools { grid-template-columns: 1fr 1fr; }
@@ -137,11 +135,13 @@
 
 /* Header and footer */
 .hub-dot { color: var(--muted); font-weight: 500; }
-/* The brand on its own row, then one column per app */
-.hub-fgrid { grid-template-columns: repeat(7, minmax(0, 1fr)) !important; }
-.hub-fgrid .fbrand { grid-column: 1 / -1; max-width: 520px; }
+/* The brand, then columns of two apps (two tools each) */
+.hub-fgrid { grid-template-columns: 1.6fr repeat(4, minmax(0, 1fr)) !important; }
+.hub-fcol { display: grid; gap: 22px; align-content: start; }
+.hub-fapp ul { margin-top: 10px; }
+.hub-fsoon strong { color: var(--muted); font-weight: 500; }
 .fapp-title { color: inherit; text-decoration: none; }
-@media (max-width: 1100px) { .hub-fgrid { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; } }
+@media (max-width: 1100px) { .hub-fgrid { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; } .hub-fgrid .fbrand { grid-column: 1 / -1; } }
 @media (max-width: 640px) { .hub-fgrid { grid-template-columns: 1fr 1fr !important; } }
 
 /* Drop box: more tools, no match, busy */

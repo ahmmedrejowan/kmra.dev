@@ -77,6 +77,11 @@ const palette: PaletteItem[] = [
   { group: T("Help"), name: T("Keyboard shortcuts"), hint: "?", href: "#shortcuts", icon: "sliders" },
 ];
 const year = new Date().getFullYear();
+// Footer: two apps per column, two tools each; an odd last slot says more are on the way
+const cols = Array.from({ length: Math.ceil(apps.length / 2) }, (_, i) => [
+  apps[i * 2],
+  apps[i * 2 + 1] ?? null,
+]);
 ---
 
 <!doctype html>
@@ -266,22 +271,28 @@ const year = new Date().getFullYear();
             <p>{T("Small tools for everyday files. Everything runs in your browser, so your files stay on your device.")}</p>
             <a class="fmail" href={`mailto:${CONTACT.email}`}>{CONTACT.email}</a>
           </div>
-          {apps.map((a) => {
-            const list = toolsOf(a, lang);
-            return (
-              <div>
-                <strong>
-                  <a class="fapp-title" href={link(a.id, "/", lang)} set:html={`<span style="color:${a.accent.light}">${a.brand[0]}</span>${a.brand[1]}`} />
-                </strong>
-                <ul>
-                  {list.slice(0, 4).map((e) => (
-                    <li><a href={e.href}>{e.tool.name}</a></li>
-                  ))}
-                  <li><a class="fmore" href={link(a.id, "/tools", lang)}>{T("All {n} tools", { n: list.length })}</a></li>
-                </ul>
-              </div>
-            );
-          })}
+          {cols.map((pair) => (
+            <div class="hub-fcol">
+              {pair.map((a) =>
+                a ? (
+                  <div class="hub-fapp">
+                    <strong>
+                      <a class="fapp-title" href={link(a.id, "/", lang)} set:html={`<span style="color:${a.accent.light}">${a.brand[0]}</span>${a.brand[1]}`} />
+                    </strong>
+                    <ul>
+                      {toolsOf(a, lang).slice(0, 2).map((e) => (
+                        <li><a href={e.href}>{e.tool.name}</a></li>
+                      ))}
+                    </ul>
+                  </div>
+                ) : (
+                  <div class="hub-fapp hub-fsoon">
+                    <strong>{T("More coming soon")}</strong>
+                  </div>
+                ),
+              )}
+            </div>
+          ))}
         </div>
         <div class="fbottom">
           <span>© {year} kmra.dev</span>

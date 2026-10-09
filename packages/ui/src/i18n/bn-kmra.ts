@@ -50,6 +50,7 @@ export const BN_KMRA: Record<string, string> = {
   video: "ভিডিও",
   PDF: "পিডিএফ",
   "Every app on kmra.dev": "kmra.dev-এ সব অ্যাপ",
+  "More coming soon": "আরও আসছে",
   "Drop any file on kmra.dev to see every tool that opens it":
     "kmra.dev-এ যেকোনো ফাইল ছেড়ে দিন, যে টুলগুলো সেটি খোলে সব দেখুন",
 };
