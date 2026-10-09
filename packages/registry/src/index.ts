@@ -1417,7 +1417,7 @@ export const apps = [
       softLight: "#e2f6f3",
       softDark: "#0f2a27",
     },
-    live: false,
+    live: true,
     devPort: 4323,
     toolGroups: ["Optimize", "Edit", "Convert", "Record and info"],
     popular: [
