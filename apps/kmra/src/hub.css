@@ -154,3 +154,12 @@
 .hub-match-tools a[aria-busy] { border-color: var(--app); color: var(--muted); }
 .hub-cell { display: grid; }
 .hub-cell[hidden] { display: none; }
+
+/* The hub's blocks size to their content: the app panels are much taller than the hero, so the
+   shared "hero and second block share a height" rule would leave a big gap above the title */
+main:has(> .hub-hero) {
+  grid-template-rows: none;
+}
+.hub-hero.screen {
+  padding-block: 72px 56px;
+}

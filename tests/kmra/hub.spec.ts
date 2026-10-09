@@ -321,3 +321,10 @@ test("the Apps menu is a grid of styled app tiles on every site", async ({
     expect(box.x + box.width, host).toBeLessThanOrEqual(1280);
   }
 });
+
+test("the hero title sits near the top (no stretched hero)", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/");
+  const top = (await page.locator("h1").boundingBox())!.y;
+  expect(top).toBeLessThan(260);
+});
