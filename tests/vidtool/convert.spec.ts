@@ -215,6 +215,9 @@ test("GIF to MP4 on the fast engine: smaller, even size, plays, repeats", async 
   page,
 }) => {
   await openTool(page, "/gif-to-video");
+  await expect(
+    page.getByRole("button", { name: "Choose GIFs" }),
+  ).toBeVisible();
   await addFiles(page, gen(VID.gif));
   await expect(page.locator(".vt-details")).toContainText("480 × 270", {
     timeout: 60_000,

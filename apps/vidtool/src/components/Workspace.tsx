@@ -76,6 +76,7 @@ export function Workspace({
   tool,
   multiple = true,
   dropTitle,
+  chooseLabel,
   formats,
   accept,
   settings,
@@ -95,6 +96,8 @@ export function Workspace({
   tool: string;
   multiple?: boolean;
   dropTitle?: string;
+  /** The drop box button, when the files aren't videos */
+  chooseLabel?: string;
   formats?: string[];
   accept?: (f: File) => boolean;
   /** The tool's settings (left column, under the file details) */
@@ -326,7 +329,7 @@ export function Workspace({
             formats={formats}
             dragging={dragging}
             onPick={pick}
-            button={multiple ? T("Choose videos") : undefined}
+            button={chooseLabel ?? (multiple ? T("Choose videos") : undefined)}
           />
         </div>
       </div>

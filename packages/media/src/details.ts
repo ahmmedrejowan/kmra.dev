@@ -86,7 +86,7 @@ const TAG_NAMES: [RegExp, string][] = [
     "Created",
   ],
   [
-    /^(encoder|©too|com\.apple\.quicktime\.software|writing_?app|encoded_by)$/i,
+    /^(encoder|©too|©swr|swr|com\.apple\.quicktime\.software|writing_?app|encoded_by)$/i,
     "Encoder",
   ],
   [

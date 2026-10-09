@@ -441,6 +441,15 @@ test("video info shows the details, tags and a location note", async ({
   });
 });
 
+test("video info names QuickTime's software tag", async ({ page }) => {
+  await openTool(page, "/video-info");
+  await addFiles(page, gen(VID.mov));
+  const table = page.locator(".vt-itable");
+  await expect(table).toContainText("Encoder", { timeout: 30_000 });
+  await expect(table).toContainText("Lavf");
+  await expect(table).not.toContainText("Swr");
+});
+
 test("video info copies JSON", async ({ page, context }) => {
   await context.grantPermissions(["clipboard-read", "clipboard-write"]);
   await openTool(page, "/video-info");

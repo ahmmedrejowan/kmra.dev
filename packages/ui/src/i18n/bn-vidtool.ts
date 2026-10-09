@@ -39,6 +39,7 @@ export const BN_VIDTOOL: Record<string, string> = {
     "নতুন ভিডিও বানাতে একটি সেটিং বদলান।",
   "Change video": "ভিডিও বদলান",
   "Choose videos": "ভিডিও বেছে নিন",
+  "Choose GIFs": "GIF বেছে নিন",
   "Common sizes": "প্রচলিত সাইজ",
   "The smallest target is {size}.": "সবচেয়ে ছোট টার্গেট {size}।",
   "Compatible (slower)": "সামঞ্জস্যপূর্ণ (ধীর)",
