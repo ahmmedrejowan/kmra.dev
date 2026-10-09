@@ -219,6 +219,14 @@ function needMp3() {
   return lame;
 }
 
+/**
+ * Bitrates Chrome's AAC encoder on macOS takes. Some others (64–71 kbps among them) pass
+ * isConfigSupported and then fail with an EncodingError, so AAC rates snap down to these.
+ */
+const AAC_RATES = [32, 48, 56, 80, 96, 128, 160, 192, 256, 320].map((k) => k * 1000);
+const aacRate = (bps: number) =>
+  AAC_RATES.filter((r) => r <= bps).pop() ?? AAC_RATES[0]!;
+
 const rot = (r: number) => (((r % 360) + 360) % 360) as Rotation;
 
 /**
@@ -424,10 +432,14 @@ async function setup(
         const sampleRate =
           job.audio?.sampleRate ??
           (prefs[0] === "opus" ? 48_000 : await a.getSampleRate());
+        const bitrate =
+          plan.audioBitrate && prefs[0] === "aac"
+            ? aacRate(plan.audioBitrate)
+            : plan.audioBitrate;
         const codec = await getFirstEncodableAudioCodec(prefs, {
           numberOfChannels: channels,
           sampleRate,
-          ...(plan.audioBitrate ? { bitrate: plan.audioBitrate } : {}),
+          ...(bitrate ? { bitrate } : {}),
         });
         if (!codec)
           throw new Unsupported("This browser can't encode this sound format");
@@ -436,8 +448,8 @@ async function setup(
           forceTranscode: true,
           numberOfChannels: channels,
           sampleRate,
-          ...(plan.audioBitrate && !codec.startsWith("pcm") && codec !== "flac"
-            ? { quality: new Quality({ bitrate: plan.audioBitrate }) }
+          ...(bitrate && !codec.startsWith("pcm") && codec !== "flac"
+            ? { quality: new Quality({ bitrate }) }
             : {}),
           ...((job.video?.speed ?? 1) !== 1
             ? {

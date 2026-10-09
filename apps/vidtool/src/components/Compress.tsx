@@ -8,6 +8,8 @@ import { shortSide, Workspace, type ToolProps } from "./Workspace";
 /** Megabytes as people (and WhatsApp, Discord, mail services) count them */
 const MB = 1_000_000;
 const SIZES = [8, 10, 16, 25, 50];
+/** Smaller targets leave too few bits for a watchable picture */
+const MIN_MB = 0.5;
 const QUALITIES: [number, string][] = [
   [35, "Smaller"],
   [55, "Balanced"],
@@ -95,12 +97,21 @@ export default function Compress({ preset }: ToolProps) {
                   onChange={(e) => {
                     setMbText(e.target.value);
                     const n = parseFloat(e.target.value.replace(",", "."));
-                    if (Number.isFinite(n) && n >= 0.5 && n <= 4000) setMb(n);
+                    // Below the smallest target: aim for it (the note says so)
+                    if (Number.isFinite(n) && n >= 0)
+                      setMb(Math.min(4000, Math.max(MIN_MB, n)));
                   }}
                   onBlur={() => setMbText(String(mb))}
                 />
                 <span>MB</span>
               </div>
+              {parseFloat(mbText.replace(",", ".")) < MIN_MB && (
+                <p className="note">
+                  {T("The smallest target is {size}.", {
+                    size: `${MIN_MB} MB`,
+                  })}
+                </p>
+              )}
               <div
                 className="chips vt-chips"
                 role="group"

@@ -40,6 +40,7 @@ export const BN_VIDTOOL: Record<string, string> = {
   "Change video": "ভিডিও বদলান",
   "Choose videos": "ভিডিও বেছে নিন",
   "Common sizes": "প্রচলিত সাইজ",
+  "The smallest target is {size}.": "সবচেয়ে ছোট টার্গেট {size}।",
   "Compatible (slower)": "সামঞ্জস্যপূর্ণ (ধীর)",
   "Hardware (fast)": "হার্ডওয়্যার (দ্রুত)",
   "Lossless copy (instant)": "মান না হারিয়ে কপি (তাৎক্ষণিক)",
