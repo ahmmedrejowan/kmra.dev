@@ -1443,7 +1443,7 @@ export const apps = [
         blurb: "Smaller files, set size",
         icon: "compress",
         group: "Optimize",
-        ready: false,
+        ready: true,
         steps: [
           "Drop a video.",
           "Pick a quality, or a size like 16 MB.",
@@ -1459,7 +1459,7 @@ export const apps = [
         blurb: "MOV, MKV, WebM to MP4",
         icon: "convert",
         group: "Optimize",
-        ready: false,
+        ready: true,
         steps: [
           "Drop one or more videos.",
           "Pick MP4 or WebM.",
@@ -1475,7 +1475,7 @@ export const apps = [
         blurb: "Reels, Shorts, square",
         icon: "resize",
         group: "Optimize",
-        ready: false,
+        ready: true,
         steps: [
           "Drop a video.",
           "Pick a size or a shape like 9:16, then crop or pad.",
@@ -1491,7 +1491,7 @@ export const apps = [
         blurb: "Cut start and end",
         icon: "scissors",
         group: "Edit",
-        ready: false,
+        ready: true,
         steps: [
           "Drop a video.",
           "Drag the handles or type the start and end time.",
@@ -1550,7 +1550,7 @@ export const apps = [
         blurb: "Silent copy",
         icon: "volumeX",
         group: "Edit",
-        ready: false,
+        ready: true,
         steps: [
           "Drop a video.",
           "The sound track is removed.",
@@ -1593,7 +1593,7 @@ export const apps = [
         blurb: "Audio from video",
         icon: "music",
         group: "Convert",
-        ready: false,
+        ready: true,
         steps: [
           "Drop a video.",
           "Pick MP3, M4A or WAV.",

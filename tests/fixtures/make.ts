@@ -11,6 +11,7 @@ import { makeDevtoolFixtures } from "./devtool.ts";
 import { makeOcrPdfFixtures } from "./ocrtool-pdf.ts";
 import { makeOcrImageFixtures } from "./ocrtool.ts";
 import { makeOcrPhotoFixtures } from "./ocrtool-photo.ts";
+import { makeVidtoolFixtures } from "./vidtool.ts";
 
 export default async function make() {
   await mkdir(GEN, { recursive: true });
@@ -28,4 +29,6 @@ export default async function make() {
   await makeOcrImageFixtures(GEN);
   // OCRTool photo engine inputs (app screenshot, phone photo of a page): see ocrtool-photo.ts
   await makeOcrPhotoFixtures(GEN);
+  // VidTool inputs (short MP4, MOV, WebM, MKV and AVI clips made with ffmpeg): see vidtool.ts
+  await makeVidtoolFixtures(GEN);
 }

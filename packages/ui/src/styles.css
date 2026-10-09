@@ -9467,3 +9467,439 @@ select.bar-input {
     width: 100%;
   }
 }
+
+/* vidtool card art: a video frame with the tool's mark and a timeline under it */
+.art-vid {
+  display: grid;
+  gap: 10px;
+  width: min(220px, 80%);
+}
+.art-vid-screen {
+  display: grid;
+  place-items: center;
+  aspect-ratio: 16 / 9;
+  border-radius: 10px;
+  background: radial-gradient(
+    120% 90% at 30% 20%,
+    color-mix(in srgb, var(--acc) 40%, #1b1b1f),
+    #111114
+  );
+  box-shadow: 0 14px 30px -18px rgb(0 0 0 / 0.6);
+}
+.art-vid.resize .art-vid-screen {
+  aspect-ratio: 9 / 16;
+  width: 38%;
+  justify-self: center;
+}
+.art-vid-screen .ico {
+  width: 34px;
+  height: 34px;
+  color: #fff;
+  opacity: 0.92;
+}
+.art-vid-track {
+  position: relative;
+  height: 8px;
+  border-radius: 4px;
+  background: var(--line);
+}
+.art-vid-track .sel {
+  position: absolute;
+  inset: 0 30% 0 18%;
+  border-radius: 4px;
+  background: var(--acc);
+  opacity: 0.85;
+}
+.art-vid-track .head {
+  position: absolute;
+  top: -4px;
+  left: 46%;
+  width: 3px;
+  height: 16px;
+  border-radius: 2px;
+  background: var(--fg);
+}
+
+/* media: shared player and timeline (@kmra/media/components) and the video workspace (vidtool) */
+.mp-player {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+  width: 100%;
+}
+.mp-video {
+  /* --ar (width ÷ height) from the probe sizes the player before the video loads: as big as
+     the column allows without passing the height cap */
+  --cap: min(62vh, 560px);
+  display: block;
+  aspect-ratio: var(--ar, 16 / 9);
+  width: min(100%, calc(var(--cap) * var(--ar, 1.7778)));
+  height: auto;
+  max-height: var(--cap);
+  border-radius: 10px;
+  background: #000;
+}
+.mp-player.audio audio {
+  width: min(520px, 100%);
+}
+.mp-time {
+  font-size: 12.5px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+.mp-cant {
+  display: grid;
+  gap: 4px;
+  place-items: center;
+  text-align: center;
+  width: 100%;
+  min-height: 180px;
+  padding: 24px;
+  border: 1px dashed var(--line);
+  border-radius: 10px;
+  font-size: 14px;
+}
+.mp-cant span {
+  color: var(--muted);
+}
+.mp-timeline {
+  display: grid;
+  gap: 10px;
+  width: 100%;
+}
+.mp-strip {
+  position: relative;
+  height: 56px;
+  border-radius: 8px;
+  background: var(--raise);
+  touch-action: none;
+  cursor: pointer;
+  user-select: none;
+}
+.mp-strip canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 8px;
+}
+.mp-dim {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  background: rgb(9 9 11 / 0.62);
+  pointer-events: none;
+}
+.mp-dim:first-of-type {
+  border-radius: 8px 0 0 8px;
+}
+.mp-dim:last-of-type {
+  border-radius: 0 8px 8px 0;
+}
+.mp-range {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  border-top: 3px solid var(--acc);
+  border-bottom: 3px solid var(--acc);
+  cursor: grab;
+}
+.mp-range:active {
+  cursor: grabbing;
+}
+.mp-head {
+  position: absolute;
+  top: -4px;
+  bottom: -4px;
+  width: 2px;
+  margin-left: -1px;
+  background: var(--fg);
+  box-shadow: 0 0 0 1px var(--card);
+  pointer-events: none;
+}
+.mp-handle {
+  position: absolute;
+  top: -2px;
+  bottom: -2px;
+  width: 16px;
+  margin-left: -8px;
+  border-radius: 5px;
+  background: var(--acc);
+  cursor: ew-resize;
+  touch-action: none;
+}
+.mp-handle::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 2px;
+  height: 18px;
+  border-radius: 1px;
+  background: var(--on-acc);
+  transform: translate(-50%, -50%);
+}
+.mp-handle:focus-visible {
+  outline: 2px solid var(--fg);
+  outline-offset: 2px;
+}
+.mp-timeline.single .mp-handle {
+  width: 4px;
+  margin-left: -2px;
+}
+.mp-timeline.single .mp-handle::after {
+  display: none;
+}
+.mp-times {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  justify-content: space-between;
+  gap: 10px;
+}
+.mp-tin {
+  display: grid;
+  gap: 4px;
+  font-size: 12.5px;
+  color: var(--muted);
+}
+.mp-tin input {
+  width: 110px;
+  font-variant-numeric: tabular-nums;
+  color: var(--fg);
+}
+.mp-len {
+  font-size: 13.5px;
+  color: var(--muted);
+  padding-bottom: 9px;
+}
+.mp-len b {
+  color: var(--fg);
+  font-variant-numeric: tabular-nums;
+}
+.mp-engine {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 500;
+}
+.mp-engine i {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--good);
+}
+.mp-engine.ffmpeg i {
+  background: var(--warn);
+}
+.mp-engine.copy i {
+  background: var(--acc);
+}
+.mp-bar {
+  display: block;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--raise);
+  overflow: hidden;
+}
+.mp-bar i {
+  display: block;
+  height: 100%;
+  background: var(--acc);
+  transition: width 0.2s;
+}
+
+.vt-loading {
+  min-height: 420px;
+}
+.vt-ws .stage.vt-stage {
+  display: grid;
+  gap: 14px;
+  justify-items: stretch;
+  padding: 20px;
+}
+.vt-stage-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 32px;
+}
+.vt-name {
+  font-weight: 500;
+  font-size: 14.5px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.vt-stage-head .seg {
+  flex: none;
+}
+.vt-under {
+  width: 100%;
+}
+.vt-files ul {
+  list-style: none;
+  margin: 0 0 8px;
+  padding: 0;
+  display: grid;
+  gap: 4px;
+  max-height: 220px;
+  overflow: auto;
+}
+.vt-files li {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  border-radius: 8px;
+}
+.vt-files li.on {
+  background: var(--acc-soft);
+}
+.vt-file {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  border: 0;
+  background: none;
+  padding: 6px 8px;
+  font-size: 13.5px;
+  color: var(--fg);
+  text-align: left;
+  cursor: pointer;
+}
+.vt-file .nm {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.vt-file .st {
+  flex: none;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+.vt-files .lbl span,
+.vt-details .lbl {
+  align-items: center;
+}
+.vt-details .kv > div,
+.vt-plan > div {
+  grid-template-columns: minmax(90px, 40%) 1fr;
+}
+.vt-est {
+  font-weight: 600;
+}
+.vt-out .vt-run,
+.vt-out .vt-cancel,
+.vt-out .vt-download,
+.vt-out .vt-zip {
+  width: 100%;
+  justify-content: center;
+}
+.vt-progress {
+  display: grid;
+  gap: 10px;
+}
+.vt-pline {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13.5px;
+  margin-bottom: 6px;
+}
+.vt-pline b {
+  font-variant-numeric: tabular-nums;
+}
+.vt-pfile {
+  display: block;
+  font-size: 12.5px;
+  margin-top: 4px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.vt-result {
+  display: grid;
+  gap: 10px;
+  border-top: 1px solid var(--line);
+  padding-top: 16px;
+}
+.vt-sizes {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-size: 14px;
+}
+.vt-sizes > span {
+  display: grid;
+}
+.vt-sizes small {
+  font-size: 12px;
+  color: var(--muted);
+}
+.vt-sizes .ico {
+  width: 16px;
+  height: 16px;
+  color: var(--muted);
+}
+.vt-sizes em {
+  margin-left: auto;
+  font-style: normal;
+  font-weight: 600;
+  font-size: 13px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--raise);
+}
+.vt-sizes em.down {
+  color: var(--good);
+}
+.vt-outinfo,
+.vt-src {
+  margin: 0;
+  font-size: 13px;
+}
+.vt-all {
+  display: grid;
+  gap: 6px;
+}
+.vt-mb {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.vt-mb span {
+  color: var(--muted);
+  font-size: 14px;
+}
+.vt-chips {
+  margin-top: 8px;
+}
+@media (max-width: 900px) {
+  .vt-ws .stage.vt-stage {
+    padding: 14px;
+  }
+  .mp-video {
+    --cap: 52vh;
+  }
+}
+/* Sound from a video: the result's player first, the source picture under it */
+.vt-source .mp-video {
+  --cap: min(48vh, 420px);
+}
+@media (max-width: 480px) {
+  .mp-times {
+    flex-wrap: nowrap;
+    gap: 6px;
+  }
+  .mp-tin input {
+    width: 88px;
+  }
+  .mp-len {
+    text-align: center;
+  }
+}

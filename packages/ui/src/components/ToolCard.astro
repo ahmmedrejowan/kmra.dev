@@ -192,6 +192,16 @@ const dm = (() => {
           <span set:html={QR} />
         ))}
       </div>
+    ) : app === "vidtool" ? (
+      <div class:list={["art-vid", tool.slug]} aria-hidden="true">
+        <span class="art-vid-screen">
+          <Icon name={tool.icon} />
+        </span>
+        <span class="art-vid-track">
+          <i class="sel" />
+          <i class="head" />
+        </span>
+      </div>
     ) : app === "ocrtool" ? (
       <div class:list={["art-ocr", tool.slug]} aria-hidden="true">
         <span class="art-ocr-src">

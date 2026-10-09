@@ -583,7 +583,29 @@ importers:
         version: 6.0.3
 
   packages/media:
+    dependencies:
+      '@ffmpeg/core':
+        specifier: ^0.12.10
+        version: 0.12.10
+      '@ffmpeg/ffmpeg':
+        specifier: ^0.12.15
+        version: 0.12.15
+      '@kmra/ui':
+        specifier: workspace:*
+        version: link:../ui
+      '@mediabunny/mp3-encoder':
+        specifier: ^1.61.3
+        version: 1.61.3(mediabunny@1.61.3)
+      mediabunny:
+        specifier: ^1.61.3
+        version: 1.61.3
     devDependencies:
+      '@types/react':
+        specifier: ^19.3.0
+        version: 19.3.0
+      react:
+        specifier: ^19.3.0
+        version: 19.3.0
       typescript:
         specifier: ^6.0.3
         version: 6.0.3
@@ -1106,6 +1128,18 @@ packages:
     cpu: [x64]
     os: [win32]
 
+  '@ffmpeg/core@0.12.10':
+    resolution: {integrity: sha512-dzNplnn2Nxle2c2i2rrDhqcB19q9cglCkWnoMTDN9Q9l3PvdjZWd1HfSPjCNWc/p8Q3CT+Es9fWOR0UhAeYQZA==}
+    engines: {node: '>=16.x'}
+
+  '@ffmpeg/ffmpeg@0.12.15':
+    resolution: {integrity: sha512-1C8Obr4GsN3xw+/1Ww6PFM84wSQAGsdoTuTWPOj2OizsRDLT4CXTaVjPhkw6ARyDus1B9X/L2LiXHqYYsGnRFw==}
+    engines: {node: '>=18.x'}
+
+  '@ffmpeg/types@0.12.4':
+    resolution: {integrity: sha512-k9vJQNBGTxE5AhYDtOYR5rO5fKsspbg51gbcwtbkw2lCdoIILzklulcjJfIDwrtn7XhDeF2M+THwJ2FGrLeV6A==}
+    engines: {node: '>=16.x'}
+
   '@fontsource-variable/geist@5.3.0':
     resolution: {integrity: sha512-j0m+vLQuG5XAYoHtGCVu0spvlGreR3EzpECUVzkFmI1mTVnAO38l/NEPDCFgZ177JxzYJCLSmTQibIiYPilGrA==}
 
@@ -1298,6 +1332,11 @@ packages:
 
   '@jridgewell/trace-mapping@0.3.31':
     resolution: {integrity: sha512-zzNR+SdQSDJzc8joaeP8QQoCQr8NuYx2dIIytl1QeBEZHJ9uW6hebsrYgbz8hJwUQao3TWCMtmfV8Nu1twOLAw==}
+
+  '@mediabunny/mp3-encoder@1.61.3':
+    resolution: {integrity: sha512-Qmegig3hXp8dhbJnze1fumsC7GXkMp6NH5mGgvl5o4zzp2cYgmjjbWps5mPyRq3VHcxLbDdiXDNVcl4Mv7c1tQ==}
+    peerDependencies:
+      mediabunny: ^1.0.0
 
   '@napi-rs/canvas-android-arm64@1.0.10':
     resolution: {integrity: sha512-0sDMvme+7fj6bHERUaBs5SvEyWaORc91VUkaB4RrtG7p6dBrBNGy1of8cyEKDxygd1FlHtW+Thunj8lSixzY7A==}
@@ -1776,6 +1815,12 @@ packages:
 
   '@tybys/wasm-util@0.10.4':
     resolution: {integrity: sha512-W3c4gRigFS0T/Ma4qIYF3GDAc5AQdHb1yL5znJT1Zv1YaD9Kitx656wBjvr19qbiosmZT8lWDM5BEMynUqX65A==}
+
+  '@types/dom-mediacapture-transform@0.1.12':
+    resolution: {integrity: sha512-d7/QsLRwF864A5mgIM/YrfiglHoYn7zgCcAoJgW404r+2DwnNr7EBbLnCWpmOMgH8y0te73L1AV6H1bmauaWFw==}
+
+  '@types/dom-webcodecs@0.1.13':
+    resolution: {integrity: sha512-O5hkiFIcjjszPIYyUSyvScyvrBoV3NOEEZx/pMlsu44TKzWNkLVBBxnxJz42in5n3QIolYOcBYFCPZZ0h8SkwQ==}
 
   '@types/emscripten@1.41.6':
     resolution: {integrity: sha512-uN+9i8bFT5CUcZfyIEYDrSueACEyKGbUs5kC/72DGlZZoinh84sJfVV0i8UOJD1asdzkvLPBRrKs41kZ8MdEXg==}
@@ -2555,6 +2600,9 @@ packages:
 
   mdn-data@2.27.1:
     resolution: {integrity: sha512-9Yubnt3e8A0OKwxYSXyhLymGW4sCufcLG6VdiDdUGVkPhpqLxlvP5vl1983gQjJl3tqbrM731mjaZaP68AgosQ==}
+
+  mediabunny@1.61.3:
+    resolution: {integrity: sha512-kUqLKVXQVwHR62GkOJxYosAmXERJbqnXBgJDTtRlxHEYviVkMg/Evhl9XN6kedqS5LP1tV4kFKyzY/V4a4ofow==}
 
   micromark-util-character@2.1.1:
     resolution: {integrity: sha512-wv8tdUTJ3thSFFFJKtpYKOYiGP2+v96Hvk4Tu8KpCAsTMs6yi+nVmGh1syvSCsaxz45J6Jbw+9DD6g97+NV67Q==}
@@ -3866,6 +3914,14 @@ snapshots:
   '@esbuild/win32-x64@0.28.2':
     optional: true
 
+  '@ffmpeg/core@0.12.10': {}
+
+  '@ffmpeg/ffmpeg@0.12.15':
+    dependencies:
+      '@ffmpeg/types': 0.12.4
+
+  '@ffmpeg/types@0.12.4': {}
+
   '@fontsource-variable/geist@5.3.0': {}
 
   '@fontsource/dancing-script@5.3.0': {}
@@ -4004,6 +4060,10 @@ snapshots:
     dependencies:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.6.0
+
+  '@mediabunny/mp3-encoder@1.61.3(mediabunny@1.61.3)':
+    dependencies:
+      mediabunny: 1.61.3
 
   '@napi-rs/canvas-android-arm64@1.0.10':
     optional: true
@@ -4350,6 +4410,12 @@ snapshots:
   '@tybys/wasm-util@0.10.4':
     dependencies:
       tslib: 2.8.1
+
+  '@types/dom-mediacapture-transform@0.1.12':
+    dependencies:
+      '@types/dom-webcodecs': 0.1.13
+
+  '@types/dom-webcodecs@0.1.13': {}
 
   '@types/emscripten@1.41.6': {}
 
@@ -5193,6 +5259,11 @@ snapshots:
   mdn-data@2.0.28: {}
 
   mdn-data@2.27.1: {}
+
+  mediabunny@1.61.3:
+    dependencies:
+      '@types/dom-mediacapture-transform': 0.1.12
+      '@types/dom-webcodecs': 0.1.13
 
   micromark-util-character@2.1.1:
     dependencies:

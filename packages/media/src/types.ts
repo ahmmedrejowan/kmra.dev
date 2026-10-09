@@ -17,7 +17,9 @@ export interface MediaInfo {
   /** Overall bitrate, bits per second (0 if unknown) */
   bitrate: number;
   video?: {
+    /** "h264", "hevc", "vp9", "av1", "mpeg4" … */
     codec: string;
+    /** Display size: what a player shows, after `rotation` (a portrait phone clip is 1080×1920) */
     width: number;
     height: number;
     /** Display rotation from metadata (0, 90, 180, 270) */
@@ -38,6 +40,12 @@ export interface MediaInfo {
 
 export type Fit = "contain" | "cover" | "pad-blur" | "stretch";
 
+/** Which engine does (or would do) a job */
+export type Engine = "webcodecs" | "ffmpeg" | "copy";
+
+/** Video codecs a job may ask for; the engine picks one the container and browser support otherwise */
+export type VideoCodecName = "h264" | "hevc" | "vp8" | "vp9" | "av1";
+
 export interface Job {
   to: Container;
   /** Keep only this part, in seconds */
@@ -53,6 +61,8 @@ export interface Job {
     /** 0 (smallest) – 100 (best); ignored when targetBytes is set */
     quality?: number;
     fps?: number;
+    /** Preferred codec (falls back to what the container and browser support) */
+    codec?: VideoCodecName;
     /** Clockwise turn applied on top of the source rotation */
     rotate?: 0 | 90 | 180 | 270;
     flip?: "h" | "v";
@@ -87,12 +97,34 @@ export interface Progress {
   /** Short English status ("Loading the video engine", "Encoding"), translated by the UI */
   stage: string;
   /** Which engine is doing the work */
-  engine?: "webcodecs" | "ffmpeg" | "copy";
+  engine?: Engine;
 }
 
 export interface RunOptions {
   onProgress?: (p: Progress) => void;
   signal?: AbortSignal;
+  /** Force an engine ("auto" = fastest that can do the job). "copy" falls back to the others. */
+  engine?: "auto" | "webcodecs" | "ffmpeg";
+  /** Base name for the output file (defaults to the input's name) */
+  name?: string;
+  /** Added to the output name, e.g. "compressed" → "clip-compressed.mp4" */
+  suffix?: string;
+}
+
+/** What `plan()` decided for a job before it runs */
+export interface Plan {
+  engine: Engine;
+  /** Output size after rotation, fit and scaling (0 when there's no video) */
+  width: number;
+  height: number;
+  /** Video bitrate the encoder aims for, bits per second (0 = copied or no video) */
+  videoBitrate: number;
+  /** Audio bitrate, bits per second (0 = copied, none or uncompressed) */
+  audioBitrate: number;
+  /** Estimated output size in bytes (null when it can't be told, e.g. stream copy of part of a file) */
+  estimatedBytes: number | null;
+  /** Short English reason when the slower engine is used ("This format needs the compatible engine") */
+  reason?: string;
 }
 
 export interface Output {
@@ -100,5 +132,7 @@ export interface Output {
   /** Suggested file name, e.g. "holiday-compressed.mp4" */
   name: string;
   info?: MediaInfo;
-  engine: "webcodecs" | "ffmpeg" | "copy";
+  engine: Engine;
+  /** Wall-clock time the job took, milliseconds */
+  ms: number;
 }

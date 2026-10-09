@@ -48,11 +48,18 @@ export default function LandingDrop({
   );
 
   takeRef.current = async (list) => {
-    const files = [...(list ?? [])].filter(
-      (f) =>
-        f.type.startsWith(accept) ||
-        f.type === accept ||
-        (accept === "image/" && isImageFile(f)),
+    // `accept` may list several types: "video/,image/gif"
+    const types = accept.split(",").map((a) => a.trim());
+    const files = [...(list ?? [])].filter((f) =>
+      types.some(
+        (a) =>
+          f.type.startsWith(a) ||
+          f.type === a ||
+          (a === "image/" && isImageFile(f)) ||
+          // Some systems give MKV/AVI files no type
+          (a === "video/" &&
+            /\.(mkv|avi|flv|wmv|3gp|mts|m2ts|ts|ogv)$/i.test(f.name)),
+      ),
     );
     if (!files.length) {
       if (list && [...list].length)
@@ -137,13 +144,18 @@ export default function LandingDrop({
         <input
           ref={inputRef}
           type="file"
-          accept={
-            accept === "image/"
-              ? IMAGE_ACCEPT
-              : accept.endsWith("/")
-                ? `${accept}*`
-                : accept
-          }
+          accept={accept
+            .split(",")
+            .map((a) =>
+              a === "image/"
+                ? IMAGE_ACCEPT
+                : a === "video/"
+                  ? "video/*,.mkv,.avi,.flv,.wmv,.3gp,.mts,.m2ts,.ts,.ogv"
+                  : a.endsWith("/")
+                    ? `${a}*`
+                    : a,
+            )
+            .join(",")}
           multiple
           hidden
           onChange={(e) => {

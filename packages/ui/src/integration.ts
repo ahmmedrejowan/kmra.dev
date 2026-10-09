@@ -37,6 +37,8 @@ const SKIP = [
   // OCR language data (one file per language, 0.4–4 MB): downloaded when a language is first
   // picked and kept by the OCR engine
   /^tesseract\/lang\//,
+  // ffmpeg.wasm core (~31 MB, video tools): loaded only by jobs that need it, cached then
+  /^ffmpeg\//,
   // Bengali font files: only Bangla pages need them, and only the glyphs they use
   /noto-sans-bengali/,
   /\.(onnx|wasm|map)$/,

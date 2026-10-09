@@ -7,6 +7,7 @@ import { bnPdftool } from "./bn-pdftool.ts";
 import { bnQrtool } from "./bn-qrtool.ts";
 import { bnDevtool } from "./bn-devtool.ts";
 import { bnOcrtool } from "./bn-ocrtool.ts";
+import { bnVidtool } from "./bn-vidtool.ts";
 
 export const bn: Record<string, AppContent> = {
   imgtool: {
@@ -647,4 +648,5 @@ export const bn: Record<string, AppContent> = {
   qrtool: bnQrtool,
   devtool: bnDevtool,
   ocrtool: bnOcrtool,
+  vidtool: bnVidtool,
 };

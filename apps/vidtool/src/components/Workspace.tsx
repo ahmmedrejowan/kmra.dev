@@ -1,0 +1,703 @@
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import type { Preset } from "@kmra/registry";
+import { Icon } from "@kmra/ui/components/Icon";
+import { downloadZip } from "@kmra/ui/components/kit";
+import { downloadBlob, formatBytes } from "@kmra/ui/lib/files";
+import { useT } from "@kmra/ui/lib/i18n-react";
+import { toast } from "@kmra/ui/lib/toast";
+import {
+  codecLabel,
+  containerLabel,
+  fmtTime,
+  isAbort,
+  isAudioOut,
+  plan,
+  probe,
+  run,
+  sizeWarning,
+  type Job,
+  type MediaInfo,
+  type Output,
+  type Plan,
+  type Progress,
+} from "@kmra/media/engine";
+import {
+  EngineBadge,
+  MediaDrop,
+  MediaInput,
+  useMediaFiles,
+} from "@kmra/media/components/MediaDrop";
+import { VideoPreview } from "@kmra/media/components/VideoPreview";
+
+/** Props every vidtool tool component takes (from the router) */
+export interface ToolProps {
+  preset?: Preset;
+}
+
+interface Item {
+  key: number;
+  file: File;
+  info?: MediaInfo;
+  probeError?: string;
+  plan?: Plan;
+  planKey?: string;
+  status: "idle" | "running" | "done" | "error";
+  progress?: Progress;
+  out?: Output;
+  doneKey?: string;
+  error?: string;
+}
+
+export interface StageCtx {
+  file: File;
+  info: MediaInfo;
+  /** Playhead of the preview, seconds */
+  time: number;
+  /** Move the preview's playhead */
+  seek: (t: number) => void;
+}
+
+let nextKey = 1;
+
+/** `?engine=ffmpeg` (or webcodecs) forces an engine: for tests and speed comparisons */
+function forcedEngine(): "webcodecs" | "ffmpeg" | undefined {
+  if (typeof location === "undefined") return undefined;
+  const e = new URLSearchParams(location.search).get("engine");
+  return e === "ffmpeg" || e === "webcodecs" ? e : undefined;
+}
+
+/**
+ * The shared video workspace: file info and the tool's settings on the left, the big preview in
+ * the middle (with the tool's own controls under it, e.g. a timeline), and the output on the
+ * right (engine, estimated size, progress, before/after sizes, downloads). Every loaded file gets
+ * the same settings; results download one by one or as a zip.
+ */
+export function Workspace({
+  tool,
+  multiple = true,
+  dropTitle,
+  formats,
+  accept,
+  settings,
+  job,
+  suffix,
+  action,
+  stage,
+  onFile,
+  note,
+  idle,
+}: {
+  /** Tool slug, used as a CSS hook */
+  tool: string;
+  multiple?: boolean;
+  dropTitle?: string;
+  formats?: string[];
+  accept?: (f: File) => boolean;
+  /** The tool's settings (left column, under the file details) */
+  settings: (ctx: { info: MediaInfo | null; file: File | null }) => ReactNode;
+  /** The job for one file with the current settings (null = can't run yet) */
+  job: (info: MediaInfo, file: File) => Job | null;
+  /** Added to output names: "clip-compressed.mp4" */
+  suffix: string;
+  /** Run button label, e.g. "Compress" */
+  action: string;
+  /** Under the preview (timeline …) */
+  stage?: (ctx: StageCtx) => ReactNode;
+  /** Called once per file when its details are known (or when it becomes the selected one) */
+  onFile?: (file: File, info: MediaInfo) => void;
+  /** Extra note in the output column */
+  note?: (info: MediaInfo, file: File) => ReactNode;
+  /** Shown in the output column while the settings make no job (job() returns null) */
+  idle?: string;
+}) {
+  const T = useT();
+  const [items, setItems] = useState<Item[]>([]);
+  const [sel, setSel] = useState(0);
+  const [busy, setBusy] = useState(false);
+  const [view, setView] = useState<"original" | "result">("original");
+  const [time, setTime] = useState(0);
+  const [seek, setSeek] = useState<{ t: number; n: number }>({ t: 0, n: 0 });
+  const ctrl = useRef<AbortController | null>(null);
+  const itemsRef = useRef(items);
+  itemsRef.current = items;
+  const jobRef = useRef(job);
+  jobRef.current = job;
+  const onFileRef = useRef(onFile);
+  onFileRef.current = onFile;
+
+  const patch = (key: number, p: Partial<Item>) =>
+    setItems((list) =>
+      list.map((it) => (it.key === key ? { ...it, ...p } : it)),
+    );
+
+  const add = (files: File[]) => {
+    if (busy)
+      return toast(T("Wait for the current job to finish, or cancel it."));
+    const list = (multiple ? files : files.slice(0, 1)).map<Item>((file) => ({
+      key: nextKey++,
+      file,
+      status: "idle",
+    }));
+    setItems((cur) => (multiple ? [...cur, ...list] : list));
+    if (!multiple || !itemsRef.current.length) {
+      setSel(multiple ? itemsRef.current.length : 0);
+      setView("original");
+    }
+    void (async () => {
+      for (const it of list) {
+        try {
+          const info = await probe(it.file);
+          patch(it.key, { info });
+        } catch (e) {
+          patch(it.key, {
+            probeError: e instanceof Error ? e.message : String(e),
+            status: "error",
+          });
+        }
+      }
+    })();
+  };
+  const { dragging, pickRef, pick, take } = useMediaFiles(add, accept);
+
+  const cur = items[sel] ?? items[0];
+
+  // When the selected file's details arrive, let the tool set itself up (e.g. trim range)
+  const announced = useRef<number | null>(null);
+  useEffect(() => {
+    if (cur?.info && announced.current !== cur.key) {
+      announced.current = cur.key;
+      setTime(0);
+      onFileRef.current?.(cur.file, cur.info);
+    }
+  }, [cur?.key, cur?.info]);
+
+  // Jobs for the current settings; a change re-plans and clears results made with other settings
+  const jobs = items.map((it) => (it.info ? job(it.info, it.file) : null));
+  const keys = jobs.map((j) => (j ? JSON.stringify(j) : ""));
+  const keySig = keys.join("|");
+  useEffect(() => {
+    items.forEach((it, i) => {
+      const k = keys[i]!;
+      const j = jobs[i];
+      if (!it.info || !j) return;
+      if (it.planKey !== k) {
+        patch(it.key, { planKey: k });
+        void plan(it.file, j, it.info)
+          .then((p) => patch(it.key, { plan: p }))
+          .catch(() => {});
+      }
+      if (it.doneKey && it.doneKey !== k && it.status !== "running")
+        patch(it.key, {
+          out: undefined,
+          doneKey: undefined,
+          status: "idle",
+          error: undefined,
+        });
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [keySig]);
+  useEffect(() => {
+    if (view === "result" && !cur?.out) setView("original");
+  }, [cur?.out, view]);
+
+  const pending = items.filter(
+    (it, i) =>
+      it.info && jobs[i] && !(it.status === "done" && it.doneKey === keys[i]),
+  );
+  const done = items.filter((it) => it.status === "done" && it.out);
+
+  async function start() {
+    if (busy) return;
+    const ac = new AbortController();
+    ctrl.current = ac;
+    setBusy(true);
+    let failed = 0;
+    for (const it of itemsRef.current) {
+      if (ac.signal.aborted) break;
+      if (!it.info) continue;
+      const j = jobRef.current(it.info, it.file);
+      if (!j) continue;
+      const k = JSON.stringify(j);
+      if (it.status === "done" && it.doneKey === k) continue;
+      patch(it.key, {
+        status: "running",
+        error: undefined,
+        progress: { ratio: 0, stage: "Reading the video" },
+      });
+      try {
+        const out = await run(it.file, j, {
+          signal: ac.signal,
+          suffix,
+          engine: forcedEngine(),
+          onProgress: (p) => patch(it.key, { progress: p }),
+        });
+        patch(it.key, { status: "done", out, doneKey: k, progress: undefined });
+        if (it.key === (itemsRef.current[sel] ?? itemsRef.current[0])?.key)
+          setView("result");
+      } catch (e) {
+        if (isAbort(e)) {
+          patch(it.key, { status: "idle", progress: undefined });
+          break;
+        }
+        failed++;
+        console.error(e);
+        patch(it.key, {
+          status: "error",
+          progress: undefined,
+          error: e instanceof Error ? e.message : String(e),
+        });
+      }
+    }
+    ctrl.current = null;
+    setBusy(false);
+    if (ac.signal.aborted) toast(T("Cancelled"));
+    else if (failed) toast(T("Some files couldn't be processed"));
+  }
+
+  const remove = (key: number) => {
+    if (busy) return;
+    setItems((list) => list.filter((it) => it.key !== key));
+    setSel(0);
+    setView("original");
+  };
+
+  const saveAll = () =>
+    void downloadZip(
+      done.map((it) => ({ name: it.out!.name, blob: it.out!.blob })),
+      `videos-${suffix}.zip`,
+    );
+  const saveEach = () =>
+    done.forEach((it, i) =>
+      setTimeout(() => downloadBlob(it.out!.blob, it.out!.name), i * 600),
+    );
+
+  const preview =
+    view === "result" && cur?.out ? cur.out.blob : (cur?.file ?? null);
+  const resultIsAudio =
+    view === "result" && cur?.out && cur.out.blob.type.startsWith("audio/");
+  const warn = cur ? sizeWarning(cur.file, cur.plan?.engine) : null;
+  const j = cur ? jobs[items.indexOf(cur)] : null;
+
+  const input = (
+    <MediaInput inputRef={pickRef} onFiles={take} multiple={multiple} />
+  );
+
+  if (!cur)
+    return (
+      <div className={`toolcard solo vt-ws vt-${tool}`}>
+        {input}
+        <div className="stage">
+          <MediaDrop
+            title={dropTitle}
+            formats={formats}
+            dragging={dragging}
+            onPick={pick}
+            button={multiple ? T("Choose videos") : undefined}
+          />
+        </div>
+      </div>
+    );
+
+  return (
+    <div className={`toolcard tri vt-ws vt-${tool}${dragging ? " over" : ""}`}>
+      {input}
+      <aside className="controls side-l">
+        {(multiple || items.length > 1) && (
+          <div className="ctl vt-files">
+            <span className="lbl">
+              {T("Files")}
+              <span>{items.length}</span>
+            </span>
+            <ul>
+              {items.map((it, i) => (
+                <li key={it.key} className={it === cur ? "on" : undefined}>
+                  <button
+                    type="button"
+                    className="vt-file"
+                    aria-pressed={it === cur}
+                    onClick={() => {
+                      setSel(i);
+                      setView(it.out ? "result" : "original");
+                    }}
+                  >
+                    <span className="nm" title={it.file.name}>
+                      {it.file.name}
+                    </span>
+                    <span className="st">
+                      {it.status === "running"
+                        ? `${Math.round((it.progress?.ratio ?? 0) * 100)}%`
+                        : it.status === "done" && it.out
+                          ? formatBytes(it.out.blob.size)
+                          : it.status === "error"
+                            ? T("Failed")
+                            : formatBytes(it.file.size)}
+                    </span>
+                  </button>
+                  {it.status === "done" && it.out && (
+                    <button
+                      type="button"
+                      className="btn xs"
+                      aria-label={T("Download {name}", { name: it.out.name })}
+                      onClick={() => downloadBlob(it.out!.blob, it.out!.name)}
+                    >
+                      <Icon name="download" />
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    className="btn xs"
+                    aria-label={T("Remove {name}", { name: it.file.name })}
+                    disabled={busy}
+                    onClick={() => remove(it.key)}
+                  >
+                    <Icon name="x" />
+                  </button>
+                </li>
+              ))}
+            </ul>
+            <button
+              type="button"
+              className="btn sm"
+              onClick={pick}
+              disabled={busy}
+            >
+              <Icon name="plus" />
+              {T("Add videos")}
+            </button>
+          </div>
+        )}
+        <FileDetails
+          item={cur}
+          onReplace={multiple ? undefined : pick}
+          busy={busy}
+        />
+        {settings({ info: cur.info ?? null, file: cur.file })}
+      </aside>
+
+      <div className="stage vt-stage">
+        <div className="vt-stage-head">
+          <span className="vt-name" title={cur.file.name}>
+            {view === "result" && cur.out ? cur.out.name : cur.file.name}
+          </span>
+          {cur.out && (
+            <div className="seg sm" role="group" aria-label={T("Show")}>
+              <button
+                type="button"
+                aria-pressed={view === "original"}
+                onClick={() => setView("original")}
+              >
+                {T("Original")}
+              </button>
+              <button
+                type="button"
+                aria-pressed={view === "result"}
+                onClick={() => setView("result")}
+              >
+                {T("Result")}
+              </button>
+            </div>
+          )}
+        </div>
+        <VideoPreview
+          file={preview}
+          aspect={(() => {
+            const v = (view === "result" ? cur.out?.info : cur.info)?.video;
+            return v ? v.width / v.height : undefined;
+          })()}
+          audio={!!resultIsAudio || (!cur.info?.video && !!cur.info?.audio)}
+          seek={view === "original" ? seek : undefined}
+          onTime={view === "original" ? setTime : undefined}
+          label={view === "result" ? T("Result") : T("Original")}
+        />
+        {resultIsAudio && cur.info?.video && (
+          // Sound from a video: the picture stays in view (muted) above the result's player
+          <VideoPreview
+            file={cur.file}
+            className="vt-source"
+            aspect={cur.info.video.width / cur.info.video.height}
+            label={T("Original")}
+          />
+        )}
+        {cur.info && stage && view === "original" && (
+          <div className="vt-under">
+            {stage({
+              file: cur.file,
+              info: cur.info,
+              time,
+              seek: (t) => setSeek((s) => ({ t, n: s.n + 1 })),
+            })}
+          </div>
+        )}
+      </div>
+
+      <aside className="controls side-r vt-out" aria-live="polite">
+        <div className="ctl">
+          <span className="lbl">{T("Output")}</span>
+          {cur.plan && j ? (
+            <dl className="kv vt-plan">
+              <div>
+                <dt>{T("Format")}</dt>
+                <dd>{containerLabel(j.to)}</dd>
+              </div>
+              {!isAudioOut(j) && cur.plan.width > 0 && (
+                <div>
+                  <dt>{T("Resolution")}</dt>
+                  <dd>
+                    {cur.plan.width} × {cur.plan.height}
+                  </dd>
+                </div>
+              )}
+              <div>
+                <dt>{T("Estimated size")}</dt>
+                <dd className="vt-est">
+                  {cur.plan.estimatedBytes !== null
+                    ? `≈ ${formatBytes(cur.plan.estimatedBytes)}`
+                    : T("Depends on the cut")}
+                </dd>
+              </div>
+              <div>
+                <dt>{T("Engine")}</dt>
+                <dd>
+                  <EngineBadge
+                    engine={cur.out?.engine ?? cur.plan.engine}
+                    reason={cur.plan.reason}
+                  />
+                </dd>
+              </div>
+            </dl>
+          ) : cur.probeError ? null : cur.info && !j ? (
+            <p className="muted vt-wait">
+              {idle ?? T("Change a setting to make a new video.")}
+            </p>
+          ) : (
+            <p className="muted vt-wait">{T("Reading the video")}</p>
+          )}
+        </div>
+
+        {cur.probeError && (
+          <p className="note warn" role="alert">
+            {T("This file couldn't be read. It may be damaged or not a video.")}
+          </p>
+        )}
+        {warn && <p className="note warn">{T(warn)}</p>}
+        {cur.info && note?.(cur.info, cur.file)}
+
+        {busy ? (
+          <div className="vt-progress" role="status">
+            {items
+              .filter((it) => it.status === "running")
+              .map((it) => (
+                <div key={it.key}>
+                  <div className="vt-pline">
+                    <span>{T(it.progress?.stage ?? "Encoding")}</span>
+                    <b>{Math.round((it.progress?.ratio ?? 0) * 100)}%</b>
+                  </div>
+                  <span className="mp-bar">
+                    <i
+                      style={{
+                        width: `${Math.round((it.progress?.ratio ?? 0) * 100)}%`,
+                      }}
+                    />
+                  </span>
+                  {items.length > 1 && (
+                    <span className="muted vt-pfile">{it.file.name}</span>
+                  )}
+                </div>
+              ))}
+            <button
+              type="button"
+              className="btn vt-cancel"
+              onClick={() => ctrl.current?.abort()}
+            >
+              <Icon name="x" />
+              {T("Cancel")}
+            </button>
+          </div>
+        ) : (
+          <button
+            type="button"
+            className="btn acc lg vt-run"
+            disabled={!pending.length}
+            onClick={() => void start()}
+          >
+            {pending.length > 1
+              ? T("{action} {n} videos", { action, n: pending.length })
+              : action}
+          </button>
+        )}
+
+        {cur.status === "error" && cur.error && !cur.probeError && (
+          <p className="note warn" role="alert">
+            {T("This video couldn't be processed.")}{" "}
+            <span className="muted">{cur.error}</span>
+          </p>
+        )}
+
+        {cur.out && (
+          <div
+            className="vt-result"
+            data-engine={cur.out.engine}
+            data-bytes={cur.out.blob.size}
+          >
+            <div className="vt-sizes">
+              <span>
+                <small>{T("Before")}</small>
+                {formatBytes(cur.file.size)}
+              </span>
+              <Icon name="right" />
+              <span>
+                <small>{T("After")}</small>
+                <b>{formatBytes(cur.out.blob.size)}</b>
+              </span>
+              <em
+                className={cur.out.blob.size <= cur.file.size ? "down" : "up"}
+              >
+                {cur.out.blob.size <= cur.file.size ? "−" : "+"}
+                {Math.abs(
+                  Math.round((1 - cur.out.blob.size / cur.file.size) * 100),
+                )}
+                %
+              </em>
+            </div>
+            {cur.out.info && (
+              <p className="muted vt-outinfo">
+                {[
+                  fmtTime(cur.out.info.durationSec),
+                  cur.out.info.video
+                    ? `${cur.out.info.video.width} × ${cur.out.info.video.height}`
+                    : "",
+                  T("made in {s} s", { s: (cur.out.ms / 1000).toFixed(1) }),
+                ]
+                  .filter(Boolean)
+                  .join(" · ")}
+              </p>
+            )}
+            <button
+              type="button"
+              className="btn primary vt-download"
+              onClick={() => downloadBlob(cur.out!.blob, cur.out!.name)}
+            >
+              <Icon name="download" />
+              {T("Download {ext}", {
+                ext: cur.out.name.split(".").pop()!.toUpperCase(),
+              })}
+            </button>
+            {done.length > 1 && (
+              <div className="vt-all">
+                <button type="button" className="btn vt-zip" onClick={saveAll}>
+                  <Icon name="download" />
+                  {T("Download all ({n}) as zip", { n: done.length })}
+                </button>
+                <button type="button" className="btn sm" onClick={saveEach}>
+                  {T("Download each file")}
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+      </aside>
+    </div>
+  );
+}
+
+function FileDetails({
+  item,
+  onReplace,
+  busy,
+}: {
+  item: Item;
+  onReplace?: () => void;
+  busy: boolean;
+}) {
+  const T = useT();
+  const i = item.info;
+  const rows = useMemo(() => {
+    if (!i) return [];
+    const r: [string, string][] = [
+      [T("Format"), containerLabel(i.container)],
+      [T("Length"), fmtTime(i.durationSec)],
+      [T("Size"), formatBytes(item.file.size)],
+    ];
+    if (i.video) {
+      r.push([T("Resolution"), `${i.video.width} × ${i.video.height}`]);
+      if (i.video.fps)
+        r.push([T("Frame rate"), `${Math.round(i.video.fps * 100) / 100} fps`]);
+      r.push([
+        T("Video"),
+        [
+          codecLabel(i.video.codec),
+          i.video.bitrate ? `${Math.round(i.video.bitrate / 1000)} kbps` : "",
+        ]
+          .filter(Boolean)
+          .join(", "),
+      ]);
+    }
+    r.push([
+      T("Sound"),
+      i.audio
+        ? [
+            codecLabel(i.audio.codec),
+            i.audio.channels === 1
+              ? T("mono")
+              : i.audio.channels === 2
+                ? T("stereo")
+                : `${i.audio.channels} ch`,
+            i.audio.sampleRate
+              ? `${Math.round(i.audio.sampleRate / 100) / 10} kHz`
+              : "",
+          ]
+            .filter(Boolean)
+            .join(", ")
+        : T("None"),
+    ]);
+    return r;
+  }, [i, item.file.size, T]);
+  return (
+    <div className="ctl vt-details">
+      <span className="lbl">
+        {T("Video details")}
+        {onReplace && (
+          <button
+            type="button"
+            className="btn xs"
+            onClick={onReplace}
+            disabled={busy}
+          >
+            {T("Change video")}
+          </button>
+        )}
+      </span>
+      {i ? (
+        <dl className="kv">
+          {rows.map(([k, v]) => (
+            <div key={k}>
+              <dt>{k}</dt>
+              <dd>{v}</dd>
+            </div>
+          ))}
+        </dl>
+      ) : !item.probeError ? (
+        <p className="muted">{T("Reading the video")}</p>
+      ) : null}
+    </div>
+  );
+}
+
+/** Short side → width/height for a source shape (portrait keeps the short side as width) */
+export function shortSide(
+  info: MediaInfo,
+  short: number,
+): { width?: number; height?: number } {
+  const v = info.video;
+  if (!v) return {};
+  return v.height > v.width ? { width: short } : { height: short };
+}
+
+/** Output container for tools that keep the input's format when they can */
+export function sameContainer(info: MediaInfo): "mp4" | "mov" | "webm" | "mkv" {
+  const c = info.container;
+  if (c === "mov") return "mov";
+  if (c === "webm") return "webm";
+  if (c === "matroska" || c === "mkv") return "mkv";
+  return "mp4";
+}
