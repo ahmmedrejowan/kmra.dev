@@ -220,12 +220,72 @@ function needMp3() {
 }
 
 /**
- * Bitrates Chrome's AAC encoder on macOS takes. Some others (64–71 kbps among them) pass
- * isConfigSupported and then fail with an EncodingError, so AAC rates snap down to these.
+ * An AAC bitrate this browser's encoder really takes. Platform encoders (macOS) accept some
+ * rates in isConfigSupported and then fail with an EncodingError: Chrome 154 at 64–71 kbps,
+ * Brave on Chromium 152 at anything under 80 kbps for stereo. And a failure while the
+ * hardware H.264 encoder runs crashed Chrome's GPU process and the tab with it. So a short
+ * test encode picks the rate before the job starts: the asked one (snapped to a common step),
+ * then lower steps, then higher ones. Null when none work (the compatible engine takes over).
  */
-const AAC_RATES = [32, 48, 56, 80, 96, 128, 160, 192, 256, 320].map((k) => k * 1000);
-const aacRate = (bps: number) =>
-  AAC_RATES.filter((r) => r <= bps).pop() ?? AAC_RATES[0]!;
+const AAC_RATES = [32, 48, 56, 80, 96, 128, 160, 192, 256, 320].map(
+  (k) => k * 1000,
+);
+const aacTried = new Map<string, Promise<boolean>>();
+
+function aacWorks(bitrate: number, sampleRate: number, channels: number) {
+  const key = `${bitrate}/${sampleRate}/${channels}`;
+  let p = aacTried.get(key);
+  if (!p) {
+    p = (async () => {
+      let failed = false;
+      const enc = new AudioEncoder({
+        output: () => {},
+        error: () => (failed = true),
+      });
+      try {
+        enc.configure({
+          codec: "mp4a.40.2",
+          sampleRate,
+          numberOfChannels: channels,
+          bitrate,
+        });
+        const data = new Float32Array(1024 * channels).map(
+          (_, i) => Math.sin(i / 9) * 0.2,
+        );
+        for (let i = 0; i < 12; i++) {
+          const frame = new AudioData({
+            format: "f32-planar",
+            sampleRate,
+            numberOfFrames: 1024,
+            numberOfChannels: channels,
+            timestamp: Math.round((i * 1024 * 1e6) / sampleRate),
+            data,
+          });
+          enc.encode(frame);
+          frame.close();
+        }
+        await enc.flush();
+      } catch {
+        failed = true;
+      }
+      if (enc.state !== "closed") enc.close();
+      return !failed;
+    })();
+    aacTried.set(key, p);
+  }
+  return p;
+}
+
+async function aacRate(bps: number, sampleRate: number, channels: number) {
+  const asked = AAC_RATES.filter((r) => r <= bps).pop() ?? AAC_RATES[0]!;
+  const order = [
+    asked,
+    ...AAC_RATES.filter((r) => r < asked).reverse(),
+    ...AAC_RATES.filter((r) => r > asked),
+  ];
+  for (const r of order) if (await aacWorks(r, sampleRate, channels)) return r;
+  return null;
+}
 
 const rot = (r: number) => (((r % 360) + 360) % 360) as Rotation;
 
@@ -432,10 +492,13 @@ async function setup(
         const sampleRate =
           job.audio?.sampleRate ??
           (prefs[0] === "opus" ? 48_000 : await a.getSampleRate());
-        const bitrate =
-          plan.audioBitrate && prefs[0] === "aac"
-            ? aacRate(plan.audioBitrate)
-            : plan.audioBitrate;
+        let bitrate = plan.audioBitrate;
+        if (bitrate && prefs[0] === "aac") {
+          const r = await aacRate(bitrate, sampleRate, channels);
+          if (!r)
+            throw new Unsupported("This browser's AAC encoder isn't working");
+          bitrate = r;
+        }
         const codec = await getFirstEncodableAudioCodec(prefs, {
           numberOfChannels: channels,
           sampleRate,

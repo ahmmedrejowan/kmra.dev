@@ -2,7 +2,7 @@
  * VidTool in Google Chrome (not the bundled Chromium): Chrome has the platform AAC and H.264
  * encoders, so compress-to-target re-encodes the sound on the hardware path there. Some AAC
  * bitrates (64 kbps among them) made Chrome's GPU process crash on macOS and took the tab with
- * it; the engine snaps AAC rates to ones that work. Skips when Chrome isn't installed.
+ * it; the engine test-encodes the rate first and picks one that works. Skips without Chrome.
  */
 import { existsSync } from "node:fs";
 import { addFiles, expect, gen, openTool, test } from "../helpers.ts";
