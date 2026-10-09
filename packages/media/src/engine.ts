@@ -18,11 +18,21 @@
  * Exports (import from "@kmra/media/engine"):
  *   probe(file)                 MediaInfo (headers only for MP4/MOV/WebM/MKV/audio; ffprobe otherwise)
  *   plan(input, job, info?)     Plan: engine, output size, bitrates, estimated bytes, reason
- *   run(input, job, opts)       Output; several files are joined in order (ffmpeg)
+ *   run(input, job, opts)       Output; several files are joined in order: copied one after
+ *                               another when they're encoded alike and the job sets
+ *                               copyWhenPossible (see joinable), else re-encoded to the first
+ *                               clip's size and frame rate (ffmpeg; fit "contain" or "pad-blur")
+ *   joinable(infos, job)        whether run() can join these clips without re-encoding
  *   thumbnails(file, {...})     frames for a timeline strip; frameAt(file, t) one frame as an image
+ *   frames(file, times, {...})  many stills at given times (extract frames), one by one
+ *   sceneChanges(file, {...})   times where the picture cuts (scene detection)
+ *   estimateGif(file, job)      a GIF's size measured on a short sample (plan() only guesses)
  *   preloadFfmpeg()             start the ~32 MB download early (e.g. when an AVI is dropped)
  *   sizeWarning(file, engine)   memory warning text or null; isAbort(e) for cancelled jobs
  *   hasWebCodecs(), isMediaFile(f), VIDEO_ACCEPT, codecLabel(), containerLabel(), STAGES
+ * Both engines: speed (video.speed, sound time-stretched or tape-style with audio.keepPitch),
+ * turns and flips, and turns by display rotation only (video.rotateMetadata, MP4/MOV: copied).
+ * Outputs never carry the source's location tag.
  *   pure helpers from ./plan: outputName, outputSize, outDuration, isAudioOut, fmtTime, parseTime …
  *   types from ./types: Job, MediaInfo, Plan, Progress, RunOptions, Output, Engine, Fit …
  * React pieces: "@kmra/media/components/VideoPreview", ".../Timeline" (+ TimeInput),
@@ -40,12 +50,15 @@ import {
   containerTakesAudio,
   containerTakesVideo,
   ffmpegArgs,
+  gifFilter,
   videoUntouched,
   type FfmpegPlan,
 } from "./args";
 import { loadFfmpeg, probeFfmpeg, runFfmpeg } from "./ffmpeg";
 import {
+  animJobOk,
   audioBitrate,
+  isAnim,
   estimateBytes,
   isAudioOut,
   MIME,
@@ -96,6 +109,8 @@ export const STAGES = [
   "This effect uses the compatible engine",
   "Joining clips uses the compatible engine",
   "This browser has no fast video encoder",
+  "Finding scene changes",
+  "Saving frames",
 ] as const;
 
 const FORMAT_REASON = "This format needs the compatible engine";
@@ -171,17 +186,15 @@ export function probe(
 /** Why a job must use ffmpeg whatever the browser (null = the fast engine may do it) */
 function forcedFfmpeg(info: MediaInfo, job: Job, files: number): string | null {
   if (files > 1) return "Joining clips uses the compatible engine";
-  if (job.to === "gif" || info.container === "gif")
-    return "GIFs are made with the compatible engine";
+  if (job.to === "gif") return "GIFs are made with the compatible engine";
+  // GIF/WebP → video: the browser's image decoder reads the frames, WebCodecs encodes
+  if (isAnim(info.container))
+    return typeof ImageDecoder !== "undefined" && animJobOk(job)
+      ? null
+      : "GIFs are made with the compatible engine";
   if (!FAST_READS.has(info.container)) return FORMAT_REASON;
   const a = job.audio ?? {};
-  if (
-    (job.video?.speed ?? 1) !== 1 ||
-    (a.volume ?? 1) !== 1 ||
-    a.normalize ||
-    a.fadeInSec ||
-    a.fadeOutSec
-  )
+  if ((a.volume ?? 1) !== 1 || a.normalize || a.fadeInSec || a.fadeOutSec)
     return "This effect uses the compatible engine";
   return null;
 }
@@ -246,6 +259,7 @@ export async function plan(
   info?: MediaInfo,
 ): Promise<Plan> {
   const files = Array.isArray(input) ? input : [input];
+  if (files.length > 1) return planJoin(files, job);
   const i = info ?? (await probe(files[0]!));
   const r = resolve(i, job);
   const reason = forcedFfmpeg(i, job, files.length);
@@ -432,6 +446,35 @@ async function joinFiles(
   const base = infos[0]!;
   const r = resolve(base, job);
   const total = infos.reduce((s, i) => s + i.durationSec, 0);
+  const done = async (blob: Blob, engine: Engine): Promise<Output> => {
+    const info = await probe(new File([blob], name, { type: blob.type })).catch(
+      () => undefined,
+    );
+    opts.onProgress?.({ ratio: 1, stage: "Done", engine });
+    return { blob, name, info, engine, ms: Math.round(performance.now() - t0) };
+  };
+  if (opts.engine !== "ffmpeg" && joinable(infos, job)) {
+    // Encoded the same way: the packets are copied one clip after another
+    try {
+      const blob = await call<Blob>(
+        { op: "concat", files, to: job.to },
+        (m) =>
+          m.ratio !== undefined &&
+          opts.onProgress?.({
+            ratio: m.ratio,
+            stage: "Joining",
+            engine: "copy",
+          }),
+        opts.signal,
+      );
+      return await done(blob, "copy");
+    } catch (e) {
+      if (isAbort(e) || e instanceof WcFatal || opts.engine === "webcodecs")
+        throw e;
+      if (!(e instanceof WcUnsupported))
+        console.info("Fast join failed, using ffmpeg:", e);
+    }
+  }
   const data = await runFfmpeg({
     files,
     args: (inputs, out) =>
@@ -448,17 +491,83 @@ async function joinFiles(
     onProgress: opts.onProgress,
     signal: opts.signal,
   });
-  const blob = new Blob([data as BlobPart], { type: MIME[job.to] });
-  const info = await probe(new File([blob], name, { type: blob.type })).catch(
-    () => undefined,
+  return done(new Blob([data as BlobPart], { type: MIME[job.to] }), "ffmpeg");
+}
+
+/**
+ * Whether clips can be joined without re-encoding: the job asks for it (`copyWhenPossible`) and
+ * changes nothing else, and every clip has the same codecs, frame size, rotation, frame rate and
+ * sound format, in a container the fast reader opens. The fast engine still compares the codec
+ * settings and re-encodes (ffmpeg) when they differ.
+ */
+export function joinable(infos: MediaInfo[], job: Job): boolean {
+  const [a, ...rest] = infos;
+  const v = job.video ?? {};
+  const av = a?.video;
+  if (
+    !a ||
+    !av ||
+    !job.copyWhenPossible ||
+    !FAST_READS.has(a.container) ||
+    v.width ||
+    v.height ||
+    v.quality !== undefined ||
+    v.fps ||
+    v.rotate ||
+    v.flip ||
+    (v.speed ?? 1) !== 1 ||
+    job.trim ||
+    job.targetBytes ||
+    isAudioOut(job) ||
+    job.audio?.drop ||
+    !audioUntouched(job) ||
+    !containerTakesVideo(job.to, av.codec) ||
+    (a.audio && !containerTakesAudio(job.to, a.audio.codec))
+  )
+    return false;
+  return rest.every(
+    (i) =>
+      FAST_READS.has(i.container) &&
+      !!i.video &&
+      codecId(i.video.codec) === codecId(av.codec) &&
+      i.video.width === av.width &&
+      i.video.height === av.height &&
+      i.video.rotation === av.rotation &&
+      Math.abs(i.video.fps - av.fps) <= Math.max(0.05, av.fps * 0.02) &&
+      !!i.audio === !!a.audio &&
+      (!i.audio ||
+        (codecId(i.audio.codec) === codecId(a.audio!.codec) &&
+          i.audio.sampleRate === a.audio!.sampleRate &&
+          i.audio.channels === a.audio!.channels)),
   );
-  opts.onProgress?.({ ratio: 1, stage: "Done", engine: "ffmpeg" });
+}
+
+/** plan() for several clips joined into one */
+async function planJoin(files: File[], job: Job): Promise<Plan> {
+  const infos: MediaInfo[] = [];
+  for (const f of files) infos.push(await probe(f));
+  const base = infos[0]!;
+  const r = resolve(base, job);
+  const total = infos.reduce((s, i) => s + i.durationSec, 0);
+  if (joinable(infos, job))
+    return {
+      engine: "copy",
+      width: r.wc.width,
+      height: r.wc.height,
+      videoBitrate: 0,
+      audioBitrate: 0,
+      estimatedBytes: infos.reduce((s, i) => s + i.sizeBytes, 0),
+    };
+  const sound = !job.audio?.drop && infos.some((i) => i.audio);
+  const ab = sound ? r.wc.audioBitrate || 128_000 : 0;
   return {
-    blob,
-    name,
-    info,
     engine: "ffmpeg",
-    ms: Math.round(performance.now() - t0),
+    width: r.wc.width,
+    height: r.wc.height,
+    videoBitrate: r.wc.videoBitrate,
+    audioBitrate: ab,
+    estimatedBytes: Math.round((((r.wc.videoBitrate + ab) * total) / 8) * 1.02),
+    reason: "Joining clips uses the compatible engine",
   };
 }
 
@@ -485,6 +594,8 @@ export async function thumbnails(
     start?: number;
     end?: number;
     duration?: number;
+    /** Exact times instead of `count` evenly spread ones */
+    times?: number[];
     onThumb: (i: number, bitmap: ImageBitmap, t: number) => void;
     signal?: AbortSignal;
   },
@@ -493,10 +604,12 @@ export async function thumbnails(
   const dur = opts.duration ?? info?.durationSec ?? 0;
   const s = opts.start ?? 0;
   const e = opts.end ?? dur;
-  const times = Array.from(
-    { length: opts.count },
-    (_, i) => s + ((i + 0.5) * (e - s)) / opts.count,
-  );
+  const times =
+    opts.times ??
+    Array.from(
+      { length: opts.count },
+      (_, i) => s + ((i + 0.5) * (e - s)) / opts.count,
+    );
   try {
     await call<void>(
       { op: "thumbs", file, times, height: opts.height },
@@ -575,28 +688,218 @@ export async function frameAt(
     });
   } catch (e) {
     if (e instanceof WcFatal) throw e;
-    const fmt =
-      type === "image/jpeg" ? "jpg" : type === "image/webp" ? "webp" : "png";
-    const data = await runFfmpeg({
-      files: [file],
-      args: ([inp], out) => [
-        "-hide_banner",
-        "-y",
-        "-ss",
-        String(Math.max(0, t)),
-        "-i",
-        inp!,
-        "-frames:v",
-        "1",
-        ...(opts.width ? ["-vf", `scale=${opts.width}:-2`] : []),
-        ...(fmt === "jpg" ? ["-q:v", "3"] : []),
-        out,
-      ],
-      ext: fmt,
-      duration: 0,
-    });
-    return new Blob([data as BlobPart], { type });
+    return frameFfmpeg(file, t, { ...opts, type, quality });
   }
+}
+
+/** One frame through ffmpeg.wasm (formats the fast reader can't open) */
+async function frameFfmpeg(
+  file: File,
+  t: number,
+  opts: { width?: number; type: string; quality: number },
+  signal?: AbortSignal,
+): Promise<Blob> {
+  const fmt =
+    opts.type === "image/jpeg"
+      ? "jpg"
+      : opts.type === "image/webp"
+        ? "webp"
+        : "png";
+  const q = Math.round(2 + (1 - opts.quality) * 20);
+  const data = await runFfmpeg({
+    files: [file],
+    args: ([inp], out) => [
+      "-hide_banner",
+      "-y",
+      "-ss",
+      String(Math.max(0, t)),
+      "-i",
+      inp!,
+      "-frames:v",
+      "1",
+      ...(opts.width ? ["-vf", `scale=${opts.width}:-2`] : []),
+      ...(fmt === "jpg" ? ["-q:v", String(q)] : []),
+      out,
+    ],
+    ext: fmt,
+    duration: 0,
+    signal,
+  });
+  return new Blob([data as BlobPart], { type: opts.type });
+}
+
+/**
+ * Stills at the given times (each the frame showing at that moment), handed to `onFrame` one by
+ * one as they're made, in order. Uses the fast reader; other formats go frame by frame through
+ * ffmpeg.wasm. `type` is "image/png" (default), "image/jpeg" or "image/webp".
+ */
+export async function frames(
+  file: File,
+  times: number[],
+  opts: {
+    width?: number;
+    type?: string;
+    quality?: number;
+    onFrame: (i: number, blob: Blob, t: number) => void;
+    onProgress?: (p: Progress) => void;
+    signal?: AbortSignal;
+  },
+): Promise<void> {
+  const type = opts.type ?? "image/png";
+  const quality = opts.quality ?? 0.92;
+  const stage = "Saving frames";
+  let done = 0;
+  try {
+    await call<void>(
+      { op: "stills", file, times, width: opts.width, type, quality },
+      (m) => {
+        if (!m.still) return;
+        done = m.still.i + 1;
+        opts.onFrame(m.still.i, m.still.blob, m.still.t);
+        opts.onProgress?.({
+          ratio: done / Math.max(1, times.length),
+          stage,
+          engine: "webcodecs",
+        });
+      },
+      opts.signal,
+    );
+  } catch (e) {
+    if (isAbort(e) || e instanceof WcFatal) throw e;
+    // The fast reader can't open this file (or stopped part way): ffmpeg does the rest
+    for (let i = done; i < times.length; i++) {
+      if (opts.signal?.aborted)
+        throw new DOMException("The job was cancelled", "AbortError");
+      const blob = await frameFfmpeg(
+        file,
+        times[i]!,
+        { width: opts.width, type, quality },
+        opts.signal,
+      );
+      opts.onFrame(i, blob, times[i]!);
+      opts.onProgress?.({
+        ratio: (i + 1) / times.length,
+        stage,
+        engine: "ffmpeg",
+      });
+    }
+  }
+}
+
+/**
+ * Times (seconds) where the picture changes a lot, between `start` and `end` (default the whole
+ * clip), the first frame included. `threshold` is ffmpeg's scene score (0–1; 0.3 finds cuts, lower
+ * also finds big movements). At most `max` times (default 500).
+ */
+export async function sceneChanges(
+  file: File,
+  opts: {
+    threshold?: number;
+    start?: number;
+    end?: number;
+    max?: number;
+    onProgress?: (p: Progress) => void;
+    signal?: AbortSignal;
+  } = {},
+): Promise<number[]> {
+  const info = await probe(file);
+  const start = Math.max(0, opts.start ?? 0);
+  const end = Math.min(info.durationSec, opts.end ?? info.durationSec);
+  const threshold = opts.threshold ?? 0.3;
+  const max = opts.max ?? 500;
+  const stage = "Finding scene changes";
+  try {
+    return await call<number[]>(
+      { op: "scenes", file, start, end, threshold, max },
+      (m) =>
+        m.ratio !== undefined &&
+        opts.onProgress?.({ ratio: m.ratio, stage, engine: "webcodecs" }),
+      opts.signal,
+    );
+  } catch (e) {
+    if (isAbort(e) || e instanceof WcFatal) throw e;
+  }
+  // ffmpeg's own scene filter; framecrc lists each picked frame's timestamp
+  const data = await runFfmpeg({
+    files: [file],
+    args: ([inp], out) => [
+      "-hide_banner",
+      "-y",
+      "-ss",
+      String(start),
+      "-t",
+      String(Math.max(0.05, end - start)),
+      "-i",
+      inp!,
+      "-an",
+      "-vf",
+      `scale=64:36,select='eq(n\\,0)+gt(scene\\,${threshold})'`,
+      "-fps_mode",
+      "passthrough",
+      "-copyts",
+      "-c:v",
+      "rawvideo",
+      "-f",
+      "framecrc",
+      out,
+    ],
+    ext: "txt",
+    duration: end - start,
+    stage,
+    onProgress: opts.onProgress,
+    signal: opts.signal,
+  });
+  const text = new TextDecoder().decode(data);
+  const tb = /#tb 0: (\d+)\/(\d+)/.exec(text);
+  const k = tb ? Number(tb[1]) / Number(tb[2]) : 1 / 1000;
+  return text
+    .split("\n")
+    .filter((l) => /^0,/.test(l))
+    .map((l) => Number(l.split(",")[2]) * k)
+    .filter((t) => Number.isFinite(t))
+    .slice(0, max);
+}
+
+/**
+ * A GIF's size, measured: makes a short sample (up to `sampleSec`, default 2 s, from the middle
+ * of the part) with the job's settings and scales it to the whole length. Exact for short clips.
+ * Needs ffmpeg.wasm (loads it the first time). `plan()` gives a quick guess meanwhile.
+ */
+export async function estimateGif(
+  file: File,
+  job: Job,
+  opts: { info?: MediaInfo; sampleSec?: number; signal?: AbortSignal } = {},
+): Promise<number> {
+  const info = opts.info ?? (await probe(file));
+  const r = resolve(info, { ...job, to: "gif" });
+  const a = job.trim?.start ?? 0;
+  const b = Math.min(info.durationSec, job.trim?.end ?? info.durationSec);
+  const len = Math.max(0.05, b - a);
+  const sample = Math.min(len, opts.sampleSec ?? 2);
+  const s0 = a + (len - sample) / 2;
+  const data = await runFfmpeg({
+    files: [file],
+    args: ([inp], out) => [
+      "-hide_banner",
+      "-y",
+      "-ss",
+      String(s0),
+      "-t",
+      String(sample),
+      "-i",
+      inp!,
+      "-vf",
+      gifFilter(r.job, r.wc),
+      "-an",
+      "-loop",
+      r.job.gif?.loop === false ? "-1" : "0",
+      out,
+    ],
+    ext: "gif",
+    duration: 0,
+    signal: opts.signal,
+  });
+  return Math.round((data.length * len) / sample);
 }
 
 /* ---------- limits ---------- */

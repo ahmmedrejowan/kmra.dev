@@ -1507,7 +1507,7 @@ export const apps = [
         blurb: "Turn and flip",
         icon: "rotate",
         group: "Edit",
-        ready: false,
+        ready: true,
         steps: [
           "Drop a video.",
           "Rotate 90° or flip it.",
@@ -1523,7 +1523,7 @@ export const apps = [
         blurb: "Faster or slower",
         icon: "gauge",
         group: "Edit",
-        ready: false,
+        ready: true,
         steps: ["Drop a video.", "Pick a speed.", "Preview and download."],
       },
       {
@@ -1534,7 +1534,7 @@ export const apps = [
         blurb: "Join clips",
         icon: "merge",
         group: "Edit",
-        ready: false,
+        ready: true,
         steps: [
           "Drop two or more videos.",
           "Drag them into order.",
@@ -1566,7 +1566,7 @@ export const apps = [
         blurb: "Clips to GIFs",
         icon: "film",
         group: "Convert",
-        ready: false,
+        ready: true,
         steps: [
           "Drop a video and pick the part you want.",
           "Choose the width and frame rate.",
@@ -1582,7 +1582,7 @@ export const apps = [
         blurb: "Smaller than GIF",
         icon: "video",
         group: "Convert",
-        ready: false,
+        ready: true,
         steps: ["Drop a GIF.", "It becomes an MP4.", "Download it."],
       },
       {
@@ -1609,7 +1609,7 @@ export const apps = [
         blurb: "Stills and thumbnails",
         icon: "image",
         group: "Convert",
-        ready: false,
+        ready: true,
         steps: [
           "Drop a video.",
           "Pick a moment, or an interval.",
@@ -1625,7 +1625,7 @@ export const apps = [
         blurb: "Screen, window or tab",
         icon: "record",
         group: "Record and info",
-        ready: false,
+        ready: true,
         steps: [
           "Pick what to share and whether to record your microphone.",
           "Record, then stop.",
@@ -1641,7 +1641,7 @@ export const apps = [
         blurb: "Codecs, size, length",
         icon: "info",
         group: "Record and info",
-        ready: false,
+        ready: true,
         steps: [
           "Drop a video.",
           "See its details at once.",
@@ -1799,7 +1799,7 @@ export const apps = [
         title: "Speed up a video",
         intro: "Make a video play faster, like a timelapse.",
         about: [
-          "The sound is kept and pitched correctly up to 2×; above that it's dropped.",
+          "The sound keeps its natural pitch at any speed, or you can remove it.",
         ],
         preset: { speed: 2 },
       },

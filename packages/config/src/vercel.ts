@@ -23,8 +23,26 @@ export const CSP = [
   "frame-ancestors 'none'",
 ].join("; ");
 
+/**
+ * Permissions-Policy for an app: the camera only for apps that scan with it (QR), screen capture
+ * and the microphone only for apps that record (video), each for the site itself only.
+ */
+export function permissionsPolicy(
+  opts: { camera?: boolean; screen?: boolean } = {},
+): string {
+  return [
+    `camera=${opts.camera ? "(self)" : "()"}`,
+    `microphone=${opts.screen ? "(self)" : "()"}`,
+    ...(opts.screen ? ["display-capture=(self)"] : []),
+    "geolocation=()",
+    "interest-cohort=()",
+  ].join(", ");
+}
+
 /** Vercel project config for a static Astro app in apps/<id>. */
-export function appConfig(opts: { camera?: boolean } = {}): VercelConfig {
+export function appConfig(
+  opts: { camera?: boolean; screen?: boolean } = {},
+): VercelConfig {
   return {
     framework: "astro",
     buildCommand: "turbo run build",
@@ -41,11 +59,7 @@ export function appConfig(opts: { camera?: boolean } = {}): VercelConfig {
         { key: "Content-Security-Policy", value: CSP },
         { key: "X-Content-Type-Options", value: "nosniff" },
         { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
-        {
-          key: "Permissions-Policy",
-          // Only apps that scan with the camera (QR) may ask for it, and only for themselves
-          value: `camera=${opts.camera ? "(self)" : "()"}, microphone=(), geolocation=(), interest-cohort=()`,
-        },
+        { key: "Permissions-Policy", value: permissionsPolicy(opts) },
         { key: "Cross-Origin-Opener-Policy", value: "same-origin" },
       ]),
       // The service worker must always be re-checked so new deploys reach offline users.

@@ -49,9 +49,15 @@ import {
   audioUntouched,
   containerTakesAudio,
   containerTakesVideo,
+  metadataTurn,
   videoUntouched,
 } from "./args";
-import { isAudioOut, MIME } from "./plan";
+import { AnimUnsupported, animToVideo, isAnim, probeAnim } from "./anim";
+import { ConcatUnsupported, concatCopy } from "./concat";
+import { describe, isLocationTag } from "./details";
+import { isAudioOut, MIME, outFps } from "./plan";
+import { respeed, retime } from "./speed";
+import { sceneTimes, stillsAt } from "./stills";
 import type { Container, Job, MediaInfo } from "./types";
 import type { WcPlan, WcRequest } from "./wc";
 
@@ -95,7 +101,12 @@ const CODEC_NAMES: Record<string, string> = {
 async function probe(file: File): Promise<MediaInfo> {
   const input = open(file);
   try {
-    if (!(await input.canRead())) throw new Unsupported("unknown format");
+    if (!(await input.canRead())) {
+      // GIF and animated WebP: the browser's image decoder reads them
+      const anim = await probeAnim(file).catch(() => null);
+      if (anim) return anim;
+      throw new Unsupported("unknown format");
+    }
     const container = await containerName(input);
     const durationSec = await input.computeDuration();
     const v = await input.getPrimaryVideoTrack();
@@ -136,6 +147,7 @@ async function probe(file: File): Promise<MediaInfo> {
         ),
       };
     }
+    await describe(input, v, a, info, file);
     return info;
   } finally {
     input.dispose();
@@ -299,7 +311,14 @@ async function setup(
         fmt.getSupportedVideoCodecs().includes(vIn) &&
         // Only what plays everywhere in that container (no VP9 in MP4)
         containerTakesVideo(job.to, vIn);
-      if (copyVideo) video = {};
+      if (copyVideo)
+        // A turn by metadata only: the packets are copied, the display rotation changes
+        video = metadataTurn(job)
+          ? {
+              rotate: rot(job.video!.rotate!),
+              allowTransformationMetadata: true,
+            }
+          : {};
       else {
         if (!(await v.canDecode()))
           throw new Unsupported(
@@ -365,6 +384,19 @@ async function setup(
                   : {}),
               }),
         };
+        const speed = job.video?.speed ?? 1;
+        if (speed !== 1) {
+          // New timestamps on a steady frame-rate grid (instead of the frameRate option)
+          const { frameRate: _, ...rest } = video;
+          video = {
+            ...rest,
+            process: retime(
+              speed,
+              outFps(info, job),
+              custom ? padder(job, plan.width, plan.height) : undefined,
+            ),
+          };
+        }
       }
     }
 
@@ -407,6 +439,14 @@ async function setup(
           ...(plan.audioBitrate && !codec.startsWith("pcm") && codec !== "flac"
             ? { quality: new Quality({ bitrate: plan.audioBitrate }) }
             : {}),
+          ...((job.video?.speed ?? 1) !== 1
+            ? {
+                process: respeed(
+                  job.video!.speed!,
+                  job.audio?.keepPitch !== false,
+                ),
+              }
+            : {}),
         };
       }
     }
@@ -423,6 +463,13 @@ async function setup(
         ? { trim: { start: Math.max(0, job.trim.start), end: job.trim.end } }
         : {}),
       copy: job.trim && !job.copyWhenPossible ? false : {},
+      // Where it was filmed stays private: location tags aren't copied
+      tags: (t) => ({
+        ...t,
+        raw: Object.fromEntries(
+          Object.entries(t.raw ?? {}).filter(([k]) => !isLocationTag(k)),
+        ),
+      }),
       showWarnings: false,
     });
     if (!conversion.isValid) {
@@ -448,6 +495,25 @@ async function convert(
   job: Job,
   plan: WcPlan,
 ) {
+  if (isAnim(info.container)) {
+    let stop = false;
+    running.set(id, { cancel: () => void (stop = true) });
+    post({ id, engine: "webcodecs" });
+    try {
+      const blob = await animToVideo(
+        file,
+        job,
+        plan,
+        (ratio) => post({ id, ratio }),
+        () => stop,
+      );
+      return { blob, copied: false };
+    } catch (e) {
+      throw e instanceof AnimUnsupported ? new Unsupported(e.message) : e;
+    } finally {
+      running.delete(id);
+    }
+  }
   const s = await setup(file, info, job, plan);
   running.set(id, { cancel: () => s.conversion.cancel() });
   post({ id, engine: s.copied ? "copy" : "webcodecs" });
@@ -513,6 +579,89 @@ async function frame(
   }
 }
 
+/** Many stills at given times (extract frames); each is posted as it's ready */
+async function stills(
+  id: number,
+  file: File,
+  times: number[],
+  width: number | undefined,
+  type: string,
+  quality: number,
+) {
+  const input = open(file);
+  let stop = false;
+  running.set(id, { cancel: () => void (stop = true) });
+  try {
+    await stillsAt(
+      await track(input),
+      times,
+      { width, type, quality },
+      (i, t, blob) => post({ id, still: { i, t, blob } }),
+      () => stop,
+    );
+    if (stop) throw new ConversionCanceledError();
+  } finally {
+    running.delete(id);
+    input.dispose();
+  }
+}
+
+/** Scene changes between start and end (seconds) */
+async function scenes(
+  id: number,
+  file: File,
+  start: number,
+  end: number,
+  threshold: number,
+  max: number,
+) {
+  const input = open(file);
+  let stop = false;
+  running.set(id, { cancel: () => void (stop = true) });
+  try {
+    const times = await sceneTimes(
+      await track(input),
+      { start, end, threshold, max },
+      (ratio) => post({ id, ratio }),
+      () => stop,
+    );
+    if (stop) throw new ConversionCanceledError();
+    return times;
+  } finally {
+    running.delete(id);
+    input.dispose();
+  }
+}
+
+/* ---------- join ---------- */
+
+/** Clips encoded the same way, one after another without re-encoding */
+async function concat(id: number, files: File[], to: Container) {
+  const fmt = outFormat(to);
+  if (!fmt) throw new Unsupported("This output needs the compatible engine");
+  const inputs = files.map(open);
+  let stop = false;
+  running.set(id, { cancel: () => void (stop = true) });
+  try {
+    for (const i of inputs)
+      if (!(await i.canRead()))
+        throw new Unsupported("This format needs the compatible engine");
+    const buf = await concatCopy(
+      inputs,
+      fmt,
+      (ratio) => post({ id, ratio }),
+      () => stop,
+    );
+    return new Blob([buf], { type: MIME[to] });
+  } catch (e) {
+    if (stop) throw new ConversionCanceledError();
+    throw e instanceof ConcatUnsupported ? new Unsupported(e.message) : e;
+  } finally {
+    running.delete(id);
+    for (const i of inputs) i.dispose();
+  }
+}
+
 /* ---------- messages ---------- */
 
 self.onmessage = async (e: MessageEvent<WcRequest>) => {
@@ -531,6 +680,11 @@ self.onmessage = async (e: MessageEvent<WcRequest>) => {
       result = await thumbs(id, m.file, m.times, m.height);
     else if (m.op === "frame")
       result = await frame(m.file, m.t, m.width, m.type, m.quality);
+    else if (m.op === "stills")
+      result = await stills(id, m.file, m.times, m.width, m.type, m.quality);
+    else if (m.op === "concat") result = await concat(id, m.files, m.to);
+    else if (m.op === "scenes")
+      result = await scenes(id, m.file, m.start, m.end, m.threshold, m.max);
     post({ id, done: true, result });
   } catch (err) {
     if (err instanceof ConversionCanceledError)

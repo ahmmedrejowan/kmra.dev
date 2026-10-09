@@ -28,6 +28,24 @@ export const MIME: Record<Container, string> = {
   gif: "image/gif",
 };
 
+/** GIF and animated WebP sources (read by the browser's image decoder on the fast engine) */
+export function isAnim(container: string): boolean {
+  return container === "gif" || container === "webp";
+}
+
+/** Whether the fast engine can turn an animated picture into this job's video */
+export function animJobOk(job: Job): boolean {
+  const v = job.video ?? {};
+  return (
+    ["mp4", "mov", "webm", "mkv"].includes(job.to) &&
+    !job.trim &&
+    !v.rotate &&
+    !v.flip &&
+    (v.speed ?? 1) === 1 &&
+    !v.fps
+  );
+}
+
 /** True when the job's output has no picture (MP3, M4A, WAV …) */
 export function isAudioOut(job: Job): boolean {
   return AUDIO_CONTAINERS.has(job.to) || !!job.video?.drop;
@@ -55,7 +73,7 @@ export function outDuration(info: MediaInfo, job: Job): number {
         Math.min(info.durationSec, job.trim.end) - Math.max(0, job.trim.start),
       )
     : info.durationSec;
-  return d / (job.video?.speed ?? 1);
+  return (d / (job.video?.speed ?? 1)) * Math.max(1, job.repeat ?? 1);
 }
 
 const even = (n: number) => Math.max(2, Math.round(n / 2) * 2);
@@ -73,7 +91,10 @@ export function outputSize(
   const turn = job.video?.rotate === 90 || job.video?.rotate === 270;
   const sw = turn ? v.height : v.width;
   const sh = turn ? v.width : v.height;
-  const w = job.video?.width;
+  // GIFs: `gif.width`, or at most 480 wide by default
+  const w =
+    job.video?.width ??
+    (job.to === "gif" ? (job.gif?.width ?? Math.min(480, sw)) : undefined);
   const h = job.video?.height;
   if (w && h) return { width: even(w), height: even(h) };
   if (w) return { width: even(w), height: even((w * sh) / sw) };
@@ -85,7 +106,7 @@ export function outputSize(
 export function resizes(info: MediaInfo, job: Job): boolean {
   const v = info.video;
   if (!v) return false;
-  if (!job.video?.width && !job.video?.height) return false;
+  if (!job.video?.width && !job.video?.height && job.to !== "gif") return false;
   const turn = job.video?.rotate === 90 || job.video?.rotate === 270;
   const { width, height } = outputSize(info, job);
   return (
@@ -97,6 +118,7 @@ export function resizes(info: MediaInfo, job: Job): boolean {
 /** Frame rate of the output */
 export function outFps(info: MediaInfo, job: Job): number {
   const src = info.video?.fps || 30;
+  if (job.to === "gif") return Math.min(src, job.gif?.fps ?? 12);
   return Math.min(job.video?.fps ?? src, 120) || 30;
 }
 
@@ -242,6 +264,7 @@ export function estimateBytes(
 ): number | null {
   const dur = outDuration(info, job);
   if (!dur) return null;
+  if (job.to === "gif") return gifBytes(info, job);
   if (job.targetBytes && !copy)
     return Math.min(
       job.targetBytes,
@@ -263,6 +286,29 @@ export function estimateBytes(
         2,
     );
   return Math.round((((videoBitrate + audioBits) * dur) / 8) * 1.02);
+}
+
+/**
+ * Rough GIF size from the frame size, frame rate and length, scaled by how busy the source is
+ * (its bits per pixel: screen recordings compress far better than camera footage). GIFs vary a
+ * lot; `estimateGif()` in ./engine measures a short sample for a closer figure.
+ */
+export function gifBytes(info: MediaInfo, job: Job): number {
+  const { width, height } = outputSize(info, job);
+  const frames = outDuration(info, job) * outFps(info, job);
+  const v = info.video;
+  const bpp =
+    v && v.width && v.height
+      ? sourceVideoBitrate(info) / (v.width * v.height * (v.fps || 30))
+      : 0.08;
+  const g = job.gif ?? {};
+  // bytes per pixel per frame: LZW on a dithered picture keeps ~0.15–0.9 of a byte
+  let k = Math.max(0.06, Math.min(0.9, 0.05 + bpp * 4.5));
+  if (g.dither === false) k *= 0.6;
+  else if (g.dither === "diffusion") k *= 1.15;
+  const colors = Math.max(2, Math.min(256, g.colors ?? 256));
+  k *= 0.45 + 0.55 * (Math.log2(colors) / 8);
+  return Math.round(width * height * frames * k + 800);
 }
 
 /* ---------- time and size text ---------- */

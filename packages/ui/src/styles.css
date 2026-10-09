@@ -9903,3 +9903,608 @@ select.bar-input {
     text-align: center;
   }
 }
+
+/* vidtool: gif, frames, recorder */
+.vt-hint {
+  margin: 0;
+  font-size: 13px;
+}
+.ctl .vt-hint,
+.ctl .vt-mb {
+  margin-top: 8px;
+}
+/* A GIF (result of video to GIF, source of GIF to video) shown like the player */
+.vt-gif {
+  display: block;
+  max-width: 100%;
+  max-height: min(62vh, 560px);
+  width: auto;
+  height: auto;
+  border-radius: 10px;
+  background: repeating-conic-gradient(var(--raise) 0 25%, transparent 0 50%) 0
+    0 / 16px 16px;
+  image-rendering: auto;
+}
+.vt-gif-facts {
+  margin-top: -4px;
+}
+/* Four choices in two rows */
+.seg.vt-seg2 {
+  grid-auto-flow: row;
+  grid-template-columns: 1fr 1fr;
+  gap: 2px;
+}
+.seg.vt-seg2 button {
+  padding: 7px 6px;
+  font-size: 13.5px;
+}
+/* Extract frames: what will be saved */
+.vt-strip {
+  display: grid;
+  gap: 8px;
+  width: 100%;
+}
+.vt-strip .lbl {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13.5px;
+  font-weight: 500;
+}
+.vt-strip .lbl span {
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+.vt-strip ol {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(104px, 1fr));
+  gap: 8px;
+  max-height: 300px;
+  overflow: auto;
+}
+.vt-strip li button {
+  display: grid;
+  gap: 3px;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--muted);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+  text-align: left;
+}
+.vt-strip canvas {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  border-radius: 6px;
+  background: var(--raise);
+}
+.vt-strip li button:hover canvas,
+.vt-strip li button:focus-visible canvas {
+  outline: 2px solid var(--acc);
+  outline-offset: 1px;
+}
+.vt-strip li.more {
+  display: grid;
+  place-items: center;
+  aspect-ratio: 16 / 9;
+  border-radius: 6px;
+  border: 1px dashed var(--line);
+  color: var(--muted);
+  font-size: 13px;
+}
+.vt-strip-wait {
+  display: grid;
+  gap: 6px;
+  font-size: 13.5px;
+  color: var(--muted);
+}
+.vt-still {
+  display: block;
+  width: 100%;
+  max-height: 260px;
+  object-fit: contain;
+  border-radius: 8px;
+  background: var(--raise);
+}
+.vt-outinfo b {
+  font-weight: 600;
+}
+/* Screen recorder */
+.vt-rec-idle {
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  gap: 10px;
+  min-height: 340px;
+  padding: 24px;
+  text-align: center;
+  border: 1px dashed var(--line);
+  border-radius: 12px;
+}
+.vt-rec-idle strong {
+  font-size: 18px;
+  font-weight: 600;
+}
+.vt-rec-idle .muted {
+  max-width: 44ch;
+  font-size: 14px;
+}
+.vt-rec-icon {
+  display: grid;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--acc-soft);
+  color: var(--acc);
+}
+.vt-rec-icon .ico {
+  width: 28px;
+  height: 28px;
+}
+.vt-rec-idle .vt-start {
+  margin-top: 6px;
+}
+.vt-rec-idle .note {
+  max-width: 48ch;
+  text-align: left;
+}
+.vt-live {
+  position: relative;
+  display: grid;
+  place-items: center;
+}
+.vt-live .mp-video {
+  --ar: 1.7778;
+}
+.vt-countdown {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-size: 96px;
+  font-weight: 700;
+  color: #fff;
+  background: rgb(9 9 11 / 0.55);
+  border-radius: 10px;
+  font-variant-numeric: tabular-nums;
+}
+.vt-countdown.small {
+  font-size: 18px;
+  font-weight: 500;
+}
+.vt-toggles {
+  display: grid;
+  gap: 8px;
+}
+/* A checkbox and its words side by side (.ctl labels spread their parts apart) */
+.vt-ws .ctl .toggle,
+.vt-ws .toggle {
+  justify-content: flex-start;
+  font-size: 14px;
+  color: var(--fg);
+}
+.vt-rec-ctl {
+  display: grid;
+  gap: 8px;
+}
+.vt-rec-ctl .btn {
+  width: 100%;
+  justify-content: center;
+}
+.vt-rec-state {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font-size: 14px;
+  font-weight: 500;
+}
+.vt-rec-state i {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #e5484d;
+  animation: vt-blink 1.2s ease-in-out infinite;
+}
+.vt-rec-state.paused i {
+  background: var(--muted);
+  animation: none;
+}
+@keyframes vt-blink {
+  50% {
+    opacity: 0.25;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .vt-rec-state i {
+    animation: none;
+  }
+}
+.vt-elapsed {
+  font-variant-numeric: tabular-nums;
+}
+.vt-out .vt-to-mp4,
+.vt-out .vt-again {
+  width: 100%;
+  justify-content: center;
+}
+@media (max-width: 480px) {
+  .vt-strip ol {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  .vt-countdown {
+    font-size: 64px;
+  }
+}
+
+/* vidtool: speed, rotate, merge, info */
+.vt-speed input[type="range"] {
+  width: 100%;
+}
+.vt-speed-ends {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: var(--muted);
+}
+.vt-newlen {
+  font-variant-numeric: tabular-nums;
+}
+/* Rotate: the turned preview (the player keeps the turned shape) */
+.vt-turns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+.vt-turns .btn {
+  justify-content: center;
+}
+.vt-mirror {
+  transform: scaleX(-1);
+}
+.vt-turnview {
+  gap: 8px;
+}
+.vt-turn {
+  --cap: min(62vh, 560px);
+  position: relative;
+  aspect-ratio: var(--ar, 16 / 9);
+  width: min(100%, calc(var(--cap) * var(--ar, 1.7778)));
+  border-radius: 10px;
+  background: #000;
+  overflow: hidden;
+}
+.vt-turn video {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  max-height: none;
+  object-fit: contain;
+  transform: translate(-50%, -50%) var(--tf, none);
+  transition: transform 0.25s ease;
+  cursor: pointer;
+}
+/* Turned sideways: the player is laid out as wide as the box is tall, then turned */
+.vt-turn.side video {
+  width: calc(100% / var(--ar));
+  height: calc(100% * var(--ar));
+}
+.vt-turnbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: min(100%, 560px);
+}
+.vt-turnbar input {
+  flex: 1;
+  min-width: 0;
+}
+.vt-turnbar .mp-time {
+  flex: none;
+  font-variant-numeric: tabular-nums;
+}
+@media (prefers-reduced-motion: reduce) {
+  .vt-turn video {
+    transition: none;
+  }
+}
+@media (max-width: 900px) {
+  .vt-turn {
+    --cap: 52vh;
+  }
+}
+/* Merge: the clips in order under the player */
+.vt-clips {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 10px;
+}
+.vt-clip {
+  position: relative;
+  display: grid;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--card);
+  overflow: hidden;
+}
+.vt-clip.on {
+  border-color: var(--acc);
+  box-shadow: 0 0 0 1px var(--acc);
+}
+.vt-clip.bad {
+  border-color: color-mix(in srgb, var(--warn) 45%, var(--line));
+}
+.vt-clip[draggable="true"] {
+  cursor: grab;
+}
+.vt-clip.drop-before::before,
+.vt-clip.drop-after::after {
+  content: "";
+  position: absolute;
+  top: 6px;
+  bottom: 6px;
+  width: 3px;
+  border-radius: 2px;
+  background: var(--acc);
+}
+.vt-clip.drop-before::before {
+  left: 2px;
+}
+.vt-clip.drop-after::after {
+  right: 2px;
+}
+.vt-clip-pick {
+  display: grid;
+  gap: 4px;
+  padding: 0 0 6px;
+  border: 0;
+  background: none;
+  color: var(--fg);
+  text-align: left;
+  font: inherit;
+  cursor: inherit;
+  min-width: 0;
+}
+.vt-clip-pick:focus-visible {
+  outline: 2px solid var(--acc);
+  outline-offset: -2px;
+  border-radius: 12px;
+}
+.vt-thumb {
+  position: relative;
+  display: block;
+  aspect-ratio: 16 / 9;
+  background: var(--raise);
+}
+.vt-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.vt-thumb b,
+.vt-thumb em {
+  position: absolute;
+  font-size: 12px;
+  font-style: normal;
+  font-variant-numeric: tabular-nums;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: rgb(0 0 0 / 0.66);
+  color: #fff;
+}
+.vt-thumb b {
+  top: 6px;
+  left: 6px;
+}
+.vt-thumb em {
+  bottom: 6px;
+  right: 6px;
+}
+.vt-clip-name,
+.vt-clip-meta {
+  padding: 0 8px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.vt-clip-name {
+  font-size: 13.5px;
+  font-weight: 500;
+}
+.vt-clip-meta {
+  font-size: 12px;
+}
+.vt-clip-tools {
+  display: flex;
+  justify-content: flex-end;
+  gap: 2px;
+  padding: 0 6px 6px;
+}
+.vt-clip-add button {
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 6px;
+  min-height: 150px;
+  width: 100%;
+  border: 0;
+  background: none;
+  color: var(--muted);
+  font: inherit;
+  font-size: 13.5px;
+  cursor: pointer;
+}
+.vt-clip.vt-clip-add {
+  border-style: dashed;
+}
+.vt-clip-add button:hover {
+  color: var(--acc);
+}
+.vt-clip-add .ico {
+  width: 20px;
+  height: 20px;
+}
+.vt-move-hint {
+  margin: 8px 0 0;
+  font-size: 12.5px;
+}
+.vt-merge .side-l > .btn {
+  justify-content: center;
+}
+.vt-total {
+  font-weight: 600;
+}
+/* Video info: details as a table, one column per video */
+.toolcard.vt-info:not(.solo) {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 16px;
+  padding: 20px;
+}
+.vt-info-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.vt-info-count {
+  font-weight: 600;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.vt-info-acts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.vt-gps {
+  margin: 0;
+}
+.vt-gps a {
+  color: inherit;
+  font-weight: 600;
+}
+.vt-info-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 20px;
+  align-items: start;
+}
+@media (min-width: 901px) {
+  .vt-info:not(.many) .vt-info-body {
+    grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+  }
+  .vt-info-view {
+    position: sticky;
+    top: 84px;
+  }
+}
+.vt-itable-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+}
+.vt-itable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13.5px;
+}
+.vt-itable th,
+.vt-itable td {
+  padding: 7px 12px;
+  text-align: left;
+  vertical-align: top;
+  border-top: 1px solid var(--line);
+  overflow-wrap: anywhere;
+}
+.vt-itable tbody th[scope="row"] {
+  width: 34%;
+  min-width: 120px;
+  font-weight: 400;
+  color: var(--muted);
+}
+.vt-info.many .vt-itable tbody th[scope="row"] {
+  width: auto;
+  white-space: nowrap;
+}
+.vt-info.many .vt-itable td {
+  min-width: 170px;
+}
+.vt-itable thead th,
+.vt-itable thead td {
+  border-top: 0;
+  vertical-align: bottom;
+}
+.vt-itable thead th {
+  display: table-cell;
+  font-weight: 500;
+}
+.vt-ithumb {
+  display: block;
+  aspect-ratio: 16 / 9;
+  max-width: 220px;
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--raise);
+  margin-bottom: 6px;
+}
+.vt-ithumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.vt-iname {
+  display: inline-block;
+  max-width: calc(100% - 34px);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+.vt-itable tr.sec th {
+  background: var(--raise);
+  font-size: 12.5px;
+  font-weight: 600;
+  padding-top: 6px;
+  padding-bottom: 6px;
+}
+.vt-itable tbody tr:first-child > * {
+  border-top: 0;
+}
+.vt-itable tr.diff td {
+  font-weight: 600;
+}
+.vt-itable td.bad {
+  color: var(--warn);
+}
+.vt-info-hint {
+  margin: 0;
+  font-size: 12.5px;
+}
+@media (max-width: 600px) {
+  .toolcard.vt-info:not(.solo) {
+    padding: 14px;
+  }
+  .vt-itable th,
+  .vt-itable td {
+    padding: 6px 9px;
+  }
+}

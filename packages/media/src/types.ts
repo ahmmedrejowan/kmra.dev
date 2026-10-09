@@ -27,15 +27,41 @@ export interface MediaInfo {
     fps: number;
     bitrate: number;
     pixelFormat?: string;
+    /** Full codec string when known, e.g. "avc1.64001f", "vp09.00.10.08" */
+    codecString?: string;
+    /** Codec profile and level for people, e.g. "High, level 3.1" */
+    profile?: string;
+    /** Bits per colour sample (8, 10 …) when known */
+    bitDepth?: number;
+    /** Colour description from the stream (names as WebCodecs/ffprobe give them) */
+    colour?: {
+      primaries?: string;
+      transfer?: string;
+      matrix?: string;
+      fullRange?: boolean;
+    };
+    /** High dynamic range (PQ or HLG transfer) */
+    hdr?: boolean;
+    /** Stored frame size before rotation and pixel aspect */
+    codedWidth?: number;
+    codedHeight?: number;
   };
   audio?: {
     codec: string;
     sampleRate: number;
     channels: number;
     bitrate: number;
+    /** Full codec string when known, e.g. "mp4a.40.2" (AAC-LC) */
+    codecString?: string;
+    profile?: string;
   };
   /** Other streams (subtitles, data), human-readable */
   other?: string[];
+  /**
+   * Descriptive tags from the file, keyed by a readable name: "Created", "Encoder", "Title",
+   * "Location" (ISO 6709, e.g. "+40.7128-074.0060/") … Only what the file has.
+   */
+  tags?: Record<string, string>;
 }
 
 export type Fit = "contain" | "cover" | "pad-blur" | "stretch";
@@ -65,6 +91,11 @@ export interface Job {
     codec?: VideoCodecName;
     /** Clockwise turn applied on top of the source rotation */
     rotate?: 0 | 90 | 180 | 270;
+    /**
+     * Turn by changing the display rotation only (no re-encode, instant) when the output is MP4 or
+     * MOV and nothing else changes the picture. Players that ignore the rotation show it unturned.
+     */
+    rotateMetadata?: boolean;
     flip?: "h" | "v";
     /** Playback speed factor (0.25–4) */
     speed?: number;
@@ -73,6 +104,11 @@ export interface Job {
   };
   audio?: {
     drop?: boolean;
+    /**
+     * With `video.speed`: keep the sound's pitch (time-stretch; default) or let it rise and fall
+     * with the speed like a tape (false)
+     */
+    keepPitch?: boolean;
     /** kbps */
     bitrate?: number;
     /** Volume factor (1 = unchanged) */
@@ -88,7 +124,24 @@ export interface Job {
   targetBytes?: number;
   /** Prefer copying streams without re-encoding when the job allows it */
   copyWhenPossible?: boolean;
-  gif?: { width?: number; fps?: number; loop?: boolean; dither?: boolean };
+  /**
+   * GIF output (`to: "gif"`): width in pixels (height follows), frame rate, whether it loops
+   * forever, dithering (true/"bayer" = ordered pattern, smallest; "diffusion" = error diffusion,
+   * smoothest gradients, larger; false = none, flat colours) and the palette size (2–256 colours,
+   * default 256). The palette is made for the clip first (palettegen), then applied (paletteuse).
+   */
+  gif?: {
+    width?: number;
+    fps?: number;
+    loop?: boolean;
+    dither?: boolean | "bayer" | "diffusion";
+    colors?: number;
+  };
+  /**
+   * Play the input this many times in a row (default 1). Meant for short animations (GIF to MP4).
+   * See-through parts of an animated GIF/WebP get `video.padColor` (default white) in a video.
+   */
+  repeat?: number;
 }
 
 export interface Progress {

@@ -13,6 +13,7 @@
  * makes VP9 + Opus. A run that crashes takes its instance down; the next job starts a fresh one.
  */
 import type { FFmpeg } from "@ffmpeg/ffmpeg";
+import { addTags, isHdr } from "./details";
 import type { MediaInfo, Progress } from "./types";
 
 let base = "/ffmpeg/";
@@ -249,6 +250,7 @@ interface ProbeJson {
     duration?: string;
     bit_rate?: string;
     size?: string;
+    tags?: Record<string, string>;
   };
   streams?: {
     codec_type?: string;
@@ -256,6 +258,15 @@ interface ProbeJson {
     width?: number;
     height?: number;
     pix_fmt?: string;
+    profile?: string;
+    level?: number;
+    bits_per_raw_sample?: string;
+    color_primaries?: string;
+    color_transfer?: string;
+    color_space?: string;
+    color_range?: string;
+    coded_width?: number;
+    coded_height?: number;
     r_frame_rate?: string;
     avg_frame_rate?: string;
     bit_rate?: string;
@@ -350,7 +361,7 @@ export async function probeFfmpeg(
     rotation = (((-r % 360) + 360) % 360) as number;
   }
   const turned = rotation === 90 || rotation === 270;
-  return {
+  const info: MediaInfo = {
     container,
     durationSec,
     sizeBytes: file.size,
@@ -387,4 +398,36 @@ export async function probeFfmpeg(
       )
       .map((s) => `${s.codec_type ?? "data"}: ${s.codec_name ?? "?"}`),
   };
+  if (v && info.video) {
+    const known = (x?: string) => (x && x !== "unknown" ? x : undefined);
+    const colour = {
+      primaries: known(v.color_primaries),
+      transfer: known(v.color_transfer),
+      matrix: known(v.color_space),
+      fullRange: v.color_range ? v.color_range === "pc" : undefined,
+    };
+    Object.assign(info.video, {
+      ...(v.profile
+        ? {
+            profile:
+              v.level && v.level > 0
+                ? `${v.profile}, level ${v.codec_name === "hevc" ? v.level / 30 : v.level / 10}`
+                : v.profile,
+          }
+        : {}),
+      ...(Number(v.bits_per_raw_sample)
+        ? { bitDepth: Number(v.bits_per_raw_sample) }
+        : {}),
+      ...(colour.primaries || colour.transfer || colour.matrix
+        ? { colour }
+        : {}),
+      hdr: isHdr(v.color_transfer),
+      ...(v.coded_width
+        ? { codedWidth: v.coded_width, codedHeight: v.coded_height }
+        : {}),
+    });
+  }
+  if (a?.profile && info.audio) info.audio.profile = a.profile;
+  addTags(info, { ...(v?.tags ?? {}), ...(fmt.tags ?? {}) });
+  return info;
 }

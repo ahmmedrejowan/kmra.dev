@@ -66,10 +66,21 @@ export function videoUntouched(
     v.quality === undefined &&
     !job.targetBytes &&
     !v.fps &&
-    !v.rotate &&
+    (!v.rotate || metadataTurn(job)) &&
     !v.flip &&
     (v.speed ?? 1) === 1 &&
     !(v.codec && codecId(v.codec) !== codecId(info.video?.codec))
+  );
+}
+
+/** The job turns the picture by the display rotation only (MP4/MOV, no flip): no re-encode */
+export function metadataTurn(job: Job): boolean {
+  const v = job.video ?? {};
+  return (
+    !!v.rotate &&
+    !!v.rotateMetadata &&
+    !v.flip &&
+    (job.to === "mp4" || job.to === "mov")
   );
 }
 
@@ -105,9 +116,46 @@ function atempo(speed: number): string[] {
   return out;
 }
 
+/**
+ * GIF filter graph: frame rate and size, then a palette made for this clip (palettegen, counting
+ * only what changes between frames so moving parts get the colours) applied with the chosen
+ * dithering (paletteuse). One command, two passes over the frames.
+ */
+export function gifFilter(
+  job: Job,
+  p: { width: number; height: number },
+): string {
+  const g = job.gif ?? {};
+  const fps = g.fps ?? 12;
+  const speed = job.video?.speed ?? 1;
+  const colors = Math.max(2, Math.min(256, Math.round(g.colors ?? 256)));
+  const dither =
+    g.dither === false
+      ? "none"
+      : g.dither === "diffusion"
+        ? "sierra2_4a"
+        : "bayer:bayer_scale=4";
+  const size = p.width > 0 ? `${p.width}:${p.height}` : `${g.width ?? 480}:-2`;
+  return (
+    `${speed !== 1 ? `setpts=PTS/${n(speed)},` : ""}fps=${n(fps)},scale=${size}:flags=lanczos,` +
+    `split[s0][s1];[s0]palettegen=max_colors=${colors}:stats_mode=diff[pal];` +
+    `[s1][pal]paletteuse=dither=${dither}:diff_mode=rectangle`
+  );
+}
+
+/** Animated pictures (GIF, WebP) as a source: see-through parts get a solid background */
+const ANIMATED = new Set(["gif", "webp"]);
+
 function videoFilters(info: MediaInfo, job: Job, p: FfmpegPlan): string {
   const v = job.video ?? {};
   const f: string[] = [];
+  if (ANIMATED.has(info.container)) {
+    // Paint the frame's own copy flat in the background colour, then lay the frame over it
+    const bg = (v.padColor ?? "#ffffff").replace("#", "0x");
+    f.push(
+      `format=rgba,split[kg][kt];[kg]drawbox=c=${bg}@1:t=fill[kgb];[kgb][kt]overlay=format=auto`,
+    );
+  }
   if (v.rotate === 90) f.push("transpose=1");
   else if (v.rotate === 180) f.push("hflip,vflip");
   else if (v.rotate === 270) f.push("transpose=2");
@@ -140,9 +188,13 @@ function videoFilters(info: MediaInfo, job: Job, p: FfmpegPlan): string {
   }
   f.push("setsar=1");
   if (v.fps) f.push(`fps=${n(v.fps)}`);
-  if ((v.speed ?? 1) !== 1) f.push(`setpts=PTS/${n(v.speed!)}`);
+  if ((v.speed ?? 1) !== 1)
+    // New timestamps, then back to a steady frame rate (frames dropped or repeated)
+    f.push(
+      `setpts=PTS/${n(v.speed!)}`,
+      `fps=${n(v.fps ?? (info.video?.fps || 30))}`,
+    );
   f.push("format=yuv420p");
-  void info;
   return f.join(",");
 }
 
@@ -150,7 +202,16 @@ function audioFilters(info: MediaInfo, job: Job): string {
   const a = job.audio ?? {};
   const f: string[] = [];
   const speed = job.video?.speed ?? 1;
-  if (speed !== 1) f.push(...atempo(speed));
+  if (speed !== 1)
+    f.push(
+      ...(a.keepPitch === false && info.audio?.sampleRate
+        ? // Like a tape: faster is higher, slower is lower
+          [
+            `asetrate=${Math.round(info.audio.sampleRate * speed)}`,
+            `aresample=${info.audio.sampleRate}`,
+          ]
+        : atempo(speed)),
+    );
   if (a.normalize) f.push("loudnorm=I=-16:TP=-1.5:LRA=11");
   if ((a.volume ?? 1) !== 1) f.push(`volume=${n(a.volume!)}`);
   const dur = outDuration(info, job);
@@ -242,21 +303,21 @@ export function ffmpegArgs(
 ): string[] {
   const a: string[] = ["-hide_banner", "-y"];
   if (job.trim) a.push("-ss", n(Math.max(0, job.trim.start)));
+  if ((job.repeat ?? 1) > 1)
+    a.push("-stream_loop", String(Math.round(job.repeat!) - 1));
   a.push("-i", input);
   if (job.trim) a.push("-t", n(Math.max(0.05, job.trim.end - job.trim.start)));
   a.push("-map_metadata", "0", "-map_chapters", "-1", "-sn", "-dn");
+  // Where it was filmed stays private: the location tag isn't copied
+  a.push("-metadata", "location=", "-metadata", "location-eng=");
 
   if (job.to === "gif") {
-    const g = job.gif ?? {};
-    const fps = g.fps ?? 12;
-    const w = g.width ?? Math.min(480, p.width || 480);
-    const speed = job.video?.speed ?? 1;
     a.push(
       "-vf",
-      `${speed !== 1 ? `setpts=PTS/${n(speed)},` : ""}fps=${n(fps)},scale=${w}:-2:flags=lanczos,split[s0][s1];[s0]palettegen=stats_mode=diff[pal];[s1][pal]paletteuse=dither=${g.dither === false ? "none" : "bayer:bayer_scale=4"}`,
+      gifFilter(job, p),
       "-an",
       "-loop",
-      g.loop === false ? "-1" : "0",
+      job.gif?.loop === false ? "-1" : "0",
       output,
     );
     return a;
@@ -268,8 +329,15 @@ export function ffmpegArgs(
   if (!noAudio) a.push("-map", "0:a:0");
 
   if (noVideo) a.push("-vn");
-  else if (p.copyVideo) a.push("-c:v", "copy");
-  else a.push("-vf", videoFilters(info, job, p), ...videoCodec(job, p));
+  else if (p.copyVideo) {
+    a.push("-c:v", "copy");
+    if (metadataTurn(job))
+      a.push(
+        "-metadata:s:v:0",
+        // ffmpeg 5.1's mov muxer reads this tag counter-clockwise
+        `rotate=${(360 - (((info.video?.rotation ?? 0) + job.video!.rotate!) % 360)) % 360}`,
+      );
+  } else a.push("-vf", videoFilters(info, job, p), ...videoCodec(job, p));
 
   if (noAudio) a.push("-an");
   else if (p.copyAudio) a.push("-c:a", "copy");
@@ -311,9 +379,22 @@ export function concatArgs(
   const parts: string[] = [];
   const pads: string[] = [];
   infos.forEach((info, i) => {
-    parts.push(
-      `[${i}:v:0]scale=${W}:${H}:force_original_aspect_ratio=decrease,pad=${W}:${H}:(ow-iw)/2:(oh-ih)/2:color=black,setsar=1,fps=${fps},format=yuv420p[v${i}]`,
-    );
+    if (job.video?.fit === "pad-blur") {
+      // A blurred, enlarged copy fills the frame behind the whole clip
+      const bw = Math.max(16, Math.round(W / 16 / 2) * 2);
+      const bh = Math.max(16, Math.round(H / 16 / 2) * 2);
+      parts.push(
+        `[${i}:v:0]split[b${i}][f${i}]`,
+        `[b${i}]scale=${bw}:${bh}:force_original_aspect_ratio=increase,crop=${bw}:${bh},boxblur=4:2,scale=${W}:${H}[bg${i}]`,
+        `[f${i}]scale=${W}:${H}:force_original_aspect_ratio=decrease,scale=trunc(iw/2)*2:trunc(ih/2)*2[fg${i}]`,
+        `[bg${i}][fg${i}]overlay=(W-w)/2:(H-h)/2,setsar=1,fps=${fps},format=yuv420p[v${i}]`,
+      );
+    } else {
+      const color = (job.video?.padColor ?? "black").replace("#", "0x");
+      parts.push(
+        `[${i}:v:0]scale=${W}:${H}:force_original_aspect_ratio=decrease,pad=${W}:${H}:(ow-iw)/2:(oh-ih)/2:color=${color},setsar=1,fps=${fps},format=yuv420p[v${i}]`,
+      );
+    }
     pads.push(`[v${i}]`);
     if (withAudio) {
       parts.push(

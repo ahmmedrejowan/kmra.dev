@@ -12,12 +12,14 @@ import type { Engine } from "../types";
 export function useMediaFiles(
   onFiles: (files: File[]) => void,
   accept: (f: File) => boolean = isMediaFile,
+  /** Message when nothing usable was dropped (default: "That isn't a video …") */
+  reject?: string,
 ) {
   const T = useT();
   return useFiles({
     onFiles,
     accept,
-    reject: T("That isn't a video. Try MP4, MOV, WebM, MKV or AVI."),
+    reject: reject ?? T("That isn't a video. Try MP4, MOV, WebM, MKV or AVI."),
   });
 }
 

@@ -8,12 +8,14 @@
 import { createServer } from "node:http";
 import { readFile, stat } from "node:fs/promises";
 import { extname, join, normalize } from "node:path";
-import { CSP } from "../packages/config/src/vercel.ts";
+import { CSP, permissionsPolicy } from "../packages/config/src/vercel.ts";
 
 const [appId, portArg] = process.argv.slice(2);
 if (!appId || !portArg) throw new Error("usage: serve.ts <appId> <port>");
 const root = join(import.meta.dirname, "..", "apps", appId, "dist");
+// Same per-app permissions as each app's vercel.ts
 const camera = appId === "qrtool";
+const screen = appId === "vidtool";
 
 const TYPES: Record<string, string> = {
   ".html": "text/html; charset=utf-8",
@@ -42,7 +44,7 @@ const HEADERS = {
   "Content-Security-Policy": CSP,
   "X-Content-Type-Options": "nosniff",
   "Referrer-Policy": "strict-origin-when-cross-origin",
-  "Permissions-Policy": `camera=${camera ? "(self)" : "()"}, microphone=(), geolocation=(), interest-cohort=()`,
+  "Permissions-Policy": permissionsPolicy({ camera, screen }),
   "Cross-Origin-Opener-Policy": "same-origin",
 };
 

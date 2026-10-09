@@ -1,3 +1,4 @@
 import { appConfig } from "@kmra/config/vercel";
 
-export default appConfig();
+// The screen recorder captures the screen and, if asked, the microphone
+export default appConfig({ screen: true });

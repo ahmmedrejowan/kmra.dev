@@ -2,7 +2,7 @@
  * Main-thread client for the fast engine's worker (./wc.worker.ts). One worker, started on first
  * use; each call has an id, progress messages and a final reply. Internal: tools use ./engine.
  */
-import type { Engine, Job, MediaInfo } from "./types";
+import type { Container, Engine, Job, MediaInfo } from "./types";
 
 export interface WcPlan {
   width: number;
@@ -33,6 +33,25 @@ export type WcRequest =
       type: string;
       quality: number;
     }
+  | {
+      op: "stills";
+      id: number;
+      file: File;
+      times: number[];
+      width?: number;
+      type: string;
+      quality: number;
+    }
+  | {
+      op: "scenes";
+      id: number;
+      file: File;
+      start: number;
+      end: number;
+      threshold: number;
+      max: number;
+    }
+  | { op: "concat"; id: number; files: File[]; to: Container }
   | { op: "cancel"; target: number };
 
 interface Reply {
@@ -46,6 +65,7 @@ interface Reply {
   ratio?: number;
   engine?: Engine;
   thumb?: { i: number; t: number; bitmap: ImageBitmap };
+  still?: { i: number; t: number; blob: Blob };
 }
 
 /** The fast engine can't do this job; use ffmpeg */

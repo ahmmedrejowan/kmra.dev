@@ -10,6 +10,13 @@
  *   vid-silent.webm    4 s, 640×360, VP9, no audio
  *   vid-clip.mkv       3 s, 640×360, H.264 + AAC in Matroska
  *   vid-clip.avi       3 s, 320×240, MPEG-4 part 2 + MP3 (only ffmpeg.wasm reads it)
+ *   vid-colors.mp4     4 s, 320×180, 25 fps, no sound: red, green, blue, white, one second each
+ *                      (frame colours at known times; three cuts for scene detection)
+ *   vid-anim.gif       3 s, 480×270, 15 fps test pattern GIF, loops (GIF to video)
+ *   vid-alpha.gif      1 s, 200×100, 10 fps, see-through with a blue square at 50,25 (background)
+ *   vid-corner.mp4     2 s, 320×180, 25 fps, black with a red box in the top-left corner, H.264 +
+ *                      AAC; tagged with a creation time and a location (rotate, flip, video info)
+ *   vid-part1/2/3.mp4  2 s, 3 s, 2 s, 640×360, 30 fps, H.264 + AAC, encoded alike (merge by copy)
  */
 import { execFile } from "node:child_process";
 import { existsSync } from "node:fs";
@@ -26,6 +33,13 @@ export const VID = {
   webm: "vid-silent.webm",
   mkv: "vid-clip.mkv",
   avi: "vid-clip.avi",
+  colors: "vid-colors.mp4",
+  gif: "vid-anim.gif",
+  alpha: "vid-alpha.gif",
+  corner: "vid-corner.mp4",
+  part1: "vid-part1.mp4",
+  part2: "vid-part2.mp4",
+  part3: "vid-part3.mp4",
 } as const;
 
 async function hasFfmpeg() {
@@ -150,6 +164,90 @@ export async function makeVidtoolFixtures(dir: string) {
         "-shortest",
       ],
       VID.avi,
+    ),
+    ff(
+      [
+        ...["red", "lime", "blue", "white"].flatMap((c) => [
+          "-f",
+          "lavfi",
+          "-i",
+          `color=c=${c}:s=320x180:d=1:r=25`,
+        ]),
+        "-filter_complex",
+        "[0][1][2][3]concat=n=4:v=1:a=0,format=yuv420p",
+        ...h264,
+        "-g",
+        "25",
+      ],
+      VID.colors,
+    ),
+    ff(
+      [
+        ...src(480, 270, 3, 15),
+        "-vf",
+        "split[a][b];[a]palettegen[p];[b][p]paletteuse",
+        "-loop",
+        "0",
+      ],
+      VID.gif,
+    ),
+    ff(
+      [
+        "-f",
+        "lavfi",
+        "-i",
+        "color=c=black@0:s=200x100:d=1:r=10,format=rgba",
+        "-f",
+        "lavfi",
+        "-i",
+        "color=c=blue:s=50x50:d=1:r=10,format=rgba",
+        "-filter_complex",
+        "[0][1]overlay=50:25,split[a][b];[a]palettegen=reserve_transparent=1[p];[b][p]paletteuse",
+        "-loop",
+        "0",
+      ],
+      VID.alpha,
+    ),
+    ff(
+      [
+        "-f",
+        "lavfi",
+        "-i",
+        "color=c=black:s=320x180:d=2:r=25",
+        ...tone(2),
+        "-vf",
+        "drawbox=x=0:y=0:w=80:h=45:color=red:t=fill,format=yuv420p",
+        ...h264,
+        "-g",
+        "25",
+        ...aac,
+        "-shortest",
+        "-metadata",
+        "creation_time=2024-05-01T10:20:30Z",
+        "-metadata",
+        "location=+40.7128-074.0060/",
+      ],
+      VID.corner,
+    ),
+    ...(
+      [
+        [VID.part1, 2],
+        [VID.part2, 3],
+        [VID.part3, 2],
+      ] as const
+    ).map(([name, sec]) =>
+      ff(
+        [
+          ...src(640, 360, sec),
+          ...tone(sec),
+          ...h264,
+          "-g",
+          "30",
+          ...aac,
+          "-shortest",
+        ],
+        name,
+      ),
     ),
   ]);
 }

@@ -86,6 +86,10 @@ export function Workspace({
   onFile,
   note,
   idle,
+  inputAccept,
+  reject,
+  preview: customPreview,
+  estimate,
 }: {
   /** Tool slug, used as a CSS hook */
   tool: string;
@@ -109,6 +113,20 @@ export function Workspace({
   note?: (info: MediaInfo, file: File) => ReactNode;
   /** Shown in the output column while the settings make no job (job() returns null) */
   idle?: string;
+  /** File picker filter (default: video files) */
+  inputAccept?: string;
+  /** Message when a dropped file isn't accepted */
+  reject?: string;
+  /**
+   * Show the original or the result some other way (e.g. a GIF as an image); return undefined
+   * for the usual player.
+   */
+  preview?: (blob: Blob, which: "original" | "result") => ReactNode | undefined;
+  /**
+   * A better size estimate than plan()'s (e.g. measured on a sample). Called after each plan;
+   * a result for settings that changed meanwhile is dropped.
+   */
+  estimate?: (info: MediaInfo, file: File, job: Job) => Promise<number | null>;
 }) {
   const T = useT();
   const [items, setItems] = useState<Item[]>([]);
@@ -124,6 +142,8 @@ export function Workspace({
   jobRef.current = job;
   const onFileRef = useRef(onFile);
   onFileRef.current = onFile;
+  const estimateRef = useRef(estimate);
+  estimateRef.current = estimate;
 
   const patch = (key: number, p: Partial<Item>) =>
     setItems((list) =>
@@ -157,7 +177,7 @@ export function Workspace({
       }
     })();
   };
-  const { dragging, pickRef, pick, take } = useMediaFiles(add, accept);
+  const { dragging, pickRef, pick, take } = useMediaFiles(add, accept, reject);
 
   const cur = items[sel] ?? items[0];
 
@@ -182,8 +202,17 @@ export function Workspace({
       if (!it.info || !j) return;
       if (it.planKey !== k) {
         patch(it.key, { planKey: k });
-        void plan(it.file, j, it.info)
-          .then((p) => patch(it.key, { plan: p }))
+        const info = it.info;
+        void plan(it.file, j, info)
+          .then(async (p) => {
+            patch(it.key, { plan: p });
+            const est = estimateRef.current;
+            if (!est) return;
+            const bytes = await est(info, it.file, j);
+            const now = itemsRef.current.find((x) => x.key === it.key);
+            if (bytes !== null && now?.planKey === k)
+              patch(it.key, { plan: { ...p, estimatedBytes: bytes } });
+          })
           .catch(() => {});
       }
       if (it.doneKey && it.doneKey !== k && it.status !== "running")
@@ -279,7 +308,12 @@ export function Workspace({
   const j = cur ? jobs[items.indexOf(cur)] : null;
 
   const input = (
-    <MediaInput inputRef={pickRef} onFiles={take} multiple={multiple} />
+    <MediaInput
+      inputRef={pickRef}
+      onFiles={take}
+      multiple={multiple}
+      accept={inputAccept}
+    />
   );
 
   if (!cur)
@@ -398,17 +432,23 @@ export function Workspace({
             </div>
           )}
         </div>
-        <VideoPreview
-          file={preview}
-          aspect={(() => {
-            const v = (view === "result" ? cur.out?.info : cur.info)?.video;
-            return v ? v.width / v.height : undefined;
-          })()}
-          audio={!!resultIsAudio || (!cur.info?.video && !!cur.info?.audio)}
-          seek={view === "original" ? seek : undefined}
-          onTime={view === "original" ? setTime : undefined}
-          label={view === "result" ? T("Result") : T("Original")}
-        />
+        {(preview &&
+          customPreview?.(
+            preview,
+            view === "result" ? "result" : "original",
+          )) ?? (
+          <VideoPreview
+            file={preview}
+            aspect={(() => {
+              const v = (view === "result" ? cur.out?.info : cur.info)?.video;
+              return v ? v.width / v.height : undefined;
+            })()}
+            audio={!!resultIsAudio || (!cur.info?.video && !!cur.info?.audio)}
+            seek={view === "original" ? seek : undefined}
+            onTime={view === "original" ? setTime : undefined}
+            label={view === "result" ? T("Result") : T("Original")}
+          />
+        )}
         {resultIsAudio && cur.info?.video && (
           // Sound from a video: the picture stays in view (muted) above the result's player
           <VideoPreview
@@ -449,7 +489,10 @@ export function Workspace({
               )}
               <div>
                 <dt>{T("Estimated size")}</dt>
-                <dd className="vt-est">
+                <dd
+                  className="vt-est"
+                  data-bytes={cur.plan.estimatedBytes ?? undefined}
+                >
                   {cur.plan.estimatedBytes !== null
                     ? `≈ ${formatBytes(cur.plan.estimatedBytes)}`
                     : T("Depends on the cut")}
@@ -600,12 +643,12 @@ export function Workspace({
   );
 }
 
-function FileDetails({
+export function FileDetails({
   item,
   onReplace,
   busy,
 }: {
-  item: Item;
+  item: Pick<Item, "file" | "info" | "probeError">;
   onReplace?: () => void;
   busy: boolean;
 }) {
