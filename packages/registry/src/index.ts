@@ -72,7 +72,14 @@ export type IconName =
   | "book"
   | "lock"
   | "scanText"
-  | "search";
+  | "search"
+  | "video"
+  | "music"
+  | "scissors"
+  | "gauge"
+  | "volumeX"
+  | "record"
+  | "merge";
 
 export interface Tool {
   /** URL path segment, e.g. "resize" -> imgtool.kmra.dev/resize */
@@ -1400,8 +1407,10 @@ export const apps = [
     id: "vidtool",
     name: "Video tools",
     brand: ["Vid", "Tool"],
+    locales: ["en", "bn"],
     short: "Video",
-    tagline: "Trim, convert and make GIFs.",
+    tagline:
+      "Compress, convert, trim and record videos in your browser. Everything runs on your device.",
     accent: {
       light: "#12a594",
       dark: "#2ebfae",
@@ -1410,8 +1419,428 @@ export const apps = [
     },
     live: false,
     devPort: 4323,
-    tools: [],
-    tasks: [],
+    toolGroups: ["Optimize", "Edit", "Convert", "Record and info"],
+    popular: [
+      "compress",
+      "convert",
+      "trim",
+      "video-to-gif",
+      "video-to-mp3",
+      "screen-recorder",
+      "compress-video-for-whatsapp",
+      "mov-to-mp4",
+      "instagram-reel-size",
+      "resize",
+      "mute",
+    ],
+    tools: [
+      {
+        slug: "compress",
+        title: "Compress a video",
+        name: "Compress video",
+        description:
+          "Make videos smaller for WhatsApp, email and uploads. Pick a quality or a target size in MB.",
+        blurb: "Smaller files, set size",
+        icon: "compress",
+        group: "Optimize",
+        ready: false,
+        steps: [
+          "Drop a video.",
+          "Pick a quality, or a size like 16 MB.",
+          "Check the preview, then download.",
+        ],
+      },
+      {
+        slug: "convert",
+        title: "Convert video to MP4, WebM or MOV",
+        name: "Convert video",
+        description:
+          "Turn MOV, MKV, AVI, WebM and other videos into MP4 that plays everywhere, or into WebM.",
+        blurb: "MOV, MKV, WebM to MP4",
+        icon: "convert",
+        group: "Optimize",
+        ready: false,
+        steps: [
+          "Drop one or more videos.",
+          "Pick MP4 or WebM.",
+          "Download the converted files.",
+        ],
+      },
+      {
+        slug: "resize",
+        title: "Resize a video for any screen",
+        name: "Resize video",
+        description:
+          "Change the resolution, or reshape a video for Reels, Shorts, TikTok or a square post with crop or padding.",
+        blurb: "Reels, Shorts, square",
+        icon: "resize",
+        group: "Optimize",
+        ready: false,
+        steps: [
+          "Drop a video.",
+          "Pick a size or a shape like 9:16, then crop or pad.",
+          "Preview it and download.",
+        ],
+      },
+      {
+        slug: "trim",
+        title: "Trim or cut a video",
+        name: "Trim video",
+        description:
+          "Cut the start and end off a video, or keep just the part you need.",
+        blurb: "Cut start and end",
+        icon: "scissors",
+        group: "Edit",
+        ready: false,
+        steps: [
+          "Drop a video.",
+          "Drag the handles or type the start and end time.",
+          "Download the trimmed clip.",
+        ],
+      },
+      {
+        slug: "rotate",
+        title: "Rotate or flip a video",
+        name: "Rotate video",
+        description:
+          "Turn a sideways video upright, or flip it horizontally or vertically.",
+        blurb: "Turn and flip",
+        icon: "rotate",
+        group: "Edit",
+        ready: false,
+        steps: [
+          "Drop a video.",
+          "Rotate 90° or flip it.",
+          "Download it the right way up.",
+        ],
+      },
+      {
+        slug: "speed",
+        title: "Speed up or slow down a video",
+        name: "Change speed",
+        description:
+          "Make a video faster or slower, from 0.25× to 4×, with or without the sound.",
+        blurb: "Faster or slower",
+        icon: "gauge",
+        group: "Edit",
+        ready: false,
+        steps: ["Drop a video.", "Pick a speed.", "Preview and download."],
+      },
+      {
+        slug: "merge",
+        title: "Join videos into one",
+        name: "Merge videos",
+        description: "Put several clips together in the order you choose.",
+        blurb: "Join clips",
+        icon: "merge",
+        group: "Edit",
+        ready: false,
+        steps: [
+          "Drop two or more videos.",
+          "Drag them into order.",
+          "Download one video.",
+        ],
+      },
+      {
+        slug: "mute",
+        title: "Remove the sound from a video",
+        name: "Remove audio",
+        description:
+          "Make a silent copy of a video, without re-encoding the picture.",
+        blurb: "Silent copy",
+        icon: "volumeX",
+        group: "Edit",
+        ready: false,
+        steps: [
+          "Drop a video.",
+          "The sound track is removed.",
+          "Download the silent video.",
+        ],
+      },
+      {
+        slug: "video-to-gif",
+        title: "Make a GIF from a video",
+        name: "Video to GIF",
+        description:
+          "Turn a part of a video into a GIF, with the size, frame rate and length you choose.",
+        blurb: "Clips to GIFs",
+        icon: "film",
+        group: "Convert",
+        ready: false,
+        steps: [
+          "Drop a video and pick the part you want.",
+          "Choose the width and frame rate.",
+          "Download the GIF.",
+        ],
+      },
+      {
+        slug: "gif-to-video",
+        title: "Convert a GIF to MP4",
+        name: "GIF to video",
+        description:
+          "Turn GIFs into MP4 videos that are much smaller and play everywhere.",
+        blurb: "Smaller than GIF",
+        icon: "video",
+        group: "Convert",
+        ready: false,
+        steps: ["Drop a GIF.", "It becomes an MP4.", "Download it."],
+      },
+      {
+        slug: "video-to-mp3",
+        title: "Extract the audio from a video",
+        name: "Video to MP3",
+        description: "Save the sound of a video as MP3, M4A or WAV.",
+        blurb: "Audio from video",
+        icon: "music",
+        group: "Convert",
+        ready: false,
+        steps: [
+          "Drop a video.",
+          "Pick MP3, M4A or WAV.",
+          "Download the audio.",
+        ],
+      },
+      {
+        slug: "extract-frames",
+        title: "Save frames from a video as images",
+        name: "Extract frames",
+        description:
+          "Grab a still from any moment, or export frames at an interval as JPG or PNG in a zip.",
+        blurb: "Stills and thumbnails",
+        icon: "image",
+        group: "Convert",
+        ready: false,
+        steps: [
+          "Drop a video.",
+          "Pick a moment, or an interval.",
+          "Download the images.",
+        ],
+      },
+      {
+        slug: "screen-recorder",
+        title: "Record your screen",
+        name: "Screen recorder",
+        description:
+          "Record your screen, a window or a tab, with your microphone if you like, and save it as a video.",
+        blurb: "Screen, window or tab",
+        icon: "record",
+        group: "Record and info",
+        ready: false,
+        steps: [
+          "Pick what to share and whether to record your microphone.",
+          "Record, then stop.",
+          "Preview and download the video.",
+        ],
+      },
+      {
+        slug: "video-info",
+        title: "See a video's details",
+        name: "Video info",
+        description:
+          "Read a video's resolution, length, frame rate, codecs, bitrate and more.",
+        blurb: "Codecs, size, length",
+        icon: "info",
+        group: "Record and info",
+        ready: false,
+        steps: [
+          "Drop a video.",
+          "See its details at once.",
+          "Copy them if you need to.",
+        ],
+      },
+    ],
+    tasks: [
+      {
+        slug: "compress-video-for-whatsapp",
+        tool: "compress",
+        name: "Compress for WhatsApp",
+        short: "Under 16 MB",
+        group: "For sharing",
+        title: "Compress a video for WhatsApp",
+        intro:
+          "Make a video small enough to send on WhatsApp without it being squeezed into a blurry mess.",
+        about: [
+          "The video is made to fit under 16 MB, keeping as much quality as the length allows.",
+        ],
+        preset: { targetMB: 16 },
+      },
+      {
+        slug: "compress-video-for-discord",
+        tool: "compress",
+        name: "Compress for Discord",
+        short: "Under 10 MB",
+        group: "For sharing",
+        title: "Compress a video for Discord",
+        intro: "Fit a video under Discord's 10 MB limit for free accounts.",
+        about: [
+          "Long videos are made smaller in resolution too, so they stay watchable.",
+        ],
+        preset: { targetMB: 10 },
+      },
+      {
+        slug: "compress-video-for-email",
+        tool: "compress",
+        name: "Compress for email",
+        short: "Under 25 MB",
+        group: "For sharing",
+        title: "Compress a video for email",
+        intro: "Make a video small enough to attach to an email.",
+        about: ["Most email services allow attachments up to 20–25 MB."],
+        preset: { targetMB: 20 },
+      },
+      {
+        slug: "mov-to-mp4",
+        tool: "convert",
+        name: "MOV to MP4",
+        short: "iPhone videos",
+        group: "Formats",
+        title: "Convert MOV to MP4",
+        intro:
+          "Turn iPhone and QuickTime MOV files into MP4 that plays everywhere.",
+        about: [
+          "If the video is already H.264, it's repackaged without losing quality.",
+        ],
+        preset: { to: "mp4" },
+      },
+      {
+        slug: "webm-to-mp4",
+        tool: "convert",
+        name: "WebM to MP4",
+        short: "Screen recordings, web videos",
+        group: "Formats",
+        title: "Convert WebM to MP4",
+        intro:
+          "Turn WebM videos into MP4 for phones, editors and social media.",
+        about: ["WebM is common for screen recordings and web downloads."],
+        preset: { to: "mp4" },
+      },
+      {
+        slug: "mkv-to-mp4",
+        tool: "convert",
+        name: "MKV to MP4",
+        short: "Movies and recordings",
+        group: "Formats",
+        title: "Convert MKV to MP4",
+        intro: "Turn MKV files into MP4.",
+        about: [
+          "Compatible tracks are copied as they are, which is fast and lossless.",
+        ],
+        preset: { to: "mp4" },
+      },
+      {
+        slug: "mp4-to-gif",
+        tool: "video-to-gif",
+        name: "MP4 to GIF",
+        short: "Short clips as GIFs",
+        group: "Formats",
+        title: "Convert MP4 to GIF",
+        intro: "Turn a short MP4 clip into a GIF.",
+        about: [
+          "Keep GIFs short and small: 10 seconds at 480 px is usually plenty.",
+        ],
+        preset: {},
+      },
+      {
+        slug: "instagram-reel-size",
+        tool: "resize",
+        name: "Instagram Reel size",
+        short: "9:16, 1080×1920",
+        group: "For social",
+        title: "Resize a video for Instagram Reels",
+        intro: "Make a video fit Instagram Reels at 1080×1920.",
+        about: [
+          "Pick crop to fill the screen, or pad to keep everything in view.",
+        ],
+        preset: { aspect: "9:16" },
+      },
+      {
+        slug: "youtube-shorts-size",
+        tool: "resize",
+        name: "YouTube Shorts size",
+        short: "9:16 vertical",
+        group: "For social",
+        title: "Resize a video for YouTube Shorts",
+        intro: "Turn a landscape video into a vertical Short.",
+        about: ["Shorts are vertical 9:16 and up to 3 minutes long."],
+        preset: { aspect: "9:16" },
+      },
+      {
+        slug: "tiktok-size",
+        tool: "resize",
+        name: "TikTok size",
+        short: "9:16 vertical",
+        group: "For social",
+        title: "Resize a video for TikTok",
+        intro: "Make a video fit TikTok's vertical format.",
+        about: [
+          "Use pad with a blurred background to keep a landscape video whole.",
+        ],
+        preset: { aspect: "9:16" },
+      },
+      {
+        slug: "square-video",
+        tool: "resize",
+        name: "Square video",
+        short: "1:1 for feeds",
+        group: "For social",
+        title: "Make a square video",
+        intro: "Crop or pad a video to a 1:1 square for feeds and profiles.",
+        about: [
+          "Square videos take up more space in feeds than landscape ones.",
+        ],
+        preset: { aspect: "1:1" },
+      },
+      {
+        slug: "speed-up-video",
+        tool: "speed",
+        name: "Speed up video",
+        short: "2× and more",
+        group: "Edits",
+        title: "Speed up a video",
+        intro: "Make a video play faster, like a timelapse.",
+        about: [
+          "The sound is kept and pitched correctly up to 2×; above that it's dropped.",
+        ],
+        preset: { speed: 2 },
+      },
+      {
+        slug: "slow-motion-video",
+        tool: "speed",
+        name: "Slow motion",
+        short: "0.5× and slower",
+        group: "Edits",
+        title: "Make a slow-motion video",
+        intro: "Slow a video down for a slow-motion effect.",
+        about: [
+          "Slow motion looks smoothest with videos shot at 60 fps or more.",
+        ],
+        preset: { speed: 0.5 },
+      },
+      {
+        slug: "cut-video",
+        tool: "trim",
+        name: "Cut a video",
+        short: "Keep the part you need",
+        group: "Edits",
+        title: "Cut a video online",
+        intro: "Cut out the part of a video you want to keep.",
+        about: [
+          "When possible the cut is made without re-encoding, which is instant and lossless.",
+        ],
+        preset: {},
+      },
+      {
+        slug: "rotate-video-90",
+        tool: "rotate",
+        name: "Rotate 90°",
+        short: "Sideways phone videos",
+        group: "Edits",
+        title: "Rotate a video 90 degrees",
+        intro: "Fix a video that was recorded sideways.",
+        about: ["Choose left or right; the video is turned without cropping."],
+        preset: { turn: 90 },
+      },
+    ],
   },
   {
     id: "devtool",
