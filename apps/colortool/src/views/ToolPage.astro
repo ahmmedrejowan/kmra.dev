@@ -22,7 +22,7 @@ const L = (p: string) => lp(locale, p);
 const app = localizeApp(getApp("colortool"), locale);
 const task = app.tasks.find((t) => t.slug === slug);
 const tool = app.tools.find((t) => t.slug === (task?.tool ?? slug))!;
-// Developer tools have one mode: everything is on screen
+// Colour tools have one mode: everything is on screen
 const standalone = true;
 const title = task?.title ?? tool.title ?? tool.name;
 const intro = task?.intro ?? tool.description;
@@ -58,9 +58,9 @@ const icons = Object.fromEntries(app.tools.map((t) => [t.slug, t.icon]));
 
 const baseFaq = [
   {
-    q: T("Does my data leave my device?"),
+    q: T("Where are my colours and images worked on?"),
     a: T(
-      "No. Everything you paste or open is processed in your browser and stays on your device.",
+      "In your browser, on your device. Colours you type and images you open stay with you.",
     ),
   },
   {
@@ -70,9 +70,9 @@ const baseFaq = [
     ),
   },
   {
-    q: T("Is there a size limit?"),
+    q: T("Which colour formats can I use?"),
     a: T(
-      "No limits from us. Very large inputs can be slow because the work uses your device's memory.",
+      "HEX, RGB, HSL, HWB, OKLCH, OKLab, CMYK, the 148 CSS colour names, or just three numbers like 30 144 255.",
     ),
   },
 ];
@@ -92,7 +92,7 @@ const schema = [
     url: pageUrl,
     description: intro,
     inLanguage: locale,
-    applicationCategory: "DeveloperApplication",
+    applicationCategory: "DesignApplication",
     operatingSystem: "Any (runs in the browser)",
     browserRequirements: "Requires a modern browser with JavaScript",
     isAccessibleForFree: true,
@@ -171,12 +171,12 @@ const schema = [
     <section class="block">
       <div class="sechead primary">
         <h2>{T("Other tools")}</h2>
-        <p>{T("More tools for everyday coding.")}</p>
+        <p>{T("More tools for working with colour.")}</p>
       </div>
       <ToolCards
         tools={others}
         allHref="/tools"
-        allLabel={T("All {n} developer tools", {
+        allLabel={T("All {n} colour tools", {
           n: app.tools.filter((t) => t.ready).length,
         })}
       />

@@ -71,9 +71,13 @@ const taskList = app.tasks
           )}
         </span>
         <p>
-          {T(
-            "Small tools for everyday files. Everything runs in your browser, so your files stay on your device.",
-          )}
+          {app.noFiles
+            ? T(
+                "Small, private tools. Everything runs in your browser, so what you type stays on your device.",
+              )
+            : T(
+                "Small tools for everyday files. Everything runs in your browser, so your files stay on your device.",
+              )}
         </p>
         <a class="fmail" href={`mailto:${CONTACT.email}`}>
           {CONTACT.email}

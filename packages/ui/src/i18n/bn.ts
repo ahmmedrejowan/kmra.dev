@@ -699,4 +699,16 @@ export const BN: Record<string, string> = {
   "© your name": "© আপনার নাম",
   "Under {n} KB": "{n} কেবির নিচে",
   "Taken at {place}.": "ছবিটি তোলা হয়েছে {place}-এ।",
+  // Apps that work on what you type (calculators, colours)
+  "Small, private tools. Everything runs in your browser, so what you type stays on your device.":
+    "ছোট, ব্যক্তিগত টুল। সব কাজ হয় আপনার ব্রাউজারে, তাই আপনি যা লেখেন তা আপনার ডিভাইসেই থাকে।",
+  "What you type stays on your device": "আপনি যা লেখেন তা আপনার ডিভাইসেই থাকে",
+  "What you type is worked out in your device's memory, right in the page.":
+    "আপনি যা লেখেন তার হিসাব হয় আপনার ডিভাইসের মেমরিতে, এই পেজের ভেতরেই।",
+  "You get the result": "ফলাফল পান",
+  "Results appear as you type, ready to copy or save.":
+    "লিখতে লিখতেই ফলাফল দেখা যায়, কপি বা সেভ করার জন্য তৈরি।",
+  "Every kmra site sends a security policy that stops the page from contacting any other server. Even if there were a bug, your browser would refuse to send what you type anywhere.":
+    "প্রতিটি kmra সাইট একটি নিরাপত্তা নীতি পাঠায়, যা পেজকে অন্য কোনো সার্ভারের সঙ্গে যোগাযোগ করতে দেয় না। কোনো ত্রুটি থাকলেও আপনার ব্রাউজার আপনি যা লেখেন তা কোথাও পাঠাতে দেবে না।",
+  "Use any tool. Nothing is sent while it works.": "যেকোনো টুল ব্যবহার করুন। কাজ চলার সময় কিছুই পাঠানো হয় না।",
 };

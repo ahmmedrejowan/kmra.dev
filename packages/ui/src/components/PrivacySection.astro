@@ -3,6 +3,11 @@ import Icon from "./Icon.astro";
 import { pageLocale } from "../lib/locale";
 import { t as tr } from "../lib/i18n";
 
+/** `noFiles`: the app works on what you type (calculators, colours), not files */
+interface Props {
+  noFiles?: boolean;
+}
+const { noFiles = false } = Astro.props;
 const locale = pageLocale(Astro);
 const T = (s: string) => tr(locale, s);
 ---
@@ -13,7 +18,11 @@ const T = (s: string) => tr(locale, s);
       <Icon name="shield" />
     </span>
     <div>
-      <h2>{T("Your files never leave your device")}</h2>
+      <h2>
+        {noFiles
+          ? T("What you type stays on your device")
+          : T("Your files never leave your device")}
+      </h2>
       <p>{T("Everything runs in your browser.")}</p>
     </div>
   </div>

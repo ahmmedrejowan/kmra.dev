@@ -55,25 +55,25 @@ const PAGES = {
     intro: T("Small, private tools for everyday files."),
   },
   tools: {
-    title: T("All developer tools"),
+    title: T("All colour tools"),
     description: T(
-      "Every developer tool, by category. All free, and everything runs on your device.",
+      "Every colour tool, by category. All free, and everything runs on your device.",
     ),
     crumb: T("All tools"),
     icon: "grid",
     intro: T(
-      "Every developer tool, by category. All free, and everything runs on your device.",
+      "Every colour tool, by category. All free, and everything runs on your device.",
     ),
   },
   "use-cases": {
     title: T("Use cases"),
     description: T(
-      "Ready-made settings for everyday jobs. Pick one and drop your file.",
+      "Ready-made pages for everyday colour jobs: conversions, schemes and design systems.",
     ),
     crumb: T("Use cases"),
     icon: "layers",
     intro: T(
-      "Ready-made settings for everyday jobs. Pick one and drop your file.",
+      "Ready-made pages for everyday colour jobs: conversions, schemes and design systems.",
     ),
   },
   "more-tools": {
@@ -95,7 +95,7 @@ const p = PAGES[page];
     intro={p.intro}
   />
   <div class="wrap page-body">
-    {page === "how-it-works" && <HowItWorks />}
+    {page === "how-it-works" && <HowItWorks noFiles />}
     {page === "privacy" && <PrivacyContent brand={brand} />}
     {page === "about" && <AboutContent />}
     {page === "tools" && <AllTools appId="colortool" />}

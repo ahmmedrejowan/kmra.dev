@@ -46,6 +46,29 @@ const bars = (() => {
     };
   });
 })();
+// CalcTool cards: a little display with a typical sum and its answer
+const CALC: Record<string, [string, string]> = {
+  calculator: ["(12 + 8) × 4", "80"],
+  percentage: ["15% of 80", "12"],
+  discount: ["80 − 25%", "60"],
+  tip: ["92 + 15% ÷ 5", "21.16"],
+  "sales-tax": ["100 + 20% VAT", "120"],
+  fraction: ["1/3 + 1/4", "7/12"],
+  "aspect-ratio": ["1920 × 1080", "16:9"],
+  loan: ["100,000 · 5% · 30 y", "536.82/mo"],
+  "compound-interest": ["10,000 · 5% · 10 y", "16,289"],
+  salary: ["25/h · 40 h", "52,000/yr"],
+  age: ["12 Mar 1990", "36 y 6 m"],
+  "date-difference": ["1 Jan – 1 Apr", "91 days"],
+  "time-calculator": ["2:45 + 1:30", "4:15"],
+  "time-zones": ["New York 9:00", "London 14:00"],
+  bmi: ["70 kg · 175 cm", "22.9"],
+  calories: ["Moderately active", "2,350 kcal"],
+  "unit-converter": ["1 inch", "2.54 cm"],
+};
+// ColorTool cards: the colours themselves
+const SWATCHES = ["#ff6b6b", "#ffb347", "#ffe066", "#4ecdc4", "#556cd6"];
+const SCALE = ["#fdf3df", "#fbe2b4", "#f7cc7e", "#f2b53c", "#e19a12", "#c27a00", "#9c5f05", "#7b4a0a", "#5f390c", "#3f2507", "#241503"];
 const AUDIO_FORMATS: Record<string, [string[], string[]]> = {
   convert: [["WAV", "FLAC"], ["MP3", "M4A"]],
   "video-to-audio": [["MP4", "MOV"], ["MP3"]],
@@ -124,7 +147,62 @@ const dm = (() => {
   tabindex={hidden ? -1 : undefined}
 >
   <div class="feat-art" aria-hidden="true">
-    {app === "audiotool" && AUDIO_FORMATS[tool.slug] && tool.slug !== "compress" ? (
+    {app === "calctool" && CALC[tool.slug] ? (
+      <div class="art-calc" aria-hidden="true">
+        <span class="art-calc-q">{CALC[tool.slug]![0]}</span>
+        <span class="art-calc-a">{CALC[tool.slug]![1]}</span>
+      </div>
+    ) : null}
+    {app === "colortool" ? (
+      <div class:list={["art-col", tool.slug]} aria-hidden="true">
+        {tool.slug === "color-picker" ? (
+          <>
+            <span class="art-col-sv" />
+            <span class="art-col-hue" />
+          </>
+        ) : tool.slug === "color-mixer" ? (
+          <>
+            {["#ff7f6e", "#e58a96", "#c493bf", "#9b9ce0", "#6aa4f5"].map((c) => (
+              <i style={`background:${c}`} />
+            ))}
+          </>
+        ) : tool.slug === "palette-generator" ? (
+          <>
+            {SWATCHES.map((c) => (
+              <i class="tall" style={`background:${c}`} />
+            ))}
+          </>
+        ) : tool.slug === "shades" ? (
+          <>
+            {SCALE.map((c) => (
+              <i class="thin" style={`background:${c}`} />
+            ))}
+          </>
+        ) : tool.slug === "contrast-checker" ? (
+          <span class="art-col-contrast">
+            Aa<b>7.1:1</b>
+          </span>
+        ) : tool.slug === "color-blindness" ? (
+          <span class="art-col-cvd">
+            <span>
+              {SWATCHES.map((c) => (
+                <i style={`background:${c}`} />
+              ))}
+            </span>
+            <span>
+              {["#a39a6e", "#c9b45c", "#e8d968", "#9fb3cc", "#5d6fb0"].map((c) => (
+                <i style={`background:${c}`} />
+              ))}
+            </span>
+          </span>
+        ) : tool.slug === "gradient-generator" ? (
+          <span class="art-col-grad" />
+        ) : (
+          <span class="art-col-shadow" />
+        )}
+      </div>
+    ) : null}
+    {app === "colortool" || app === "calctool" ? null : app === "audiotool" && AUDIO_FORMATS[tool.slug] && tool.slug !== "compress" ? (
       <div class="art-formats">
         {AUDIO_FORMATS[tool.slug]![0].map((f) => (
           <span>{f}</span>

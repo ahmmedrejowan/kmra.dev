@@ -4,6 +4,11 @@ import Icon from "./Icon.astro";
 import { pageLocale } from "../lib/locale";
 import { num, t as tr } from "../lib/i18n";
 
+/** `noFiles`: the app works on what you type (calculators, colours), not files */
+interface Props {
+  noFiles?: boolean;
+}
+const { noFiles = false } = Astro.props;
 const locale = pageLocale(Astro);
 const T = (s: string) => tr(locale, s);
 
@@ -16,12 +21,16 @@ const steps = [
   {
     icon: "zap",
     title: "Your browser does the work",
-    text: "Your file is read and edited in your device's memory. It isn't sent anywhere.",
+    text: noFiles
+      ? "What you type is worked out in your device's memory, right in the page."
+      : "Your file is read and edited in your device's memory. It isn't sent anywhere.",
   },
   {
     icon: "check",
-    title: "You save the result",
-    text: "The finished file goes straight to your downloads. Your original stays untouched.",
+    title: noFiles ? "You get the result" : "You save the result",
+    text: noFiles
+      ? "Results appear as you type, ready to copy or save."
+      : "The finished file goes straight to your downloads. Your original stays untouched.",
   },
 ] as const;
 ---
@@ -51,7 +60,9 @@ const steps = [
     <h2>{T("Blocked by design")}</h2>
     <p>
       {T(
-        "Every kmra site sends a security policy that stops the page from contacting any other server. Even if there were a bug, your browser would refuse to send your file anywhere.",
+        noFiles
+          ? "Every kmra site sends a security policy that stops the page from contacting any other server. Even if there were a bug, your browser would refuse to send what you type anywhere."
+          : "Every kmra site sends a security policy that stops the page from contacting any other server. Even if there were a bug, your browser would refuse to send your file anywhere.",
       )}
     </p>
   </section>
@@ -64,7 +75,9 @@ const steps = [
       <li>{T("Open your browser's developer tools.")}</li>
       <li>{T("Choose the Network tab.")}</li>
       <li>
-        {T("Use any tool. Nothing is sent while your file is processed.")}
+        {noFiles
+          ? T("Use any tool. Nothing is sent while it works.")
+          : T("Use any tool. Nothing is sent while your file is processed.")}
       </li>
     </ol>
   </section>

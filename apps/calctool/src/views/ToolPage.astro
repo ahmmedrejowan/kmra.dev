@@ -22,7 +22,7 @@ const L = (p: string) => lp(locale, p);
 const app = localizeApp(getApp("calctool"), locale);
 const task = app.tasks.find((t) => t.slug === slug);
 const tool = app.tools.find((t) => t.slug === (task?.tool ?? slug))!;
-// Developer tools have one mode: everything is on screen
+// Calculators have one mode: everything is on screen
 const standalone = true;
 const title = task?.title ?? tool.title ?? tool.name;
 const intro = task?.intro ?? tool.description;
@@ -58,9 +58,9 @@ const icons = Object.fromEntries(app.tools.map((t) => [t.slug, t.icon]));
 
 const baseFaq = [
   {
-    q: T("Does my data leave my device?"),
+    q: T("Are my numbers private?"),
     a: T(
-      "No. Everything you paste or open is processed in your browser and stays on your device.",
+      "Yes. Every calculation runs in your browser, and what you type stays on your device.",
     ),
   },
   {
@@ -70,9 +70,9 @@ const baseFaq = [
     ),
   },
   {
-    q: T("Is there a size limit?"),
+    q: T("How exact are the results?"),
     a: T(
-      "No limits from us. Very large inputs can be slow because the work uses your device's memory.",
+      "The maths keeps full precision and only rounds what you see. For loans and taxes, check the final figures with your bank or tax office.",
     ),
   },
 ];
@@ -92,7 +92,7 @@ const schema = [
     url: pageUrl,
     description: intro,
     inLanguage: locale,
-    applicationCategory: "DeveloperApplication",
+    applicationCategory: "UtilitiesApplication",
     operatingSystem: "Any (runs in the browser)",
     browserRequirements: "Requires a modern browser with JavaScript",
     isAccessibleForFree: true,
@@ -156,7 +156,12 @@ const schema = [
   </section>
 
   <div class="wrap tool-area">
-    <CalcTool client:load slug={tool.slug} lang={locale} preset={task?.preset} />
+    <CalcTool
+      client:load
+      slug={tool.slug}
+      lang={locale}
+      preset={task?.preset}
+    />
 
     {tool.ready && tool.steps && <InfoCard steps={tool.steps} items={info} />}
 
@@ -171,12 +176,12 @@ const schema = [
     <section class="block">
       <div class="sechead primary">
         <h2>{T("Other tools")}</h2>
-        <p>{T("More tools for everyday coding.")}</p>
+        <p>{T("More calculators for everyday numbers.")}</p>
       </div>
       <ToolCards
         tools={others}
         allHref="/tools"
-        allLabel={T("All {n} developer tools", {
+        allLabel={T("All {n} calculators", {
           n: app.tools.filter((t) => t.ready).length,
         })}
       />
