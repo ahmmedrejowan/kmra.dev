@@ -13,6 +13,8 @@ const APPS = [
   { id: "vidtool", port: 4606 },
   { id: "kmra", port: 4607 },
   { id: "audiotool", port: 4608 },
+  { id: "calctool", port: 4609 },
+  { id: "colortool", port: 4610 },
 ] as const;
 
 export default defineConfig({

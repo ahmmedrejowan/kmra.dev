@@ -84,7 +84,19 @@ export type IconName =
   | "mic"
   | "rewind"
   | "audioLines"
-  | "fade";
+  | "fade"
+  | "calculator"
+  | "percent"
+  | "tag"
+  | "receipt"
+  | "divide"
+  | "coins"
+  | "calendar"
+  | "heart"
+  | "ruler"
+  | "blend"
+  | "contrast"
+  | "eye";
 
 export interface Tool {
   /** URL path segment, e.g. "resize" -> imgtool.kmra.dev/resize */
@@ -2262,6 +2274,121 @@ export const apps = [
         about: ["The recording stays in your browser until you save it."],
         preset: { to: "mp3" },
       },
+    ],
+  },
+  {
+    id: "calctool",
+    name: "Calculators",
+    brand: ["Calc", "Tool"],
+    locales: ["en", "bn"],
+    short: "Calculators",
+    tagline:
+      "Percentages, loans, dates, units and everyday sums, worked out in your browser. Free, with no sign-up.",
+    accent: {
+      light: "#0a85ad",
+      dark: "#38b6e0",
+      softLight: "#e3f4fa",
+      softDark: "#0f2630",
+    },
+    live: false,
+    devPort: 4328,
+    toolGroups: ["Everyday", "Money", "Dates and time", "Health and units"],
+    popular: [
+      "percentage",
+      "calculator",
+      "unit-converter",
+      "loan",
+      "age",
+      "date-difference",
+      "discount",
+      "tip",
+      "bmi",
+      "time-zones",
+    ],
+    tools: [
+      { slug: "calculator", title: "Online calculator", name: "Calculator", description: "A clear calculator with history, brackets, powers, roots and percentages. Works with the keyboard.", blurb: "Everyday sums, with history", icon: "calculator", group: "Everyday", ready: false, steps: ["Type a sum or tap the keys.", "See the answer as you type.", "Click a past answer to use it again."] },
+      { slug: "percentage", title: "Percentage calculator", name: "Percentage", description: "What is X% of Y, X is what percent of Y, and the percent change from one number to another.", blurb: "Of, is what %, change", icon: "percent", group: "Everyday", ready: false, steps: ["Pick the question you have.", "Type the two numbers.", "Read the answer and how it was worked out."] },
+      { slug: "discount", title: "Discount calculator", name: "Discount", description: "The sale price and how much you save, for a percent off, an amount off, or two discounts in a row.", blurb: "Sale price and savings", icon: "tag", group: "Everyday", ready: false, steps: ["Type the price.", "Type the discount, in percent or an amount.", "See the price you pay and what you save."] },
+      { slug: "tip", title: "Tip calculator and bill splitter", name: "Tip and split", description: "Work out the tip and split the bill between people, with rounding up if you like.", blurb: "Tip, split, round up", icon: "receipt", group: "Everyday", ready: false, steps: ["Type the bill.", "Pick a tip and the number of people.", "See what each person pays."] },
+      { slug: "sales-tax", title: "Sales tax and VAT calculator", name: "Sales tax and VAT", description: "Add tax to a price, or take it out of a price that already includes it, at any rate.", blurb: "Add or remove tax", icon: "receipt", group: "Everyday", ready: false, steps: ["Type the price.", "Type the tax rate.", "Add tax, or take it out."] },
+      { slug: "fraction", title: "Fraction calculator", name: "Fractions", description: "Add, subtract, multiply and divide fractions and mixed numbers, simplified, with the steps.", blurb: "Add, simplify, convert", icon: "divide", group: "Everyday", ready: false, steps: ["Type two fractions, like 1/3 and 2 1/4.", "Pick the operation.", "See the simplified answer and the decimal."] },
+      { slug: "aspect-ratio", title: "Aspect ratio calculator", name: "Aspect ratio", description: "Find the ratio of a width and height, or the missing side for 16:9, 4:3 and any other ratio.", blurb: "16:9, 4:3, missing side", icon: "frame", group: "Everyday", ready: false, steps: ["Type a width and height, or pick a ratio.", "Change one side.", "The other side follows."] },
+      { slug: "loan", title: "Loan and EMI calculator", name: "Loan and EMI", description: "Monthly payment, total interest and a payment schedule for a loan, mortgage or car finance.", blurb: "Monthly payment, schedule", icon: "coins", group: "Money", ready: false, steps: ["Type the amount, the interest rate and the length.", "See the monthly payment and total interest.", "Open the schedule to see each payment."] },
+      { slug: "compound-interest", title: "Compound interest calculator", name: "Compound interest", description: "How savings grow with interest and regular deposits, year by year.", blurb: "Savings growth", icon: "chart", group: "Money", ready: false, steps: ["Type what you start with and add each month.", "Type the rate and the years.", "See the total and the growth each year."] },
+      { slug: "salary", title: "Salary converter", name: "Salary converter", description: "Turn an hourly rate into a yearly, monthly or weekly salary, and back.", blurb: "Hourly, monthly, yearly", icon: "coins", group: "Money", ready: false, steps: ["Type an amount and what it's per.", "Set the hours per week.", "See it per hour, day, week, month and year."] },
+      { slug: "age", title: "Age calculator", name: "Age", description: "Your exact age in years, months and days, and how long until your next birthday.", blurb: "Exact age, next birthday", icon: "calendar", group: "Dates and time", ready: false, steps: ["Pick a date of birth.", "See the exact age.", "Change the 'on' date to see the age on any day."] },
+      { slug: "date-difference", title: "Days between dates", name: "Date difference", description: "The days, weeks and months between two dates, working days, and adding or taking away days.", blurb: "Days between, add days", icon: "calendar", group: "Dates and time", ready: false, steps: ["Pick two dates.", "See the time between them.", "Or add days to a date."] },
+      { slug: "time-calculator", title: "Time calculator", name: "Time calculator", description: "Add and subtract hours and minutes, and find the time between two clock times.", blurb: "Hours and minutes", icon: "clock", group: "Dates and time", ready: false, steps: ["Type times like 2:45.", "Add or subtract them.", "See the total in hours and minutes."] },
+      { slug: "time-zones", title: "Time zone converter", name: "Time zones", description: "See a time in other cities and time zones, with daylight saving handled for you.", blurb: "Meet across time zones", icon: "globe", group: "Dates and time", ready: false, steps: ["Pick a time and your city.", "Add the cities you need.", "See the time in each."] },
+      { slug: "bmi", title: "BMI calculator", name: "BMI", description: "Body mass index from height and weight, in metric or imperial, with the healthy weight range.", blurb: "Body mass index", icon: "heart", group: "Health and units", ready: false, steps: ["Type your height and weight.", "See your BMI and what it means.", "See the healthy weight range for your height."] },
+      { slug: "calories", title: "Calorie calculator (BMR and TDEE)", name: "Calories", description: "Calories your body uses at rest and in a day, for your activity, and targets to lose or gain weight.", blurb: "BMR, daily calories", icon: "zap", group: "Health and units", ready: false, steps: ["Type your age, height and weight.", "Pick how active you are.", "See daily calories to keep, lose or gain weight."] },
+      { slug: "unit-converter", title: "Unit converter", name: "Unit converter", description: "Length, weight, temperature, volume, area, speed, data, time and more, between metric and imperial.", blurb: "Length, weight, temperature", icon: "ruler", group: "Health and units", ready: false, steps: ["Pick what you're measuring.", "Type a value and its unit.", "See it in every other unit."] },
+    ],
+    tasks: [
+      { slug: "what-percent-of", tool: "percentage", name: "X is what percent of Y", short: "Find the percent", group: "Percentages", title: "X is what percent of Y?", intro: "Find what percent one number is of another, like 45 of 60.", about: ["Divide the part by the whole and multiply by 100."], preset: { mode: "is-what" } },
+      { slug: "percentage-change", tool: "percentage", name: "Percentage change", short: "Increase or decrease", group: "Percentages", title: "Percentage increase and decrease", intro: "Work out the percent change from an old value to a new one.", about: ["A rise from 50 to 75 is +50%; a fall from 75 to 50 is −33.3%."], preset: { mode: "change" } },
+      { slug: "emi-calculator", tool: "loan", name: "EMI calculator", short: "Monthly installments", group: "Money", title: "EMI calculator", intro: "Work out the equated monthly installment for a loan.", about: ["The schedule shows how much of each payment is interest and how much repays the loan."], preset: {} },
+      { slug: "mortgage-calculator", tool: "loan", name: "Mortgage calculator", short: "Home loans", group: "Money", title: "Mortgage calculator", intro: "Monthly mortgage payments and total interest over 25 or 30 years.", about: ["Taxes and insurance aren't included; add them to the monthly figure."], preset: { years: 30 } },
+      { slug: "hourly-to-salary", tool: "salary", name: "Hourly to salary", short: "Per hour to per year", group: "Money", title: "Hourly rate to yearly salary", intro: "Turn an hourly wage into a yearly, monthly and weekly salary.", about: ["The default is 40 hours a week, 52 weeks a year; change both to match your job."], preset: { per: "hour" } },
+      { slug: "how-old-am-i", tool: "age", name: "How old am I", short: "Exact age today", group: "Dates", title: "How old am I?", intro: "Your exact age today in years, months and days.", about: ["Leap years are counted, so the days are exact."], preset: {} },
+      { slug: "days-between-dates", tool: "date-difference", name: "Days between dates", short: "Count the days", group: "Dates", title: "How many days between two dates", intro: "Count the days, weeks and working days between two dates.", about: ["Choose whether to count the last day too."], preset: {} },
+      { slug: "split-the-bill", tool: "tip", name: "Split the bill", short: "Between friends", group: "Everyday", title: "Split the bill", intro: "Split a restaurant bill evenly, with or without a tip.", about: ["Round up so the total is easy to pay in cash."], preset: { tip: 0 } },
+      { slug: "vat-calculator", tool: "sales-tax", name: "VAT calculator", short: "Add or remove VAT", group: "Everyday", title: "VAT calculator", intro: "Add VAT to a price, or find the price before VAT.", about: ["Pick your country's rate, or type any rate."], preset: { rate: 20 } },
+      { slug: "cm-to-inches", tool: "unit-converter", name: "cm to inches", short: "Length", group: "Units", title: "Centimetres to inches", intro: "Convert centimetres to inches and feet.", about: ["1 inch is exactly 2.54 cm."], preset: { kind: "length", from: "cm", to: "in" } },
+      { slug: "kg-to-lbs", tool: "unit-converter", name: "kg to lbs", short: "Weight", group: "Units", title: "Kilograms to pounds", intro: "Convert kilograms to pounds and stones.", about: ["1 kg is about 2.2046 lb."], preset: { kind: "weight", from: "kg", to: "lb" } },
+      { slug: "celsius-to-fahrenheit", tool: "unit-converter", name: "Celsius to Fahrenheit", short: "Temperature", group: "Units", title: "Celsius to Fahrenheit", intro: "Convert temperatures between Celsius and Fahrenheit.", about: ["°F = °C × 9/5 + 32."], preset: { kind: "temperature", from: "c", to: "f" } },
+      { slug: "km-to-miles", tool: "unit-converter", name: "km to miles", short: "Distance", group: "Units", title: "Kilometres to miles", intro: "Convert kilometres to miles, and speeds in km/h to mph.", about: ["1 mile is 1.609344 km."], preset: { kind: "length", from: "km", to: "mi" } },
+    ],
+  },
+  {
+    id: "colortool",
+    name: "Color tools",
+    brand: ["Color", "Tool"],
+    locales: ["en", "bn"],
+    short: "Colors",
+    tagline:
+      "Pick, convert, mix and check colours, and make palettes and gradients. Everything runs in your browser.",
+    accent: {
+      light: "#c27a00",
+      dark: "#f2b53c",
+      softLight: "#fdf3df",
+      softDark: "#2e2310",
+    },
+    live: false,
+    devPort: 4329,
+    toolGroups: ["Pick and convert", "Palettes", "Check", "CSS"],
+    popular: [
+      "color-picker",
+      "palette-generator",
+      "contrast-checker",
+      "gradient-generator",
+      "shades",
+      "hex-to-rgb",
+      "color-mixer",
+      "color-blindness",
+      "box-shadow",
+      "complementary-colors",
+    ],
+    tools: [
+      { slug: "color-picker", title: "Color picker and converter", name: "Color picker", description: "Pick a colour and get it as HEX, RGB, HSL, HSV, CMYK and OKLCH, with its name and nearby shades.", blurb: "HEX, RGB, HSL, OKLCH", icon: "pipette", group: "Pick and convert", ready: false, steps: ["Pick a colour, or type any format.", "See it in every format.", "Copy the one you need."] },
+      { slug: "color-mixer", title: "Color mixer", name: "Color mixer", description: "Blend two colours in any proportion and get the steps between them, mixed the way eyes see colour.", blurb: "Blend two colours", icon: "blend", group: "Pick and convert", ready: false, steps: ["Pick two colours.", "Choose how many steps.", "Copy the mix or every step."] },
+      { slug: "palette-generator", title: "Color palette generator", name: "Palette generator", description: "Make colour schemes: complementary, analogous, triadic and more, or random palettes with colours you lock.", blurb: "Schemes and random", icon: "palette", group: "Palettes", ready: false, steps: ["Pick a base colour or press Space.", "Choose a scheme, lock what you like.", "Export as CSS, JSON or an image."] },
+      { slug: "shades", title: "Tints and shades generator", name: "Tints and shades", description: "A full scale of tints and shades for a colour, 50 to 950, ready for Tailwind or CSS variables.", blurb: "50–950 scale", icon: "layers", group: "Palettes", ready: false, steps: ["Pick a colour.", "See its scale from light to dark.", "Copy it as Tailwind config or CSS."] },
+      { slug: "contrast-checker", title: "Color contrast checker (WCAG)", name: "Contrast checker", description: "Check text and background colours against WCAG AA and AAA, and get the nearest colour that passes.", blurb: "WCAG AA and AAA", icon: "contrast", group: "Check", ready: false, steps: ["Pick a text and a background colour.", "See the contrast ratio and what passes.", "Use the suggested colour if it fails."] },
+      { slug: "color-blindness", title: "Color blindness simulator", name: "Color blindness", description: "See how colours and images look with protanopia, deuteranopia, tritanopia and other colour vision types.", blurb: "Preview colour vision", icon: "eye", group: "Check", ready: false, steps: ["Add colours or drop an image.", "Pick a type of colour blindness.", "Compare with how it normally looks."] },
+      { slug: "gradient-generator", title: "CSS gradient generator", name: "Gradient generator", description: "Make linear, radial and conic gradients with as many colour stops as you like, and copy the CSS.", blurb: "Linear, radial, conic", icon: "droplet", group: "CSS", ready: false, steps: ["Add and move the colour stops.", "Pick the type and angle.", "Copy the CSS or save an image."] },
+      { slug: "box-shadow", title: "CSS box shadow generator", name: "Box shadow", description: "Design soft, layered box shadows with a live preview and copy the CSS.", blurb: "Layered shadows", icon: "frame", group: "CSS", ready: false, steps: ["Set the offset, blur and spread.", "Add more layers for depth.", "Copy the CSS."] },
+    ],
+    tasks: [
+      { slug: "hex-to-rgb", tool: "color-picker", name: "HEX to RGB", short: "Convert a colour code", group: "Convert", title: "Convert HEX to RGB", intro: "Turn a HEX colour code like #1e90ff into RGB, and every other format.", about: ["Short codes like #09f work too."], preset: { focus: "rgb" } },
+      { slug: "rgb-to-hex", tool: "color-picker", name: "RGB to HEX", short: "Convert a colour code", group: "Convert", title: "Convert RGB to HEX", intro: "Turn RGB values into a HEX colour code.", about: ["Type rgb(30, 144, 255) or just 30 144 255."], preset: { focus: "hex" } },
+      { slug: "hex-to-hsl", tool: "color-picker", name: "HEX to HSL", short: "Hue, saturation, lightness", group: "Convert", title: "Convert HEX to HSL", intro: "Turn a HEX colour into HSL, easier to tweak by hand.", about: ["HSL keeps the hue while you change how light or vivid a colour is."], preset: { focus: "hsl" } },
+      { slug: "complementary-colors", tool: "palette-generator", name: "Complementary colors", short: "Opposite on the wheel", group: "Schemes", title: "Complementary color generator", intro: "Find the colour opposite yours on the colour wheel.", about: ["Complementary pairs give the strongest contrast."], preset: { scheme: "complementary" } },
+      { slug: "analogous-colors", tool: "palette-generator", name: "Analogous colors", short: "Neighbours on the wheel", group: "Schemes", title: "Analogous color scheme", intro: "Colours next to yours on the wheel, for calm, matching palettes.", about: ["Pick one to lead and use the others as accents."], preset: { scheme: "analogous" } },
+      { slug: "triadic-colors", tool: "palette-generator", name: "Triadic colors", short: "Three evenly spaced", group: "Schemes", title: "Triadic color scheme", intro: "Three colours evenly spaced on the wheel, for lively balanced palettes.", about: ["Let one colour lead and use the other two sparingly."], preset: { scheme: "triadic" } },
+      { slug: "monochromatic-colors", tool: "palette-generator", name: "Monochromatic colors", short: "One hue, many shades", group: "Schemes", title: "Monochromatic color palette", intro: "Lighter and darker versions of one colour, for a simple, unified look.", about: ["Tints and shades makes a full 50–950 scale."], preset: { scheme: "monochromatic" } },
+      { slug: "tailwind-color-palette", tool: "shades", name: "Tailwind color scale", short: "50 to 950", group: "Design systems", title: "Tailwind color palette generator", intro: "Make a Tailwind-style 50–950 scale from your brand colour.", about: ["Paste the config into tailwind.config or the @theme block."], preset: { format: "tailwind" } },
+      { slug: "linear-gradient", tool: "gradient-generator", name: "Linear gradient", short: "CSS linear-gradient", group: "Design systems", title: "CSS linear gradient generator", intro: "Make a linear gradient and copy the CSS.", about: ["Gradients mixed in OKLCH avoid the grey middle you get between some colours."], preset: { type: "linear" } },
     ],
   },
   {

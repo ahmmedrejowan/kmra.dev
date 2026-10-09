@@ -1,0 +1,27 @@
+---
+import ToolPage from "../views/ToolPage.astro";
+import { toolPaths } from "../views/paths";
+
+export const getStaticPaths = toolPaths;
+---
+
+<ToolPage slug={Astro.props.slug} />
+
+<script>
+  // Simple/Advanced switch: tells the tool which mode to use and mirrors the mode it reports back.
+  const buttons = document.querySelectorAll<HTMLButtonElement>("[data-mode]");
+  buttons.forEach((b) =>
+    b.addEventListener("click", () =>
+      window.dispatchEvent(new CustomEvent(`kmra:${b.dataset.mode}`)),
+    ),
+  );
+  window.addEventListener("kmra:mode", (e) => {
+    const advanced = (e as CustomEvent<{ advanced: boolean }>).detail.advanced;
+    buttons.forEach((b) =>
+      b.setAttribute(
+        "aria-pressed",
+        String((b.dataset.mode === "advanced") === advanced),
+      ),
+    );
+  });
+</script>

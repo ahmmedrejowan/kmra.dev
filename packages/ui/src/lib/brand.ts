@@ -26,6 +26,19 @@ export function markInner(appId: string): string {
         )
         .join("");
     }
+    case "calctool":
+      // A calculator: screen and a grid of keys
+      return `<rect x="17" y="11" width="30" height="42" rx="6" fill="#fff"/><rect x="22" y="16" width="20" height="8" rx="2" fill="#0a85ad"/>${[0, 1, 2]
+        .flatMap((r) =>
+          [0, 1, 2].map(
+            (c) =>
+              `<rect x="${22 + c * 7.5}" y="${29 + r * 7.5}" width="5" height="5" rx="1.5" fill="#0a85ad" opacity="${r === 2 && c === 2 ? 1 : 0.55}"/>`,
+          ),
+        )
+        .join("")}`;
+    case "colortool":
+      // Three overlapping circles, like mixing colour lights
+      return `<g fill="#fff"><circle cx="32" cy="24" r="11" opacity=".95"/><circle cx="24" cy="38" r="11" opacity=".75"/><circle cx="40" cy="38" r="11" opacity=".55"/></g>`;
     case "audiotool":
       // Sound bars, tallest in the middle
       return [
