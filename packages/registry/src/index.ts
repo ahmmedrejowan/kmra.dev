@@ -1861,7 +1861,7 @@ export const apps = [
       softLight: "#fcebf6",
       softDark: "#2e1526",
     },
-    live: false,
+    live: true,
     devPort: 4327,
     toolGroups: ["Convert", "Edit", "Effects", "Record and info"],
     popular: [
@@ -3804,7 +3804,7 @@ export const HUB = {
   brand: ["kmra", ".dev"],
   short: "kmra.dev",
   tagline:
-    "Free tools for images, PDFs, video, QR codes, text in pictures and code. Everything runs in your browser.",
+    "Free tools for images, PDFs, video, audio, QR codes, text in pictures and code. Everything runs in your browser.",
   accent: {
     light: "#18181b",
     dark: "#f4f4f5",

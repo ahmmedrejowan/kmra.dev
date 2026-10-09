@@ -16,8 +16,9 @@ const PORTS: Record<string, number> = {
   "devtool.kmra.dev": 4604,
   "ocrtool.kmra.dev": 4605,
   "vidtool.kmra.dev": 4606,
+  "audiotool.kmra.dev": 4608,
 };
-const APPS = ["imgtool", "pdftool", "vidtool", "devtool", "qrtool", "ocrtool"];
+const APPS = ["imgtool", "pdftool", "vidtool", "devtool", "qrtool", "ocrtool", "audiotool"];
 
 /** Serve https://kmra.dev and https://<app>.kmra.dev from the local builds */
 async function realSites(context: BrowserContext) {
@@ -44,7 +45,7 @@ test("home lists the six apps, links to their sites and counts every tool", asyn
   await expect(page).toHaveTitle(/kmra\.dev/);
   await expect(page.locator("h1")).toHaveText("Free tools for every file");
   const cards = page.locator(".hub-app");
-  await expect(cards).toHaveCount(6);
+  await expect(cards).toHaveCount(APPS.length);
   for (const id of APPS)
     await expect(
       page.locator(`.hub-app[href="https://${id}.kmra.dev/"]`),
@@ -57,10 +58,10 @@ test("home lists the six apps, links to their sites and counts every tool", asyn
   expect(await page.locator(".marquee .feat").count()).toBeGreaterThan(20);
   await expect(page.locator(".tasks .task")).toHaveCount(12);
   // Footer: one column per app
-  await expect(page.locator("footer .fapp-title")).toHaveCount(6);
+  await expect(page.locator("footer .fapp-title")).toHaveCount(APPS.length);
   // Menus open
   await page.getByRole("button", { name: "Apps" }).click();
-  await expect(page.locator("#m-apps .app-item")).toHaveCount(6);
+  await expect(page.locator("#m-apps .app-item")).toHaveCount(APPS.length);
 });
 
 test("dropping a PDF offers PDF and OCR tools; more expands; another file resets", async ({
@@ -96,7 +97,10 @@ test("each kind of file gets its own tools", async ({ page }) => {
   expect(await first()).toBe("ImgTool,PDFTool,OCRTool,QRTool");
   await page.getByRole("button", { name: "Other files" }).click();
   await drop(page, gen("vid-landscape.mp4"));
-  expect(await first()).toBe("VidTool");
+  expect(await first()).toBe("VidTool,AudioTool");
+  await page.getByRole("button", { name: "Other files" }).click();
+  await drop(page, gen("aud-tone.mp3"));
+  expect(await first()).toBe("AudioTool");
   await page.getByRole("button", { name: "Other files" }).click();
   await drop(page, gen("anim.gif"));
   expect(await first()).toBe("VidTool,ImgTool");
@@ -228,7 +232,7 @@ test("privacy, about, 404, icons, share images, sitemap and robots", async ({
   await page.goto("/privacy");
   await expect(page.locator("main")).toContainText("is passed to the tool's site");
   await page.goto("/about");
-  await expect(page.locator("main")).toContainText("video, QR codes, text in pictures and code");
+  await expect(page.locator("main")).toContainText("video, audio, QR codes, text in pictures and code");
   const nf = await page.request.get("/nope");
   expect(nf.status()).toBe(404);
   expect(await nf.text()).toContain("<title>Page not found · kmra.dev</title>");
@@ -289,5 +293,31 @@ test("each app shows 2 other apps above the footer and 3 more in it: 5 different
     const all = [...cta, ...foot].map(host_);
     expect(new Set(all).size, host).toBe(5);
     expect(all, host).not.toContain(host);
+  }
+});
+
+test("the Apps menu is a grid of styled app tiles on every site", async ({
+  page,
+}) => {
+  for (const [host, port] of Object.entries(PORTS)) {
+    await page.goto(`http://localhost:${port}/`);
+    await page.getByRole("button", { name: "Apps" }).click();
+    const menu = page.locator("#m-apps");
+    await expect(menu, host).toBeVisible();
+    const cols = await menu.evaluate(
+      (m) => getComputedStyle(m).gridTemplateColumns.split(" ").length,
+    );
+    expect(cols, host).toBe(4);
+    const tile = menu.locator("a.app-item").first();
+    const look = await tile.evaluate((t) => {
+      const c = getComputedStyle(t);
+      return { radius: c.borderTopLeftRadius, border: c.borderTopWidth, dir: c.flexDirection };
+    });
+    expect(look, host).toEqual({ radius: "14px", border: "1px", dir: "column" });
+    await expect(menu.locator("a.app-item"), host).toHaveCount(APPS.length);
+    // Nothing spills off a 1280 px screen
+    const box = (await menu.boundingBox())!;
+    expect(box.x, host).toBeGreaterThanOrEqual(0);
+    expect(box.x + box.width, host).toBeLessThanOrEqual(1280);
   }
 });

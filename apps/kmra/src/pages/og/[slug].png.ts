@@ -6,7 +6,7 @@ const PAGES: OgPage[] = [
   {
     slug: "index",
     title: "Free tools for every file",
-    subtitle: `${totalTools} tools for images, PDFs, video, QR codes, text in pictures and code. Everything runs in your browser.`,
+    subtitle: `${totalTools} tools for images, PDFs, video, audio, QR codes, text in pictures and code. Everything runs in your browser.`,
   },
   {
     slug: "tools",

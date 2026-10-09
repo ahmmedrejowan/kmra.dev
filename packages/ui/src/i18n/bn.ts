@@ -183,8 +183,8 @@ export const BN: Record<string, string> = {
     "kmra.dev-এর প্রতিদিনের ফাইলের জন্য ছোট, ব্যক্তিগত টুল।",
   "Small, private tools for everyday files.":
     "প্রতিদিনের ফাইলের জন্য ছোট, ব্যক্তিগত টুল।",
-  "kmra.dev is a family of small, focused tools for everyday files: images, PDFs, video, QR codes, text in pictures and code. Each app lives on its own subdomain and does its work in your browser, so it's fast and your files stay private.":
-    "kmra.dev প্রতিদিনের ফাইলের জন্য ছোট, নির্দিষ্ট কাজের টুলের একটি পরিবার: ছবি, পিডিএফ, ভিডিও, কিউআর কোড, ছবির লেখা আর কোড। প্রতিটি অ্যাপ নিজস্ব সাবডোমেইনে থাকে আর কাজ করে আপনার ব্রাউজারে, তাই দ্রুত চলে আর ফাইল ব্যক্তিগত থাকে।",
+  "kmra.dev is a family of small, focused tools for everyday files: images, PDFs, video, audio, QR codes, text in pictures and code. Each app lives on its own subdomain and does its work in your browser, so it's fast and your files stay private.":
+    "kmra.dev প্রতিদিনের ফাইলের জন্য ছোট, নির্দিষ্ট কাজের টুলের একটি পরিবার: ছবি, পিডিএফ, ভিডিও, অডিও, কিউআর কোড, ছবির লেখা আর কোড। প্রতিটি অ্যাপ নিজস্ব সাবডোমেইনে থাকে আর কাজ করে আপনার ব্রাউজারে, তাই দ্রুত চলে আর ফাইল ব্যক্তিগত থাকে।",
   "A file you drop on kmra.dev is passed to the tool's site the same way, inside your browser.":
     "kmra.dev-এ ছেড়ে দেওয়া ফাইলও একইভাবে, আপনার ব্রাউজারের ভেতরেই, টুলের সাইটে পৌঁছায়।",
   "Private by design": "শুরু থেকেই ব্যক্তিগত",
@@ -685,8 +685,8 @@ export const BN: Record<string, string> = {
     "প্রতিদিনের কাজের জন্য তৈরি সেটিংস। একটি বেছে নিয়ে ফাইল দিন।",
   "More tools from kmra": "kmra-র আরও টুল",
   "More tools": "আরও টুল",
-  "Free, private tools for images, PDFs, video, QR codes, text in pictures and code. Everything runs on your device.":
-    "ছবি, পিডিএফ, ভিডিও, কিউআর কোড, ছবির লেখা আর কোডের জন্য বিনামূল্যের, ব্যক্তিগত টুল। সব কাজ হয় আপনার ডিভাইসে।",
+  "Free, private tools for images, PDFs, video, audio, QR codes, text in pictures and code. Everything runs on your device.":
+    "ছবি, পিডিএফ, ভিডিও, অডিও, কিউআর কোড, ছবির লেখা আর কোডের জন্য বিনামূল্যের, ব্যক্তিগত টুল। সব কাজ হয় আপনার ডিভাইসে।",
   "The same free, private tools for other kinds of files.":
     "অন্য ধরনের ফাইলের জন্যও একই রকম বিনামূল্যের, ব্যক্তিগত টুল।",
   "See all kmra tools": "kmra-র সব টুল দেখুন",

@@ -90,6 +90,7 @@ export function mixedTasks(n: number, locale: Locale = "en"): TaskEntry[] {
 
 const NOUN: Record<string, string> = {
   imgtool: "image",
+  audiotool: "audio",
   pdftool: "PDF",
   vidtool: "video",
   qrtool: "QR",
@@ -165,6 +166,16 @@ export const KINDS: {
     ext: ["mp4", "mov", "webm", "mkv", "avi", "m4v"],
     tools: [
       ["vidtool", ["compress", "convert", "trim", "resize", "video-to-gif", "video-to-mp3", "mute", "rotate", "speed", "extract-frames", "video-info", "merge"]],
+      ["audiotool", ["video-to-audio"]],
+    ],
+  },
+  {
+    key: "audio",
+    label: "Audio",
+    mime: ["audio/"],
+    ext: ["mp3", "m4a", "m4r", "aac", "wav", "flac", "ogg", "oga", "opus", "aif", "aiff", "wma", "amr"],
+    tools: [
+      ["audiotool", ["convert", "trim", "compress", "volume", "normalize", "merge", "fade", "speed", "pitch", "remove-silence", "reverse", "mono", "audio-info"]],
     ],
   },
   { key: "json", label: "JSON", mime: ["application/json"], ext: ["json"], tools: [["devtool", ["json-formatter", "json-to-typescript", "yaml-json", "csv-json"]]] },

@@ -35,7 +35,7 @@ const site = Astro.site ?? new URL("https://kmra.dev");
 const desc =
   description ??
   T(
-    "{n} free tools for images, PDFs, video, QR codes, text in pictures and code. Everything runs in your browser, so your files stay on your device.",
+    "{n} free tools for images, PDFs, video, audio, QR codes, text in pictures and code. Everything runs in your browser, so your files stay on your device.",
     { n: totalTools },
   );
 const path = Astro.url.pathname
@@ -190,6 +190,9 @@ const year = new Date().getFullYear();
                     </span>
                   </a>
                 ))}
+                <div class="apps-more">
+                  <a href={L("/tools")}>{T("All {n} tools", { n: totalTools })}</a>
+                </div>
               </div>
             </div>
             <a class="navlink" href={L("/privacy")}>{T("Privacy")}</a>

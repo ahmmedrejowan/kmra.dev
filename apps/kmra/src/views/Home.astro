@@ -67,7 +67,7 @@ const schema = [
       <h1 class="display">{T("Free tools for every file")}</h1>
       <p class="lede">
         {T(
-          "{n} tools for images, PDFs, video, QR codes, text in pictures and code. They all run in your browser, so your files stay on your device.",
+          "{n} tools for images, PDFs, video, audio, QR codes, text in pictures and code. They all run in your browser, so your files stay on your device.",
           { n: totalTools },
         )}
       </p>
@@ -76,7 +76,7 @@ const schema = [
         lang={locale}
         kinds={kinds}
         marks={apps.map((a) => markSvg(a.id, a.accent.light))}
-        formats={["JPG", "PNG", "HEIC", "PDF", "MP4", "MOV", "GIF", "JSON", "CSV"]}
+        formats={["JPG", "PNG", "HEIC", "PDF", "MP4", "MP3", "WAV", "GIF", "JSON", "CSV"]}
       />
       <nav class="hub-chips" aria-label={T("Popular tools")}>
         {chips.map((e) => (
@@ -92,7 +92,7 @@ const schema = [
   <section class="screen">
     <div class="wrap">
       <div class="sechead primary">
-        <h2>{T("Six apps, one way of working")}</h2>
+        <h2>{T("{n} apps, one way of working", { n: apps.length })}</h2>
         <p>{T("Each app has its own site. All of them are free, need no account and add no watermark.")}</p>
       </div>
       <div class="hub-apps">

@@ -139,7 +139,7 @@ function Drop({
           </strong>
           <span className="muted">
             {T(
-              "A photo, a PDF, a video or a JSON file. You'll see every tool that opens it.",
+              "A photo, a PDF, a video, a song or a JSON file. You'll see every tool that opens it.",
             )}
           </span>
           <div className="row">
@@ -247,7 +247,7 @@ function Drop({
           ) : (
             <p className="hub-none">
               {T(
-                "There's no kmra tool for this kind of file yet. Try an image, a PDF, a video, a GIF, or a JSON, CSV, YAML, XML, SQL, Markdown, HTML, CSS, JavaScript or text file.",
+                "There's no kmra tool for this kind of file yet. Try an image, a PDF, a video, an audio file, a GIF, or a JSON, CSV, YAML, XML, SQL, Markdown, HTML, CSS, JavaScript or text file.",
               )}
             </p>
           )}
