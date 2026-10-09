@@ -23,6 +23,7 @@ const root = join(import.meta.dirname, "..", "apps", appId, "dist");
 // Same per-app permissions as each app's vercel.ts
 const camera = appId === "qrtool";
 const screen = appId === "vidtool";
+const mic = appId === "audiotool";
 
 const TYPES: Record<string, string> = {
   ".html": "text/html; charset=utf-8",
@@ -52,7 +53,7 @@ const HEADERS = {
     appId === "kmra" ? csp({ frameSrc: HUB_FRAMES }) : CSP,
   "X-Content-Type-Options": "nosniff",
   "Referrer-Policy": "strict-origin-when-cross-origin",
-  "Permissions-Policy": permissionsPolicy({ camera, screen }),
+  "Permissions-Policy": permissionsPolicy({ camera, screen, mic }),
   "Cross-Origin-Opener-Policy": "same-origin",
 };
 // The page the hub frames to hand a file over: framed by kmra.dev only, no COOP

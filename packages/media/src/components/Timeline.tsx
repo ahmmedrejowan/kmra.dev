@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useT } from "@kmra/ui/lib/i18n-react";
-import { thumbnails } from "../engine";
+import { thumbnails, waveform } from "../engine";
+import { drawPeaks, waveColors } from "./Wave";
 import { fmtTime, parseTime } from "../plan";
 
 /**
@@ -11,7 +12,8 @@ import { fmtTime, parseTime } from "../plan";
  *   <Timeline file={file} duration={info.durationSec} start={a} end={b}
  *     onChange={(a, b) => …} time={playhead} onSeek={(t) => …} />
  *
- * `single` shows one handle only (pick a moment): `onChange(t, t)`.
+ * `single` shows one handle only (pick a moment): `onChange(t, t)`. `wave` draws the sound's
+ * waveform instead of frames (audio files).
  */
 export function Timeline({
   file,
@@ -24,6 +26,7 @@ export function Timeline({
   minLength = 0.1,
   maxLength,
   single,
+  wave,
 }: {
   file: File;
   duration: number;
@@ -36,6 +39,8 @@ export function Timeline({
   /** Longest allowed range (e.g. GIFs), seconds */
   maxLength?: number;
   single?: boolean;
+  /** Draw the waveform instead of frames */
+  wave?: boolean;
 }) {
   const T = useT();
   const strip = useRef<HTMLDivElement>(null);
@@ -68,6 +73,13 @@ export function Timeline({
     c.height = H * dpr;
     const ctx = c.getContext("2d")!;
     ctx.clearRect(0, 0, c.width, c.height);
+    if (wave) {
+      const ac = new AbortController();
+      void waveform(file, Math.min(4000, c.width), { signal: ac.signal })
+        .then((p) => !ac.signal.aborted && drawPeaks(c, p, { ...waveColors(c), played: 0 }))
+        .catch(() => {});
+      return () => ac.abort();
+    }
     const count = Math.max(4, Math.min(24, Math.round(width / 72)));
     const slot = c.width / count;
     const ac = new AbortController();
@@ -92,7 +104,7 @@ export function Timeline({
       },
     });
     return () => ac.abort();
-  }, [file, width, duration]);
+  }, [file, width, duration, wave]);
 
   const clamp = (a: number, b: number): [number, number] => {
     if (single) {

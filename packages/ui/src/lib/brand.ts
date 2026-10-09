@@ -26,6 +26,20 @@ export function markInner(appId: string): string {
         )
         .join("");
     }
+    case "audiotool":
+      // Sound bars, tallest in the middle
+      return [
+        [15, 26, 12],
+        [23, 19, 26],
+        [31, 13, 38],
+        [39, 21, 22],
+        [47, 27, 10],
+      ]
+        .map(
+          ([x, y, h]) =>
+            `<rect x="${x! - 2.5}" y="${y}" width="5" height="${h}" rx="2.5" fill="#fff"/>`,
+        )
+        .join("");
     case "devtool":
       // A terminal prompt and cursor: "> _"
       return `<path d="M17 22 27 32 17 42" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/><rect x="31" y="39" width="17" height="5" rx="2.5" fill="#fff"/>`;

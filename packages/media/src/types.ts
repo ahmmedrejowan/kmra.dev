@@ -1,5 +1,5 @@
 /**
- * The contract between the video/audio tools (apps/vidtool, later apps/audiotool) and the media
+ * The contract between the video and audio tools (apps/vidtool, apps/audiotool) and the media
  * engine in this package. Tools describe WHAT they want as a Job; the engine decides HOW: the
  * fast path uses WebCodecs (hardware encoders) where the browser supports the codecs, otherwise
  * ffmpeg.wasm (self-hosted, in a worker). Everything runs on the device.
@@ -97,7 +97,7 @@ export interface Job {
      */
     rotateMetadata?: boolean;
     flip?: "h" | "v";
-    /** Playback speed factor (0.25–4) */
+    /** Playback speed factor (0.25–4). Also the speed of an audio-only file's sound. */
     speed?: number;
     /** Drop the video stream (audio-only outputs set this) */
     drop?: boolean;
@@ -119,6 +119,12 @@ export interface Job {
     fadeOutSec?: number;
     sampleRate?: number;
     channels?: 1 | 2;
+    /** Shift the pitch by this many semitones (−12…12), keeping the length */
+    pitch?: number;
+    /** Play backwards */
+    reverse?: boolean;
+    /** Cut silent gaps longer than `minSec` (default 0.5 s) quieter than `thresholdDb` (default −45) */
+    removeSilence?: { thresholdDb?: number; minSec?: number };
   };
   /** Aim for an output at or under this size (two-pass/bitrate maths) */
   targetBytes?: number;

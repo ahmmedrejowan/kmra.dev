@@ -10470,3 +10470,181 @@ select.bar-input {
     padding: 6px 9px;
   }
 }
+
+/* media: waveform player (@kmra/media/components/WavePlayer), used by audiotool */
+.wp {
+  display: grid;
+  gap: 12px;
+  width: 100%;
+}
+.wp-wave {
+  position: relative;
+  height: 180px;
+  border-radius: 14px;
+  border: 1px solid var(--line);
+  background:
+    linear-gradient(var(--line), var(--line)) center / 100% 1px no-repeat,
+    var(--card);
+  cursor: pointer;
+  touch-action: none;
+  overflow: hidden;
+}
+.wp-wave:focus-visible {
+  outline: 2px solid var(--acc);
+  outline-offset: 2px;
+}
+.wp-wave canvas {
+  position: absolute;
+  inset: 10px 0;
+  width: 100%;
+  height: calc(100% - 20px);
+}
+.wp-head {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  margin-left: -1px;
+  background: var(--fg);
+  pointer-events: none;
+}
+.wp-wait {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-size: 13px;
+}
+.wp-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.wp-play {
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border-radius: 999px;
+  justify-content: center;
+}
+.wp-time {
+  font-variant-numeric: tabular-nums;
+  color: var(--muted);
+  font-size: 14px;
+}
+.wp-time b {
+  color: var(--fg);
+  font-weight: 600;
+}
+.wp-bad {
+  font-size: 13px;
+}
+.wp.at-source .wp-wave {
+  height: 90px;
+}
+@media (max-width: 640px) {
+  .wp-wave {
+    height: 130px;
+  }
+}
+
+/* audiotool: voice recorder and small pieces */
+.at-rec {
+  display: grid;
+  justify-items: center;
+  gap: 18px;
+  padding: 40px 20px;
+  border-radius: 16px;
+  border: 1px solid var(--line);
+  background: var(--card);
+  text-align: center;
+}
+.at-meter {
+  width: 120px;
+  height: 120px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  background: var(--acc-soft);
+  overflow: hidden;
+}
+.at-meter i {
+  display: block;
+  width: 48px;
+  height: 84px;
+  border-radius: 999px;
+  background: var(--acc);
+  transform-origin: center;
+  transition: transform 0.08s linear;
+}
+.at-rec:not(.on) .at-meter i {
+  transform: scaleY(0.15) !important;
+  opacity: 0.5;
+}
+.at-rec.on:not(.paused) .at-meter {
+  box-shadow: 0 0 0 6px color-mix(in srgb, var(--acc) 18%, transparent);
+}
+.at-clock {
+  font-size: 40px;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+}
+.at-rec-ctl {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.at-thumb {
+  background: var(--acc-soft);
+  display: grid;
+  place-items: center;
+}
+.at-info-view {
+  min-width: min(100%, 420px);
+}
+
+/* Tool cards: audiotool's waveform art */
+.art-aud {
+  position: relative;
+  width: min(86%, 300px);
+  height: 92px;
+  display: grid;
+  align-items: center;
+}
+.art-aud-bars {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  height: 100%;
+}
+.art-aud-bars i {
+  flex: 1;
+  border-radius: 99px;
+  background: color-mix(in srgb, var(--acc) 28%, transparent);
+}
+.art-aud-bars i.on {
+  background: var(--acc);
+}
+.art-aud.trim .art-aud-bars i.on {
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--acc) 40%, transparent);
+}
+.art-aud-ico {
+  position: absolute;
+  top: -6px;
+  left: -6px;
+  width: 30px;
+  height: 30px;
+  border-radius: 9px;
+  display: grid;
+  place-items: center;
+  background: var(--card);
+  color: var(--acc);
+  border: 1px solid var(--line);
+  z-index: 1;
+}
+.art-aud-ico .ico {
+  width: 16px;
+  height: 16px;
+}

@@ -52,6 +52,7 @@ export type WcRequest =
       max: number;
     }
   | { op: "concat"; id: number; files: File[]; to: Container }
+  | { op: "peaks"; id: number; file: File; n: number }
   | { op: "cancel"; target: number };
 
 interface Reply {

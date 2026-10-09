@@ -95,6 +95,9 @@ export function audioUntouched(job: Job): boolean {
     !a.fadeOutSec &&
     !a.sampleRate &&
     !a.channels &&
+    !a.pitch &&
+    !a.reverse &&
+    !a.removeSilence &&
     !job.targetBytes &&
     (job.video?.speed ?? 1) === 1
   );
@@ -201,6 +204,14 @@ function videoFilters(info: MediaInfo, job: Job, p: FfmpegPlan): string {
 function audioFilters(info: MediaInfo, job: Job): string {
   const a = job.audio ?? {};
   const f: string[] = [];
+  if (a.removeSilence) {
+    const th = a.removeSilence.thresholdDb ?? -45;
+    const d = a.removeSilence.minSec ?? 0.5;
+    // Trim the start, then every gap longer than d (keeping a short pause so speech still breathes)
+    f.push(
+      `silenceremove=start_periods=1:start_threshold=${th}dB:start_silence=0.1:stop_periods=-1:stop_duration=${n(d)}:stop_threshold=${th}dB:stop_silence=0.25`,
+    );
+  }
   const speed = job.video?.speed ?? 1;
   if (speed !== 1)
     f.push(
@@ -212,6 +223,16 @@ function audioFilters(info: MediaInfo, job: Job): string {
           ]
         : atempo(speed)),
     );
+  if (a.pitch && info.audio?.sampleRate) {
+    // Resample to shift the pitch, then stretch back to the same length
+    const k = Math.pow(2, a.pitch / 12);
+    f.push(
+      `asetrate=${Math.round(info.audio.sampleRate * k)}`,
+      `aresample=${info.audio.sampleRate}`,
+      ...atempo(1 / k),
+    );
+  }
+  if (a.reverse) f.push("areverse");
   if (a.normalize) f.push("loudnorm=I=-16:TP=-1.5:LRA=11");
   if ((a.volume ?? 1) !== 1) f.push(`volume=${n(a.volume!)}`);
   const dur = outDuration(info, job);
@@ -372,6 +393,20 @@ export function concatArgs(
 ): string[] {
   const a: string[] = ["-hide_banner", "-y"];
   for (const i of inputs) a.push("-i", i);
+  if (isAudioOut(job) || infos.every((i) => !i.video)) {
+    // Sound only: each file's sound in a row (a silent gap for a file without any)
+    const parts = infos.map((info, i) =>
+      info.audio
+        ? `[${i}:a:0]aresample=48000,aformat=sample_fmts=fltp:channel_layouts=stereo[a${i}]`
+        : `anullsrc=r=48000:cl=stereo,atrim=duration=${n(info.durationSec)}[a${i}]`,
+    );
+    parts.push(
+      `${infos.map((_, i) => `[a${i}]`).join("")}concat=n=${infos.length}:v=0:a=1[aout]`,
+    );
+    a.push("-filter_complex", parts.join(";"), "-map", "[aout]", "-vn");
+    a.push(...audioCodec(job, p), output);
+    return a;
+  }
   const W = p.width;
   const H = p.height;
   const fps = job.video?.fps ?? Math.round(infos[0]?.video?.fps || 30);

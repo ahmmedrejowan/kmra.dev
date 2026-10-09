@@ -1,0 +1,31 @@
+---
+import BaseLayout from "@kmra/ui/layouts/BaseLayout.astro";
+import NotFound from "@kmra/ui/components/NotFound.astro";
+import ToolCards from "@kmra/ui/components/ToolCards.astro";
+import ToolGrid from "@kmra/ui/components/ToolGrid.astro";
+import { getApp } from "@kmra/registry";
+
+const app = getApp("audiotool");
+const popular = app.popular ?? [];
+const ready = app.tools
+  .filter((t) => t.ready && popular.includes(t.slug))
+  .slice(0, 6);
+---
+
+<BaseLayout appId="audiotool" title="Page not found" og="index" noindex>
+  <section class="hero-band">
+    <div class="wrap">
+      <NotFound />
+    </div>
+  </section>
+  <div class="wrap page-body">
+    <div class="sechead primary">
+      <h2>{ready.length ? "Popular tools" : app.name}</h2>
+    </div>
+    {ready.length ? (
+      <ToolCards tools={ready} allHref="/tools" />
+    ) : (
+      <ToolGrid tools={app.tools} />
+    )}
+  </div>
+</BaseLayout>

@@ -12,6 +12,7 @@ import { makeOcrPdfFixtures } from "./ocrtool-pdf.ts";
 import { makeOcrImageFixtures } from "./ocrtool.ts";
 import { makeOcrPhotoFixtures } from "./ocrtool-photo.ts";
 import { makeVidtoolFixtures } from "./vidtool.ts";
+import { makeAudiotoolFixtures } from "./audiotool.ts";
 
 export default async function make() {
   await mkdir(GEN, { recursive: true });
@@ -31,4 +32,6 @@ export default async function make() {
   await makeOcrPhotoFixtures(GEN);
   // VidTool inputs (short MP4, MOV, WebM, MKV and AVI clips made with ffmpeg): see vidtool.ts
   await makeVidtoolFixtures(GEN);
+  // AudioTool inputs (MP3, WAV, M4A, FLAC, OGG tones; gaps; quiet; join parts): see audiotool.ts
+  await makeAudiotoolFixtures(GEN);
 }

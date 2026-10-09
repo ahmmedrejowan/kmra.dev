@@ -11,6 +11,7 @@ import {
   BufferTarget,
   CanvasSink,
   Conversion,
+  AudioSampleSink,
   ConversionCanceledError,
   FlacOutputFormat,
   Input,
@@ -737,6 +738,58 @@ async function concat(id: number, files: File[], to: Container) {
   }
 }
 
+/* ---------- waveform ---------- */
+
+/**
+ * The sound's outline: `n` buckets over the file's length, each the lowest and highest sample of
+ * the first channel ([min0, max0, min1, max1 …], −1…1). Streams the decoded sound, so long files
+ * stay light on memory.
+ */
+async function peaks(id: number, file: File, n: number): Promise<Float32Array> {
+  const input = open(file);
+  try {
+    const track = await input.getPrimaryAudioTrack();
+    if (!track) throw new Fatal("This file has no sound");
+    if (!(await track.canDecode()))
+      throw new Unsupported("This sound's codec needs the compatible engine");
+    const dur = Math.max(0.001, await input.computeDuration());
+    const out = new Float32Array(n * 2);
+    const sink = new AudioSampleSink(track);
+    let cancelled = false;
+    running.set(id, { cancel: () => void (cancelled = true) });
+    let buf = new Float32Array(0);
+    let lastPost = 0;
+    for await (const s of sink.samples()) {
+      if (cancelled) {
+        s.close();
+        throw new ConversionCanceledError();
+      }
+      const frames = s.numberOfFrames;
+      if (buf.length < frames) buf = new Float32Array(frames);
+      s.copyTo(buf, { planeIndex: 0, format: "f32-planar" });
+      const k = n / dur;
+      const sr = s.sampleRate;
+      const t0 = s.timestamp;
+      for (let i = 0; i < frames; i++) {
+        const b = Math.min(n - 1, Math.max(0, Math.floor((t0 + i / sr) * k)));
+        const v = buf[i]!;
+        if (v < out[b * 2]!) out[b * 2] = v;
+        if (v > out[b * 2 + 1]!) out[b * 2 + 1] = v;
+      }
+      const end = t0 + s.duration;
+      s.close();
+      if (end - lastPost > dur / 20) {
+        lastPost = end;
+        post({ id, ratio: Math.min(1, end / dur) });
+      }
+    }
+    return out;
+  } finally {
+    running.delete(id);
+    input.dispose();
+  }
+}
+
 /* ---------- messages ---------- */
 
 self.onmessage = async (e: MessageEvent<WcRequest>) => {
@@ -758,6 +811,7 @@ self.onmessage = async (e: MessageEvent<WcRequest>) => {
     else if (m.op === "stills")
       result = await stills(id, m.file, m.times, m.width, m.type, m.quality);
     else if (m.op === "concat") result = await concat(id, m.files, m.to);
+    else if (m.op === "peaks") result = await peaks(id, m.file, m.n);
     else if (m.op === "scenes")
       result = await scenes(id, m.file, m.start, m.end, m.threshold, m.max);
     post({ id, done: true, result });

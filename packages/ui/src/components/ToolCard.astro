@@ -23,6 +23,34 @@ const hue = accent
   ? `--acc-l:${accent.light};--acc-d:${accent.dark};--acc-soft-l:${accent.softLight};--acc-soft-d:${accent.softDark}`
   : undefined;
 const page = (lines = 3) => Array.from({ length: lines });
+// AudioTool cards: a little waveform, shaped by what the tool does
+const BARS = [
+  0.35, 0.55, 0.8, 0.6, 0.95, 0.7, 0.5, 0.85, 0.65, 0.4, 0.75, 1, 0.6, 0.45,
+  0.8, 0.55, 0.9, 0.7, 0.35, 0.6, 0.85, 0.5, 0.7, 0.95, 0.6, 0.4, 0.65, 0.3,
+];
+const bars = (() => {
+  const n = BARS.length;
+  const s = tool.slug;
+  return BARS.map((h, i) => {
+    let v = h;
+    if (s === "fade") v *= Math.min(1, (i + 1) / 7, (n - i) / 7);
+    else if (s === "normalize") v = 0.62 + (h - 0.6) * 0.15;
+    else if (s === "volume") v = Math.min(1, h * 1.25);
+    else if (s === "reverse") v = BARS[n - 1 - i]!;
+    else if (s === "remove-silence" && ((i >= 8 && i <= 11) || (i >= 19 && i <= 21)))
+      v = 0.04;
+    else if (s === "mono") v = h * 0.8;
+    return {
+      h: Math.round(Math.max(0.04, v) * 100),
+      on: s === "trim" ? i >= 9 && i <= 19 : s !== "remove-silence" || v > 0.05,
+    };
+  });
+})();
+const AUDIO_FORMATS: Record<string, [string[], string[]]> = {
+  convert: [["WAV", "FLAC"], ["MP3", "M4A"]],
+  "video-to-audio": [["MP4", "MOV"], ["MP3"]],
+  compress: [["WAV"], ["MP3"]],
+};
 // A few lines of code per developer tool card
 const SNIPS: Record<string, string[]> = {
   "json-formatter": ["{", '  "name": "kmra",', '  "live": true', "}"],
@@ -96,7 +124,36 @@ const dm = (() => {
   tabindex={hidden ? -1 : undefined}
 >
   <div class="feat-art" aria-hidden="true">
-    {app === "pdftool" && tool.slug === "merge" ? (
+    {app === "audiotool" && AUDIO_FORMATS[tool.slug] && tool.slug !== "compress" ? (
+      <div class="art-formats">
+        {AUDIO_FORMATS[tool.slug]![0].map((f) => (
+          <span>{f}</span>
+        ))}
+        <Icon name="right" />
+        {AUDIO_FORMATS[tool.slug]![1].map((f) => (
+          <span class="acc">{f}</span>
+        ))}
+      </div>
+    ) : app === "audiotool" && tool.slug !== "compress" ? (
+      <div class:list={["art-aud", tool.slug]} aria-hidden="true">
+        <span class="art-aud-ico">
+          <Icon name={tool.icon} />
+        </span>
+        <span class="art-aud-bars">
+          {bars.map((b) => (
+            <i class:list={{ on: b.on }} style={`height:${b.h}%`} />
+          ))}
+        </span>
+      </div>
+    ) : app === "vidtool" && tool.slug === "convert" ? (
+      <div class="art-formats">
+        <span>MOV</span>
+        <span>MKV</span>
+        <Icon name="right" />
+        <span class="acc">MP4</span>
+        <span class="acc">WebM</span>
+      </div>
+    ) : app === "pdftool" && tool.slug === "merge" ? (
       <div class="art-pdf">
         <span class="pg a">
           {page().map(() => (

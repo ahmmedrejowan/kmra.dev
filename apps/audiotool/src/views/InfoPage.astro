@@ -1,0 +1,105 @@
+---
+import BaseLayout from "@kmra/ui/layouts/BaseLayout.astro";
+import PageHead from "@kmra/ui/components/PageHead.astro";
+import HowItWorks from "@kmra/ui/components/HowItWorks.astro";
+import PrivacyContent from "@kmra/ui/components/PrivacyContent.astro";
+import AboutContent from "@kmra/ui/components/AboutContent.astro";
+import AllTools from "@kmra/ui/components/AllTools.astro";
+import UseCases from "@kmra/ui/components/UseCases.astro";
+import MoreTools from "@kmra/ui/components/MoreTools.astro";
+import { brandName, getApp, localizeApp } from "@kmra/registry";
+import { pageLocale } from "@kmra/ui/lib/locale";
+import { lp, t as tr } from "@kmra/ui/lib/i18n";
+
+/** The non-tool pages, in any language. */
+interface Props {
+  page:
+    "how-it-works" | "privacy" | "about" | "tools" | "use-cases" | "more-tools";
+}
+
+const { page } = Astro.props;
+const locale = pageLocale(Astro);
+const T = (s: string, v?: Record<string, string | number>) => tr(locale, s, v);
+const app = localizeApp(getApp("audiotool"), locale);
+const brand = brandName(app);
+const home = { label: app.name, href: lp(locale, "/") };
+
+const PAGES = {
+  "how-it-works": {
+    title: T("How your files stay on your device"),
+    description: T(
+      "kmra tools run in your browser. Your files stay on your device, and the site is blocked from sending them anywhere.",
+    ),
+    crumb: T("How it works"),
+    icon: "shield",
+    intro: T(
+      "Most online tools send your file to a server. kmra sends the tool to your browser instead.",
+    ),
+  },
+  privacy: {
+    title: T("Privacy"),
+    description: T(
+      "Your files stay on your device. No accounts, no cookies. What kmra stores, and what it doesn't.",
+    ),
+    crumb: T("Privacy"),
+    icon: "shield",
+    intro: T(
+      "Short version: your files never leave your device, and nothing identifies you.",
+    ),
+  },
+  about: {
+    title: T("About"),
+    description: T("Small, private tools for everyday files, from kmra.dev."),
+    crumb: T("About"),
+    icon: "layers",
+    intro: T("Small, private tools for everyday files."),
+  },
+  tools: {
+    title: T("All audio tools"),
+    description: T(
+      "Every audio tool, by category. All free, and everything runs on your device.",
+    ),
+    crumb: T("All tools"),
+    icon: "grid",
+    intro: T(
+      "Every audio tool, by category. All free, and everything runs on your device.",
+    ),
+  },
+  "use-cases": {
+    title: T("Use cases"),
+    description: T(
+      "Ready-made settings for everyday jobs. Pick one and drop your file.",
+    ),
+    crumb: T("Use cases"),
+    icon: "layers",
+    intro: T(
+      "Ready-made settings for everyday jobs. Pick one and drop your file.",
+    ),
+  },
+  "more-tools": {
+    title: T("More tools from kmra"),
+    description: T("The same free, private tools for other kinds of files."),
+    crumb: T("More tools"),
+    icon: "zap",
+    intro: T("The same free, private tools for other kinds of files."),
+  },
+} as const;
+const p = PAGES[page];
+---
+
+<BaseLayout appId="audiotool" title={p.title} description={p.description}>
+  <PageHead
+    crumbs={[home, { label: p.crumb }]}
+    icon={p.icon}
+    title={page === "about" ? T("About {brand}", { brand }) : p.title}
+    intro={p.intro}
+  />
+  <div class="wrap page-body">
+    {page === "how-it-works" && <HowItWorks />}
+    {page === "privacy" && <PrivacyContent brand={brand} />}
+    {page === "about" && <AboutContent />}
+    {page === "tools" && <AllTools appId="audiotool" />}
+    {page === "use-cases" && <UseCases appId="audiotool" />}
+    {page === "more-tools" && <MoreTools appId="audiotool" />}
+  </div>
+</BaseLayout>

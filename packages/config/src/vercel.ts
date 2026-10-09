@@ -42,14 +42,15 @@ export const HUB_FRAMES = ["https://*.kmra.dev"];
 
 /**
  * Permissions-Policy for an app: the camera only for apps that scan with it (QR), screen capture
- * and the microphone only for apps that record (video), each for the site itself only.
+ * and the microphone only for apps that record (video), the microphone alone for the voice
+ * recorder (audio), each for the site itself only.
  */
 export function permissionsPolicy(
-  opts: { camera?: boolean; screen?: boolean } = {},
+  opts: { camera?: boolean; screen?: boolean; mic?: boolean } = {},
 ): string {
   return [
     `camera=${opts.camera ? "(self)" : "()"}`,
-    `microphone=${opts.screen ? "(self)" : "()"}`,
+    `microphone=${opts.screen || opts.mic ? "(self)" : "()"}`,
     ...(opts.screen ? ["display-capture=(self)"] : []),
     "geolocation=()",
     "interest-cohort=()",
@@ -61,6 +62,7 @@ export function appConfig(
   opts: {
     camera?: boolean;
     screen?: boolean;
+    mic?: boolean;
     /** The hub: frames the apps' /handoff pages (HUB_FRAMES) */
     hub?: boolean;
   } = {},

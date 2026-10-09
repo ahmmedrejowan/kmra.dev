@@ -20,6 +20,7 @@ apps/ocrtool/public/pdfjs/
 
 # ffmpeg.wasm core (js + wasm), copied from node_modules at build time
 apps/vidtool/public/ffmpeg/
+apps/audiotool/public/ffmpeg/
 
 # tesseract.js worker and wasm cores, copied from node_modules at build time (language data is committed)
 apps/ocrtool/public/tesseract/*

@@ -26,6 +26,7 @@
  *   thumbnails(file, {...})     frames for a timeline strip; frameAt(file, t) one frame as an image
  *   frames(file, times, {...})  many stills at given times (extract frames), one by one
  *   sceneChanges(file, {...})   times where the picture cuts (scene detection)
+ *   waveform(file, n)           the sound's outline (n min/max pairs) for a waveform
  *   estimateGif(file, job)      a GIF's size measured on a short sample (plan() only guesses)
  *   preloadFfmpeg()             start the ~32 MB download early (e.g. when an AVI is dropped)
  *   sizeWarning(file, engine)   memory warning text or null; isAbort(e) for cancelled jobs
@@ -147,9 +148,21 @@ export function isMediaFile(f: File): boolean {
   return (
     f.type.startsWith("video/") ||
     f.type.startsWith("audio/") ||
-    /\.(mp4|m4v|mov|webm|mkv|avi|flv|wmv|asf|3gp|3g2|mpg|mpeg|ts|mts|m2ts|ogv|gif|mp3|m4a|wav|ogg|oga|opus|flac|aac)$/i.test(
+    /\.(mp4|m4v|mov|webm|mkv|avi|flv|wmv|asf|3gp|3g2|mpg|mpeg|ts|mts|m2ts|ogv|gif|mp3|m4a|m4r|wav|ogg|oga|opus|flac|aac|aif|aiff|wma|amr|caf)$/i.test(
       f.name,
     )
+  );
+}
+
+/** File picker filter for audio files (and videos, whose sound the audio tools can use) */
+export const AUDIO_ACCEPT =
+  "audio/*,video/*,.mp3,.m4a,.m4r,.aac,.wav,.ogg,.oga,.opus,.flac,.aif,.aiff,.wma,.amr,.mkv,.webm";
+
+/** Whether a file looks like audio (by type or extension) */
+export function isAudioFile(f: File): boolean {
+  return (
+    f.type.startsWith("audio/") ||
+    /\.(mp3|m4a|m4r|aac|wav|ogg|oga|opus|flac|aif|aiff|wma|amr|caf)$/i.test(f.name)
   );
 }
 
@@ -194,7 +207,15 @@ function forcedFfmpeg(info: MediaInfo, job: Job, files: number): string | null {
       : "GIFs are made with the compatible engine";
   if (!FAST_READS.has(info.container)) return FORMAT_REASON;
   const a = job.audio ?? {};
-  if ((a.volume ?? 1) !== 1 || a.normalize || a.fadeInSec || a.fadeOutSec)
+  if (
+    (a.volume ?? 1) !== 1 ||
+    a.normalize ||
+    a.fadeInSec ||
+    a.fadeOutSec ||
+    a.pitch ||
+    a.reverse ||
+    a.removeSilence
+  )
     return "This effect uses the compatible engine";
   return null;
 }
@@ -784,6 +805,68 @@ export async function frames(
       });
     }
   }
+}
+
+/**
+ * The sound's outline for a waveform: `n` buckets over the file's length, each [min, max] of the
+ * first channel (−1…1), flattened. Fast engine first (streams the sound); formats it can't read go
+ * through ffmpeg (decoded to 8 kHz mono). Cached per file and size.
+ */
+const waves = new WeakMap<File, Map<number, Promise<Float32Array>>>();
+export function waveform(
+  file: File,
+  n = 1000,
+  opts: { signal?: AbortSignal } = {},
+): Promise<Float32Array> {
+  let byN = waves.get(file);
+  if (!byN) waves.set(file, (byN = new Map()));
+  const hit = byN.get(n);
+  if (hit) return hit;
+  const p = (async () => {
+    try {
+      return await call<Float32Array>(
+        { op: "peaks", file, n },
+        () => {},
+        opts.signal,
+      );
+    } catch (e) {
+      if (isAbort(e) || e instanceof WcFatal) throw e;
+    }
+    const info = await probe(file);
+    const raw = await runFfmpeg({
+      files: [file],
+      args: ([inp], out) => [
+        "-hide_banner",
+        "-y",
+        "-i",
+        inp!,
+        "-vn",
+        "-ac",
+        "1",
+        "-ar",
+        "8000",
+        "-f",
+        "s16le",
+        out,
+      ],
+      ext: "raw",
+      duration: info.durationSec,
+      signal: opts.signal,
+    });
+    const pcm = new Int16Array(raw.buffer, raw.byteOffset, raw.byteLength >> 1);
+    const out = new Float32Array(n * 2);
+    const per = pcm.length / n;
+    for (let i = 0; i < pcm.length; i++) {
+      const b = Math.min(n - 1, Math.floor(i / per));
+      const v = pcm[i]! / 32768;
+      if (v < out[b * 2]!) out[b * 2] = v;
+      if (v > out[b * 2 + 1]!) out[b * 2 + 1] = v;
+    }
+    return out;
+  })();
+  p.catch(() => byN!.delete(n));
+  byN.set(n, p);
+  return p;
 }
 
 /**
