@@ -51,12 +51,25 @@ const taskList = app.tasks
   <div class="wrap">
     <div class="fgrid">
       <div class="fbrand">
-        <a
-          href={L("/")}
-          aria-label={T("{brand} home", { brand: app.brand.join("") })}
-        >
-          <Wordmark appId={appId} />
-        </a>
+        <span class="logo-wrap">
+          <a
+            href={L("/")}
+            aria-label={T("{brand} home", { brand: app.brand.join("") })}
+          >
+            <Wordmark appId={appId} dom={false} />
+          </a>
+          {HUB.live ? (
+            <a
+              class="wm-dom"
+              href={hubLink(locale, "/", dev)}
+              title={T("Every app on kmra.dev")}
+            >
+              kmra.dev
+            </a>
+          ) : (
+            <span class="wm-dom">kmra.dev</span>
+          )}
+        </span>
         <p>
           {T(
             "Small tools for everyday files. Everything runs in your browser, so your files stay on your device.",

@@ -328,3 +328,17 @@ test("the hero title sits near the top (no stretched hero)", async ({ page }) =>
   const top = (await page.locator("h1").boundingBox())!.y;
   expect(top).toBeLessThan(260);
 });
+
+test("the small kmra.dev next to each app's logo (header and footer) links to the hub", async ({
+  page,
+}) => {
+  for (const [host, port] of Object.entries(PORTS)) {
+    if (host === "kmra.dev") continue;
+    const html = await (await page.request.get(`http://localhost:${port}/`)).text();
+    const links = html.match(/<a class="wm-dom"[^>]*href="([^"]+)"/g) ?? [];
+    expect(links.length, host).toBe(2);
+    for (const l of links) expect(l, host).toContain('href="https://kmra.dev/"');
+    const bn = await (await page.request.get(`http://localhost:${port}/bn`)).text();
+    expect(bn, host).toMatch(/<a class="wm-dom"[^>]*href="https:\/\/kmra\.dev\/bn"/);
+  }
+});

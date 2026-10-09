@@ -6,9 +6,11 @@ interface Props {
   appId: AppId;
   /** Larger version for the footer */
   large?: boolean;
+  /** Show the small "kmra.dev" (off where it's its own link next to the logo) */
+  dom?: boolean;
 }
 
-const { appId, large = false } = Astro.props;
+const { appId, large = false, dom = true } = Astro.props;
 const app = getApp(appId);
 const mark = markSvg(appId, app.accent.light);
 ---
@@ -19,5 +21,5 @@ const mark = markSvg(appId, app.accent.light);
     class="wm-text"
     set:html={`<span class="wm-a">${app.brand[0]}</span><span class="wm-b">${app.brand[1]}</span>`}
   />
-  <span class="wm-dom">kmra.dev</span>
+  {dom && <span class="wm-dom">kmra.dev</span>}
 </span>

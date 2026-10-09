@@ -280,8 +280,27 @@ header.site {
 .wm.lg .wm-text {
   font-size: 24px;
 }
-.wm.lg .wm-dom {
+.wm.lg .wm-dom,
+.logo-wrap.lg .wm-dom {
   font-size: 13px;
+}
+/* Logo + "kmra.dev": two links side by side (the app's home, and the hub) */
+.logo-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin-right: 18px;
+  white-space: nowrap;
+}
+.logo-wrap .logo {
+  margin-right: 0;
+}
+a.wm-dom {
+  line-height: 1;
+  text-decoration: none;
+}
+a.wm-dom:hover {
+  color: var(--fg);
 }
 .menu:has(.mega.single) {
   position: relative;

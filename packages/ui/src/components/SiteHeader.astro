@@ -51,15 +51,26 @@ const appHref = (a: App) =>
 <header class="site">
   <div class="wrap">
     <div class="hd">
-      <a
-        class="logo"
-        href={L("/")}
-        aria-label={T("{brand} by kmra.dev, home", {
-          brand: app.brand.join(""),
-        })}
-      >
-        <Wordmark appId={appId} />
-      </a>
+      <span class="logo-wrap">
+        <a
+          class="logo"
+          href={L("/")}
+          aria-label={T("{brand} home", { brand: app.brand.join("") })}
+        >
+          <Wordmark appId={appId} dom={false} />
+        </a>
+        {HUB.live ? (
+          <a
+            class="wm-dom"
+            href={hubLink(locale, "/", dev)}
+            title={T("Every app on kmra.dev")}
+          >
+            kmra.dev
+          </a>
+        ) : (
+          <span class="wm-dom">kmra.dev</span>
+        )}
+      </span>
 
       <nav aria-label={T("Main")} style="display: contents">
         <div class="menu">
