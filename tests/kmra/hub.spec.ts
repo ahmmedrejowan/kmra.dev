@@ -17,8 +17,10 @@ const PORTS: Record<string, number> = {
   "ocrtool.kmra.dev": 4605,
   "vidtool.kmra.dev": 4606,
   "audiotool.kmra.dev": 4608,
+  "calctool.kmra.dev": 4609,
+  "colortool.kmra.dev": 4610,
 };
-const APPS = ["imgtool", "pdftool", "vidtool", "devtool", "qrtool", "ocrtool", "audiotool"];
+const APPS = ["imgtool", "pdftool", "vidtool", "devtool", "qrtool", "ocrtool", "audiotool", "calctool", "colortool"];
 
 /** Serve https://kmra.dev and https://<app>.kmra.dev from the local builds */
 async function realSites(context: BrowserContext) {
@@ -232,7 +234,7 @@ test("privacy, about, 404, icons, share images, sitemap and robots", async ({
   await page.goto("/privacy");
   await expect(page.locator("main")).toContainText("is passed to the tool's site");
   await page.goto("/about");
-  await expect(page.locator("main")).toContainText("video, audio, QR codes, text in pictures and code");
+  await expect(page.locator("main")).toContainText("video, audio, QR codes, text in pictures, code, colours and calculations");
   const nf = await page.request.get("/nope");
   expect(nf.status()).toBe(404);
   expect(await nf.text()).toContain("<title>Page not found · kmra.dev</title>");
@@ -307,7 +309,7 @@ test("the Apps menu is a grid of styled app tiles on every site", async ({
     const cols = await menu.evaluate(
       (m) => getComputedStyle(m).gridTemplateColumns.split(" ").length,
     );
-    expect(cols, host).toBe(4);
+    expect(cols, host).toBe(5);
     const tile = menu.locator("a.app-item").first();
     const look = await tile.evaluate((t) => {
       const c = getComputedStyle(t);

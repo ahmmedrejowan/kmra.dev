@@ -128,7 +128,7 @@ export function ogPages(appId: AppId): OgPage[] {
     {
       slug: "more-tools",
       title: "More tools from kmra",
-      subtitle: "Free, private tools for images, PDFs, video, audio, QR codes, text in pictures and code.",
+      subtitle: "Free, private tools for images, PDFs, video, audio, QR codes, text in pictures, code, colours and calculations.",
       icon: "zap",
     },
     {

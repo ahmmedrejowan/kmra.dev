@@ -2293,7 +2293,7 @@ export const apps = [
       softDark: "#0f2630",
     },
     noFiles: true,
-    live: false,
+    live: true,
     devPort: 4328,
     toolGroups: ["Everyday", "Money", "Dates and time", "Health and units"],
     popular: [
@@ -2358,7 +2358,7 @@ export const apps = [
       softDark: "#2e2310",
     },
     noFiles: true,
-    live: false,
+    live: true,
     devPort: 4329,
     toolGroups: ["Pick and convert", "Palettes", "Check", "CSS"],
     popular: [
@@ -3935,7 +3935,7 @@ export const HUB = {
   brand: ["kmra", ".dev"],
   short: "kmra.dev",
   tagline:
-    "Free tools for images, PDFs, video, audio, QR codes, text in pictures and code. Everything runs in your browser.",
+    "Free tools for images, PDFs, video, audio, QR codes, text in pictures, code, colours and calculations. Everything runs in your browser.",
   accent: {
     light: "#18181b",
     dark: "#f4f4f5",

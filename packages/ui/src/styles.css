@@ -333,12 +333,12 @@ a.wm-dom:hover {
 .menu > button[aria-expanded="true"] .ico {
   transform: rotate(180deg);
 }
-/* Apps menu: a grid of app tiles, four across; the last tile links to everything */
+/* Apps menu: a grid of app tiles, five across; the last tile links to everything */
 .mega.apps-menu {
   /* Centred under the header like the other big menus */
   grid-auto-flow: row;
   grid-auto-columns: auto;
-  grid-template-columns: repeat(4, 184px);
+  grid-template-columns: repeat(5, 176px);
   width: auto;
   gap: 8px;
   align-items: stretch;
