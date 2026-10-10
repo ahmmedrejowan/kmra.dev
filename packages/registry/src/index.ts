@@ -96,7 +96,10 @@ export type IconName =
   | "ruler"
   | "blend"
   | "contrast"
-  | "eye";
+  | "eye"
+  | "metronome"
+  | "guitar"
+  | "ear";
 
 export interface Tool {
   /** URL path segment, e.g. "resize" -> imgtool.kmra.dev/resize */
@@ -2393,6 +2396,59 @@ export const apps = [
       { slug: "monochromatic-colors", tool: "palette-generator", name: "Monochromatic colors", short: "One hue, many shades", group: "Schemes", title: "Monochromatic color palette", intro: "Lighter and darker versions of one colour, for a simple, unified look.", about: ["Tints and shades makes a full 50–950 scale."], preset: { scheme: "monochromatic" } },
       { slug: "tailwind-color-palette", tool: "shades", name: "Tailwind color scale", short: "50 to 950", group: "Design systems", title: "Tailwind color palette generator", intro: "Make a Tailwind-style 50–950 scale from your brand colour.", about: ["Paste the config into tailwind.config or the @theme block."], preset: { format: "tailwind" } },
       { slug: "linear-gradient", tool: "gradient-generator", name: "Linear gradient", short: "CSS linear-gradient", group: "Design systems", title: "CSS linear gradient generator", intro: "Make a linear gradient and copy the CSS.", about: ["Gradients mixed in OKLCH avoid the grey middle you get between some colours."], preset: { type: "linear" } },
+    ],
+  },
+  {
+    id: "musictool",
+    name: "Music tools",
+    brand: ["Music", "Tool"],
+    locales: ["en", "bn"],
+    short: "Music",
+    tagline:
+      "Tune your instrument, keep time and practise, right in your browser. Free, with no sign-up.",
+    accent: {
+      light: "#5b5bd6",
+      dark: "#8d8ff0",
+      softLight: "#eef0ff",
+      softDark: "#1d1f3a",
+    },
+    noFiles: true,
+    live: false,
+    devPort: 4330,
+    toolGroups: ["Tune", "Rhythm", "Sound", "Learn"],
+    popular: [
+      "tuner",
+      "metronome",
+      "guitar-tuner",
+      "ukulele-tuner",
+      "tap-tempo",
+      "tone-generator",
+      "chords",
+      "bass-tuner",
+      "scales",
+      "ear-trainer",
+    ],
+    tools: [
+      { slug: "tuner", title: "Online tuner (chromatic)", name: "Tuner", description: "Tune any instrument with your microphone: the note, how many cents sharp or flat, and a needle that settles when you're in tune.", blurb: "Microphone, any instrument", icon: "gauge", group: "Tune", ready: false, steps: ["Press Start and allow the microphone.", "Play one string or note.", "Tune until the needle sits in the middle."] },
+      { slug: "metronome", title: "Online metronome", name: "Metronome", description: "A steady metronome from 20 to 300 BPM with time signatures, accents, subdivisions, tap tempo and a speed trainer.", blurb: "BPM, time signatures", icon: "metronome", group: "Rhythm", ready: false, steps: ["Set the tempo, or tap it.", "Pick the time signature and accents.", "Press Start."] },
+      { slug: "tap-tempo", title: "Tap tempo: find the BPM", name: "Tap tempo", description: "Tap along to a song with a key or a button to find its tempo in beats per minute.", blurb: "Find a song's BPM", icon: "zap", group: "Rhythm", ready: false, steps: ["Play the song.", "Tap along to the beat.", "Read the BPM; it steadies as you tap."] },
+      { slug: "tone-generator", title: "Tone generator", name: "Tone generator", description: "Play a pure tone at any frequency or note, with sine, square, triangle and sawtooth waves, and sweeps.", blurb: "Any frequency or note", icon: "audioLines", group: "Sound", ready: false, steps: ["Pick a frequency or a note.", "Choose the wave and volume.", "Press Play; start quietly."] },
+      { slug: "drone", title: "Drone notes for practice", name: "Drone", description: "A steady, rich drone on any note to practise intonation and scales against.", blurb: "Practise against a note", icon: "volume", group: "Sound", ready: false, steps: ["Pick a note and octave.", "Add a fifth if you like.", "Play along and listen for the beating."] },
+      { slug: "chords", title: "Guitar and ukulele chord chart", name: "Chords", description: "Chord diagrams for guitar, ukulele and bass in every key, with the notes, and a play button to hear them.", blurb: "Diagrams in every key", icon: "guitar", group: "Learn", ready: false, steps: ["Pick the instrument.", "Pick a root and chord type.", "See the fingering and hear it."] },
+      { slug: "scales", title: "Scales on the fretboard and piano", name: "Scales", description: "Major, minor, pentatonic, blues and the modes on a guitar fretboard, ukulele or piano, in any key.", blurb: "Fretboard and piano", icon: "music", group: "Learn", ready: false, steps: ["Pick a key and a scale.", "Pick guitar, ukulele or piano.", "See the notes and play them."] },
+      { slug: "ear-trainer", title: "Ear training: intervals and chords", name: "Ear trainer", description: "Train your ear to name intervals and chords, with a score and the ones you miss coming back more often.", blurb: "Intervals and chords", icon: "ear", group: "Learn", ready: false, steps: ["Pick what to practise.", "Listen and choose the answer.", "Watch your score improve."] },
+    ],
+    tasks: [
+      { slug: "guitar-tuner", tool: "tuner", name: "Guitar tuner", short: "Standard EADGBE", group: "Instruments", title: "Guitar tuner", intro: "Tune a guitar with your microphone: standard tuning and the common alternatives.", about: ["Drop D, open G, DADGAD and half-step down are in the tuning list."], preset: { instrument: "guitar" } },
+      { slug: "ukulele-tuner", tool: "tuner", name: "Ukulele tuner", short: "GCEA", group: "Instruments", title: "Ukulele tuner", intro: "Tune a soprano, concert or tenor ukulele to GCEA, or low G and baritone.", about: ["Pluck one string at a time, away from other noise."], preset: { instrument: "ukulele" } },
+      { slug: "bass-tuner", tool: "tuner", name: "Bass tuner", short: "EADG, 4 and 5 strings", group: "Instruments", title: "Bass guitar tuner", intro: "Tune a 4- or 5-string bass with your microphone.", about: ["Low notes take a moment to settle; let the string ring."], preset: { instrument: "bass" } },
+      { slug: "violin-tuner", tool: "tuner", name: "Violin tuner", short: "GDAE", group: "Instruments", title: "Violin tuner", intro: "Tune a violin to G, D, A and E.", about: ["Tune the A first, then the others."], preset: { instrument: "violin" } },
+      { slug: "cello-tuner", tool: "tuner", name: "Cello tuner", short: "CGDA", group: "Instruments", title: "Cello tuner", intro: "Tune a cello to C, G, D and A.", about: ["Viola uses the same notes an octave higher; pick it in the list."], preset: { instrument: "cello" } },
+      { slug: "drop-d-tuning", tool: "tuner", name: "Drop D tuning", short: "DADGBE", group: "Instruments", title: "Drop D tuner", intro: "Tune your low E string down to D for drop D.", about: ["Only the sixth string changes: down a whole step from E to D."], preset: { instrument: "guitar", tuning: "drop-d" } },
+      { slug: "practice-metronome", tool: "metronome", name: "Practice metronome", short: "Start at 60 BPM", group: "Practice", title: "Metronome for practice", intro: "A simple 4/4 metronome at 60 BPM to practise slowly and build up.", about: ["The speed trainer raises the tempo a little every few bars."], preset: { bpm: 60 } },
+      { slug: "6-8-metronome", tool: "metronome", name: "6/8 metronome", short: "Compound time", group: "Practice", title: "6/8 time metronome", intro: "A metronome in 6/8 with the first and fourth beats accented.", about: ["6/8 is felt as two big beats of three."], preset: { beats: 6, unit: 8 } },
+      { slug: "440-hz-tone", tool: "tone-generator", name: "440 Hz tone", short: "A4 tuning note", group: "Practice", title: "440 Hz tone (A4)", intro: "Play the A4 tuning note at 440 Hz.", about: ["Some orchestras tune to 442 Hz; change the frequency to match."], preset: { freq: 440 } },
+      { slug: "ukulele-chords", tool: "chords", name: "Ukulele chords", short: "Every key", group: "Practice", title: "Ukulele chord chart", intro: "Ukulele chord diagrams for every key, with the notes.", about: ["Shapes are for GCEA tuning."], preset: { instrument: "ukulele" } },
     ],
   },
   {

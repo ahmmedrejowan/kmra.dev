@@ -23,7 +23,7 @@ const root = join(import.meta.dirname, "..", "apps", appId, "dist");
 // Same per-app permissions as each app's vercel.ts
 const camera = appId === "qrtool";
 const screen = appId === "vidtool";
-const mic = appId === "audiotool";
+const mic = appId === "audiotool" || appId === "musictool";
 
 const TYPES: Record<string, string> = {
   ".html": "text/html; charset=utf-8",

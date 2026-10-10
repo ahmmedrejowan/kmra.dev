@@ -1,0 +1,109 @@
+---
+import BaseLayout from "@kmra/ui/layouts/BaseLayout.astro";
+import PageHead from "@kmra/ui/components/PageHead.astro";
+import HowItWorks from "@kmra/ui/components/HowItWorks.astro";
+import PrivacyContent from "@kmra/ui/components/PrivacyContent.astro";
+import AboutContent from "@kmra/ui/components/AboutContent.astro";
+import AllTools from "@kmra/ui/components/AllTools.astro";
+import UseCases from "@kmra/ui/components/UseCases.astro";
+import MoreTools from "@kmra/ui/components/MoreTools.astro";
+import { brandName, getApp, localizeApp } from "@kmra/registry";
+import { pageLocale } from "@kmra/ui/lib/locale";
+import { lp, t as tr } from "@kmra/ui/lib/i18n";
+
+/** The non-tool pages, in any language. */
+interface Props {
+  page:
+    "how-it-works" | "privacy" | "about" | "tools" | "use-cases" | "more-tools";
+}
+
+const { page } = Astro.props;
+const locale = pageLocale(Astro);
+const T = (s: string, v?: Record<string, string | number>) => tr(locale, s, v);
+const app = localizeApp(getApp("musictool"), locale);
+const brand = brandName(app);
+const home = { label: app.name, href: lp(locale, "/") };
+
+const PAGES = {
+  "how-it-works": {
+    title: T("How your numbers stay on your device"),
+    description: T(
+      "kmra calculators run in your browser. What you type stays on your device, and the site is blocked from sending it anywhere.",
+    ),
+    crumb: T("How it works"),
+    icon: "shield",
+    intro: T(
+      "kmra calculators do all the maths in your browser, so what you type stays with you.",
+    ),
+  },
+  privacy: {
+    title: T("Privacy"),
+    description: T(
+      "What you type stays on your device. No accounts, no cookies. What kmra stores, and what it doesn't.",
+    ),
+    crumb: T("Privacy"),
+    icon: "shield",
+    intro: T(
+      "Short version: your numbers stay on your device, and nothing identifies you.",
+    ),
+  },
+  about: {
+    title: T("About"),
+    description: T(
+      "Small, private calculators for everyday numbers, from kmra.dev.",
+    ),
+    crumb: T("About"),
+    icon: "layers",
+    intro: T("Small, private calculators for everyday numbers."),
+  },
+  tools: {
+    title: T("All calculators"),
+    description: T(
+      "Every calculator, by category. All free, and everything runs in your browser.",
+    ),
+    crumb: T("All tools"),
+    icon: "grid",
+    intro: T(
+      "Every calculator, by category. All free, and everything runs in your browser.",
+    ),
+  },
+  "use-cases": {
+    title: T("Use cases"),
+    description: T(
+      "Calculators set up for everyday questions. Pick one and type your numbers.",
+    ),
+    crumb: T("Use cases"),
+    icon: "layers",
+    intro: T(
+      "Calculators set up for everyday questions. Pick one and type your numbers.",
+    ),
+  },
+  "more-tools": {
+    title: T("More tools from kmra"),
+    description: T(
+      "The same free, private tools for images, PDFs, video and more.",
+    ),
+    crumb: T("More tools"),
+    icon: "zap",
+    intro: T("The same free, private tools for images, PDFs, video and more."),
+  },
+} as const;
+const p = PAGES[page];
+---
+
+<BaseLayout appId="musictool" title={p.title} description={p.description}>
+  <PageHead
+    crumbs={[home, { label: p.crumb }]}
+    icon={p.icon}
+    title={page === "about" ? T("About {brand}", { brand }) : p.title}
+    intro={p.intro}
+  />
+  <div class="wrap page-body">
+    {page === "how-it-works" && <HowItWorks noFiles />}
+    {page === "privacy" && <PrivacyContent brand={brand} />}
+    {page === "about" && <AboutContent />}
+    {page === "tools" && <AllTools appId="musictool" />}
+    {page === "use-cases" && <UseCases appId="musictool" />}
+    {page === "more-tools" && <MoreTools appId="musictool" />}
+  </div>
+</BaseLayout>

@@ -8,6 +8,7 @@ import { BN_KMRA } from "../i18n/bn-kmra";
 import { BN_AUDIOTOOL } from "../i18n/bn-audiotool";
 import { BN_CALCTOOL } from "../i18n/bn-calctool";
 import { BN_COLORTOOL } from "../i18n/bn-colortool";
+import { BN_MUSICTOOL } from "../i18n/bn-musictool";
 
 /**
  * Languages. English lives at the root (/resize); every other language gets a path prefix
@@ -29,6 +30,7 @@ const DICTS: Partial<Record<Locale, Record<string, string>>> = {
     ...BN_AUDIOTOOL,
     ...BN_CALCTOOL,
     ...BN_COLORTOOL,
+    ...BN_MUSICTOOL,
     ...BN,
     ...BN_PDFTOOL,
     ...BN_QRTOOL,

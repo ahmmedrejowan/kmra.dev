@@ -26,6 +26,9 @@ export function markInner(appId: string): string {
         )
         .join("");
     }
+    case "musictool":
+      // A pair of eighth notes
+      return `<g fill="#fff"><ellipse cx="22" cy="44" rx="6.5" ry="5" transform="rotate(-20 22 44)"/><ellipse cx="42" cy="40" rx="6.5" ry="5" transform="rotate(-20 42 40)"/><rect x="26" y="17" width="4" height="27" rx="1.5"/><rect x="46" y="13" width="4" height="27" rx="1.5"/><path d="M26 17 50 13v7l-24 4z"/></g>`;
     case "calctool":
       // A calculator: screen and a grid of keys
       return `<rect x="17" y="11" width="30" height="42" rx="6" fill="#fff"/><rect x="22" y="16" width="20" height="8" rx="2" fill="#0a85ad"/>${[0, 1, 2]
