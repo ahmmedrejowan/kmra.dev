@@ -6,8 +6,10 @@ import { t as tr } from "../lib/i18n";
 /** `noFiles`: the app works on what you type (calculators, colours), not files */
 interface Props {
   noFiles?: boolean;
+  /** With noFiles: the app listens through the microphone (music) */
+  listens?: boolean;
 }
-const { noFiles = false } = Astro.props;
+const { noFiles = false, listens = false } = Astro.props;
 const locale = pageLocale(Astro);
 const T = (s: string) => tr(locale, s);
 ---
@@ -19,7 +21,9 @@ const T = (s: string) => tr(locale, s);
     </span>
     <div>
       <h2>
-        {noFiles
+        {listens
+          ? T("What you play stays on your device")
+          : noFiles
           ? T("What you type stays on your device")
           : T("Your files never leave your device")}
       </h2>

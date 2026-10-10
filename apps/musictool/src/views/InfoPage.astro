@@ -26,56 +26,56 @@ const home = { label: app.name, href: lp(locale, "/") };
 
 const PAGES = {
   "how-it-works": {
-    title: T("How your numbers stay on your device"),
+    title: T("How your music practice stays on your device"),
     description: T(
-      "kmra calculators run in your browser. What you type stays on your device, and the site is blocked from sending it anywhere.",
+      "kmra music tools run in your browser. The tuner listens on your device; the sound isn't recorded or sent, and the site is blocked from sending anything anywhere.",
     ),
     crumb: T("How it works"),
     icon: "shield",
     intro: T(
-      "kmra calculators do all the maths in your browser, so what you type stays with you.",
+      "kmra music tools make every sound and do all the listening in your browser, so nothing leaves your device.",
     ),
   },
   privacy: {
     title: T("Privacy"),
     description: T(
-      "What you type stays on your device. No accounts, no cookies. What kmra stores, and what it doesn't.",
+      "The microphone is only used by the tuner, on your device. No accounts, no cookies. What kmra stores, and what it doesn't.",
     ),
     crumb: T("Privacy"),
     icon: "shield",
     intro: T(
-      "Short version: your numbers stay on your device, and nothing identifies you.",
+      "Short version: what the tuner hears stays on your device, and nothing identifies you.",
     ),
   },
   about: {
     title: T("About"),
     description: T(
-      "Small, private calculators for everyday numbers, from kmra.dev.",
+      "A free tuner, metronome and practice tools that run in your browser, from kmra.dev.",
     ),
     crumb: T("About"),
     icon: "layers",
-    intro: T("Small, private calculators for everyday numbers."),
+    intro: T("A free tuner, metronome and practice tools that run in your browser."),
   },
   tools: {
-    title: T("All calculators"),
+    title: T("All music tools"),
     description: T(
-      "Every calculator, by category. All free, and everything runs in your browser.",
+      "Every music tool, by category. All free, and everything runs in your browser.",
     ),
     crumb: T("All tools"),
     icon: "grid",
     intro: T(
-      "Every calculator, by category. All free, and everything runs in your browser.",
+      "Every music tool, by category. All free, and everything runs in your browser.",
     ),
   },
   "use-cases": {
     title: T("Use cases"),
     description: T(
-      "Calculators set up for everyday questions. Pick one and type your numbers.",
+      "Tools set up for your instrument and practice. Pick one and start playing.",
     ),
     crumb: T("Use cases"),
     icon: "layers",
     intro: T(
-      "Calculators set up for everyday questions. Pick one and type your numbers.",
+      "Tools set up for your instrument and practice. Pick one and start playing.",
     ),
   },
   "more-tools": {
@@ -99,7 +99,7 @@ const p = PAGES[page];
     intro={p.intro}
   />
   <div class="wrap page-body">
-    {page === "how-it-works" && <HowItWorks noFiles />}
+    {page === "how-it-works" && <HowItWorks noFiles listens />}
     {page === "privacy" && <PrivacyContent brand={brand} />}
     {page === "about" && <AboutContent />}
     {page === "tools" && <AllTools appId="musictool" />}

@@ -183,8 +183,8 @@ export const BN: Record<string, string> = {
     "kmra.dev-এর প্রতিদিনের ফাইলের জন্য ছোট, ব্যক্তিগত টুল।",
   "Small, private tools for everyday files.":
     "প্রতিদিনের ফাইলের জন্য ছোট, ব্যক্তিগত টুল।",
-  "kmra.dev is a family of small, focused tools for everyday files: images, PDFs, video, audio, QR codes, text in pictures, code, colours and calculations. Each app lives on its own subdomain and does its work in your browser, so it's fast and your files stay private.":
-    "kmra.dev প্রতিদিনের ফাইলের জন্য ছোট, নির্দিষ্ট কাজের টুলের একটি পরিবার: ছবি, পিডিএফ, ভিডিও, অডিও, কিউআর কোড, ছবির লেখা, কোড, রং আর হিসাব। প্রতিটি অ্যাপ নিজস্ব সাবডোমেইনে থাকে আর কাজ করে আপনার ব্রাউজারে, তাই দ্রুত চলে আর ফাইল ব্যক্তিগত থাকে।",
+  "kmra.dev is a family of small, focused tools for everyday files: images, PDFs, video, audio, QR codes, text in pictures, code, colours, calculations and music. Each app lives on its own subdomain and does its work in your browser, so it's fast and your files stay private.":
+    "kmra.dev প্রতিদিনের ফাইলের জন্য ছোট, নির্দিষ্ট কাজের টুলের একটি পরিবার: ছবি, পিডিএফ, ভিডিও, অডিও, কিউআর কোড, ছবির লেখা, কোড, রং, হিসাব আর সংগীত। প্রতিটি অ্যাপ নিজস্ব সাবডোমেইনে থাকে আর কাজ করে আপনার ব্রাউজারে, তাই দ্রুত চলে আর ফাইল ব্যক্তিগত থাকে।",
   "A file you drop on kmra.dev is passed to the tool's site the same way, inside your browser.":
     "kmra.dev-এ ছেড়ে দেওয়া ফাইলও একইভাবে, আপনার ব্রাউজারের ভেতরেই, টুলের সাইটে পৌঁছায়।",
   "Private by design": "শুরু থেকেই ব্যক্তিগত",
@@ -685,8 +685,8 @@ export const BN: Record<string, string> = {
     "প্রতিদিনের কাজের জন্য তৈরি সেটিংস। একটি বেছে নিয়ে ফাইল দিন।",
   "More tools from kmra": "kmra-র আরও টুল",
   "More tools": "আরও টুল",
-  "Free, private tools for images, PDFs, video, audio, QR codes, text in pictures, code, colours and calculations. Everything runs on your device.":
-    "ছবি, পিডিএফ, ভিডিও, অডিও, কিউআর কোড, ছবির লেখা, কোড, রং আর হিসাবের জন্য বিনামূল্যের, ব্যক্তিগত টুল। সব কাজ হয় আপনার ডিভাইসে।",
+  "Free, private tools for images, PDFs, video, audio, QR codes, text in pictures, code, colours, calculations and music. Everything runs on your device.":
+    "ছবি, পিডিএফ, ভিডিও, অডিও, কিউআর কোড, ছবির লেখা, কোড, রং, হিসাব আর সংগীতের জন্য বিনামূল্যের, ব্যক্তিগত টুল। সব কাজ হয় আপনার ডিভাইসে।",
   "The same free, private tools for other kinds of files.":
     "অন্য ধরনের ফাইলের জন্যও একই রকম বিনামূল্যের, ব্যক্তিগত টুল।",
   "See all kmra tools": "kmra-র সব টুল দেখুন",
@@ -711,4 +711,13 @@ export const BN: Record<string, string> = {
   "Every kmra site sends a security policy that stops the page from contacting any other server. Even if there were a bug, your browser would refuse to send what you type anywhere.":
     "প্রতিটি kmra সাইট একটি নিরাপত্তা নীতি পাঠায়, যা পেজকে অন্য কোনো সার্ভারের সঙ্গে যোগাযোগ করতে দেয় না। কোনো ত্রুটি থাকলেও আপনার ব্রাউজার আপনি যা লেখেন তা কোথাও পাঠাতে দেবে না।",
   "Use any tool. Nothing is sent while it works.": "যেকোনো টুল ব্যবহার করুন। কাজ চলার সময় কিছুই পাঠানো হয় না।",
+  "Small, private tools. Everything runs in your browser, so what you play and type stays on your device.":
+    "ছোট, ব্যক্তিগত টুল। সব কাজ হয় আপনার ব্রাউজারে, তাই আপনি যা বাজান আর লেখেন তা আপনার ডিভাইসেই থাকে।",
+  "What you play stays on your device": "আপনি যা বাজান তা আপনার ডিভাইসেই থাকে",
+  "What the microphone hears is analysed in your device's memory and never recorded.":
+    "মাইক্রোফোন যা শোনে তার বিশ্লেষণ হয় আপনার ডিভাইসের মেমরিতে, কখনো রেকর্ড হয় না।",
+  "Every kmra site sends a security policy that stops the page from contacting any other server. Even if there were a bug, your browser would refuse to send the sound anywhere.":
+    "প্রতিটি kmra সাইট একটি নিরাপত্তা নীতি পাঠায়, যা পেজকে অন্য কোনো সার্ভারের সঙ্গে যোগাযোগ করতে দেয় না। কোনো ত্রুটি থাকলেও আপনার ব্রাউজার শব্দ কোথাও পাঠাতে দেবে না।",
+  "taps per minute": "প্রতি মিনিটে ট্যাপ",
+  Octave: "অক্টেভ",
 };

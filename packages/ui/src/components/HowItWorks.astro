@@ -7,8 +7,10 @@ import { num, t as tr } from "../lib/i18n";
 /** `noFiles`: the app works on what you type (calculators, colours), not files */
 interface Props {
   noFiles?: boolean;
+  /** With noFiles: the app listens through the microphone (music) */
+  listens?: boolean;
 }
-const { noFiles = false } = Astro.props;
+const { noFiles = false, listens = false } = Astro.props;
 const locale = pageLocale(Astro);
 const T = (s: string) => tr(locale, s);
 
@@ -21,7 +23,9 @@ const steps = [
   {
     icon: "zap",
     title: "Your browser does the work",
-    text: noFiles
+    text: listens
+      ? "What the microphone hears is analysed in your device's memory and never recorded."
+      : noFiles
       ? "What you type is worked out in your device's memory, right in the page."
       : "Your file is read and edited in your device's memory. It isn't sent anywhere.",
   },
@@ -60,7 +64,9 @@ const steps = [
     <h2>{T("Blocked by design")}</h2>
     <p>
       {T(
-        noFiles
+        listens
+          ? "Every kmra site sends a security policy that stops the page from contacting any other server. Even if there were a bug, your browser would refuse to send the sound anywhere."
+          : noFiles
           ? "Every kmra site sends a security policy that stops the page from contacting any other server. Even if there were a bug, your browser would refuse to send what you type anywhere."
           : "Every kmra site sends a security policy that stops the page from contacting any other server. Even if there were a bug, your browser would refuse to send your file anywhere.",
       )}

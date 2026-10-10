@@ -35,7 +35,7 @@ const site = Astro.site ?? new URL("https://kmra.dev");
 const desc =
   description ??
   T(
-    "{n} free tools for images, PDFs, video, audio, QR codes, text in pictures, code, colours and calculations. Everything runs in your browser, so your files stay on your device.",
+    "{n} free tools for images, PDFs, video, audio, QR codes, text in pictures, code, colours, calculations and music. Everything runs in your browser, so your files stay on your device.",
     { n: totalTools },
   );
 const path = Astro.url.pathname
@@ -181,7 +181,12 @@ const cols = Array.from({ length: Math.ceil(apps.length / 2) }, (_, i) => [
                 {T("Apps")} <Icon name="down" />
               </button>
               <div class="mega apps-menu" id="m-apps" hidden>
-                <h6>{T("kmra apps")}</h6>
+                <div class="apps-head">
+                  <h6>{T("kmra apps")}</h6>
+                  <span class="apps-more">
+                    <a href={L("/tools")}>{T("All {n} tools", { n: totalTools })}</a>
+                  </span>
+                </div>
                 {apps.map((a) => (
                   <a class="app-item" href={link(a.id, "/", lang)} style={`--app:${a.accent.light}`}>
                     <span class="app-item-mark" set:html={markSvg(a.id, a.accent.light)} aria-hidden="true" />
@@ -195,9 +200,6 @@ const cols = Array.from({ length: Math.ceil(apps.length / 2) }, (_, i) => [
                     </span>
                   </a>
                 ))}
-                <div class="apps-more">
-                  <a href={L("/tools")}>{T("All {n} tools", { n: totalTools })}</a>
-                </div>
               </div>
             </div>
             <a class="navlink" href={L("/privacy")}>{T("Privacy")}</a>

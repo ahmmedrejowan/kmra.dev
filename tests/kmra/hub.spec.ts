@@ -19,8 +19,9 @@ const PORTS: Record<string, number> = {
   "audiotool.kmra.dev": 4608,
   "calctool.kmra.dev": 4609,
   "colortool.kmra.dev": 4610,
+  "musictool.kmra.dev": 4611,
 };
-const APPS = ["imgtool", "pdftool", "vidtool", "devtool", "qrtool", "ocrtool", "audiotool", "calctool", "colortool"];
+const APPS = ["imgtool", "pdftool", "vidtool", "devtool", "qrtool", "ocrtool", "audiotool", "calctool", "colortool", "musictool"];
 
 /** Serve https://kmra.dev and https://<app>.kmra.dev from the local builds */
 async function realSites(context: BrowserContext) {
@@ -234,7 +235,7 @@ test("privacy, about, 404, icons, share images, sitemap and robots", async ({
   await page.goto("/privacy");
   await expect(page.locator("main")).toContainText("is passed to the tool's site");
   await page.goto("/about");
-  await expect(page.locator("main")).toContainText("video, audio, QR codes, text in pictures, code, colours and calculations");
+  await expect(page.locator("main")).toContainText("video, audio, QR codes, text in pictures, code, colours, calculations and music");
   const nf = await page.request.get("/nope");
   expect(nf.status()).toBe(404);
   expect(await nf.text()).toContain("<title>Page not found · kmra.dev</title>");

@@ -168,6 +168,8 @@ export interface App {
   locales?: readonly string[];
   /** The tools work on what you type, not files (calculators, colours): copy says so */
   noFiles?: boolean;
+  /** With noFiles: the tools listen through the microphone (music), and the copy says so */
+  listens?: boolean;
 }
 
 export const apps = [
@@ -2413,7 +2415,8 @@ export const apps = [
       softDark: "#1d1f3a",
     },
     noFiles: true,
-    live: false,
+    listens: true,
+    live: true,
     devPort: 4330,
     toolGroups: ["Tune", "Rhythm", "Sound", "Learn"],
     popular: [
@@ -2429,14 +2432,14 @@ export const apps = [
       "ear-trainer",
     ],
     tools: [
-      { slug: "tuner", title: "Online tuner (chromatic)", name: "Tuner", description: "Tune any instrument with your microphone: the note, how many cents sharp or flat, and a needle that settles when you're in tune.", blurb: "Microphone, any instrument", icon: "gauge", group: "Tune", ready: false, steps: ["Press Start and allow the microphone.", "Play one string or note.", "Tune until the needle sits in the middle."] },
-      { slug: "metronome", title: "Online metronome", name: "Metronome", description: "A steady metronome from 20 to 300 BPM with time signatures, accents, subdivisions, tap tempo and a speed trainer.", blurb: "BPM, time signatures", icon: "metronome", group: "Rhythm", ready: false, steps: ["Set the tempo, or tap it.", "Pick the time signature and accents.", "Press Start."] },
-      { slug: "tap-tempo", title: "Tap tempo: find the BPM", name: "Tap tempo", description: "Tap along to a song with a key or a button to find its tempo in beats per minute.", blurb: "Find a song's BPM", icon: "zap", group: "Rhythm", ready: false, steps: ["Play the song.", "Tap along to the beat.", "Read the BPM; it steadies as you tap."] },
-      { slug: "tone-generator", title: "Tone generator", name: "Tone generator", description: "Play a pure tone at any frequency or note, with sine, square, triangle and sawtooth waves, and sweeps.", blurb: "Any frequency or note", icon: "audioLines", group: "Sound", ready: false, steps: ["Pick a frequency or a note.", "Choose the wave and volume.", "Press Play; start quietly."] },
-      { slug: "drone", title: "Drone notes for practice", name: "Drone", description: "A steady, rich drone on any note to practise intonation and scales against.", blurb: "Practise against a note", icon: "volume", group: "Sound", ready: false, steps: ["Pick a note and octave.", "Add a fifth if you like.", "Play along and listen for the beating."] },
-      { slug: "chords", title: "Guitar and ukulele chord chart", name: "Chords", description: "Chord diagrams for guitar, ukulele and bass in every key, with the notes, and a play button to hear them.", blurb: "Diagrams in every key", icon: "guitar", group: "Learn", ready: false, steps: ["Pick the instrument.", "Pick a root and chord type.", "See the fingering and hear it."] },
-      { slug: "scales", title: "Scales on the fretboard and piano", name: "Scales", description: "Major, minor, pentatonic, blues and the modes on a guitar fretboard, ukulele or piano, in any key.", blurb: "Fretboard and piano", icon: "music", group: "Learn", ready: false, steps: ["Pick a key and a scale.", "Pick guitar, ukulele or piano.", "See the notes and play them."] },
-      { slug: "ear-trainer", title: "Ear training: intervals and chords", name: "Ear trainer", description: "Train your ear to name intervals and chords, with a score and the ones you miss coming back more often.", blurb: "Intervals and chords", icon: "ear", group: "Learn", ready: false, steps: ["Pick what to practise.", "Listen and choose the answer.", "Watch your score improve."] },
+      { slug: "tuner", title: "Online tuner (chromatic)", name: "Tuner", description: "Tune any instrument with your microphone: the note, how many cents sharp or flat, and a needle that settles when you're in tune.", blurb: "Microphone, any instrument", icon: "gauge", group: "Tune", ready: true, steps: ["Press Start and allow the microphone.", "Play one string or note.", "Tune until the needle sits in the middle."] },
+      { slug: "metronome", title: "Online metronome", name: "Metronome", description: "A steady metronome from 20 to 300 BPM with time signatures, accents, subdivisions, tap tempo and a speed trainer.", blurb: "BPM, time signatures", icon: "metronome", group: "Rhythm", ready: true, steps: ["Set the tempo, or tap it.", "Pick the time signature and accents.", "Press Start."] },
+      { slug: "tap-tempo", title: "Tap tempo: find the BPM", name: "Tap tempo", description: "Tap along to a song with a key or a button to find its tempo in beats per minute.", blurb: "Find a song's BPM", icon: "zap", group: "Rhythm", ready: true, steps: ["Play the song.", "Tap along to the beat.", "Read the BPM; it steadies as you tap."] },
+      { slug: "tone-generator", title: "Tone generator", name: "Tone generator", description: "Play a pure tone at any frequency or note, with sine, square, triangle and sawtooth waves, and sweeps.", blurb: "Any frequency or note", icon: "audioLines", group: "Sound", ready: true, steps: ["Pick a frequency or a note.", "Choose the wave and volume.", "Press Play; start quietly."] },
+      { slug: "drone", title: "Drone notes for practice", name: "Drone", description: "A steady, rich drone on any note to practise intonation and scales against.", blurb: "Practise against a note", icon: "volume", group: "Sound", ready: true, steps: ["Pick a note and octave.", "Add a fifth if you like.", "Play along and listen for the beating."] },
+      { slug: "chords", title: "Guitar and ukulele chord chart", name: "Chords", description: "Chord diagrams for guitar, ukulele and bass in every key, with the notes, and a play button to hear them.", blurb: "Diagrams in every key", icon: "guitar", group: "Learn", ready: true, steps: ["Pick the instrument.", "Pick a root and chord type.", "See the fingering and hear it."] },
+      { slug: "scales", title: "Scales on the fretboard and piano", name: "Scales", description: "Major, minor, pentatonic, blues and the modes on a guitar fretboard, ukulele or piano, in any key.", blurb: "Fretboard and piano", icon: "music", group: "Learn", ready: true, steps: ["Pick a key and a scale.", "Pick guitar, ukulele or piano.", "See the notes and play them."] },
+      { slug: "ear-trainer", title: "Ear training: intervals and chords", name: "Ear trainer", description: "Train your ear to name intervals and chords, with a score and the ones you miss coming back more often.", blurb: "Intervals and chords", icon: "ear", group: "Learn", ready: true, steps: ["Pick what to practise.", "Listen and choose the answer.", "Watch your score improve."] },
     ],
     tasks: [
       { slug: "guitar-tuner", tool: "tuner", name: "Guitar tuner", short: "Standard EADGBE", group: "Instruments", title: "Guitar tuner", intro: "Tune a guitar with your microphone: standard tuning and the common alternatives.", about: ["Drop D, open G, DADGAD and half-step down are in the tuning list."], preset: { instrument: "guitar" } },
@@ -3991,7 +3994,7 @@ export const HUB = {
   brand: ["kmra", ".dev"],
   short: "kmra.dev",
   tagline:
-    "Free tools for images, PDFs, video, audio, QR codes, text in pictures, code, colours and calculations. Everything runs in your browser.",
+    "Free tools for images, PDFs, video, audio, QR codes, text in pictures, code, colours, calculations and music. Everything runs in your browser.",
   accent: {
     light: "#18181b",
     dark: "#f4f4f5",

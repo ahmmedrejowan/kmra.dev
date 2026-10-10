@@ -71,7 +71,11 @@ const taskList = app.tasks
           )}
         </span>
         <p>
-          {app.noFiles
+          {app.listens
+            ? T(
+                "Small, private tools. Everything runs in your browser, so what you play and type stays on your device.",
+              )
+            : app.noFiles
             ? T(
                 "Small, private tools. Everything runs in your browser, so what you type stays on your device.",
               )

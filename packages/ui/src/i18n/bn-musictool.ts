@@ -1,2 +1,299 @@
 /** Bangla strings used only by musictool (apps/musictool), keyed by the English text */
-export const BN_MUSICTOOL: Record<string, string> = {};
+export const BN_MUSICTOOL: Record<string, string> = {
+  // Pages
+  "Free online tuner, metronome and music tools":
+    "বিনামূল্যের অনলাইন টিউনার, মেট্রোনোম ও মিউজিক টুল",
+  "Tune, keep time and practise": "টিউন করুন, তাল রাখুন, অনুশীলন করুন",
+  "A tuner, a metronome, chords, scales and ear training, all in your browser. Start the metronome below.":
+    "টিউনার, মেট্রোনোম, কর্ড, স্কেল আর কান তৈরির অনুশীলন, সবই আপনার ব্রাউজারে। নিচের মেট্রোনোমটি চালিয়ে দেখুন।",
+  "Music tools": "মিউজিক টুল",
+  "Ready-made settings for your instrument and practice.":
+    "আপনার বাদ্যযন্ত্র আর অনুশীলনের জন্য তৈরি সেটিংস।",
+  "What happens with the microphone?": "মাইক্রোফোনে যা শোনে তার কী হয়?",
+  "The tuner listens on your device while it's on; the sound isn't recorded or sent. Press Stop and the microphone is released.":
+    "টিউনার চালু থাকার সময় আপনার ডিভাইসেই শোনে; শব্দ রেকর্ড হয় না, কোথাও পাঠানোও হয় না। থামান চাপলেই মাইক্রোফোন ছেড়ে দেওয়া হয়।",
+  "No. Every sound is made in your browser, and your settings stay on your device.":
+    "না। প্রতিটি শব্দ তৈরি হয় আপনার ব্রাউজারে, আর আপনার সেটিংস আপনার ডিভাইসেই থাকে।",
+  "How accurate is the tuner?": "টিউনার কতটা নির্ভুল?",
+  "Within about a cent for a clear, steady note. Pluck one string at a time, close to the microphone, and away from other noise.":
+    "পরিষ্কার, স্থির সুরে প্রায় এক সেন্টের মধ্যে। একবারে একটি তার বাজান, মাইক্রোফোনের কাছে, অন্য শব্দ থেকে দূরে।",
+  "Why can't I hear anything?": "কিছু শুনতে পাচ্ছি না কেন?",
+  "Check that your device isn't muted and the volume is up. Browsers only play sound after you press a button on the page.":
+    "দেখুন ডিভাইস মিউট করা নেই আর ভলিউম বাড়ানো আছে। পাতায় কোনো বোতাম চাপার পরেই ব্রাউজার শব্দ বাজায়।",
+  "More tools for tuning, timing and practice.":
+    "টিউনিং, তাল আর অনুশীলনের আরও টুল।",
+  "All {n} music tools": "সব {n}টি মিউজিক টুল",
+  "All music tools": "সব মিউজিক টুল",
+  "How your music practice stays on your device":
+    "আপনার অনুশীলন যেভাবে আপনার ডিভাইসেই থাকে",
+  "kmra music tools run in your browser. The tuner listens on your device; the sound isn't recorded or sent, and the site is blocked from sending anything anywhere.":
+    "kmra-র মিউজিক টুল চলে আপনার ব্রাউজারে। টিউনার আপনার ডিভাইসেই শোনে; শব্দ রেকর্ড হয় না, পাঠানোও হয় না, আর সাইটটি কোথাও কিছু পাঠাতে পারে না।",
+  "kmra music tools make every sound and do all the listening in your browser, so nothing leaves your device.":
+    "kmra-র মিউজিক টুল সব শব্দ তৈরি করে আর সব শোনার কাজ করে আপনার ব্রাউজারে, তাই কিছুই আপনার ডিভাইসের বাইরে যায় না।",
+  "The microphone is only used by the tuner, on your device. No accounts, no cookies. What kmra stores, and what it doesn't.":
+    "মাইক্রোফোন শুধু টিউনার ব্যবহার করে, আপনার ডিভাইসেই। কোনো অ্যাকাউন্ট নেই, কুকি নেই। kmra কী রাখে আর কী রাখে না।",
+  "Short version: what the tuner hears stays on your device, and nothing identifies you.":
+    "সংক্ষেপে: টিউনার যা শোনে তা আপনার ডিভাইসেই থাকে, আর কিছুই আপনাকে শনাক্ত করে না।",
+  "A free tuner, metronome and practice tools that run in your browser, from kmra.dev.":
+    "kmra.dev-এর বিনামূল্যের টিউনার, মেট্রোনোম আর অনুশীলনের টুল, যা চলে আপনার ব্রাউজারে।",
+  "A free tuner, metronome and practice tools that run in your browser.":
+    "বিনামূল্যের টিউনার, মেট্রোনোম আর অনুশীলনের টুল, যা চলে আপনার ব্রাউজারে।",
+  "Every music tool, by category. All free, and everything runs in your browser.":
+    "বিভাগ অনুযায়ী সব মিউজিক টুল। সবই বিনামূল্যে, আর সব কাজ হয় আপনার ব্রাউজারে।",
+  "Tools set up for your instrument and practice. Pick one and start playing.":
+    "আপনার বাদ্যযন্ত্র আর অনুশীলনের জন্য সাজানো টুল। একটি বেছে নিয়ে বাজানো শুরু করুন।",
+
+  // Shared controls
+  Note: "নোট",
+  Octave: "অক্টেভ",
+  "Octave {n}": "অক্টেভ {n}",
+  Instrument: "বাদ্যযন্ত্র",
+  Tuning: "টিউনিং",
+  Root: "রুট",
+  Chord: "কর্ড",
+  Scale: "স্কেল",
+  Tap: "ট্যাপ",
+  tap: "ট্যাপ",
+  Next: "পরেরটি",
+  next: "পরেরটি",
+  cents: "সেন্ট",
+  s: "সে.",
+  Frequency: "কম্পাঙ্ক",
+  "Reference pitch A4": "রেফারেন্স পিচ A4",
+  "Common reference pitches": "প্রচলিত রেফারেন্স পিচ",
+
+  // Instruments and tunings
+  Chromatic: "ক্রোমাটিক",
+  Guitar: "গিটার",
+  guitar: "গিটার",
+  Ukulele: "ইউকুলেলে",
+  ukulele: "ইউকুলেলে",
+  Bass: "বেজ",
+  Violin: "বেহালা",
+  Viola: "ভায়োলা",
+  Cello: "চেলো",
+  Mandolin: "ম্যান্ডোলিন",
+  Piano: "পিয়ানো",
+  Standard: "স্ট্যান্ডার্ড",
+  "Drop D": "ড্রপ D",
+  "Half-step down": "অর্ধেক ধাপ নিচে",
+  "Open G": "ওপেন G",
+  "Open D": "ওপেন D",
+  DADGAD: "DADGAD",
+  "Standard (GCEA)": "স্ট্যান্ডার্ড (GCEA)",
+  "Low G": "লো G",
+  "Baritone (DGBE)": "ব্যারিটোন (DGBE)",
+  "4 strings (EADG)": "৪ তার (EADG)",
+  "5 strings (BEADG)": "৫ তার (BEADG)",
+  "Standard (GDAE)": "স্ট্যান্ডার্ড (GDAE)",
+  "Standard (CGDA)": "স্ট্যান্ডার্ড (CGDA)",
+
+  // Tuner
+  "Press Start and allow the microphone. The tuner listens on your device; the sound isn't recorded or sent.":
+    "শুরু চাপুন আর মাইক্রোফোনের অনুমতি দিন। টিউনার আপনার ডিভাইসেই শোনে; শব্দ রেকর্ড হয় না, পাঠানোও হয় না।",
+  "Allow the microphone in your browser's prompt.":
+    "ব্রাউজারের বার্তায় মাইক্রোফোনের অনুমতি দিন।",
+  "The microphone is blocked. Allow it for this site in your browser's address bar, then press Start again.":
+    "মাইক্রোফোন বন্ধ করা আছে। ব্রাউজারের ঠিকানা বার থেকে এই সাইটের জন্য অনুমতি দিন, তারপর আবার শুরু চাপুন।",
+  "No microphone was found. Connect one, then press Start again.":
+    "কোনো মাইক্রোফোন পাওয়া যায়নি। একটি লাগিয়ে আবার শুরু চাপুন।",
+  "Another app is using the microphone. Close it, then press Start again.":
+    "অন্য একটি অ্যাপ মাইক্রোফোন ব্যবহার করছে। সেটি বন্ধ করে আবার শুরু চাপুন।",
+  "This browser can't use the microphone on this page.":
+    "এই ব্রাউজার এই পাতায় মাইক্রোফোন ব্যবহার করতে পারছে না।",
+  "The microphone couldn't start. Check that one is connected, then press Start again.":
+    "মাইক্রোফোন চালু হলো না। লাগানো আছে কিনা দেখে আবার শুরু চাপুন।",
+  "In tune": "সুরে আছে",
+  "Tune up to {note}": "{note}-এ তুলুন",
+  "Tune down to {note}": "{note}-এ নামান",
+  "Flat: tune up": "নিচু: সুর তুলুন",
+  "Sharp: tune down": "উঁচু: সুর নামান",
+  "Play a note": "একটি নোট বাজান",
+  "Strings: play a reference tone": "তার: রেফারেন্স সুর বাজান",
+  "Play {note}": "{note} বাজান",
+  "Within ±{n} cents counts as in tune. Pluck one string at a time and let it ring.":
+    "±{n} সেন্টের মধ্যে থাকলে সুরে আছে ধরা হয়। একবারে একটি তার বাজান আর বাজতে দিন।",
+  "Tuning meter": "টিউনিং মিটার",
+
+  // Metronome
+  Slower: "ধীরে",
+  Faster: "দ্রুত",
+  Tempo: "টেম্পো",
+  "Beats: click a beat to change its accent":
+    "বিট: অ্যাকসেন্ট বদলাতে কোনো বিটে ক্লিক করুন",
+  "Beat {n}: {level}": "বিট {n}: {level}",
+  accent: "অ্যাকসেন্ট",
+  normal: "সাধারণ",
+  muted: "নীরব",
+  eighths: "অষ্টমাংশ",
+  triplets: "ট্রিপলেট",
+  sixteenths: "ষোড়শাংশ",
+  "speed trainer on": "স্পিড ট্রেনার চালু",
+  "start or stop": "চালু বা বন্ধ",
+  "tempo ±1 (Shift ±10)": "টেম্পো ±১ (Shift দিয়ে ±১০)",
+  "Time signature": "টাইম সিগনেচার",
+  "Beats per bar": "প্রতি বারে বিট",
+  "Beat unit": "বিটের একক",
+  Subdivision: "উপবিভাগ",
+  "8ths": "৮ভাগ",
+  Triplets: "ট্রিপলেট",
+  "16ths": "১৬ভাগ",
+  Click: "ক্লিক",
+  Wood: "কাঠ",
+  Beep: "বিপ",
+  "Speed trainer": "স্পিড ট্রেনার",
+  "Raise by": "বাড়বে",
+  "Up to": "সর্বোচ্চ",
+  bars: "বার",
+  "Adds {step} BPM every {every} bars until {max} BPM.":
+    "প্রতি {every} বার পরপর {step} BPM করে বাড়বে, {max} BPM পর্যন্ত।",
+  "Start the metronome": "মেট্রোনোম চালু করুন",
+  "Full metronome": "পুরো মেট্রোনোম",
+  "Open the tuner": "টিউনার খুলুন",
+
+  // Tap tempo
+  "Tap here, or press Space, in time with the beat":
+    "তালে তালে এখানে ট্যাপ করুন, বা Space চাপুন",
+  "Keep tapping": "ট্যাপ করতে থাকুন",
+  "{n} taps": "{n}টি ট্যাপ",
+  "start over": "নতুন করে শুরু",
+  "Start over": "নতুন করে শুরু",
+  "Nearest whole BPM": "কাছাকাছি পূর্ণ BPM",
+  "Tempo marking": "টেম্পোর নাম",
+  Steadiness: "স্থিরতা",
+  Steady: "স্থির",
+  Settling: "স্থির হচ্ছে",
+  Uneven: "অসমান",
+  "Beat length": "এক বিটের দৈর্ঘ্য",
+  "The BPM is the median of your last eight taps, so one early or late tap barely moves it. Pause for two seconds to start over.":
+    "BPM হলো আপনার শেষ আটটি ট্যাপের মধ্যমা, তাই একটি আগে বা পরে পড়া ট্যাপে তেমন বদলায় না। নতুন করে শুরু করতে দুই সেকেন্ড থামুন।",
+  "Click on each tap": "প্রতি ট্যাপে ক্লিক শব্দ",
+  "Use in metronome": "মেট্রোনোমে ব্যবহার করুন",
+
+  // Tone generator
+  "Play the sweep": "সুইপ বাজান",
+  "Start quietly. Turn the volume up slowly: high or loud tones can hurt your ears and speakers.":
+    "আস্তে শুরু করুন। ভলিউম ধীরে ধীরে বাড়ান: উঁচু বা জোরালো সুর কান আর স্পিকারের ক্ষতি করতে পারে।",
+  "play or stop": "চালান বা থামান",
+  "Or pick a note (A4 = 440 Hz)": "বা একটি নোট বেছে নিন (A4 = ৪৪০ Hz)",
+  "Common tones": "প্রচলিত সুর",
+  Wave: "তরঙ্গ",
+  Sine: "সাইন",
+  Square: "বর্গ",
+  Triangle: "ত্রিভুজ",
+  Sawtooth: "করাত",
+  Balance: "ব্যালান্স",
+  "Sweep from one frequency to another": "এক কম্পাঙ্ক থেকে আরেকটিতে সুইপ",
+  To: "পর্যন্ত",
+  Curve: "ধরন",
+  Log: "লগ",
+
+  // Drone
+  "with the fifth": "পঞ্চমসহ",
+  "with the octave": "অক্টেভসহ",
+  "Add the fifth": "পঞ্চম যোগ করুন",
+  "Add the octave": "অক্টেভ যোগ করুন",
+  Organ: "অর্গান",
+  Pure: "বিশুদ্ধ",
+  "Play or sing against the drone. When a note is slightly out, you hear a slow wobble (beating); it stops when you're in tune.":
+    "ড্রোনের সাথে বাজান বা গান। সুর একটু সরে গেলে ধীর একটা দোলা (বিটিং) শোনা যায়; সুরে এলে সেটা থেমে যায়।",
+
+  // Chords
+  "No playable shape for this chord on this instrument.":
+    "এই বাদ্যযন্ত্রে এই কর্ডের বাজানোর মতো কোনো শেপ নেই।",
+  "Previous shape": "আগের শেপ",
+  "Next shape": "পরের শেপ",
+  "Shape {n} of {total}": "শেপ {n} / {total}",
+  "Notes in the chord": "কর্ডের নোট",
+  Strum: "স্ট্রাম",
+  "Note by note": "একটি একটি করে",
+  "Standard tuning, EADGBE.": "স্ট্যান্ডার্ড টিউনিং, EADGBE।",
+  "GCEA tuning (soprano, concert and tenor).":
+    "GCEA টিউনিং (সোপ্রানো, কনসার্ট আর টেনর)।",
+  "4-string bass, EADG: root, fifth and octave shapes.":
+    "৪ তারের বেজ, EADG: রুট, পঞ্চম আর অক্টেভের শেপ।",
+  "{n}fr": "{n}ফ্রেট",
+  Major: "মেজর",
+  Minor: "মাইনর",
+  "Dominant 7th": "ডমিন্যান্ট সেভেন্থ",
+  "Major 7th": "মেজর সেভেন্থ",
+  "Minor 7th": "মাইনর সেভেন্থ",
+  "Suspended 2nd": "সাসপেন্ডেড সেকেন্ড",
+  "Suspended 4th": "সাসপেন্ডেড ফোর্থ",
+  "7th suspended 4th": "সেভেন্থ সাসপেন্ডেড ফোর্থ",
+  Diminished: "ডিমিনিশড",
+  "Diminished 7th": "ডিমিনিশড সেভেন্থ",
+  "Half-diminished": "হাফ-ডিমিনিশড",
+  Augmented: "অগমেন্টেড",
+  "Major 6th": "মেজর সিক্সথ",
+  "Minor 6th": "মাইনর সিক্সথ",
+  "Added 9th": "অ্যাডেড নাইন্থ",
+  "Dominant 9th": "ডমিন্যান্ট নাইন্থ",
+  "Minor 9th": "মাইনর নাইন্থ",
+  "Major 9th": "মেজর নাইন্থ",
+  "Power chord": "পাওয়ার কর্ড",
+
+  // Scales
+  "Notes in the scale": "স্কেলের নোট",
+  "{scale} on the {instrument} fretboard": "{instrument}-এর ফ্রেটবোর্ডে {scale}",
+  "Play up": "উপরের দিকে বাজান",
+  Down: "নিচের দিকে",
+  "Up and down": "উপরে ও নিচে",
+  "Show on": "দেখান",
+  Frets: "ফ্রেট",
+  Labels: "লেবেল",
+  "Note names": "নোটের নাম",
+  "Natural minor": "ন্যাচারাল মাইনর",
+  "Harmonic minor": "হারমোনিক মাইনর",
+  "Melodic minor": "মেলোডিক মাইনর",
+  "Major pentatonic": "মেজর পেন্টাটনিক",
+  "Minor pentatonic": "মাইনর পেন্টাটনিক",
+  Blues: "ব্লুজ",
+  Ionian: "আয়োনিয়ান",
+  Dorian: "ডোরিয়ান",
+  Phrygian: "ফ্রিজিয়ান",
+  Lydian: "লিডিয়ান",
+  Mixolydian: "মিক্সোলিডিয়ান",
+  Aeolian: "এওলিয়ান",
+  Locrian: "লোক্রিয়ান",
+  "Piano keyboard": "পিয়ানোর কিবোর্ড",
+
+  // Ear trainer
+  Score: "স্কোর",
+  Streak: "টানা ঠিক",
+  "Best streak": "সবচেয়ে বেশি টানা",
+  "Press Start, listen, then pick the answer.":
+    "শুরু চাপুন, শুনুন, তারপর উত্তর বেছে নিন।",
+  "Which interval was that?": "এটা কোন ইন্টারভাল?",
+  "Which chord was that?": "এটা কোন কর্ড?",
+  "Which degree of the scale was the last note? (key of {key})":
+    "শেষ নোটটি স্কেলের কোন ডিগ্রি? ({key} স্কেল)",
+  "Right: {answer}": "ঠিক: {answer}",
+  "Not quite: it was {answer}": "হয়নি: এটা ছিল {answer}",
+  Answers: "উত্তর",
+  "Play again": "আবার বাজান",
+  "play again": "আবার বাজান",
+  answer: "উত্তর",
+  Practise: "অনুশীলন",
+  Intervals: "ইন্টারভাল",
+  Chords: "কর্ড",
+  "Scale degrees": "স্কেলের ডিগ্রি",
+  "Intervals to practise": "যে ইন্টারভাল অনুশীলন করবেন",
+  "Chords to practise": "যে কর্ড অনুশীলন করবেন",
+  Rising: "উঠতি",
+  Falling: "নামতি",
+  Together: "একসাথে",
+  "One by one": "একটি একটি করে",
+  "A short chord progression sets the key, then one note plays. Name its degree: 1 is the key note.":
+    "ছোট একটি কর্ডের ধারা স্কেলটি বুঝিয়ে দেয়, তারপর একটি নোট বাজে। সেটির ডিগ্রি বলুন: ১ হলো মূল নোট।",
+  "The ones you miss come back more often. Your progress is kept in this browser only.":
+    "যেগুলো ভুল হয় সেগুলো বেশি বেশি আসে। আপনার অগ্রগতি শুধু এই ব্রাউজারেই থাকে।",
+  "Reset score and progress": "স্কোর আর অগ্রগতি মুছুন",
+  "Minor 2nd": "মাইনর সেকেন্ড",
+  "Major 2nd": "মেজর সেকেন্ড",
+  "Minor 3rd": "মাইনর থার্ড",
+  "Major 3rd": "মেজর থার্ড",
+  "Perfect 4th": "পারফেক্ট ফোর্থ",
+  Tritone: "ট্রাইটোন",
+  "Perfect 5th": "পারফেক্ট ফিফথ",
+};

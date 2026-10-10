@@ -161,7 +161,17 @@ const appHref = (a: App) =>
             {T("Apps")} <Icon name="down" />
           </button>
           <div class="mega apps-menu" id="m-apps" hidden>
-            <h6>{T("kmra apps")}</h6>
+            <div class="apps-head">
+              <h6>{T("kmra apps")}</h6>
+              <span class="apps-more">
+                <a href={L("/more-tools")}>{T("See all kmra tools")}</a>
+                {HUB.live && (
+                  <a href={hubLink(locale, "/", dev)}>
+                    {T("Every app on kmra.dev")}
+                  </a>
+                )}
+              </span>
+            </div>
             {liveApps.map((raw) => {
               const a = localizeApp(raw, locale);
               const ready = a.tools.filter((t) => t.ready).length;
@@ -201,14 +211,6 @@ const appHref = (a: App) =>
                 </a>
               );
             })}
-            <div class="apps-more">
-              <a href={L("/more-tools")}>{T("See all kmra tools")}</a>
-              {HUB.live && (
-                <a href={hubLink(locale, "/", dev)}>
-                  {T("Every app on kmra.dev")}
-                </a>
-              )}
-            </div>
           </div>
         </div>
 

@@ -43,13 +43,13 @@ const chips = (app.popular ?? []).flatMap((slug) => {
 const count = app.tools.filter((t) => t.ready).length;
 ---
 
-<BaseLayout appId="musictool" title={T("Free online calculators")}>
+<BaseLayout appId="musictool" title={T("Free online tuner, metronome and music tools")}>
   <section class="hero-band screen">
     <div class="wrap hero-center">
-      <h1 class="display">{T("Calculators for everyday numbers")}</h1>
+      <h1 class="display">{T("Tune, keep time and practise")}</h1>
       <p class="lede">
         {T(
-          "Percentages, loans, dates, units and everyday sums, worked out as you type. Try a quick sum below.",
+          "A tuner, a metronome, chords, scales and ear training, all in your browser. Start the metronome below.",
         )}
       </p>
       <HeroWidget client:load lang={locale} />
@@ -60,7 +60,7 @@ const count = app.tools.filter((t) => t.ready).length;
   <section class="screen">
     <div class="wrap">
       <div class="sechead primary">
-        <h2>{T("Calculators")}</h2>
+        <h2>{T("Music tools")}</h2>
         <p>{T("Free, quick, and everything runs in your browser.")}</p>
       </div>
     </div>
@@ -78,7 +78,7 @@ const count = app.tools.filter((t) => t.ready).length;
       <div>
         <div class="sechead primary">
           <h2>{T("Popular tasks")}</h2>
-          <p>{T("Ready-made settings for everyday jobs.")}</p>
+          <p>{T("Ready-made settings for your instrument and practice.")}</p>
         </div>
         <TaskList
           tasks={tasks}
@@ -89,7 +89,7 @@ const count = app.tools.filter((t) => t.ready).length;
           }}
         />
       </div>
-      <PrivacySection noFiles />
+      <PrivacySection noFiles listens />
     </div>
   </section>
 </BaseLayout>
