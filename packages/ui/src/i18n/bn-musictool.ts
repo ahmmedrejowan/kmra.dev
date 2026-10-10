@@ -4,8 +4,8 @@ export const BN_MUSICTOOL: Record<string, string> = {
   "Free online tuner, metronome and music tools":
     "বিনামূল্যের অনলাইন টিউনার, মেট্রোনোম ও মিউজিক টুল",
   "Tune, keep time and practise": "টিউন করুন, তাল রাখুন, অনুশীলন করুন",
-  "A tuner, a metronome, chords, scales and ear training, all in your browser. Start the metronome below.":
-    "টিউনার, মেট্রোনোম, কর্ড, স্কেল আর কান তৈরির অনুশীলন, সবই আপনার ব্রাউজারে। নিচের মেট্রোনোমটি চালিয়ে দেখুন।",
+  "A tuner, a metronome, a beat maker, chords, scales and ear training, all in your browser. Start the metronome below.":
+    "টিউনার, মেট্রোনোম, বিট মেকার, কর্ড, স্কেল আর কান তৈরির অনুশীলন, সবই আপনার ব্রাউজারে। নিচের মেট্রোনোমটি চালিয়ে দেখুন।",
   "Music tools": "মিউজিক টুল",
   "Ready-made settings for your instrument and practice.":
     "আপনার বাদ্যযন্ত্র আর অনুশীলনের জন্য তৈরি সেটিংস।",
@@ -150,6 +150,62 @@ export const BN_MUSICTOOL: Record<string, string> = {
   "Start the metronome": "মেট্রোনোম চালু করুন",
   "Full metronome": "পুরো মেট্রোনোম",
   "Open the tuner": "টিউনার খুলুন",
+
+  // Beat maker
+  "Link copied. Anyone who opens it hears this beat.":
+    "লিংক কপি হয়েছে। যিনি খুলবেন তিনি এই বিটটিই শুনবেন।",
+  "The link is in the address bar: copy it from there.":
+    "লিংকটি অ্যাড্রেস বারে আছে: সেখান থেকে কপি করুন।",
+  "The file couldn't be made in this browser. Try WAV.":
+    "এই ব্রাউজারে ফাইলটি তৈরি করা গেল না। WAV দিয়ে চেষ্টা করুন।",
+  on: "চালু",
+  off: "বন্ধ",
+  Undo: "আগের অবস্থায় ফেরান",
+  Redo: "আবার করুন",
+  undo: "আগের অবস্থায় ফেরা",
+  "Steps shown": "যে স্টেপগুলো দেখা যাচ্ছে",
+  "Steps {a}–{b}": "স্টেপ {a}–{b}",
+  "Hear the {drum}": "{drum} শুনুন",
+  "Mute {drum}": "{drum} নীরব করুন",
+  Mute: "নীরব",
+  "Solo {drum}": "শুধু {drum} শুনুন",
+  Solo: "একক",
+  "{drum}, step {n}: {state}": "{drum}, স্টেপ {n}: {state}",
+  "Starter patterns": "শুরুর প্যাটার্ন",
+  "Pick one to start from, then change it. Your beat is kept on this device.":
+    "একটি বেছে নিয়ে শুরু করুন, তারপর নিজের মতো বদলান। আপনার বিট এই ডিভাইসেই রাখা থাকে।",
+  Swing: "সুইং",
+  Straight: "সোজা",
+  "3/4 bar": "৩/৪ বার",
+  "4/4 bar": "৪/৪ বার",
+  "2 bars": "২ বার",
+  "New steps": "নতুন স্টেপ",
+  Accent: "অ্যাকসেন্ট",
+  Mix: "মিক্স",
+  "Times through the loop": "লুপ কতবার বাজবে",
+  "{s} seconds. The file loops without a gap.": "{s} সেকেন্ড। ফাইলটি কোনো ফাঁক ছাড়াই লুপ হয়।",
+  "Making the file…": "ফাইল তৈরি হচ্ছে…",
+  "MP3s are made with the": "MP3 তৈরি হয়",
+  "LAME encoder": "LAME এনকোডার দিয়ে",
+  "Download {format}": "{format} ডাউনলোড করুন",
+  Kick: "কিক",
+  Snare: "স্নেয়ার",
+  Clap: "ক্ল্যাপ",
+  Hat: "হ্যাট",
+  "Closed hat": "ক্লোজড হ্যাট",
+  "Open hat": "ওপেন হ্যাট",
+  "Low tom": "লো টম",
+  "High tom": "হাই টম",
+  Rim: "রিম",
+  "Hip-hop": "হিপ-হপ",
+  Rock: "রক",
+  House: "হাউস",
+  Trap: "ট্র্যাপ",
+  Reggaeton: "রেগেটন",
+  "Lo-fi": "লো-ফাই",
+  Funk: "ফাঙ্ক",
+  "Waltz (3/4)": "ওয়াল্টজ (৩/৪)",
+  "Drum and bass": "ড্রাম অ্যান্ড বেস",
 
   // Tap tempo
   "Tap here, or press Space, in time with the beat":

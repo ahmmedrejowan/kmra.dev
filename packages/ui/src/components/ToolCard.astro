@@ -175,6 +175,16 @@ const dm = (() => {
             <b>96</b>
             <small>{T("taps per minute")}</small>
           </span>
+        ) : tool.slug === "beat-maker" ? (
+          <span class="art-mus-grid">
+            {["o.o.o.o.o.o.o.oo", "....x.......x...", "x......o..x....."].map((row) => (
+              <span>
+                {[...row].map((c, i) => (
+                  <i class:list={{ on: c === "o", acc: c === "x", now: i === 4 }} />
+                ))}
+              </span>
+            ))}
+          </span>
         ) : tool.slug === "chords" ? (
           <span class="art-mus-chord">
             <svg viewBox="0 0 60 72">

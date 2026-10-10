@@ -544,6 +544,9 @@ importers:
       '@kmra/ui':
         specifier: workspace:*
         version: link:../../packages/ui
+      '@mediabunny/mp3-encoder':
+        specifier: ^1.61.3
+        version: 1.61.3(mediabunny@1.61.3)
       '@resvg/resvg-js':
         specifier: ^2.6.2
         version: 2.6.2
@@ -553,6 +556,9 @@ importers:
       astro:
         specifier: ^7.3.6
         version: 7.3.6(@types/node@24.19.1)(idb-keyval@6.3.0)(jiti@2.7.0)(terser@5.51.2)(yaml@2.9.1)
+      mediabunny:
+        specifier: ^1.61.3
+        version: 1.61.3
       react:
         specifier: ^19.3.0
         version: 19.3.0

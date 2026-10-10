@@ -427,6 +427,28 @@ const presets: [string, (p: Page) => Promise<void>][] = [
       await expect(area(p).locator(".mt-tone-note")).toContainText("A4");
     },
   ],
+  ...(
+    [
+      ["hip-hop-beat-maker", "Hip-hop", "90"],
+      ["trap-beat-maker", "Trap", "140"],
+      ["house-beat-maker", "House", "124"],
+      ["lofi-beat-maker", "Lo-fi", "80"],
+      ["rock-drum-beat", "Rock", "110"],
+      ["reggaeton-beat", "Reggaeton", "95"],
+    ] as const
+  ).map(
+    ([slug, pattern, tempo]) =>
+      [
+        slug,
+        async (p: Page) => {
+          await expect(
+            area(p).getByRole("group", { name: "Starter patterns" }).getByRole("button", { name: pattern }),
+          ).toHaveAttribute("aria-pressed", "true");
+          await expect(area(p).locator(".mt-beat-bpm")).toHaveAttribute("data-value", tempo);
+          await expect(area(p).locator('.mt-cell[data-drum="kick"][data-step="0"]')).toHaveAttribute("data-v", "2");
+        },
+      ] as [string, (p: Page) => Promise<void>],
+  ),
   [
     "ukulele-chords",
     async (p) => {
@@ -474,6 +496,8 @@ test("every ready tool has a test above", () => {
     "chords",
     "scales",
     "ear-trainer",
+    // tests/musictool/beat-maker.spec.ts
+    "beat-maker",
   ]);
   const missing = app.tools.filter((t) => t.ready && !tested.has(t.slug));
   expect(missing.map((t) => t.slug)).toEqual([]);

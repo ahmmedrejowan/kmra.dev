@@ -99,7 +99,10 @@ export type IconName =
   | "eye"
   | "metronome"
   | "guitar"
-  | "ear";
+  | "ear"
+  | "drum"
+  | "undo"
+  | "redo";
 
 export interface Tool {
   /** URL path segment, e.g. "resize" -> imgtool.kmra.dev/resize */
@@ -2422,6 +2425,7 @@ export const apps = [
     popular: [
       "tuner",
       "metronome",
+      "beat-maker",
       "guitar-tuner",
       "ukulele-tuner",
       "tap-tempo",
@@ -2434,6 +2438,7 @@ export const apps = [
     tools: [
       { slug: "tuner", title: "Online tuner (chromatic)", name: "Tuner", description: "Tune any instrument with your microphone: the note, how many cents sharp or flat, and a needle that settles when you're in tune.", blurb: "Microphone, any instrument", icon: "gauge", group: "Tune", ready: true, steps: ["Press Start and allow the microphone.", "Play one string or note.", "Tune until the needle sits in the middle."] },
       { slug: "metronome", title: "Online metronome", name: "Metronome", description: "A steady metronome from 20 to 300 BPM with time signatures, accents, subdivisions, tap tempo and a speed trainer.", blurb: "BPM, time signatures", icon: "metronome", group: "Rhythm", ready: true, steps: ["Set the tempo, or tap it.", "Pick the time signature and accents.", "Press Start."] },
+      { slug: "beat-maker", title: "Beat maker: online drum machine", name: "Beat maker", description: "Make drum beats in your browser: a step sequencer with eight drum sounds, swing, starter patterns, and WAV or MP3 downloads that loop.", blurb: "Drum machine, loops", icon: "drum", group: "Rhythm", ready: true, steps: ["Pick a starter pattern, or clear the grid.", "Click steps to add drums, then press Play.", "Download a WAV or MP3, or copy a link."] },
       { slug: "tap-tempo", title: "Tap tempo: find the BPM", name: "Tap tempo", description: "Tap along to a song with a key or a button to find its tempo in beats per minute.", blurb: "Find a song's BPM", icon: "zap", group: "Rhythm", ready: true, steps: ["Play the song.", "Tap along to the beat.", "Read the BPM; it steadies as you tap."] },
       { slug: "tone-generator", title: "Tone generator", name: "Tone generator", description: "Play a pure tone at any frequency or note, with sine, square, triangle and sawtooth waves, and sweeps.", blurb: "Any frequency or note", icon: "audioLines", group: "Sound", ready: true, steps: ["Pick a frequency or a note.", "Choose the wave and volume.", "Press Play; start quietly."] },
       { slug: "drone", title: "Drone notes for practice", name: "Drone", description: "A steady, rich drone on any note to practise intonation and scales against.", blurb: "Practise against a note", icon: "volume", group: "Sound", ready: true, steps: ["Pick a note and octave.", "Add a fifth if you like.", "Play along and listen for the beating."] },
@@ -2452,6 +2457,12 @@ export const apps = [
       { slug: "6-8-metronome", tool: "metronome", name: "6/8 metronome", short: "Compound time", group: "Practice", title: "6/8 time metronome", intro: "A metronome in 6/8 with the first and fourth beats accented.", about: ["6/8 is felt as two big beats of three."], preset: { beats: 6, unit: 8 } },
       { slug: "440-hz-tone", tool: "tone-generator", name: "440 Hz tone", short: "A4 tuning note", group: "Practice", title: "440 Hz tone (A4)", intro: "Play the A4 tuning note at 440 Hz.", about: ["Some orchestras tune to 442 Hz; change the frequency to match."], preset: { freq: 440 } },
       { slug: "ukulele-chords", tool: "chords", name: "Ukulele chords", short: "Every key", group: "Practice", title: "Ukulele chord chart", intro: "Ukulele chord diagrams for every key, with the notes.", about: ["Shapes are for GCEA tuning."], preset: { instrument: "ukulele" } },
+      { slug: "hip-hop-beat-maker", tool: "beat-maker", name: "Hip-hop beat maker", short: "Boom bap, 90 BPM", group: "Beats", title: "Hip-hop beat maker", intro: "Make a boom-bap hip-hop beat in your browser, starting from a 90 BPM groove with swing.", about: ["Swing plays the off-beat hi-hats a little late, which gives hip-hop its laid-back feel."], preset: { pattern: "boom-bap" } },
+      { slug: "trap-beat-maker", tool: "beat-maker", name: "Trap beat maker", short: "140 BPM, half-time clap", group: "Beats", title: "Trap beat maker", intro: "Program a trap beat: 140 BPM with the clap on beat three, so it feels half-time, over busy hi-hats.", about: ["Mixing accented and normal hi-hat steps makes the hats roll instead of ticking evenly."], preset: { pattern: "trap" } },
+      { slug: "house-beat-maker", tool: "beat-maker", name: "House beat maker", short: "Four on the floor, 124 BPM", group: "Beats", title: "House beat maker", intro: "A house groove: a kick on every beat, claps on two and four, and open hi-hats on the off-beats.", about: ["A closed hi-hat cuts the open one short, the way drum machines do it."], preset: { pattern: "house" } },
+      { slug: "lofi-beat-maker", tool: "beat-maker", name: "Lo-fi beat maker", short: "80 BPM with swing", group: "Beats", title: "Lo-fi beat maker", intro: "A lazy lo-fi groove at 80 BPM with plenty of swing, ready to download as a loop.", about: ["Downloads loop without a gap, so they drop straight into any audio editor."], preset: { pattern: "lofi" } },
+      { slug: "rock-drum-beat", tool: "beat-maker", name: "Rock drum beat", short: "Kick, snare, eighth hats", group: "Beats", title: "Rock drum beat", intro: "A basic rock drum beat at 110 BPM to play along with or build on.", about: ["Change the tempo anywhere from 40 to 240 BPM while it plays."], preset: { pattern: "rock" } },
+      { slug: "reggaeton-beat", tool: "beat-maker", name: "Reggaeton beat", short: "Dembow rhythm, 95 BPM", group: "Beats", title: "Reggaeton beat (dembow)", intro: "The dembow rhythm behind reggaeton: a kick on every beat and the snare figure that answers it.", about: ["The snare plays a 3-3-2 figure, common across Caribbean music."], preset: { pattern: "reggaeton" } },
     ],
   },
   {

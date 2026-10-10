@@ -1,0 +1,8 @@
+The beat maker's MP3 downloads are encoded in your browser with:
+
+- Mediabunny (https://github.com/Vanilagy/mediabunny) and its extension @mediabunny/mp3-encoder,
+  unmodified from npm, licensed under the Mozilla Public License 2.0
+  (https://www.mozilla.org/en-US/MPL/2.0/). Source: https://github.com/Vanilagy/mediabunny
+- The LAME MP3 Encoder (https://lame.sourceforge.io/), compiled to WebAssembly inside
+  @mediabunny/mp3-encoder, licensed under the GNU Lesser General Public License
+  (https://lame.sourceforge.io/license.txt). Source: https://sourceforge.net/projects/lame/files/lame/

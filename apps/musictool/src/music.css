@@ -1205,6 +1205,256 @@
   min-width: 100%;
 }
 
+/* ---------- beat maker: the grid takes the full width, settings sit under it ---------- */
+.mt-beat-card .mt-body {
+  grid-template-columns: minmax(0, 1fr);
+  min-height: 0;
+}
+.mt-beat-card .mt-side {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  align-items: start;
+  gap: 18px 20px;
+  border-left: 0;
+  border-top: 1px solid var(--line);
+}
+@media (min-width: 1100px) {
+  .mt-beat-card .mt-side {
+    grid-template-columns: 1fr 1fr 1.4fr 1fr;
+  }
+}
+.mt-beat-card .mt-stage {
+  align-items: stretch;
+  padding: 24px 24px 20px;
+}
+.mt-beat {
+  display: grid;
+  gap: 16px;
+  min-width: 0;
+}
+.mt-beat-top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px 18px;
+}
+.mt-beat-play {
+  min-width: 128px;
+}
+.mt-beat-tempo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.mt-beat-bpm {
+  display: grid;
+  justify-items: center;
+  min-width: 78px;
+  line-height: 1;
+}
+.mt-beat-bpm output {
+  font-size: 34px;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+}
+.mt-beat-bpm span {
+  margin-top: 4px;
+  font-size: 12px;
+  color: var(--muted);
+}
+.mt-beat-tools {
+  display: flex;
+  gap: 8px;
+}
+.mt-beat-tools .btn:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+.mt-beat-pages {
+  justify-self: start;
+}
+.mt-beat-pages button {
+  position: relative;
+  padding-inline: 14px;
+}
+.mt-beat-here {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--acc);
+}
+.mt-beat-grid {
+  display: grid;
+  gap: 5px;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.mt-beat-row {
+  display: grid;
+  grid-template-columns: 148px repeat(var(--cols), minmax(0, 1fr));
+  gap: 4px;
+  align-items: center;
+}
+.mt-beat-head span {
+  text-align: center;
+  font-size: 11.5px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+.mt-beat-head .beat {
+  color: var(--fg);
+  font-weight: 600;
+}
+.mt-beat-head .now {
+  color: var(--acc);
+}
+.mt-beat-name {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  padding-right: 6px;
+}
+.mt-beat-drum {
+  flex: 1;
+  min-width: 0;
+  padding: 6px 4px;
+  border: 0;
+  border-radius: 6px;
+  background: none;
+  color: var(--fg);
+  font: inherit;
+  font-size: 13.5px;
+  font-weight: 600;
+  text-align: left;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: pointer;
+}
+.mt-beat-drum:hover {
+  color: var(--acc);
+}
+.mt-beat-flag {
+  flex: none;
+  width: 24px;
+  height: 24px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--card);
+  color: var(--muted);
+  font: inherit;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.mt-beat-flag[aria-pressed="true"] {
+  background: var(--fg);
+  border-color: var(--fg);
+  color: var(--bg);
+}
+.mt-beat-flag.solo[aria-pressed="true"] {
+  background: var(--acc);
+  border-color: var(--acc);
+  color: var(--on-acc);
+}
+.mt-cell {
+  height: 38px;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: var(--card);
+  cursor: pointer;
+  touch-action: none;
+  transition:
+    background-color 0.06s,
+    transform 0.08s;
+}
+.mt-cell.odd {
+  background: color-mix(in srgb, var(--line) 45%, var(--card));
+}
+.mt-cell:hover {
+  border-color: color-mix(in srgb, var(--acc) 60%, var(--line));
+}
+.mt-cell.v1 {
+  background: color-mix(in srgb, var(--acc) 50%, var(--card));
+  border-color: transparent;
+}
+.mt-cell.v2 {
+  background: var(--acc);
+  border-color: transparent;
+}
+.mt-cell.now {
+  box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--fg) 28%, transparent);
+}
+.mt-cell.hit {
+  transform: scale(1.08);
+  filter: brightness(1.18);
+}
+.mt-cell:focus-visible {
+  outline: 2px solid var(--acc);
+  outline-offset: 2px;
+}
+.mt-beat-row.quiet .mt-cell.v1,
+.mt-beat-row.quiet .mt-cell.v2 {
+  opacity: 0.32;
+}
+.mt-beat-row.quiet .mt-beat-drum {
+  color: var(--muted);
+}
+.mt-beat-mix {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px 16px;
+}
+.mt-beat-mix > .mt-label {
+  grid-column: 1 / -1;
+}
+@media (max-width: 560px) {
+  .mt-beat-card .mt-stage {
+    padding: 18px 12px 16px;
+  }
+  .mt-beat-row {
+    grid-template-columns: 122px repeat(var(--cols), minmax(0, 1fr));
+    gap: 3px;
+  }
+  .mt-beat-name {
+    gap: 3px;
+    padding-right: 3px;
+  }
+  .mt-beat-drum {
+    font-size: 12px;
+    padding-inline: 0;
+  }
+  .mt-beat-flag {
+    width: 22px;
+    height: 22px;
+  }
+  .mt-cell {
+    height: 34px;
+    border-radius: 6px;
+  }
+  .mt-beat-bpm output {
+    font-size: 28px;
+  }
+  .mt-beat-play {
+    min-width: 0;
+    flex: 1 1 auto;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .mt-cell {
+    transition: none;
+  }
+  .mt-cell.hit {
+    transform: none;
+  }
+}
+
 /* ---------- small screens ---------- */
 @media (max-width: 860px) {
   .mt-body {

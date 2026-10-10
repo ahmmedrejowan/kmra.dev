@@ -12,6 +12,7 @@ type Loader = () => Promise<{ default: ComponentType<ToolProps> }>;
 export const TOOLS: Record<string, Loader> = {
   tuner: () => import("./tuner"),
   metronome: () => import("./metronome"),
+  "beat-maker": () => import("./beat-maker"),
   "tap-tempo": () => import("./tap-tempo"),
   "tone-generator": () => import("./tone-generator"),
   drone: () => import("./drone"),
