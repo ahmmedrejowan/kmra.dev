@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Mp3Credit } from "@kmra/media/components/Mp3Credit";
 import { Seg } from "@kmra/ui/components/controls";
 import { useT } from "@kmra/ui/lib/i18n-react";
 import { codecLabel } from "@kmra/media/engine";
@@ -77,6 +78,7 @@ export default function VideoToMp3({ preset }: ToolProps) {
                     "WAV is uncompressed: the best for editing, but about ten times bigger.",
                   )}
           </p>
+          {to === "mp3" && <Mp3Credit />}
           {info?.audio && (
             <p className="muted vt-src">
               {T("The video's sound")}: {codecLabel(info.audio.codec)}

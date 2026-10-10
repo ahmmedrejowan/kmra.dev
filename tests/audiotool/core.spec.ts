@@ -92,7 +92,11 @@ test("convert MP3 to WAV, and WAV to M4A", async ({ page }) => {
   await openTool(page, "/convert");
   await addFiles(page, gen(AUD.mp3));
   await expect(page.locator(".vt-details")).toContainText("stereo");
+  // MP3 is the default output: the LAME encoder is credited, with its notice file served
+  await expect(page.locator(".mp3-credit")).toHaveText("MP3s are made with the LAME encoder.");
+  expect((await page.request.get("/NOTICE-mp3.txt")).ok()).toBe(true);
   await pick(page, "Format", "WAV");
+  await expect(page.locator(".mp3-credit")).toHaveCount(0);
   let r = await runJob(page);
   expect(r.name).toBe("aud-tone.wav");
   let p = probe(r.buf, "wav");

@@ -281,6 +281,11 @@ test("remove audio copies the picture and leaves no sound", async ({
 test("video to MP3, M4A (copied) and WAV", async ({ page }) => {
   await openTool(page, "/video-to-mp3");
   await addFiles(page, gen(VID.landscape));
+  // MP3 credits the LAME encoder (its licence asks for a link); the notice file is served
+  const credit = page.locator(".mp3-credit");
+  await expect(credit).toHaveText("MP3s are made with the LAME encoder.");
+  await expect(credit.getByRole("link")).toHaveAttribute("href", "https://lame.sourceforge.io/");
+  expect((await page.request.get("/NOTICE-mp3.txt")).ok()).toBe(true);
   const mp3 = await runJob(page);
   expect(mp3.name).toBe("vid-landscape.mp3");
   const p = probe(mp3.buf, "mp3");
@@ -289,6 +294,7 @@ test("video to MP3, M4A (copied) and WAV", async ({ page }) => {
   expect(Math.abs(p.dur - 6)).toBeLessThan(0.15);
 
   await pick(page, "M4A");
+  await expect(page.locator(".mp3-credit")).toHaveCount(0);
   await pick(page, "Original");
   const m4a = await runJob(page);
   expect(m4a.engine).toBe("copy");

@@ -1,6 +1,7 @@
 import { Seg } from "@kmra/ui/components/controls";
 import { useT } from "@kmra/ui/lib/i18n-react";
 import type { AudioContainer, MediaInfo } from "@kmra/media/engine";
+import { Mp3Credit } from "@kmra/media/components/Mp3Credit";
 import { sameAudio } from "./Workspace";
 
 /** Output formats the audio tools offer, in the order people look for them */
@@ -38,15 +39,18 @@ export function FormatSeg({
   const T = useT();
   const list = only ? FORMATS.filter(([f]) => only.includes(f)) : FORMATS;
   return (
-    <Seg
-      label={T("Format")}
-      options={[
-        ...(same ? ([["same", T("Same")]] as [FormatPick, string][]) : []),
-        ...list,
-      ]}
-      value={value}
-      onPick={onPick}
-    />
+    <>
+      <Seg
+        label={T("Format")}
+        options={[
+          ...(same ? ([["same", T("Same")]] as [FormatPick, string][]) : []),
+          ...list,
+        ]}
+        value={value}
+        onPick={onPick}
+      />
+      {value === "mp3" && <Mp3Credit />}
+    </>
   );
 }
 

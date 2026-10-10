@@ -11016,3 +11016,17 @@ select.bar-input {
 .art-mus-wave b {
   font-size: 18px;
 }
+
+/* Credit for the MP3 encoder (LAME), under format pickers */
+.mp3-credit {
+  margin: 0;
+  font-size: 12.5px;
+}
+.mp3-credit a {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.mp3-credit a:hover {
+  color: var(--acc);
+}

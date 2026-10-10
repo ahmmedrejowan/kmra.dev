@@ -1,0 +1,11 @@
+MP3 files are encoded in your browser with the LAME MP3 Encoder (https://lame.sourceforge.io/),
+licensed under the GNU Lesser General Public License (https://lame.sourceforge.io/license.txt).
+Source: https://sourceforge.net/projects/lame/files/lame/
+
+It reaches the page in one of two builds, both unmodified from npm:
+
+- @mediabunny/mp3-encoder, a WebAssembly build of LAME for Mediabunny
+  (https://github.com/Vanilagy/mediabunny). Mediabunny and the extension are licensed under the
+  Mozilla Public License 2.0 (https://www.mozilla.org/en-US/MPL/2.0/).
+- ffmpeg.wasm's libmp3lame, used when the browser's own encoders can't do the job. See
+  /ffmpeg/NOTICE.txt for ffmpeg's licence (GPL).

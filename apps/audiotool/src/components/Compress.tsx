@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Mp3Credit } from "@kmra/media/components/Mp3Credit";
 import { Seg, Toggle } from "@kmra/ui/components/controls";
 import { useT } from "@kmra/ui/lib/i18n-react";
 import { formatBytes } from "@kmra/ui/lib/files";
@@ -67,7 +68,12 @@ export default function Compress({ preset }: ToolProps) {
         ) : info.container !== "mp3" &&
           lossyOut(info) === "mp3" &&
           info.audio?.codec !== "mp3" ? (
-          <p className="note">{T("Saved as MP3, which plays everywhere.")}</p>
+          <>
+            <p className="note">{T("Saved as MP3, which plays everywhere.")}</p>
+            <Mp3Credit />
+          </>
+        ) : lossyOut(info) === "mp3" ? (
+          <Mp3Credit />
         ) : null
       }
       settings={() => (

@@ -185,8 +185,6 @@ export const BN_MUSICTOOL: Record<string, string> = {
   "Times through the loop": "লুপ কতবার বাজবে",
   "{s} seconds. The file loops without a gap.": "{s} সেকেন্ড। ফাইলটি কোনো ফাঁক ছাড়াই লুপ হয়।",
   "Making the file…": "ফাইল তৈরি হচ্ছে…",
-  "MP3s are made with the": "MP3 তৈরি হয়",
-  "LAME encoder": "LAME এনকোডার দিয়ে",
   "Download {format}": "{format} ডাউনলোড করুন",
   Kick: "কিক",
   Snare: "স্নেয়ার",
