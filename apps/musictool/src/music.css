@@ -30,6 +30,20 @@
 .mt-body.solo {
   grid-template-columns: minmax(0, 1fr);
 }
+/*
+ * Side by side, the settings column doesn't set the card's height (it scrolls inside if it ever
+ * has more than fits) and the instrument has the shared editor height, so a setting that shows
+ * or hides a field doesn't resize the card. Cards with their settings underneath keep their flow.
+ */
+@media (min-width: 861px) {
+  .mt-card:not(.mt-scale-card):not(.mt-beat-card) .mt-side {
+    contain: size;
+    overflow-y: auto;
+  }
+  .mt-card:not(.mt-scale-card):not(.mt-beat-card) .mt-body:not(.solo) {
+    min-height: var(--stage-h);
+  }
+}
 .mt-stage {
   display: flex;
   flex-direction: column;

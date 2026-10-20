@@ -40,6 +40,12 @@
   grid-template-columns: minmax(0, 1fr) minmax(0, 1.08fr);
   min-height: 340px;
 }
+/* A steady height on wider screens, so modes that add or remove a field don't resize the card */
+@media (min-width: 761px) {
+  .calc-body {
+    min-height: max(440px, min(var(--stage-h), 560px));
+  }
+}
 .calc-in {
   display: grid;
   align-content: start;
@@ -623,6 +629,7 @@ select.calc-control {
   grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
 }
 .calc-screen {
+  position: relative;
   display: grid;
   gap: 2px;
   padding: 14px 16px;
@@ -727,7 +734,10 @@ select.calc-control {
   color: var(--on-acc);
 }
 .calc-mem {
-  justify-self: start;
+  /* In the screen's corner, so it doesn't push the sum down */
+  position: absolute;
+  top: 10px;
+  left: 12px;
   padding: 1px 8px;
   border-radius: 999px;
   background: var(--acc-soft);

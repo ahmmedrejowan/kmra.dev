@@ -118,6 +118,12 @@
   margin: 0 auto;
   padding-inline: 24px;
 }
+/* Big screens get wider pages, so editors aren't a small island in the middle */
+@media (min-width: 1560px) {
+  .wrap {
+    max-width: 1360px;
+  }
+}
 .ico {
   width: 18px;
   height: 18px;
@@ -2365,6 +2371,14 @@ footer.site {
   color: var(--fg);
   box-shadow: 0 1px 2px rgb(0 0 0 / 0.08);
 }
+/*
+ * Editor height: from the window (taller screens get a bigger preview), the same whatever the
+ * settings panel holds. --stage-img is what an image preview inside it may use.
+ */
+:root {
+  --stage-h: clamp(420px, calc(100vh - 330px), 760px);
+  --stage-img: calc(var(--stage-h) - 120px);
+}
 .toolcard {
   display: grid;
   grid-template-columns: 1fr 330px;
@@ -2376,7 +2390,7 @@ footer.site {
 }
 .stage {
   position: relative;
-  min-height: 420px;
+  min-height: var(--stage-h);
   display: grid;
   place-items: center;
   padding: 22px 22px 64px;
@@ -2408,7 +2422,7 @@ footer.site {
 .cmp img {
   display: block;
   max-width: 100%;
-  max-height: 380px;
+  max-height: var(--stage-img);
   width: auto;
   height: auto;
 }
@@ -2432,7 +2446,7 @@ footer.site {
   clip-path: none;
   width: auto;
   height: auto;
-  max-height: 380px;
+  max-height: var(--stage-img);
   object-fit: initial;
 }
 .cmp.solo .line,
@@ -2485,7 +2499,7 @@ footer.site {
 /* Zoomable view inside the stage; scrolls when the image is larger than the view */
 .viewport {
   width: 100%;
-  max-height: 520px;
+  max-height: calc(var(--stage-h) - 86px);
   overflow: auto;
   display: grid;
   place-items: safe center;
@@ -2555,6 +2569,15 @@ footer.site {
   gap: 8px;
   overflow-x: auto;
 }
+/* Chips keep their size; a full row scrolls sideways instead of squeezing names */
+.filebar > * {
+  flex: none;
+}
+@media (max-width: 600px) {
+  .stage:has(.zoombar) .filebar {
+    right: 158px;
+  }
+}
 .fchip {
   display: flex;
   align-items: center;
@@ -2597,6 +2620,28 @@ footer.site {
 .controls > .ctl + .ctl {
   border-top: 1px solid var(--line);
   padding-top: 16px;
+}
+/*
+ * Side by side, the settings panels don't set the card's height: the editor is as tall as its
+ * stage (at least --stage-h), so showing or hiding a setting never resizes it or moves the
+ * preview. A panel with more than fits scrolls inside the card. (The checker's report grows on
+ * purpose; phones stack everything and keep the page's own scroll.)
+ */
+@media (min-width: 981px) {
+  .toolcard:not(.checker-card):not(.solo) > .controls {
+    contain: size;
+    overflow-y: auto;
+  }
+  /*
+   * Single-preview editors: the stage is exactly the editor's height and a taller preview (a
+   * PDF page) scrolls inside it. Three- and two-column editors keep their result and its
+   * downloads in the stage, so their stage grows with the result instead.
+   */
+  .toolcard:not(.checker-card):not(.solo):not(.tri):not(.duo) > .stage {
+    height: var(--stage-h);
+    min-height: 0;
+    overflow: auto;
+  }
 }
 .ctl label,
 .ctl .lbl {
@@ -2982,7 +3027,7 @@ textarea.num {
 .cropper img {
   display: block;
   max-width: 100%;
-  max-height: 380px;
+  max-height: var(--stage-img);
   width: auto;
   height: auto;
 }
@@ -3473,7 +3518,7 @@ textarea.num {
 .stage .still {
   display: block;
   max-width: 100%;
-  max-height: 420px;
+  max-height: var(--stage-img);
   width: auto;
   height: auto;
   border-radius: 6px;
@@ -3671,7 +3716,7 @@ textarea.num {
 .picker img {
   display: block;
   max-width: 100%;
-  max-height: 420px;
+  max-height: var(--stage-img);
   border-radius: 6px;
   user-select: none;
 }
@@ -3718,7 +3763,7 @@ textarea.num {
 .splitview img {
   display: block;
   max-width: 100%;
-  max-height: 420px;
+  max-height: var(--stage-img);
   border-radius: 6px;
 }
 .split-area {
@@ -6629,7 +6674,7 @@ button.sp-face[aria-pressed="true"] .thumb {
 }
 .toolcard.tri .stage {
   order: 1;
-  min-height: 0;
+  min-height: var(--stage-h);
   padding: 28px;
   background: var(--card);
   background-image: none;
@@ -6638,13 +6683,7 @@ button.sp-face[aria-pressed="true"] .thumb {
 .toolcard.tri .controls.side-r {
   order: 2;
 }
-@media (min-width: 901px) {
-  .toolcard.tri .stage {
-    position: sticky;
-    top: 72px;
-    align-self: start;
-  }
-}
+
 .qr-plain .qr-sheet {
   box-shadow: 0 0 0 1px var(--line);
   border-radius: 12px;
@@ -6668,6 +6707,7 @@ button.sp-face[aria-pressed="true"] .thumb {
   }
   .toolcard.tri .stage {
     order: 0;
+    min-height: 0;
   }
   .toolcard.tri .controls.side-l {
     order: 1;
@@ -6697,25 +6737,20 @@ button.sp-face[aria-pressed="true"] .thumb {
   border-right: 1px solid var(--line);
 }
 .toolcard.duo .stage {
-  min-height: 0;
+  min-height: var(--stage-h);
   padding: 28px;
   background: var(--card);
   background-image: none;
   align-content: start;
 }
-@media (min-width: 901px) {
-  .toolcard.duo .stage {
-    position: sticky;
-    top: 72px;
-    align-self: start;
-  }
-}
+
 @media (max-width: 900px) {
   .toolcard.duo {
     grid-template-columns: 1fr;
   }
   .toolcard.duo .stage {
     order: -1;
+    min-height: 0;
   }
   .toolcard.duo .controls.side-l {
     border-right: 0;
@@ -6726,8 +6761,9 @@ button.sp-face[aria-pressed="true"] .thumb {
 .qr-plain .qr-marks {
   display: none;
 }
+/* Square codes fit the editor's height with their downloads underneath */
 .qr-plain .c2d-square svg {
-  width: min(380px, 100%);
+  width: min(380px, 100%, calc(var(--stage-h) - 370px));
 }
 .qr-plain .c2d-wide svg {
   width: min(560px, 100%);
@@ -9121,6 +9157,17 @@ select.bar-input {
 .oi-lang-btn {
   max-width: 340px;
 }
+/* One width whatever is picked, so adding a language doesn't wrap the bar and resize the card */
+@media (min-width: 761px) {
+  .oi-lang-btn {
+    width: 250px;
+  }
+  .oi-lang-btn #oi-lang-value {
+    flex: 1;
+    min-width: 0;
+    text-align: left;
+  }
+}
 .oi-lang-btn #oi-lang-value {
   overflow: hidden;
   text-overflow: ellipsis;
@@ -10009,15 +10056,24 @@ select.bar-input {
   color: var(--muted);
   font-variant-numeric: tabular-nums;
 }
+/* With the frame list showing, the player gives it room so the editor keeps its height */
+@media (min-width: 901px) {
+  .vt-stage:has(.vt-strip) .mp-video {
+    max-height: calc(var(--stage-h) - 380px);
+    width: auto;
+    margin-inline: auto;
+  }
+}
+/* One row that scrolls sideways, so the frame list doesn't grow the editor */
 .vt-strip ol {
   list-style: none;
   margin: 0;
-  padding: 0;
+  padding: 0 0 6px;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(104px, 1fr));
+  grid-auto-flow: column;
+  grid-auto-columns: 104px;
   gap: 8px;
-  max-height: 300px;
-  overflow: auto;
+  overflow-x: auto;
 }
 .vt-strip li button {
   display: grid;
@@ -10192,7 +10248,7 @@ select.bar-input {
 }
 @media (max-width: 480px) {
   .vt-strip ol {
-    grid-template-columns: repeat(3, 1fr);
+    grid-auto-columns: 30%;
   }
   .vt-countdown {
     font-size: 64px;
@@ -10228,7 +10284,8 @@ select.bar-input {
   gap: 8px;
 }
 .vt-turn {
-  --cap: min(62vh, 560px);
+  /* Upright or turned sideways, the player fits the editor's height */
+  --cap: min(62vh, 560px, calc(var(--stage-h) - 130px));
   position: relative;
   aspect-ratio: var(--ar, 16 / 9);
   width: min(100%, calc(var(--cap) * var(--ar, 1.7778)));

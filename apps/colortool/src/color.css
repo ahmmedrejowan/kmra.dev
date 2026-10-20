@@ -60,6 +60,20 @@
   gap: 16px;
   min-width: 0;
 }
+/*
+ * Side by side, the settings column doesn't set the card's height (it scrolls inside if it ever
+ * has more than fits), and the colour area has the shared editor height, so picking a setting
+ * doesn't resize the card.
+ */
+@media (min-width: 901px) {
+  .ct-side {
+    contain: size;
+    overflow-y: auto;
+  }
+  .ct-main {
+    min-height: var(--stage-h);
+  }
+}
 @media (max-width: 900px) {
   .ct-card,
   .ct-card.side-first {

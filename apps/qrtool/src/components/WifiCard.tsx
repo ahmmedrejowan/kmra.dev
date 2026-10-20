@@ -281,7 +281,11 @@ function WifiCardView() {
         <canvas
           ref={canvasRef}
           className={`wc-canvas wc-${size}${ssid ? "" : " placeholder"}`}
-          style={{ width: S.css, aspectRatio: `${S.w} / ${S.h}` }}
+          // Any card size fits the editor's height, with Print and the downloads under it
+          style={{
+            width: `min(${S.css}px, calc((var(--stage-h) - 240px) * ${S.w} / ${S.h}))`,
+            aspectRatio: `${S.w} / ${S.h}`,
+          }}
           role="img"
           aria-label={T("Wi-Fi card preview")}
         />

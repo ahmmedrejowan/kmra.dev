@@ -261,6 +261,10 @@ export const BN: Record<string, string> = {
   "PNG is lossless, so there's no quality setting. Pick JPEG or WebP for smaller files.":
     "PNG লসলেস, তাই মানের সেটিং নেই। ছোট ফাইলের জন্য JPEG বা WebP বেছে নিন।",
   "Exact size": "নির্দিষ্ট সাইজ",
+  "Already under {n} KB.": "আগে থেকেই {n} KB-র নিচে।",
+  "Your file": "আপনার ফাইল",
+  "It's already smaller than these settings would make it, so you get your original file. Lower the quality or pick a size to go smaller.":
+    "এই সেটিংসে যত ছোট হতো, ফাইলটি আগে থেকেই তার চেয়ে ছোট, তাই আপনি মূল ফাইলটিই পাবেন। আরও ছোট করতে কোয়ালিটি কমান বা একটি সাইজ বেছে নিন।",
   Under: "এর নিচে",
   "Any size": "যেকোনো সাইজ",
   Off: "বন্ধ",

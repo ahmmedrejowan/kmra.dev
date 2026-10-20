@@ -55,6 +55,7 @@ import {
   FORM_PRESETS,
   FORMATS,
   hasGeometry,
+  onlyEncodes,
   isLossy,
   outDims,
   outType,
@@ -93,6 +94,8 @@ interface Item {
 interface Out extends EncodeResult {
   key: string;
   url: string;
+  /** Compress kept the original file because re-encoding made it bigger */
+  kept?: boolean;
 }
 
 const MODE_KEY = "kmra-mode";
@@ -152,6 +155,9 @@ async function rasterizeSvg(file: File): Promise<File> {
 }
 const isSvg = (f: File) =>
   f.type === "image/svg+xml" || /\.svgz?$/i.test(f.name);
+
+/** Formats the original file can be handed back in (HEIC and the like are always converted) */
+const KEEPABLE = new Set(["image/jpeg", "image/png", "image/webp"]);
 
 function outName(file: File, type: string): string {
   const base = file.name.replace(/\.[^.]+$/, "");
@@ -347,12 +353,17 @@ function ImageToolView({ tool, preset, tools, lang = "en" }: Props) {
         !!(s.text || s.mark || s.frame || s.ink || s.sheet || s.passport));
     return solo ? outRef.current!.w : item.w;
   }
+  /**
+   * Zoom is in screen pixels: 100% shows one image pixel per screen pixel, so on a Retina screen
+   * (two screen pixels per CSS pixel) a 2000-pixel image is 1000 CSS pixels wide at 100%.
+   */
+  const dpr = () => (typeof window === "undefined" ? 1 : window.devicePixelRatio || 1);
   function zoomBy(dir: 1 | -1) {
     const el =
       shownRef.current ??
       document.querySelector<HTMLImageElement>(".cropper img");
     const current =
-      zoom ?? (el ? el.getBoundingClientRect().width / shownWidth() : 1);
+      zoom ?? (el ? (el.getBoundingClientRect().width * dpr()) / shownWidth() : 1);
     const next =
       dir > 0
         ? (ZOOMS.find((z) => z > current + 0.001) ?? ZOOMS[ZOOMS.length - 1]!)
@@ -376,7 +387,7 @@ function ImageToolView({ tool, preset, tools, lang = "en" }: Props) {
   const sized = (w: number): CSSProperties | undefined =>
     zoom
       ? {
-          width: Math.round(w * zoom),
+          width: Math.round((w * zoom) / dpr()),
           maxWidth: "none",
           maxHeight: "none",
           height: "auto",
@@ -390,7 +401,7 @@ function ImageToolView({ tool, preset, tools, lang = "en" }: Props) {
     setBusy(true);
     const t = setTimeout(async () => {
       try {
-        const r = await engine.encode(item.key, item.file.type, s);
+        const r = noBigger(await engine.encode(item.key, item.file.type, s), item, s);
         if (id !== reqRef.current) return;
         const next = { ...r, key: item.key, url: URL.createObjectURL(r.blob) };
         const old = outRef.current;
@@ -514,12 +525,28 @@ function ImageToolView({ tool, preset, tools, lang = "en" }: Props) {
     return { ...s, crop: centeredCrop(it.w, it.h, r.r) };
   }
 
+  /**
+   * Compressing never makes a file bigger: the original is 100%, and when the re-encoded file
+   * isn't smaller, the original file is the result.
+   */
+  function noBigger<T extends EncodeResult>(r: T, it: Item, st: Settings): T & { kept?: boolean } {
+    if (
+      tool !== "compress" ||
+      !KEEPABLE.has(it.file.type) ||
+      !onlyEncodes(st) ||
+      r.blob.size < it.file.size
+    )
+      return r;
+    return { ...r, blob: it.file, w: it.w, h: it.h, type: it.file.type, over: false, kept: true };
+  }
+
   /** Process every file with the current settings; file names are made unique. */
   async function encodeAll(): Promise<{ name: string; blob: Blob }[]> {
     const used = new Set<string>();
     const outFiles: { name: string; blob: Blob }[] = [];
     for (const it of items) {
-      const r = await engine.encode(it.key, it.file.type, settingsFor(it));
+      const st = settingsFor(it);
+      const r = noBigger(await engine.encode(it.key, it.file.type, st), it, st);
       let name = outName(it.file, r.type);
       for (let n = 2; used.has(name); n++)
         name = outName(it.file, r.type).replace(/(\.\w+)$/, `-${n}$1`);
@@ -538,7 +565,8 @@ function ImageToolView({ tool, preset, tools, lang = "en" }: Props) {
       return;
     }
     try {
-      const r = await engine.encode(it.key, it.file.type, settingsFor(it));
+      const st = settingsFor(it);
+      const r = noBigger(await engine.encode(it.key, it.file.type, st), it, st);
       downloadBlob(r.blob, outName(it.file, r.type));
     } catch {
       toast(
@@ -708,14 +736,17 @@ function ImageToolView({ tool, preset, tools, lang = "en" }: Props) {
       </p>
     );
 
+  /** The biggest file loaded, in KB: size targets above it would change nothing */
+  const biggestKB = items.length ? Math.max(...items.map((it) => it.file.size)) / 1024 : Infinity;
+  const targets = TARGETS.filter((v) => v < biggestKB);
   const targetCtl = (short = false) => (
     <div className="ctl">
       <span className="lbl">{T("Exact size")}</span>
       <div className="chips">
-        {/* A preset's own target (e.g. 20 or 240 KB) is listed too, so it stays visible and selectable */}
+        {/* Only sizes below the image, plus a preset's own target (e.g. 20 or 240 KB) so it stays visible */}
         {[
           null,
-          ...[...new Set([...TARGETS, ...(s.target ? [s.target] : [])])].sort(
+          ...[...new Set([...targets, ...(s.target ? [s.target] : [])])].sort(
             (a, b) => a - b,
           ),
         ].map((v) => (
@@ -735,6 +766,11 @@ function ImageToolView({ tool, preset, tools, lang = "en" }: Props) {
           </button>
         ))}
       </div>
+      {!targets.length && !s.target && Number.isFinite(biggestKB) && (
+        <small className="muted">
+          {T("Already under {n} KB.", { n: TARGETS[0]! })}
+        </small>
+      )}
     </div>
   );
 
@@ -1271,6 +1307,23 @@ function ImageToolView({ tool, preset, tools, lang = "en" }: Props) {
     if (!item) return <small>{T("Add an image to see the result.")}</small>;
     if (!outForItem) return <small>{T("Working…")}</small>;
     const pct = Math.round((1 - outForItem.blob.size / item.file.size) * 100);
+    if (outForItem.kept)
+      return (
+        <>
+          <small>{T("Your file")}</small>
+          <div className="sz">
+            <b>{formatBytes(item.file.size)}</b>
+          </div>
+          <small>
+            {outForItem.w} × {outForItem.h}, {FORMATS[outForItem.type as Format]}
+          </small>
+          <small className="kept">
+            {T(
+              "It's already smaller than these settings would make it, so you get your original file. Lower the quality or pick a size to go smaller.",
+            )}
+          </small>
+        </>
+      );
     return (
       <>
         <small>
@@ -1362,16 +1415,27 @@ function ImageToolView({ tool, preset, tools, lang = "en" }: Props) {
         {item && stageContent(item)}
         <div className="filebar">
           {items.map((it, i) => (
-            <button
-              key={it.key}
-              type="button"
-              className="fchip"
-              aria-pressed={i === cur}
-              onClick={() => setCur(i)}
-            >
-              <img src={it.url} alt="" />
-              <span>{it.file.name}</span>
-            </button>
+            <span key={it.key} className="fchip-wrap">
+              <button
+                type="button"
+                className="fchip"
+                aria-pressed={i === cur}
+                onClick={() => setCur(i)}
+              >
+                <img src={it.url} alt="" />
+                <span>{it.file.name}</span>
+              </button>
+              {/* Picked the wrong image? Take it out (the last one brings the drop box back) */}
+              <button
+                type="button"
+                className="iconbtn"
+                aria-label={T("Remove {name}", { name: it.file.name })}
+                title={T("Remove")}
+                onClick={() => removeItem(i)}
+              >
+                <Icon name="x" />
+              </button>
+            </span>
           ))}
           <button
             type="button"

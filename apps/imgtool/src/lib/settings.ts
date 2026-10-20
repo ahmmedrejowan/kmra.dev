@@ -108,6 +108,30 @@ export function hasGeometry(s: Settings): boolean {
   return !!s.crop || s.rotate !== 0 || s.flipH || s.flipV;
 }
 
+/**
+ * True when the job only re-encodes the image: no new size, crop, turn or effect. Then the
+ * original file is an equally good answer, so compressing can keep it when re-encoding would
+ * make the file bigger.
+ */
+export function onlyEncodes(s: Settings): boolean {
+  return (
+    !hasGeometry(s) &&
+    !s.w &&
+    !s.h &&
+    !s.size &&
+    !s.adjust &&
+    !s.filter &&
+    !s.redact &&
+    !s.ink &&
+    !s.bg &&
+    !s.text &&
+    !s.mark &&
+    !s.frame &&
+    !s.sheet &&
+    !s.passport
+  );
+}
+
 export interface SizePreset {
   id: string;
   label: string;
