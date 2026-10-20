@@ -19,6 +19,8 @@ interface Entry {
 }
 
 const HISTORY_KEY = "kmra-calc-history";
+const MODE_KEY = "kmra-calc-mode";
+const MEMORY_KEY = "kmra-calc-memory";
 /** On touch screens the keypad shouldn't pop up the phone's keyboard */
 const coarse = () => {
   try {
@@ -64,11 +66,61 @@ const KEYS: Key[] = [
   ["+", "+", "op", "Add"],
 ];
 
-export default function Calculator(_: ToolProps) {
+/**
+ * Scientific keys: [label, insert, name] and, after 2nd, the same for the second function.
+ * Inserts that start with ":" are actions rather than text.
+ */
+type SciKey = [label: string, insert: string, name: string, second?: [string, string, string]];
+
+const SCI: SciKey[] = [
+  ["2nd", ":2nd", "Second functions"],
+  ["sin", "sin(", "Sine", ["sin⁻¹", "asin(", "Inverse sine"]],
+  ["cos", "cos(", "Cosine", ["cos⁻¹", "acos(", "Inverse cosine"]],
+  ["tan", "tan(", "Tangent", ["tan⁻¹", "atan(", "Inverse tangent"]],
+  ["e", "e", "Euler's number"],
+  ["sinh", "sinh(", "Hyperbolic sine", ["sinh⁻¹", "asinh(", "Inverse hyperbolic sine"]],
+  ["cosh", "cosh(", "Hyperbolic cosine", ["cosh⁻¹", "acosh(", "Inverse hyperbolic cosine"]],
+  ["tanh", "tanh(", "Hyperbolic tangent", ["tanh⁻¹", "atanh(", "Inverse hyperbolic tangent"]],
+  ["log", "log(", "Logarithm, base 10", ["10ˣ", "10^", "Ten to the power"]],
+  ["ln", "ln(", "Natural logarithm", ["eˣ", "e^", "e to the power"]],
+  ["x³", "^3", "Cube", ["∛x", "∛(", "Cube root"]],
+  ["ʸ√x", " root ", "Root of any degree"],
+  ["1/x", ":inv", "Reciprocal"],
+  ["|x|", "abs(", "Absolute value"],
+  ["x!", "!", "Factorial"],
+  ["nCr", " nCr ", "Combinations"],
+  ["nPr", " nPr ", "Permutations"],
+  ["mod", " mod ", "Remainder"],
+  ["EE", "E", "Times ten to the power"],
+  ["±", ":neg", "Change sign"],
+  ["MC", ":mc", "Clear memory"],
+  ["MR", ":mr", "Recall memory"],
+  ["M+", ":m+", "Add to memory"],
+  ["M−", ":m-", "Subtract from memory"],
+  ["Ans", "ans", "Last answer"],
+];
+
+/** A number as text the calculator reads back exactly (negative ones in brackets) */
+const asText = (v: number) => {
+  const s = String(Number(v.toPrecision(15)));
+  return v < 0 ? `(${s})` : s;
+};
+
+export default function Calculator({ preset }: ToolProps) {
   const T = useT();
   const f = useFmt();
-  const [expr, setExpr] = useState("");
+  const [expr, setExprState] = useState("");
+  // The latest text, so keys pressed in quick succession build on each other, not on the last render
+  const exprRef = useRef("");
+  exprRef.current = expr;
+  const setExpr = (v: string) => {
+    exprRef.current = v;
+    setExprState(v);
+  };
   const [deg, setDeg] = useState(true);
+  const [sci, setSci] = useState(preset?.mode === "scientific");
+  const [second, setSecond] = useState(false);
+  const [memory, setMemory] = useState(0);
   const [history, setHistory] = useState<Entry[]>([]);
   const [shown, setShown] = useState<string | null>(null);
   const input = useRef<HTMLInputElement>(null);
@@ -76,6 +128,10 @@ export default function Calculator(_: ToolProps) {
 
   useEffect(() => {
     setHistory(store<Entry[]>(HISTORY_KEY, []).slice(0, 50));
+    // A use-case page sets the mode; otherwise the last one picked comes back
+    if (preset?.mode === undefined) setSci(store<string>(MODE_KEY, "basic") === "scientific");
+    const m = store<number>(MEMORY_KEY, 0);
+    setMemory(Number.isFinite(m) ? m : 0);
     try {
       const h = sessionStorage.getItem(HANDOFF_KEY);
       if (h) {
@@ -108,26 +164,89 @@ export default function Calculator(_: ToolProps) {
     setShown(null);
   }
 
+  function remember(v: number) {
+    const next = Number(v.toPrecision(15));
+    setMemory(next);
+    save(MEMORY_KEY, next);
+  }
+
+  /** The number on screen: the live answer, or the last one shown */
+  const current = () => (r.ok ? r.v : (last.current ?? 0));
+
+  function pressSci(key: SciKey) {
+    const insert = second && key[3] ? key[3][1] : key[1];
+    if (insert === ":2nd") {
+      setSecond(!second);
+      return;
+    }
+    setSecond(false);
+    setShown(null);
+    const body = exprRef.current.trim();
+    switch (insert) {
+      case ":inv":
+        setExpr(body ? `1/(${body})` : "1/");
+        caret.current = null;
+        restore(99);
+        return;
+      case ":neg": {
+        const m = /^−\((.*)\)$/.exec(body);
+        setExpr(m ? m[1]! : body ? `−(${body})` : "−");
+        caret.current = null;
+        restore(99);
+        return;
+      }
+      case ":mc":
+        remember(0);
+        return;
+      case ":m+":
+        remember(memory + current());
+        return;
+      case ":m-":
+        remember(memory - current());
+        return;
+      case ":mr":
+        press(asText(memory));
+        return;
+    }
+    press(insert);
+  }
+
+  /** Where keys insert: the field's selection when it shows the current text, else our own caret */
+  const caret = useRef<number | null>(null);
+  function selection(el: HTMLInputElement | null): [number, number] {
+    const cur = exprRef.current;
+    if (el && el.value === cur && el.selectionStart !== null && el.selectionEnd !== null)
+      return [el.selectionStart, el.selectionEnd];
+    const at = Math.min(caret.current ?? cur.length, cur.length);
+    return [at, at];
+  }
+
   function press(k: string) {
     const el = coarse() ? null : input.current;
+    const cur = exprRef.current;
     setShown(null);
     if (k === "clear") {
       setExpr("");
+      caret.current = 0;
     } else if (k === "back") {
-      const a = el?.selectionStart ?? expr.length;
-      const b = el?.selectionEnd ?? expr.length;
-      if (a !== b) setExpr(expr.slice(0, a) + expr.slice(b));
-      else if (a > 0) {
-        setExpr(expr.slice(0, a - 1) + expr.slice(a));
+      const [a, b] = selection(el);
+      if (a !== b) {
+        setExpr(cur.slice(0, a) + cur.slice(b));
+        caret.current = a;
+        restore(a);
+      } else if (a > 0) {
+        setExpr(cur.slice(0, a - 1) + cur.slice(a));
+        caret.current = a - 1;
         restore(a - 1);
       }
       return;
     } else if (k === "=") {
       commit();
+      caret.current = null;
     } else {
-      const a = el?.selectionStart ?? expr.length;
-      const b = el?.selectionEnd ?? expr.length;
-      setExpr(expr.slice(0, a) + k + expr.slice(b));
+      const [a, b] = selection(el);
+      setExpr(cur.slice(0, a) + k + cur.slice(b));
+      caret.current = a + k.length;
       restore(a + k.length);
       return;
     }
@@ -149,7 +268,7 @@ export default function Calculator(_: ToolProps) {
 
   return (
     <CalcCard
-      className="calc-pad-card"
+      className={`calc-pad-card${sci ? " sci" : ""}`}
       result={
         <div className="calc-history">
           <div className="calc-sub-head">
@@ -176,6 +295,7 @@ export default function Calculator(_: ToolProps) {
                     title={T("Use this answer")}
                     onClick={() => {
                       setExpr(String(Number(h.v.toPrecision(15))));
+                      caret.current = null;
                       setShown(null);
                       restore(99);
                     }}
@@ -207,10 +327,20 @@ export default function Calculator(_: ToolProps) {
               "Also: sqrt, cbrt, sin, cos, tan, log, ln, abs, 5! and ans (the last answer). Enter keeps the answer, Esc clears.",
             )}
           </p>
+          <p>
+            {T(
+              "Scientific adds inverse and hyperbolic trig (press 2nd), powers of 10 and e, nCr and nPr, any root (27 root 3 = 3), 2E3 for 2 × 10³, and memory: M+ and M− add the answer on screen to the memory, MR puts it back in the sum.",
+            )}
+          </p>
         </How>
       }
     >
       <div className="calc-screen">
+        {memory !== 0 && (
+          <span className="calc-mem" title={T("Memory")}>
+            M = {f.n(memory, 10)}
+          </span>
+        )}
         <input
           ref={input}
           value={expr}
@@ -223,6 +353,7 @@ export default function Calculator(_: ToolProps) {
           name="expr"
           onChange={(e) => {
             setExpr(e.target.value);
+            caret.current = null;
             setShown(null);
           }}
           onKeyDown={(e) => {
@@ -249,6 +380,28 @@ export default function Calculator(_: ToolProps) {
         </span>
       </div>
       <div className="calc-sub-head">
+        <div className="seg sm" role="group" aria-label={T("Calculator mode")}>
+          <button
+            type="button"
+            aria-pressed={!sci}
+            onClick={() => {
+              setSci(false);
+              save(MODE_KEY, "basic");
+            }}
+          >
+            {T("Basic")}
+          </button>
+          <button
+            type="button"
+            aria-pressed={sci}
+            onClick={() => {
+              setSci(true);
+              save(MODE_KEY, "scientific");
+            }}
+          >
+            {T("Scientific")}
+          </button>
+        </div>
         <div className="seg sm" role="group" aria-label={T("Angles")}>
           <button type="button" aria-pressed={deg} onClick={() => setDeg(true)}>
             {T("Degrees")}
@@ -263,6 +416,28 @@ export default function Calculator(_: ToolProps) {
         </div>
         {live && <CopyIcon text={live} what={T("Answer")} />}
       </div>
+      <div className={`calc-pads${sci ? " sci" : ""}`}>
+      {sci && (
+        <div className="calc-keys calc-sci" role="group" aria-label={T("Scientific keys")}>
+          {SCI.map((key) => {
+            const alt = second && key[3];
+            const [label, , name] = alt ? key[3]! : key;
+            return (
+              <button
+                key={key[0]}
+                type="button"
+                className={`fn${key[1] === ":2nd" ? " shift" : ""}${alt ? " alt" : ""}`}
+                aria-label={T(name)}
+                aria-pressed={key[1] === ":2nd" ? second : undefined}
+                onMouseDown={(e) => e.preventDefault()}
+                onClick={() => pressSci(key)}
+              >
+                {label}
+              </button>
+            );
+          })}
+        </div>
+      )}
       <div className="calc-keys">
         {KEYS.map(([label, k, kind, name]) => (
           <button
@@ -276,6 +451,7 @@ export default function Calculator(_: ToolProps) {
             {k === "back" ? <Icon name="back" /> : label}
           </button>
         ))}
+      </div>
       </div>
     </CalcCard>
   );

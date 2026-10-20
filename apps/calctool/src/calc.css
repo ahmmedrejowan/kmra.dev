@@ -703,6 +703,44 @@ select.calc-control {
   color: var(--on-acc);
   font-size: 24px;
 }
+/* Scientific mode: the function keys sit beside the number pad (stacked on narrower screens) */
+.calc-pad-card.sci .calc-body {
+  grid-template-columns: minmax(0, 2.15fr) minmax(250px, 1fr);
+}
+.calc-pads {
+  display: grid;
+  gap: 14px;
+}
+.calc-pads.sci {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.calc-sci button {
+  font-size: 15px;
+  white-space: nowrap;
+}
+.calc-sci button.alt {
+  color: var(--acc);
+}
+.calc-sci button.shift[aria-pressed="true"] {
+  background: var(--acc);
+  border-color: var(--acc);
+  color: var(--on-acc);
+}
+.calc-mem {
+  justify-self: start;
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: var(--acc-soft);
+  color: var(--acc);
+  font-size: 12.5px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+@media (max-width: 1080px) {
+  .calc-pads.sci {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
 .calc-history {
   display: flex;
   flex-direction: column;
@@ -829,7 +867,8 @@ select.calc-control {
 
 @media (max-width: 760px) {
   .calc-body,
-  .calc-pad-card .calc-body {
+  .calc-pad-card .calc-body,
+  .calc-pad-card.sci .calc-body {
     grid-template-columns: minmax(0, 1fr);
     min-height: 0;
   }
@@ -849,6 +888,10 @@ select.calc-control {
   }
   .calc-keys button {
     height: 48px;
+  }
+  .calc-sci button {
+    height: 42px;
+    font-size: 14px;
   }
   .calc-history ol {
     max-height: 220px;

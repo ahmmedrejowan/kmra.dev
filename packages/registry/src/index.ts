@@ -2307,6 +2307,7 @@ export const apps = [
     popular: [
       "percentage",
       "calculator",
+      "scientific-calculator",
       "unit-converter",
       "loan",
       "age",
@@ -2317,7 +2318,7 @@ export const apps = [
       "time-zones",
     ],
     tools: [
-      { slug: "calculator", title: "Online calculator", name: "Calculator", description: "A clear calculator with history, brackets, powers, roots and percentages. Works with the keyboard.", blurb: "Everyday sums, with history", icon: "calculator", group: "Everyday", ready: true, steps: ["Type a sum or tap the keys.", "See the answer as you type.", "Click a past answer to use it again."] },
+      { slug: "calculator", title: "Online calculator", name: "Calculator", description: "A clear calculator with history, brackets, powers, roots and percentages, and a scientific mode with trig, logs, memory and more. Works with the keyboard.", blurb: "Everyday sums, with history", icon: "calculator", group: "Everyday", ready: true, steps: ["Type a sum or tap the keys.", "See the answer as you type.", "Click a past answer to use it again."] },
       { slug: "percentage", title: "Percentage calculator", name: "Percentage", description: "What is X% of Y, X is what percent of Y, and the percent change from one number to another.", blurb: "Of, is what %, change", icon: "percent", group: "Everyday", ready: true, steps: ["Pick the question you have.", "Type the two numbers.", "Read the answer and how it was worked out."] },
       { slug: "discount", title: "Discount calculator", name: "Discount", description: "The sale price and how much you save, for a percent off, an amount off, or two discounts in a row.", blurb: "Sale price and savings", icon: "tag", group: "Everyday", ready: true, steps: ["Type the price.", "Type the discount, in percent or an amount.", "See the price you pay and what you save."] },
       { slug: "tip", title: "Tip calculator and bill splitter", name: "Tip and split", description: "Work out the tip and split the bill between people, with rounding up if you like.", blurb: "Tip, split, round up", icon: "receipt", group: "Everyday", ready: true, steps: ["Type the bill.", "Pick a tip and the number of people.", "See what each person pays."] },
@@ -2343,6 +2344,7 @@ export const apps = [
       { slug: "hourly-to-salary", tool: "salary", name: "Hourly to salary", short: "Per hour to per year", group: "Money", title: "Hourly rate to yearly salary", intro: "Turn an hourly wage into a yearly, monthly and weekly salary.", about: ["The default is 40 hours a week, 52 weeks a year; change both to match your job."], preset: { per: "hour" } },
       { slug: "how-old-am-i", tool: "age", name: "How old am I", short: "Exact age today", group: "Dates", title: "How old am I?", intro: "Your exact age today in years, months and days.", about: ["Leap years are counted, so the days are exact."], preset: {} },
       { slug: "days-between-dates", tool: "date-difference", name: "Days between dates", short: "Count the days", group: "Dates", title: "How many days between two dates", intro: "Count the days, weeks and working days between two dates.", about: ["Choose whether to count the last day too."], preset: {} },
+      { slug: "scientific-calculator", tool: "calculator", name: "Scientific calculator", short: "Trig, logs, memory", group: "Everyday", title: "Scientific calculator", intro: "A full scientific calculator: sin, cos and tan with their inverses and hyperbolic forms, logs, powers and roots, factorials, nCr and nPr, and memory keys.", about: ["Press 2nd for the inverse functions; Degrees or Radians sets how angles are read."], preset: { mode: "scientific" } },
       { slug: "split-the-bill", tool: "tip", name: "Split the bill", short: "Between friends", group: "Everyday", title: "Split the bill", intro: "Split a restaurant bill evenly, with or without a tip.", about: ["Round up so the total is easy to pay in cash."], preset: { tip: 0 } },
       { slug: "vat-calculator", tool: "sales-tax", name: "VAT calculator", short: "Add or remove VAT", group: "Everyday", title: "VAT calculator", intro: "Add VAT to a price, or find the price before VAT.", about: ["Pick your country's rate, or type any rate."], preset: { rate: 20 } },
       { slug: "cm-to-inches", tool: "unit-converter", name: "cm to inches", short: "Length", group: "Units", title: "Centimetres to inches", intro: "Convert centimetres to inches and feet.", about: ["1 inch is exactly 2.54 cm."], preset: { kind: "length", from: "cm", to: "in" } },

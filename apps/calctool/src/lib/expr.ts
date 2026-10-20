@@ -2,7 +2,8 @@
  * A small expression calculator (no eval: the CSP forbids it, and it would be unsafe anyway).
  *
  *   + − × ÷ * / ^ ( )   2(3) and 2π multiply   √9  sqrt cbrt  sin cos tan (degrees or radians)
- *   asin acos atan  log (base 10)  ln  abs  round  floor  ceil   π pi e  ans   5!   10%
+ *   asin acos atan  sinh cosh tanh asinh acosh atanh  log (base 10)  ln  exp  abs  round  floor
+ *   ceil   π pi e  ans   5!   10%   2E3 (2 × 10³)   7 mod 3   5 nCr 2   5 nPr 2   27 root 3 (∛27)
  *
  * Percentages work like a phone calculator: "200 + 10%" adds 10% of 200 (= 220), "200 × 10%"
  * is 20, and "12% of 250" is 30.
@@ -40,6 +41,13 @@ const FUNCS = new Set([
   "asin",
   "acos",
   "atan",
+  "sinh",
+  "cosh",
+  "tanh",
+  "asinh",
+  "acosh",
+  "atanh",
+  "exp",
   "log",
   "ln",
   "abs",
@@ -78,6 +86,9 @@ export function tokenize(src: string): Tok[] {
       continue;
     }
     const num = /^(\d+\.?\d*|\.\d+)(e[-+]?\d+)?/i.exec(s.slice(i));
+    if (num && !num[2] && /^E[-+]?\s*$/.test(s.slice(i + num[0].length)))
+      // "2E" or "2E-" waiting for its exponent (the EE key)
+      throw new CalcError("The sum isn't finished yet.", true);
     if (num && !(num[0] === "." && !/\d/.test(s[i + 1] ?? ""))) {
       // "2e" followed by a letter is 2 × e, not an exponent
       out.push({ t: "num", v: Number(num[0]) });
@@ -113,7 +124,8 @@ export function tokenize(src: string): Tok[] {
     if (word) {
       const w = word[0].toLowerCase();
       if (w === "of") out.push({ t: "op", v: "*" });
-      else if (w === "mod") out.push({ t: "op", v: "mod" });
+      else if (w === "mod" || w === "ncr" || w === "npr" || w === "root")
+        out.push({ t: "op", v: w });
       else if (FUNCS.has(w) || w in CONSTS || w === "ans")
         out.push({ t: "id", v: w });
       else
@@ -179,13 +191,17 @@ export function evaluate(src: string, opts: EvalOptions = {}): number {
   function mul(): Val {
     let left = unary();
     for (;;) {
-      if (isOp("*") || isOp("/") || isOp("mod")) {
+      if (isOp("*") || isOp("/") || isOp("mod") || isOp("ncr") || isOp("npr") || isOp("root")) {
         const op = (toks[p++] as { v: string }).v;
         const right = unary();
         if (op === "*") left = { v: left.v * right.v };
         else if (op === "/") {
           if (right.v === 0) throw new CalcError("You can't divide by zero.");
           left = { v: left.v / right.v };
+        } else if (op === "ncr" || op === "npr") {
+          left = { v: choose(left.v, right.v, op === "ncr") };
+        } else if (op === "root") {
+          left = { v: nthRoot(left.v, right.v) };
         } else {
           if (right.v === 0) throw new CalcError("You can't divide by zero.");
           left = { v: left.v - right.v * Math.floor(left.v / right.v) };
@@ -292,6 +308,33 @@ function factorial(n: number): number {
   return r;
 }
 
+/** Combinations (nCr) or permutations (nPr) of whole numbers, 0 ≤ r ≤ n */
+function choose(n: number, r: number, combos: boolean): number {
+  if (!Number.isInteger(n) || !Number.isInteger(r) || n < 0 || r < 0)
+    throw new CalcError("nCr and nPr work on whole numbers from 0 up.");
+  if (r > n) return 0;
+  const k = combos ? Math.min(r, n - r) : r;
+  let v = 1;
+  for (let i = 1; i <= k; i++) {
+    v = combos ? (v * (n - k + i)) / i : v * (n - i + 1);
+    if (!Number.isFinite(v)) throw new CalcError("The answer is too big to show.");
+  }
+  return Math.round(v);
+}
+
+/** The y-th root of x; odd roots of negative numbers are real (∛−8 = −2) */
+function nthRoot(x: number, y: number): number {
+  if (y === 0) throw new CalcError("A root needs a degree other than 0.");
+  if (x < 0) {
+    if (Number.isInteger(y) && Math.abs(y) % 2 === 1) return -Math.pow(-x, 1 / y);
+    throw new CalcError("Even roots of negative numbers have no real answer.");
+  }
+  const v = Math.pow(x, 1 / y);
+  // 27 root 3 should be exactly 3, not 3.0000000000000004
+  const r = Math.round(v);
+  return Math.abs(v - r) < 1e-12 && Math.abs(Math.pow(r, y) - x) < 1e-9 * Math.max(1, x) ? r : v;
+}
+
 function call(f: string, x: number, deg: boolean): number {
   const rad = deg ? (x * Math.PI) / 180 : x;
   const back = (r: number) => (deg ? (r * 180) / Math.PI : r);
@@ -320,6 +363,23 @@ function call(f: string, x: number, deg: boolean): number {
       return back(f === "asin" ? Math.asin(x) : Math.acos(x));
     case "atan":
       return back(Math.atan(x));
+    case "sinh":
+      return Math.sinh(x);
+    case "cosh":
+      return Math.cosh(x);
+    case "tanh":
+      return Math.tanh(x);
+    case "asinh":
+      return Math.asinh(x);
+    case "acosh":
+      if (x < 1) throw new CalcError("acosh takes values from 1 up.");
+      return Math.acosh(x);
+    case "atanh":
+      if (x <= -1 || x >= 1)
+        throw new CalcError("atanh takes values between −1 and 1.");
+      return Math.atanh(x);
+    case "exp":
+      return Math.exp(x);
     case "log":
     case "ln":
       if (x <= 0) throw new CalcError("Logarithms need a number above 0.");
