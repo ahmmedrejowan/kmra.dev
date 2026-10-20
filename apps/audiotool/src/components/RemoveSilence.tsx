@@ -14,7 +14,7 @@ export default function RemoveSilence(_: ToolProps) {
   return (
     <Workspace
       tool="remove-silence"
-      suffix="trimmed"
+      suffix="remove-silence"
       action={T("Remove silence")}
       dropTitle={T("Drop recordings to remove the silent gaps")}
       job={(info) =>

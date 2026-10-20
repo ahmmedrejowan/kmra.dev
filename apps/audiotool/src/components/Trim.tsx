@@ -28,7 +28,7 @@ export default function Trim({ preset }: ToolProps) {
     <Workspace
       tool="trim"
       multiple={false}
-      suffix={ringtone ? "ringtone" : "cut"}
+      suffix="trim"
       action={ringtone ? T("Make the ringtone") : T("Cut")}
       dropTitle={
         ringtone

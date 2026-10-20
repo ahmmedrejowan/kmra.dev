@@ -17,7 +17,7 @@ export default function VideoToAudio({ preset }: ToolProps) {
   return (
     <Workspace
       tool="video-to-audio"
-      suffix=""
+      suffix="video-to-audio"
       action={T("Save the sound")}
       dropTitle={T("Drop videos to save their sound")}
       chooseLabel={T("Choose videos")}

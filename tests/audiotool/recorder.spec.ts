@@ -57,7 +57,7 @@ test("records the (fake) microphone, then saves MP3 and WAV", async ({
     page.getByRole("button", { name: "Save as MP3" }).click(),
   );
   let p = probe(await bytes(d), "mp3");
-  expect(d.suggestedFilename()).toMatch(/^recording-\d{8}-\d{4}\.mp3$/);
+  expect(d.suggestedFilename()).toMatch(/^recording-\d{8}-\d{4}-kmra\.mp3$/);
   expect(p.audio?.codec_name).toBe("mp3");
   expect(p.dur).toBeGreaterThan(2);
   expect(p.dur).toBeLessThan(5);

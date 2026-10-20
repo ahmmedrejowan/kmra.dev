@@ -17,6 +17,8 @@ import {
   formatBytes,
   IMAGE_ACCEPT,
   isImageFile,
+  tagged,
+  toolName,
 } from "@kmra/ui/lib/files";
 import { takeFiles } from "@kmra/ui/lib/handoff";
 import { toast } from "@kmra/ui/lib/toast";
@@ -159,9 +161,9 @@ const isSvg = (f: File) =>
 /** Formats the original file can be handed back in (HEIC and the like are always converted) */
 const KEEPABLE = new Set(["image/jpeg", "image/png", "image/webp"]);
 
-function outName(file: File, type: string): string {
-  const base = file.name.replace(/\.[^.]+$/, "");
-  return `${base}-kmra.${EXT[type as Format] ?? "img"}`;
+/** "photo.jpg" from Compress → "photo-compress-kmra.jpg" */
+function outName(file: File, type: string, tool: string): string {
+  return tagged(`${toolName(file.name, tool === "editor" ? "edit" : tool)}.${EXT[type as Format] ?? "img"}`);
 }
 
 function ImageToolView({ tool, preset, tools, lang = "en" }: Props) {
@@ -547,9 +549,9 @@ function ImageToolView({ tool, preset, tools, lang = "en" }: Props) {
     for (const it of items) {
       const st = settingsFor(it);
       const r = noBigger(await engine.encode(it.key, it.file.type, st), it, st);
-      let name = outName(it.file, r.type);
+      let name = outName(it.file, r.type, tool);
       for (let n = 2; used.has(name); n++)
-        name = outName(it.file, r.type).replace(/(\.\w+)$/, `-${n}$1`);
+        name = outName(it.file, r.type, tool).replace(/-kmra(\.\w+)$/, `-${n}-kmra$1`);
       used.add(name);
       outFiles.push({ name, blob: r.blob });
     }
@@ -561,13 +563,13 @@ function ImageToolView({ tool, preset, tools, lang = "en" }: Props) {
     const it = items[i];
     if (!it) return;
     if (out && out.key === it.key && i === cur) {
-      downloadBlob(out.blob, outName(it.file, out.type));
+      downloadBlob(out.blob, outName(it.file, out.type, tool));
       return;
     }
     try {
       const st = settingsFor(it);
       const r = noBigger(await engine.encode(it.key, it.file.type, st), it, st);
-      downloadBlob(r.blob, outName(it.file, r.type));
+      downloadBlob(r.blob, outName(it.file, r.type, tool));
     } catch {
       toast(
         T(
@@ -592,7 +594,7 @@ function ImageToolView({ tool, preset, tools, lang = "en" }: Props) {
       );
       downloadBlob(
         new Blob([zipSync(entries, { level: 0 })], { type: "application/zip" }),
-        "kmra-images.zip",
+        `images-${tool === "editor" ? "edit" : tool}.zip`,
       );
     } catch {
       toast(T("Couldn't build the zip. Try fewer or smaller images."));

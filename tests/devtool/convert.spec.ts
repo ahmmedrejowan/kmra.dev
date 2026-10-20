@@ -136,7 +136,7 @@ test("csv-json reads an Excel workbook sheet by sheet", async ({ page }) => {
       .getByRole("button", { name: "Download" })
       .click(),
   );
-  expect(d.suggestedFilename()).toBe("devtool-sheet-Places.csv");
+  expect(d.suggestedFilename()).toBe("devtool-sheet-Places-kmra.csv");
   expect((await bytes(d)).toString()).toBe("city,country\nDhaka,Bangladesh");
 });
 

@@ -30,7 +30,7 @@ test("merge joins two PDFs in order, and Move up swaps them", async ({
   await addFiles(page, [TEXT6, WIDE2]);
   await loaded(page, 8);
   let out = await runAndDownload(page, "Merge 2 PDFs");
-  expect(out.name).toBe("merged-kmra.pdf");
+  expect(out.name).toBe("text6-merge-kmra.pdf");
   let texts = await pageTexts(out.bytes);
   expect(texts).toHaveLength(8);
   expect(texts[0]).toContain("Apple");
@@ -53,9 +53,9 @@ test("split by ranges makes one PDF per range", async ({ page }) => {
   const out = await runAndDownload(page, "Split", "Download 2 files (zip)");
   const files = unzip(out.bytes);
   const names = Object.keys(files).sort();
-  expect(names).toEqual(["text6-pages-1-2.pdf", "text6-pages-3-6.pdf"]);
-  expect(await pageCount(files["text6-pages-1-2.pdf"]!)).toBe(2);
-  const last = await pageTexts(files["text6-pages-3-6.pdf"]!);
+  expect(names).toEqual(["text6-split-pages-1-2-kmra.pdf", "text6-split-pages-3-6-kmra.pdf"]);
+  expect(await pageCount(files["text6-split-pages-1-2-kmra.pdf"]!)).toBe(2);
+  const last = await pageTexts(files["text6-split-pages-3-6-kmra.pdf"]!);
   expect(last.map((t) => t.split(" ")[2])).toEqual(WORDS.slice(2));
 });
 
@@ -116,7 +116,7 @@ test("rotate turns every page left", async ({ page }) => {
     .getByRole("button", { name: "Left" })
     .click();
   const out = await runAndDownload(page, "Rotate");
-  expect(out.name).toBe("text6-rotated.pdf");
+  expect(out.name).toBe("text6-rotate-kmra.pdf");
   expect(await rotations(out.bytes)).toEqual([270, 270, 270, 270, 270, 270]);
   expect(await pageTexts(out.bytes)).toHaveLength(6);
 });
@@ -127,7 +127,7 @@ test("compress makes a picture-heavy PDF much smaller", async ({ page }) => {
   await loaded(page, 2);
   const out = await runAndDownload(page, "Compress");
   const inSize = readFileSync(HEAVY).length;
-  expect(out.name).toBe("heavy-compressed.pdf");
+  expect(out.name).toBe("heavy-compress-kmra.pdf");
   expect(await pageCount(out.bytes)).toBe(2);
   expect(out.bytes.length).toBeLessThan(inSize * 0.5);
   await expect(page.locator(".tool-area .result .delta").first()).toContainText(
@@ -184,7 +184,7 @@ test("sign: draw a signature, place it, download", async ({ page }) => {
   await expect(page.getByText("1 item on 1 page")).toBeVisible();
   const btn = page.getByRole("button", { name: "Download signed PDF" });
   const [d] = await Promise.all([page.waitForEvent("download"), btn.click()]);
-  expect(d.suggestedFilename()).toBe("text6-signed.pdf");
+  expect(d.suggestedFilename()).toBe("text6-sign-kmra.pdf");
   const b = new Uint8Array(readFileSync((await d.path())!));
   expect(Buffer.compare(Buffer.from(b), readFileSync(TEXT6))).not.toBe(0);
   expect(await pageCount(b)).toBe(6);
@@ -225,7 +225,7 @@ test("page numbers: 'Page N of 6' at the bottom of every page", async ({
   await addFiles(page, TEXT6);
   await loaded(page, 6);
   const out = await runAndDownload(page, "Add page numbers");
-  expect(out.name).toBe("text6-numbered.pdf");
+  expect(out.name).toBe("text6-page-numbers-kmra.pdf");
   const texts = await pageTexts(out.bytes);
   texts.forEach((t, i) => expect(t).toContain(`Page ${i + 1} of 6`));
 });
@@ -255,7 +255,7 @@ test("watermark stamps every page", async ({ page }) => {
   await loaded(page, 6);
   await page.getByLabel("Text", { exact: true }).fill("DRAFT COPY");
   const out = await runAndDownload(page, "Add watermark");
-  expect(out.name).toBe("text6-watermarked.pdf");
+  expect(out.name).toBe("text6-watermark-kmra.pdf");
   expect(await imagesPerPage(out.bytes)).toEqual([1, 1, 1, 1, 1, 1]);
   // The original text stays selectable under the mark
   expect((await pageTexts(out.bytes))[3]).toContain("Damson");
@@ -293,7 +293,7 @@ test("image to PDF: one page per picture, orientation follows the picture", asyn
     page.waitForEvent("download"),
     page.getByRole("button", { name: "Make PDF and download" }).click(),
   ]);
-  expect(d.suggestedFilename()).toBe("images-kmra.pdf");
+  expect(d.suggestedFilename()).toBe("photo-wide-from-image-kmra.pdf");
   const b = new Uint8Array(readFileSync((await d.path())!));
   // A4 by default, landscape for the wide picture
   expect(await sizes(b)).toEqual([
@@ -312,10 +312,10 @@ test("PDF to images: every page as a JPG in a zip", async ({ page }) => {
     "Convert to images",
     "Download 6 files (zip)",
   );
-  expect(out.name).toBe("pages-kmra.zip");
+  expect(out.name).toBe("text6-to-image-kmra.zip");
   const files = unzip(out.bytes);
   expect(Object.keys(files).sort()).toEqual(
-    [1, 2, 3, 4, 5, 6].map((n) => `text6-page-${n}.jpg`),
+    [1, 2, 3, 4, 5, 6].map((n) => `text6-to-image-page-${n}-kmra.jpg`),
   );
   for (const f of Object.values(files)) expect(f[0]).toBe(0xff);
 });
@@ -334,8 +334,8 @@ test("PDF to images: only the ticked pages", async ({ page }) => {
     "Download 2 files (zip)",
   );
   expect(Object.keys(unzip(out.bytes)).sort()).toEqual([
-    "text6-page-2.jpg",
-    "text6-page-4.jpg",
+    "text6-to-image-page-2-kmra.jpg",
+    "text6-to-image-page-4-kmra.jpg",
   ]);
 });
 
@@ -344,7 +344,7 @@ test("PDF to text: every word comes back", async ({ page }) => {
   await addFiles(page, TEXT6);
   await loaded(page, 6);
   const out = await runAndDownload(page, "Extract text");
-  expect(out.name).toBe("text6.txt");
+  expect(out.name).toBe("text6-to-text-kmra.txt");
   const txt = Buffer.from(out.bytes).toString("utf8");
   for (const [i, w] of WORDS.entries()) {
     expect(txt).toContain(w);

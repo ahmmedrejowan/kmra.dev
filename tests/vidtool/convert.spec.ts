@@ -168,7 +168,7 @@ test("video to GIF: first 5 s at 480 px and 12 fps, looping, size near the estim
   const estimate = Number(await est.getAttribute("data-bytes"));
 
   const r = await runJob(page);
-  expect(r.name).toBe("vid-landscape.gif");
+  expect(r.name).toBe("vid-landscape-video-to-gif-kmra.gif");
   expect(r.engine).toBe("ffmpeg");
   await expect(page.locator(".vt-stage img.vt-gif")).toBeVisible();
   const p = probe(r.buf, "gif");
@@ -226,7 +226,7 @@ test("GIF to MP4 on the fast engine: smaller, even size, plays, repeats", async 
   await expect(page.locator(".vt-plan")).toContainText("Hardware (fast)");
   const r = await runJob(page);
   expect(r.engine).toBe("webcodecs");
-  expect(r.name).toBe("vid-anim.mp4");
+  expect(r.name).toBe("vid-anim-gif-to-video-kmra.mp4");
   const p = probe(r.buf, "mp4");
   expect(p.video?.codec_name).toBe("h264");
   expect(p.video?.pix_fmt).toMatch(/^yuvj?420p$/);
@@ -295,7 +295,7 @@ test("extract frames: the frame on screen as PNG and JPG", async ({ page }) => {
   await saveFrames(page);
   await expect(page.locator(".vt-result img.vt-still")).toBeVisible();
   const d = await download(page, () => page.locator(".vt-download").click());
-  expect(d.suggestedFilename()).toBe("vid-colors-0m01.5s.png");
+  expect(d.suggestedFilename()).toBe("vid-colors-0m01.5s-kmra.png");
   const png = save(await bytes(d), "png");
   expect(colourName(rgb(png, 10, 10))).toBe("green");
   expect(
@@ -335,13 +335,13 @@ test("extract frames: every second, every 25 frames and at scene changes, in a z
   await saveFrames(page);
   await expect(page.locator(".vt-result")).toHaveAttribute("data-count", "4");
   const z = await download(page, () => page.locator(".vt-zip").click());
-  expect(z.suggestedFilename()).toBe("vid-colors-frames.zip");
+  expect(z.suggestedFilename()).toBe("vid-colors-frames-kmra.zip");
   const files = unzip(await bytes(z));
   expect(files.map((f) => f.split("/").pop())).toEqual([
-    "vid-colors-001.png",
-    "vid-colors-002.png",
-    "vid-colors-003.png",
-    "vid-colors-004.png",
+    "vid-colors-001-kmra.png",
+    "vid-colors-002-kmra.png",
+    "vid-colors-003-kmra.png",
+    "vid-colors-004-kmra.png",
   ]);
   expect(colours(files)).toEqual(expected);
 
@@ -377,7 +377,7 @@ test("extract frames: contact sheet, and the limit note", async ({ page }) => {
   await expect(page.locator(".vt-run")).toHaveText("Make contact sheet");
   await saveFrames(page);
   const d = await download(page, () => page.locator(".vt-download").click());
-  expect(d.suggestedFilename()).toBe("vid-colors-contact-sheet.png");
+  expect(d.suggestedFilename()).toBe("vid-colors-contact-sheet-kmra.png");
   const sheet = save(await bytes(d), "png");
   // 4 tiles of 400 px, 10 px gaps, 24 px margins; one row of 225 px under a 64 px title
   expect(
@@ -520,7 +520,7 @@ test("screen recorder: record 3 s, stop, download a playable video", async ({
   await expect(page.locator(".vt-stage video")).toBeVisible();
   const d = await download(page, () => page.locator(".vt-download").click());
   expect(d.suggestedFilename()).toMatch(
-    /^screen-recording-\d{4}-\d\d-\d\d-\d{4}\.(mp4|webm)$/,
+    /^screen-recording-\d{4}-\d\d-\d\d-\d{4}-kmra\.(mp4|webm)$/,
   );
   const ext = d.suggestedFilename().split(".").pop()!;
   const p = probe(await bytes(d), ext);

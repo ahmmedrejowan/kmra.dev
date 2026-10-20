@@ -7,7 +7,7 @@ export default function Normalize(_: ToolProps) {
   return (
     <Workspace
       tool="normalize"
-      suffix="normalized"
+      suffix="normalize"
       action={T("Normalize")}
       dropTitle={T("Drop audio files to even out their loudness")}
       job={(info) =>

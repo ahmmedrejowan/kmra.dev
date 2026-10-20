@@ -19,7 +19,7 @@ const CASES: Case[] = [
     slug: "link-qr",
     fill: [["Link", "kmra.dev/x?a=1"]],
     payload: "https://kmra.dev/x?a=1",
-    file: "qr-url.png",
+    file: "qr-url-kmra.png",
   },
   {
     slug: "wifi-qr",
@@ -28,7 +28,7 @@ const CASES: Case[] = [
       ["Password", "p@ss:word"],
     ],
     payload: "WIFI:T:WPA;S:Cafe\\;Guest;P:p@ss\\:word;;",
-    file: "qr-wifi.png",
+    file: "qr-wifi-kmra.png",
   },
   {
     slug: "contact-qr",
@@ -49,7 +49,7 @@ const CASES: Case[] = [
       "EMAIL:ada@example.com",
       "END:VCARD",
     ].join("\n"),
-    file: "qr-vcard.png",
+    file: "qr-vcard-kmra.png",
   },
   {
     slug: "email-qr",
@@ -59,7 +59,7 @@ const CASES: Case[] = [
       ["Message", "Line one"],
     ],
     payload: "mailto:hi@kmra.dev?subject=Hello%20there&body=Line%20one",
-    file: "qr-email.png",
+    file: "qr-email-kmra.png",
   },
   {
     slug: "sms-qr",
@@ -68,7 +68,7 @@ const CASES: Case[] = [
       ["Message", "On my way"],
     ],
     payload: "SMSTO:+8801712345678:On my way",
-    file: "qr-sms.png",
+    file: "qr-sms-kmra.png",
   },
   {
     slug: "whatsapp-qr",
@@ -77,13 +77,13 @@ const CASES: Case[] = [
       ["Message (optional)", "Hi there"],
     ],
     payload: "https://wa.me/8801712345678?text=Hi%20there",
-    file: "qr-whatsapp.png",
+    file: "qr-whatsapp-kmra.png",
   },
   {
     slug: "location-qr",
     fill: [["Coordinates", "23.8103, 90.4125"]],
     payload: "geo:23.8103,90.4125",
-    file: "qr-geo.png",
+    file: "qr-geo-kmra.png",
   },
   {
     slug: "event-qr",
@@ -101,25 +101,25 @@ const CASES: Case[] = [
       "LOCATION:Cafe\\, Dhaka",
       "END:VEVENT",
     ].join("\n"),
-    file: "qr-event.png",
+    file: "qr-event-kmra.png",
   },
   {
     slug: "instagram-qr",
     fill: [["Username or profile link", "@kmra.dev"]],
     payload: "https://instagram.com/kmra.dev",
-    file: "qr-instagram.png",
+    file: "qr-instagram-kmra.png",
   },
   {
     slug: "facebook-qr",
     fill: [["Username or profile link", "kmradev"]],
     payload: "https://facebook.com/kmradev",
-    file: "qr-facebook.png",
+    file: "qr-facebook-kmra.png",
   },
   {
     slug: "youtube-qr",
     fill: [["Username or profile link", "kmra"]],
     payload: "https://youtube.com/@kmra",
-    file: "qr-youtube.png",
+    file: "qr-youtube-kmra.png",
   },
   {
     slug: "telegram-qr",
@@ -128,7 +128,7 @@ const CASES: Case[] = [
     ],
     // Pasted links are kept, minus tracking parameters
     payload: "https://t.me/kmra_bot",
-    file: "qr-telegram.png",
+    file: "qr-telegram-kmra.png",
   },
   {
     slug: "upi-qr",
@@ -140,7 +140,7 @@ const CASES: Case[] = [
     ],
     payload:
       "upi://pay?pa=shop@okaxis&pn=Rahim%20Store&am=250.00&cu=INR&tn=Order%207",
-    file: "qr-upi.png",
+    file: "qr-upi-kmra.png",
   },
   {
     slug: "sepa-qr",
@@ -164,7 +164,7 @@ const CASES: Case[] = [
       "",
       "Invoice 2026-1",
     ].join("\n"),
-    file: "qr-epc.png",
+    file: "qr-epc-kmra.png",
   },
   {
     slug: "bitcoin-qr",
@@ -175,14 +175,14 @@ const CASES: Case[] = [
     ],
     payload:
       "bitcoin:bc1qar0srrr7xfkvy5l643lydnw9re59gtzzwf5mdq?amount=0.001&label=Donation",
-    file: "qr-bitcoin.png",
+    file: "qr-bitcoin-kmra.png",
   },
   {
     slug: "generator",
     press: ["Text"],
     fill: [["Text", "Grüße, বাংলা ✓ — line 1\nline 2"]],
     payload: "Grüße, বাংলা ✓ — line 1\nline 2",
-    file: "qr-text.png",
+    file: "qr-text-kmra.png",
   },
 ];
 
@@ -228,7 +228,7 @@ test("generator: SVG download scans too, with a styled code", async ({
   const svg = await grab(page, () =>
     page.getByRole("button", { name: "SVG", exact: true }).click(),
   );
-  expect(svg.name).toBe("qr-url.svg");
+  expect(svg.name).toBe("qr-url-kmra.svg");
   expect(svg.buffer.toString()).toMatch(/^<svg [^>]*viewBox/);
   const r = await decodeOne(page, svg);
   expect(r.text).toBe("https://kmra.dev/svg");

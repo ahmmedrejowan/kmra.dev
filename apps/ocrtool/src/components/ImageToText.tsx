@@ -188,7 +188,7 @@ export default function ImageToText({ preset }: { preset?: Preset }) {
     const [ext, mime] = FORMAT_EXT[format];
     downloadBlob(
       new Blob([value], { type: `${mime};charset=utf-8` }),
-      `${base}.${ext}`,
+      `${base}-image-to-text.${ext}`,
     );
   }
 

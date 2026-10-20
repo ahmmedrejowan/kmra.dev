@@ -94,7 +94,7 @@ function BulkView() {
           // Too long for a QR code: skipped, reported below
         }
       }
-      await downloadZip(files, "qr-codes-kmra.zip");
+      await downloadZip(files, "qr-codes-bulk.zip");
       setBusy(
         files.length < list.length
           ? T("{n} lines were too long and were skipped.", {

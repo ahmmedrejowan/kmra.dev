@@ -32,7 +32,7 @@ test("diff-checker: counts, inline view, next change and the unified patch", asy
   const d = await download(page, () =>
     page.locator(".diff-out").getByRole("button", { name: "Download" }).click(),
   );
-  expect(d.suggestedFilename()).toBe("changes.patch");
+  expect(d.suggestedFilename()).toBe("changes-kmra.patch");
   expect((await bytes(d)).toString()).toBe(
     [
       "--- original",

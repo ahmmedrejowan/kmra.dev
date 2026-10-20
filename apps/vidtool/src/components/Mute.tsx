@@ -7,7 +7,7 @@ export default function Mute(_: ToolProps) {
   return (
     <Workspace
       tool="mute"
-      suffix="silent"
+      suffix="mute"
       action={T("Remove sound")}
       dropTitle={T("Drop videos to remove the sound")}
       job={(info) => ({ to: sameContainer(info), audio: { drop: true } })}

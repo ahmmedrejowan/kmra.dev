@@ -18,7 +18,7 @@ export default function Convert({ preset }: ToolProps) {
   return (
     <Workspace
       tool="convert"
-      suffix=""
+      suffix="convert"
       action={T("Convert")}
       dropTitle={T("Drop videos to convert")}
       job={() => ({ to, copyWhenPossible: true })}

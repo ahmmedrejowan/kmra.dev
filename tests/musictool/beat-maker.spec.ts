@@ -175,7 +175,7 @@ test("beat maker: downloads an MP3", async ({ page }) => {
   await fresh(page);
   await area(page).getByRole("group", { name: "File" }).getByRole("button", { name: "MP3" }).click();
   const d = await download(page, () => btn(page, "Download MP3").click());
-  expect(d.suggestedFilename()).toBe("beat-90bpm.mp3");
+  expect(d.suggestedFilename()).toBe("beat-90bpm-kmra.mp3");
   const b = await bytes(d);
   // An ID3 tag or straight into MPEG frames (sync word 0xFFE)
   const id3 = b.subarray(0, 3).toString() === "ID3";

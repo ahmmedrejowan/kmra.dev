@@ -63,7 +63,7 @@ test("base64 round-trips a binary file", async ({ page }) => {
   const d = await download(page, () =>
     btn(page, "Download decoded.png").click(),
   );
-  expect(d.suggestedFilename()).toBe("decoded.png");
+  expect(d.suggestedFilename()).toBe("decoded-kmra.png");
   expect((await bytes(d)).equals(png)).toBe(true);
 });
 

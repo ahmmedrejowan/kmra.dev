@@ -92,7 +92,7 @@ test("compressing never makes a file bigger: an already small image is kept", as
   const { d, b } = await save(page);
   expect(b.length).toBe(original);
   expect(info(b)).toEqual({ type: "jpeg", w: 400, h: 300 });
-  expect(d.suggestedFilename()).toBe("tiny-kmra.jpg");
+  expect(d.suggestedFilename()).toBe("tiny-compress-kmra.jpg");
 });
 
 test("a mistaken image can be removed in Simple mode", async ({ page }) => {

@@ -73,7 +73,7 @@ test("image to text reads a document, shows boxes and downloads .txt", async ({
   const d = await download(page, () =>
     page.getByRole("button", { name: "Download .txt" }).click(),
   );
-  expect(d.suggestedFilename()).toBe("ocr-doc.txt");
+  expect(d.suggestedFilename()).toBe("ocr-doc-image-to-text-kmra.txt");
   const file = (await bytes(d)).toString("utf8");
   expect(recall(DOC_LINES.join("\n"), file)).toBeGreaterThan(0.9);
 
@@ -158,12 +158,12 @@ test("batch OCR reads several files and downloads a zip and a combined file", as
   );
   const files = unzipSync(new Uint8Array(await bytes(z)));
   expect(Object.keys(files).sort()).toEqual([
-    "ocr-doc.txt",
-    "ocr-note.txt",
-    "ocr-ui.txt",
+    "ocr-doc-batch-ocr-kmra.txt",
+    "ocr-note-batch-ocr-kmra.txt",
+    "ocr-ui-batch-ocr-kmra.txt",
   ]);
   expect(
-    recall(NOTE_LINES.join(" "), strFromU8(files["ocr-note.txt"]!)),
+    recall(NOTE_LINES.join(" "), strFromU8(files["ocr-note-batch-ocr-kmra.txt"]!)),
   ).toBeGreaterThan(0.85);
 
   const md = await download(page, () =>

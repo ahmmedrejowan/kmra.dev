@@ -175,7 +175,7 @@ test("speed 2× on the fast engine halves the length, sound keeps its pitch", as
   await expect(page.locator(".vt-newlen")).toContainText("0:03.0");
   const r = await runJob(page);
   expect(r.engine).toBe("webcodecs");
-  expect(r.name).toBe("vid-landscape-2x.mp4");
+  expect(r.name).toBe("vid-landscape-speed-kmra.mp4");
   const p = probe(r.path);
   expect(Math.abs(p.dur - 3)).toBeLessThan(0.1);
   expect(p.video?.codec_name).toBe("h264");
@@ -220,7 +220,7 @@ test("speed 4× without sound, and a silent video", async ({ page }) => {
   await addFiles(page, gen(VID.webm));
   await page.locator(".vt-speed .chip", { hasText: /^0\.25×$/ }).click();
   const w = await runJob(page);
-  expect(w.name).toBe("vid-silent-0.25x.webm");
+  expect(w.name).toBe("vid-silent-speed-kmra.webm");
   const pw = probe(w.path);
   expect(pw.video?.codec_name).toBe("vp9");
   expect(Math.abs(pw.dur - 16)).toBeLessThan(0.15);
@@ -263,7 +263,7 @@ test("rotate 90° right by display rotation: copied, location left out", async (
   await expect(page.locator(".vt-turn.side")).toBeVisible();
   const r = await runJob(page);
   expect(r.engine).toBe("copy");
-  expect(r.name).toBe("vid-corner-rotated.mp4");
+  expect(r.name).toBe("vid-corner-rotate-kmra.mp4");
   const p = probe(r.path);
   expect(Math.abs(p.rotation ?? 0)).toBe(90);
   expect(p.video?.codec_name).toBe("h264");
@@ -292,7 +292,7 @@ test("rotate and flip re-encoded on the fast engine", async ({ page }) => {
   await page.locator(".vt-turns button", { hasText: "None" }).click();
   await pick(page, "Horizontal");
   const h = await runJob(page);
-  expect(h.name).toBe("vid-corner-flipped.mp4");
+  expect(h.name).toBe("vid-corner-rotate-kmra.mp4");
   red = redAt(h.path);
   expect([red.w, red.h]).toEqual([320, 180]);
   expect(red.x).toBeGreaterThan(0.7);
@@ -353,7 +353,7 @@ test("merge three clips encoded alike: copied, lengths add up", async ({
   });
   const r = await runJob(page);
   expect(r.engine).toBe("copy");
-  expect(r.name).toBe("merged.mp4");
+  expect(r.name).toBe("vid-part1-merge-kmra.mp4");
   const p = probe(r.path);
   expect(Math.abs(p.dur - 7)).toBeLessThan(0.2);
   expect([p.video?.width, p.video?.height]).toEqual([640, 360]);

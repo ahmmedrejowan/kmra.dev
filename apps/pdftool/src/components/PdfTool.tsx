@@ -407,7 +407,7 @@ function PdfToolView({ tool, preset }: { tool: string; preset?: Preset }) {
     ) => {
       const d = await build(refs, bytesOf);
       if (edit) await edit(d);
-      return { name: `${name}${suffix}.pdf`, blob: await save(d) };
+      return { name: `${name}-${tool}${suffix}.pdf`, blob: await save(d) };
     };
     switch (tool) {
       case "remove-pages": {
@@ -417,13 +417,13 @@ function PdfToolView({ tool, preset }: { tool: string; preset?: Preset }) {
           (p) => !drop.has(p.id) && !fromText.includes(p.index),
         );
         if (!keep.length) throw new Error(T("That would remove every page."));
-        return [await one(keep, "-kmra")];
+        return [await one(keep, "")];
       }
       case "rotate":
         return [
           await one(
             list.map((p) => ({ ...p, rotate: (p.rotate + turn) % 360 })),
-            "-rotated",
+            "",
           ),
         ];
       case "split": {
@@ -458,17 +458,17 @@ function PdfToolView({ tool, preset }: { tool: string; preset?: Preset }) {
       case "grayscale":
         return [
           {
-            name: `${name}-${tool === "compress" ? "compressed" : "grayscale"}.pdf`,
+            name: `${name}-${tool}.pdf`,
             blob: await rasterTo(doc, list, tool === "grayscale"),
           },
         ];
       case "page-numbers":
-        return [await one(list, "-numbered", (d) => pageNumbers(d, num))];
+        return [await one(list, "", (d) => pageNumbers(d, num))];
       case "watermark":
-        return [await one(list, "-watermarked", (d) => watermark(d, wm))];
+        return [await one(list, "", (d) => watermark(d, wm))];
       case "metadata":
         return [
-          await one(list, "-kmra", (d) =>
+          await one(list, "", (d) =>
             writeMeta(d, meta ?? readMetaBlank(), metaStrip),
           ),
         ];
@@ -486,7 +486,7 @@ function PdfToolView({ tool, preset }: { tool: string; preset?: Preset }) {
             c.toBlob((b) => r(b!), imgType, 0.92),
           );
           c.width = c.height = 0;
-          outs.push({ name: `${name}-page-${p.index + 1}.${ext}`, blob });
+          outs.push({ name: `${name}-${tool}-page-${p.index + 1}.${ext}`, blob });
         }
         return outs;
       }
@@ -500,13 +500,13 @@ function PdfToolView({ tool, preset }: { tool: string; preset?: Preset }) {
         const all = parts.join("\n\n\f\n\n");
         return [
           {
-            name: `${name}.txt`,
+            name: `${name}-${tool}.txt`,
             blob: new Blob([all], { type: "text/plain" }),
           },
         ];
       }
       default:
-        return [await one(list, "-kmra")];
+        return [await one(list, "")];
     }
   }
 
@@ -527,8 +527,8 @@ function PdfToolView({ tool, preset }: { tool: string; preset?: Preset }) {
       let results: Out[];
       if (COMBINED.has(tool)) {
         if (!pages.length) throw new Error(T("There are no pages left."));
-        const name =
-          docs.length > 1 ? "merged-kmra" : `${base(docs[0]!.file.name)}-kmra`;
+        // Named after the first file: "report.pdf" + others merged → "report-merge-kmra.pdf"
+        const name = `${base(docs[0]!.file.name)}-${tool}`;
         results = [
           {
             name: `${name}.pdf`,
@@ -565,7 +565,7 @@ function PdfToolView({ tool, preset }: { tool: string; preset?: Preset }) {
     else
       await downloadZip(
         outs,
-        tool === "to-image" ? "pages-kmra.zip" : "pdfs-kmra.zip",
+        `${base(docs[0]?.file.name ?? "pdf")}-${tool}.zip`,
       );
   }
 

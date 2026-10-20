@@ -200,7 +200,7 @@ test.describe(() => {
     const d = await download(page, () =>
       page.getByRole("button", { name: "Download .html" }).click(),
     );
-    expect(d.suggestedFilename()).toBe("document.html");
+    expect(d.suggestedFilename()).toBe("document-kmra.html");
     const html = (await bytes(d)).toString();
     expect(html).toContain("<!doctype html>");
     expect(html).toContain("<strong>bold</strong>");

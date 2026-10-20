@@ -41,7 +41,7 @@ export default function Compress({ preset }: ToolProps) {
   return (
     <Workspace
       tool="compress"
-      suffix="compressed"
+      suffix="compress"
       action={T("Compress")}
       dropTitle={T("Drop audio files to compress them")}
       formats={["MP3", "WAV", "M4A", "FLAC", "OGG"]}

@@ -123,7 +123,7 @@ function GifFramesView() {
           name: `${base}-frame-${String(i + 1).padStart(pad, "0")}.${ext}`,
           blob: await out(i),
         });
-      await downloadZip(files, `${base}-frames.zip`);
+      await downloadZip(files, `${base}-gif-frames.zip`);
     } finally {
       setSaving(false);
     }

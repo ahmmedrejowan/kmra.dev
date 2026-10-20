@@ -11,7 +11,7 @@ export default function Pitch(_: ToolProps) {
   return (
     <Workspace
       tool="pitch"
-      suffix={`pitch${label(semi)}`}
+      suffix="pitch"
       action={semi > 0 ? T("Raise the pitch") : T("Lower the pitch")}
       dropTitle={T("Drop audio files to change their pitch")}
       idle={T("Pick a shift other than 0.")}

@@ -98,7 +98,7 @@ test("convert MP3 to WAV, and WAV to M4A", async ({ page }) => {
   await pick(page, "Format", "WAV");
   await expect(page.locator(".mp3-credit")).toHaveCount(0);
   let r = await runJob(page);
-  expect(r.name).toBe("aud-tone.wav");
+  expect(r.name).toBe("aud-tone-convert-kmra.wav");
   let p = probe(r.buf, "wav");
   expect(p.audio?.codec_name).toBe("pcm_s16le");
   expect(Math.abs(p.dur - 6)).toBeLessThan(0.15);
@@ -134,7 +134,7 @@ test("compress by quality as speech (mono) and to a target size", async ({ page 
   await pick(page, "Quality (kbps)", "48");
   await page.getByRole("checkbox", { name: "Speech (mono)" }).check();
   let r = await runJob(page);
-  expect(r.name).toBe("aud-tone-compressed.mp3");
+  expect(r.name).toBe("aud-tone-compress-kmra.mp3");
   let p = probe(r.buf, "mp3");
   expect(p.audio?.channels).toBe(1);
   expect(r.size).toBeLessThan(60_000);
@@ -154,7 +154,7 @@ test("video to audio: MP3, and M4A copied without re-encoding", async ({ page })
   await addFiles(page, gen(VID.landscape));
   await expect(page.locator(".vt-details")).toContainText("Left out");
   let r = await runJob(page);
-  expect(r.name).toBe("vid-landscape.mp3");
+  expect(r.name).toBe("vid-landscape-video-to-audio-kmra.mp3");
   let p = probe(r.buf, "mp3");
   expect(p.streams.some((s) => s.codec_type === "video")).toBe(false);
   expect(Math.abs(p.dur - 6)).toBeLessThan(0.2);
@@ -184,7 +184,7 @@ test("cut keeps the chosen part, on a waveform", async ({ page }) => {
   await expect(page.locator(".wp-wave canvas")).toBeVisible();
   await setRange(page, "1.0", "3.5");
   const r = await runJob(page);
-  expect(r.name).toBe("aud-tone-cut.mp3");
+  expect(r.name).toBe("aud-tone-trim-kmra.mp3");
   const p = probe(r.buf, "mp3");
   expect(Math.abs(p.dur - 2.5)).toBeLessThan(0.12);
 });
@@ -203,7 +203,7 @@ test("the iPhone ringtone page makes a 30 s M4R", async ({ page }) => {
   await addFiles(page, song);
   await expect(page.locator(".vt-ws")).toContainText("M4R");
   const r = await runJob(page);
-  expect(r.name).toMatch(/-ringtone\.m4r$/);
+  expect(r.name).toMatch(/-trim-kmra\.m4r$/);
   const p = probe(r.buf, "m4a");
   expect(p.audio?.codec_name).toBe("aac");
   expect(Math.abs(p.dur - 30)).toBeLessThan(0.2);
@@ -218,7 +218,7 @@ test("join three files in order into one MP3", async ({ page }) => {
   await expect(res).toBeVisible({ timeout: 150_000 });
   const d = await download(page, () => page.locator(".vt-download").click());
   const p = probe(await bytes(d), "mp3");
-  expect(d.suggestedFilename()).toBe("joined.mp3");
+  expect(d.suggestedFilename()).toBe("aud-part1-merge-kmra.mp3");
   expect(Math.abs(p.dur - 7)).toBeLessThan(0.2);
 });
 
@@ -252,7 +252,7 @@ test("fade, speed (2×, 0.5×), reverse and pitch keep or change the length as t
   await addFiles(page, gen(AUD.wav));
   r = await runJob(page);
   p = probe(r.buf, "wav");
-  expect(r.name).toBe("aud-tone-reversed.wav");
+  expect(r.name).toBe("aud-tone-reverse-kmra.wav");
   expect(Math.abs(p.dur - 4)).toBeLessThan(0.1);
 
   await openTool(page, "/pitch");

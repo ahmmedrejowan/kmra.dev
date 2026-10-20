@@ -21,7 +21,7 @@ export default function Convert({ preset }: ToolProps) {
   return (
     <Workspace
       tool="convert"
-      suffix=""
+      suffix="convert"
       action={T("Convert")}
       dropTitle={T("Drop audio files to convert them")}
       formats={["MP3", "WAV", "M4A", "FLAC", "OGG", "AAC", "MP4"]}

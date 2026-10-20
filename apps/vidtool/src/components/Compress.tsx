@@ -49,7 +49,7 @@ export default function Compress({ preset }: ToolProps) {
   return (
     <Workspace
       tool="compress"
-      suffix="compressed"
+      suffix="compress"
       action={T("Compress")}
       dropTitle={T("Drop a video to compress it")}
       job={job}

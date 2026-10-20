@@ -19,11 +19,11 @@ test("editor: two files, PNG output, one zip", async ({ page }) => {
   const d = await download(page, () =>
     ws.getByRole("button", { name: "Zip of 2" }).click(),
   );
-  expect(d.suggestedFilename()).toBe("kmra-images.zip");
+  expect(d.suggestedFilename()).toBe("images-edit-kmra.zip");
   const files = unzip(await bytes(d));
   expect(files.map((f) => f.name).sort()).toEqual([
-    "photo-kmra.png",
-    "small-kmra.png",
+    "photo-edit-kmra.png",
+    "small-edit-kmra.png",
   ]);
   expect(files.map((f) => info(f.data)).sort((a, b) => b.w - a.w)).toEqual([
     { type: "png", w: 1600, h: 1200 },
@@ -43,7 +43,7 @@ test("editor: per-file download from the queue", async ({ page }) => {
   const d = await download(page, () =>
     ws.getByRole("button", { name: "Download small.jpg" }).click(),
   );
-  expect(d.suggestedFilename()).toBe("small-kmra.jpg");
+  expect(d.suggestedFilename()).toBe("small-edit-kmra.jpg");
   expect(info(await bytes(d))).toEqual({ type: "jpeg", w: 320, h: 240 });
 });
 
@@ -70,7 +70,7 @@ test("Bangla compress page renders in Bangla and works", async ({ page }) => {
   await expect(page.getByRole("heading", { level: 1 })).toContainText(/[ঀ-৿]/);
   await expect(page.getByRole("img", { name: "আসল: photo.jpg" })).toBeVisible();
   const { d, b } = await save(page, { summary: /থেকে/, button: "ডাউনলোড" });
-  expect(d.suggestedFilename()).toBe("photo-kmra.jpg");
+  expect(d.suggestedFilename()).toBe("photo-compress-kmra.jpg");
   expect(info(b)).toEqual({ type: "jpeg", w: 1600, h: 1200 });
   // Links stay in Bangla
   await expect(

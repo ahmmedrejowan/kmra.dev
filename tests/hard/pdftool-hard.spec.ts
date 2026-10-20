@@ -312,7 +312,7 @@ test("a Bangla file name carries into the result name", async ({ page }) => {
   await addFiles(page, hard(UNICODE_PDF));
   await loaded(page, 2);
   const out = await runAndDownload(page, "Add page numbers");
-  expect(out.name).toBe("বাংলা নথি ফাইল-numbered.pdf");
+  expect(out.name).toBe("বাংলা নথি ফাইল-page-numbers-kmra.pdf");
 });
 
 /* ---------- Sign ---------- */

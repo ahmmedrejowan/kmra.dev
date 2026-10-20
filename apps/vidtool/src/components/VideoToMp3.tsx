@@ -24,7 +24,7 @@ export default function VideoToMp3({ preset }: ToolProps) {
   return (
     <Workspace
       tool="video-to-mp3"
-      suffix=""
+      suffix="video-to-mp3"
       action={T("Save the sound")}
       dropTitle={T("Drop videos to get their sound")}
       idle={T("This video has no sound to save.")}

@@ -101,8 +101,8 @@ test("several files download as one zip", async ({ page }) => {
   expect(d.suggestedFilename()).toMatch(/\.zip$/);
   const entries = unzip(b);
   expect(entries.map((e) => e.name).sort()).toEqual([
-    "photo-kmra.jpg",
-    "small-kmra.jpg",
+    "photo-compress-kmra.jpg",
+    "small-compress-kmra.jpg",
   ]);
   expect(entries.map((e) => info(e.data))).toEqual(
     expect.arrayContaining([

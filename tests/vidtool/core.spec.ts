@@ -102,7 +102,7 @@ test("compress by quality makes a smaller MP4 with the fast engine", async ({
   await expect(page.locator(".vt-plan")).toContainText("Hardware (fast)");
   const r = await runJob(page);
   expect(r.engine).toBe("webcodecs");
-  expect(r.name).toBe("vid-landscape-compressed.mp4");
+  expect(r.name).toBe("vid-landscape-compress-kmra.mp4");
   expect(r.size).toBeLessThan(2_023_318);
   const p = probe(r.buf, "mp4");
   expect(p.video?.codec_name).toBe("h264");
@@ -130,7 +130,7 @@ test("MOV to MP4 copies the streams (lossless remux)", async ({ page }) => {
   await expect(page.locator(".vt-plan")).toContainText("Lossless copy");
   const r = await runJob(page);
   expect(r.engine).toBe("copy");
-  expect(r.name).toBe("vid-clip.mp4");
+  expect(r.name).toBe("vid-clip-convert-kmra.mp4");
   const p = probe(r.buf, "mp4");
   expect(p.format.format_name).toContain("mp4");
   expect(p.video?.codec_name).toBe("h264");
@@ -243,7 +243,7 @@ test("trim precisely re-encodes the chosen part", async ({ page }) => {
   await expect(page.locator(".mp-len")).toContainText("0:02.5");
   const r = await runJob(page);
   expect(r.engine).toBe("webcodecs");
-  expect(r.name).toBe("vid-landscape-trimmed.mp4");
+  expect(r.name).toBe("vid-landscape-trim-kmra.mp4");
   const p = probe(r.buf, "mp4");
   expect(Math.abs(p.dur - 2.5)).toBeLessThan(0.1);
 });
@@ -271,7 +271,7 @@ test("remove audio copies the picture and leaves no sound", async ({
   await addFiles(page, gen(VID.landscape));
   const r = await runJob(page);
   expect(r.engine).toBe("copy");
-  expect(r.name).toBe("vid-landscape-silent.mp4");
+  expect(r.name).toBe("vid-landscape-mute-kmra.mp4");
   const p = probe(r.buf, "mp4");
   expect(p.audio).toBeUndefined();
   expect(p.video?.codec_name).toBe("h264");
@@ -287,7 +287,7 @@ test("video to MP3, M4A (copied) and WAV", async ({ page }) => {
   await expect(credit.getByRole("link")).toHaveAttribute("href", "https://lame.sourceforge.io/");
   expect((await page.request.get("/NOTICE-mp3.txt")).ok()).toBe(true);
   const mp3 = await runJob(page);
-  expect(mp3.name).toBe("vid-landscape.mp3");
+  expect(mp3.name).toBe("vid-landscape-video-to-mp3-kmra.mp3");
   const p = probe(mp3.buf, "mp3");
   expect(p.audio?.codec_name).toBe("mp3");
   expect(p.video).toBeUndefined();

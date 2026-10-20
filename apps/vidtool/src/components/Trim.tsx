@@ -17,7 +17,7 @@ export default function Trim(_: ToolProps) {
     <Workspace
       tool="trim"
       multiple={false}
-      suffix="trimmed"
+      suffix="trim"
       action={T("Trim")}
       dropTitle={T("Drop a video to trim it")}
       idle={T("Drag the handles under the video to choose the part to keep.")}

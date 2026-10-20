@@ -125,7 +125,8 @@ export default function Merge(_: ToolProps) {
     try {
       const o = await run(files, job, {
         signal: ac.signal,
-        name: "joined",
+        // Named after the first file: "intro.mp3" + others → "intro-merge-kmra.mp3"
+        suffix: "merge",
         engine: forcedEngine(),
         onProgress: setProgress,
       });

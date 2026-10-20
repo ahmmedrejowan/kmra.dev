@@ -7,7 +7,7 @@ export default function Reverse(_: ToolProps) {
   return (
     <Workspace
       tool="reverse"
-      suffix="reversed"
+      suffix="reverse"
       action={T("Reverse")}
       dropTitle={T("Drop audio files to reverse them")}
       job={(info) =>

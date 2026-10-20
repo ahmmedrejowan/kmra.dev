@@ -406,14 +406,14 @@ export default function BatchOcr({ preset }: { preset?: Preset }) {
                             type="button"
                             className="btn xs"
                             aria-label={T("Download {name}", {
-                              name: `${base(it.file)}.txt`,
+                              name: `${base(it.file)}-batch-ocr.txt`,
                             })}
                             onClick={() =>
                               downloadBlob(
                                 new Blob([it.text], {
                                   type: "text/plain;charset=utf-8",
                                 }),
-                                `${base(it.file)}.txt`,
+                                `${base(it.file)}-batch-ocr.txt`,
                               )
                             }
                           >
@@ -467,10 +467,10 @@ export default function BatchOcr({ preset }: { preset?: Preset }) {
                     const n = names();
                     void downloadZip(
                       done.map((it, i) => ({
-                        name: `${n[i]}.txt`,
+                        name: `${n[i]}-batch-ocr.txt`,
                         blob: new Blob([it.text], { type: "text/plain" }),
                       })),
-                      "ocr-text.zip",
+                      "text-batch-ocr.zip",
                     );
                   }}
                 >
@@ -485,7 +485,7 @@ export default function BatchOcr({ preset }: { preset?: Preset }) {
                       new Blob([combined(false)], {
                         type: "text/plain;charset=utf-8",
                       }),
-                      "ocr-text.txt",
+                      "text-batch-ocr.txt",
                     )
                   }
                 >
@@ -499,7 +499,7 @@ export default function BatchOcr({ preset }: { preset?: Preset }) {
                       new Blob([combined(true)], {
                         type: "text/markdown;charset=utf-8",
                       }),
-                      "ocr-text.md",
+                      "text-batch-ocr.md",
                     )
                   }
                 >

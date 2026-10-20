@@ -428,7 +428,7 @@ export default function SearchablePdf({ preset }: { preset?: Preset }) {
     : preview?.i === sel
       ? preview.url
       : "";
-  const outName = `${src.name}-searchable.pdf`;
+  const outName = `${src.name}-searchable-pdf.pdf`;
   const outOk = out && out.key === key && out.redo === redo;
 
   return (

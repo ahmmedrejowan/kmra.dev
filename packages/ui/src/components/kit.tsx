@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { zipSync } from "fflate";
 import { Icon } from "./Icon";
-import { downloadBlob, IMAGE_ACCEPT, isImageFile } from "../lib/files";
+import { downloadBlob, IMAGE_ACCEPT, isImageFile, tagged } from "../lib/files";
 import { takeFiles } from "../lib/handoff";
 import { pasteHint } from "../lib/keys";
 import { toast } from "../lib/toast";
@@ -194,16 +194,18 @@ export function CopyBtn({
   );
 }
 
-/** Zip files without re-compressing (images are already compressed). */
+/** Zip files without re-compressing (images are already compressed). The zip and every file in it carry the kmra.dev tag. */
 export async function downloadZip(
   files: { name: string; blob: Blob }[],
   zipName: string,
+  /** Files whose exact names matter (a favicon set a website looks for) keep them */
+  opts: { keepNames?: boolean } = {},
 ) {
   const entries = Object.fromEntries(
     await Promise.all(
       files.map(
         async (f) =>
-          [f.name, new Uint8Array(await f.blob.arrayBuffer())] as const,
+          [opts.keepNames ? f.name : tagged(f.name), new Uint8Array(await f.blob.arrayBuffer())] as const,
       ),
     ),
   );

@@ -38,7 +38,7 @@ export default function GifToVideo({ preset }: ToolProps) {
   return (
     <Workspace
       tool="gif-to-video"
-      suffix=""
+      suffix="gif-to-video"
       action={T("Make video")}
       dropTitle={T("Drop GIFs to turn them into videos")}
       chooseLabel={T("Choose GIFs")}

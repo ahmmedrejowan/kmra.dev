@@ -191,9 +191,7 @@ function ImagesToPdfView() {
       const blob = await save(await imagesToPdf(images, o));
       downloadBlob(
         blob,
-        images.length > 1
-          ? "images-kmra.pdf"
-          : `${pics[0]!.file.name.replace(/\.[^.]+$/, "")}.pdf`,
+        `${pics[0]!.file.name.replace(/\.[^.]+$/, "")}-from-image.pdf`,
       );
       toast(
         T("Saved a {n}-page PDF, {size}.", {

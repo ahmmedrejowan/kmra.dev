@@ -118,7 +118,7 @@ test("PDF to text copies text-layer pages exactly, without OCR", async ({
     `${TEXT_PAGES[0]!.join("\n")}\n\n${HIDDEN[0]}`,
   );
   const { name, text } = await downloadText(page);
-  expect(name).toBe("ocr-text.txt");
+  expect(name).toBe("ocr-text-pdf-to-text-kmra.txt");
   expect(text).toBe(
     `--- Page 1 ---\n${TEXT_PAGES[0]!.join("\n")}\n\n${HIDDEN[0]}\n\n` +
       `--- Page 2 ---\n${TEXT_PAGES[1]!.join("\n")}\n\n${HIDDEN[1]}\n`,
@@ -144,7 +144,7 @@ test("PDF to text reads scanned pages with OCR", async ({ page }) => {
   const md = await download(page, () =>
     page.locator(".tool-area").getByRole("button", { name: ".md" }).click(),
   );
-  expect(md.suggestedFilename()).toBe("ocr-scanned.md");
+  expect(md.suggestedFilename()).toBe("ocr-scanned-pdf-to-text-kmra.md");
   const mdText = (await bytes(md)).toString("utf8");
   expect(mdText).toContain("## Page 1");
   expect(mdText).toContain("## Page 2");
@@ -215,7 +215,7 @@ test("Searchable PDF adds an invisible text layer that pdf.js reads in order", a
   page,
 }) => {
   const out = await searchable(page, SCANNED, 2);
-  expect(out.name).toBe("ocr-scanned-searchable.pdf");
+  expect(out.name).toBe("ocr-scanned-searchable-pdf-kmra.pdf");
   expect(await sizes(out.bytes)).toEqual(await sizes(readFileSync(SCANNED)));
   const texts = await pdfTexts(out.bytes);
   expect(texts).toHaveLength(2);
@@ -247,7 +247,7 @@ test("Searchable PDF from images: one page per image", async ({ page }) => {
     [gen("ocr-scan-1.png"), gen("ocr-scan-2.png")],
     2,
   );
-  expect(out.name).toBe("ocr-scan-1-searchable.pdf");
+  expect(out.name).toBe("ocr-scan-1-searchable-pdf-kmra.pdf");
   // 2480 × 3508 px at 300 dpi = A4
   expect(await sizes(out.bytes)).toEqual([
     [595, 842],

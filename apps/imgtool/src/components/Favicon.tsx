@@ -211,7 +211,8 @@ function FaviconView() {
         name: "favicon-snippet.html",
         blob: new Blob([snippet + "\n"], { type: "text/html" }),
       });
-      await downloadZip(files, "favicons.zip");
+      // The icons keep the exact names websites and the snippet look for; the zip carries the tag
+      await downloadZip(files, "favicon.zip", { keepNames: true });
     } finally {
       setSaving(false);
     }

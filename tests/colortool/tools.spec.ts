@@ -149,7 +149,7 @@ test("palette-generator schemes have the right hues", async ({ page }) => {
   // Export: CSS variables and a real PNG
   await expect(page.locator(".ct-code pre")).toContainText("--palette-1:");
   const d = await download(page, () => page.locator(".ct-png").click());
-  expect(d.suggestedFilename()).toBe("palette.png");
+  expect(d.suggestedFilename()).toBe("palette-kmra.png");
   expect(png(await bytes(d))).toEqual({ w: 1600, h: 900 });
 });
 
@@ -294,7 +294,7 @@ test("color-blindness simulates colours and an image", async ({ page }) => {
   expect(Math.abs(px[6]! - 58)).toBeLessThan(4);
 
   const d = await download(page, () => page.locator(".ct-dl").click());
-  expect(d.suggestedFilename()).toBe("two-deuteranopia.png");
+  expect(d.suggestedFilename()).toBe("two-deuteranopia-kmra.png");
   expect(png(await bytes(d))).toEqual({ w: 64, h: 32 });
 });
 

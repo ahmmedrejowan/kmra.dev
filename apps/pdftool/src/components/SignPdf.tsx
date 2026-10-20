@@ -380,7 +380,7 @@ function SignPdfView() {
         items.map(({ page, x, y, w, h, png }) => ({ page, x, y, w, h, png })),
       );
       const blob = await save(out);
-      downloadBlob(blob, `${doc.file.name.replace(/\.pdf$/i, "")}-signed.pdf`);
+      downloadBlob(blob, `${doc.file.name.replace(/\.pdf$/i, "")}-sign.pdf`);
       toast(T("Saved, {size}.", { size: formatBytes(blob.size) }));
     } catch (err) {
       toast(

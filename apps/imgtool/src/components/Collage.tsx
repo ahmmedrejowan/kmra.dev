@@ -260,7 +260,7 @@ function CollageView() {
       const blob = await canvasBlob(c, type, 0.92);
       downloadBlob(
         blob,
-        `collage-kmra.${type === "image/png" ? "png" : "jpg"}`,
+        `collage.${type === "image/png" ? "png" : "jpg"}`,
       );
     } finally {
       setSaving(false);

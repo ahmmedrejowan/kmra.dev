@@ -283,7 +283,7 @@ export default function PdfToText({ preset }: { preset?: Preset }) {
       new Blob([combined(fmt)], {
         type: fmt === "md" ? "text/markdown" : "text/plain",
       }),
-      `${name}.${fmt}`,
+      `${name}-pdf-to-text.${fmt}`,
     );
 
   /* ---------- Empty ---------- */

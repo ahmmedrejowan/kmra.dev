@@ -57,7 +57,7 @@ export default function Resize({ preset }: ToolProps) {
   return (
     <Workspace
       tool="resize"
-      suffix="resized"
+      suffix="resize"
       action={T("Resize")}
       dropTitle={T("Drop a video to resize it")}
       idle={T("Pick a resolution or a shape.")}

@@ -13,7 +13,7 @@ export default function Fade(_: ToolProps) {
   return (
     <Workspace
       tool="fade"
-      suffix="faded"
+      suffix="fade"
       action={T("Add the fades")}
       dropTitle={T("Drop audio files to fade them in and out")}
       idle={T("Set a fade longer than 0 s.")}

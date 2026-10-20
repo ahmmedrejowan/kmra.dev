@@ -193,7 +193,7 @@ function Base64View() {
                       onClick={() =>
                         downloadBlob(
                           decoded.blob,
-                          `decoded-kmra.${EXT[decoded.type] ?? "img"}`,
+                          `decoded-base64.${EXT[decoded.type] ?? "img"}`,
                         )
                       }
                     >

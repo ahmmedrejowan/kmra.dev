@@ -76,7 +76,7 @@ test("Instagram without cropping pads to 4:5", async ({ page }) => {
 test("SVG to PNG", async ({ page }) => {
   await start(page, "/svg-to-png", gen("logo.svg"));
   const { d, b } = await save(page);
-  expect(d.suggestedFilename()).toBe("logo-kmra.png");
+  expect(d.suggestedFilename()).toBe("logo-resize-kmra.png");
   const i = info(b);
   expect(i.type).toBe("png");
   expect(i.w / i.h).toBeCloseTo(240 / 160, 2);
@@ -118,7 +118,7 @@ test("HEIC to JPG", async ({ page }) => {
   test.skip(!hasLocal("sample.heic"), "needs local fixture sample.heic");
   await start(page, "/heic-to-jpg", local("sample.heic"), 60_000);
   const { d, b } = await save(page);
-  expect(d.suggestedFilename()).toBe("sample-kmra.jpg");
+  expect(d.suggestedFilename()).toBe("sample-convert-kmra.jpg");
   const i = info(b);
   expect(i.type).toBe("jpeg");
   expect(i.w).toBeGreaterThan(100);

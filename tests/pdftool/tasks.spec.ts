@@ -80,7 +80,7 @@ test("split-every-page: a zip with one PDF per page", async ({ page }) => {
   const out = await runAndDownload(page, "Split", "Download 6 files (zip)");
   const files = unzip(out.bytes);
   const names = Object.keys(files).sort();
-  expect(names).toEqual([1, 2, 3, 4, 5, 6].map((n) => `text6-page-${n}.pdf`));
+  expect(names).toEqual([1, 2, 3, 4, 5, 6].map((n) => `text6-split-page-${n}-kmra.pdf`));
   for (const [i, n] of names.entries()) {
     expect(await pageCount(files[n]!)).toBe(1);
     expect((await pageTexts(files[n]!))[0]).toContain(WORDS[i]!);
@@ -94,7 +94,7 @@ test("extract-pages: typed pages become one PDF", async ({ page }) => {
   await page.getByLabel("Pages to keep in one PDF").fill("2, 4-5");
   await expect(page.getByText("Makes 1 PDF")).toBeVisible();
   const out = await runAndDownload(page, "Split");
-  expect(out.name).toBe("text6-extract.pdf");
+  expect(out.name).toBe("text6-split-extract-kmra.pdf");
   expect((await pageTexts(out.bytes)).map(word)).toEqual([
     "Banana",
     "Damson",
@@ -126,8 +126,8 @@ test("pdf-to-png: landscape pages as PNGs at 150 dpi", async ({ page }) => {
   );
   const files = unzip(out.bytes);
   expect(Object.keys(files).sort()).toEqual([
-    "landscape2-page-1.png",
-    "landscape2-page-2.png",
+    "landscape2-to-image-page-1-kmra.png",
+    "landscape2-to-image-page-2-kmra.png",
   ]);
   for (const f of Object.values(files)) {
     const b = Buffer.from(f);
@@ -148,7 +148,7 @@ test("pdf-to-jpg: one page saves straight as a JPG", async ({ page }) => {
     .getByRole("checkbox", { name: "Page 2", exact: true })
     .check();
   const out = await runAndDownload(page, "Convert to images");
-  expect(out.name).toBe("landscape2-page-2.jpg");
+  expect(out.name).toBe("landscape2-to-image-page-2-kmra.jpg");
   expect(out.bytes[0]).toBe(0xff);
   expect(out.bytes[1]).toBe(0xd8);
 });
@@ -161,7 +161,7 @@ for (const slug of ["jpg-to-pdf", "scan-to-pdf"])
       page.waitForEvent("download"),
       page.getByRole("button", { name: "Make PDF and download" }).click(),
     ]);
-    expect(d.suggestedFilename()).toBe("photo-tall.pdf");
+    expect(d.suggestedFilename()).toBe("photo-tall-from-image-kmra.pdf");
     const b = new Uint8Array(readFileSync((await d.path())!));
     expect(await sizes(b)).toEqual([[595, 842]]);
   });
@@ -216,7 +216,7 @@ test("Advanced organize: reorder across two files, insert a blank page", async (
     .click();
   await expect(cards).toHaveCount(9);
   const out = await runAndDownload(page, "Save PDF");
-  expect(out.name).toBe("merged-kmra.pdf");
+  expect(out.name).toBe("text6-organize-kmra.pdf");
   const texts = await pageTexts(out.bytes);
   expect(texts).toHaveLength(9);
   expect(texts[0]).toBe("Wide two");

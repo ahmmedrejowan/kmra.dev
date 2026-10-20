@@ -121,7 +121,7 @@ test("scan-qr-from-image: an event code saves a calendar file", async ({
   const ics = await grab(page, () =>
     page.getByRole("button", { name: "Add to calendar (.ics)" }).click(),
   );
-  expect(ics.name).toBe("Team-lunch.ics");
+  expect(ics.name).toBe("Team-lunch-kmra.ics");
   const text = ics.buffer.toString();
   expect(text).toMatch(/^BEGIN:VCALENDAR\r\n/);
   expect(text).toContain("SUMMARY:Team lunch\r\n");
@@ -156,20 +156,20 @@ const BARCODES: {
   {
     slug: "barcode",
     value: "ABC-123/x",
-    file: "barcode-code128.png",
+    file: "barcode-code128-kmra.png",
     format: /Code ?128/,
     text: "ABC-123/x",
   },
   {
     slug: "code-128",
-    file: "barcode-code128.png",
+    file: "barcode-code128-kmra.png",
     format: /Code ?128/,
     text: "KMRA-2026-001",
   },
   {
     slug: "ean-13",
     value: "590123412345",
-    file: "barcode-ean13.png",
+    file: "barcode-ean13-kmra.png",
     format: /EAN.?13/,
     // The check digit is added
     text: "5901234123457",
@@ -178,14 +178,14 @@ const BARCODES: {
     slug: "isbn-barcode",
     // Dashes as printed in a book
     value: "978-1-4028-9462-6",
-    file: "barcode-ean13.png",
+    file: "barcode-ean13-kmra.png",
     format: /EAN.?13/,
     text: "9781402894626",
   },
   {
     slug: "upc-a",
     value: "03600029145",
-    file: "barcode-upc.png",
+    file: "barcode-upc-kmra.png",
     // UPC-A is EAN-13 with a leading 0 in bars; zxing reports it as EAN-13
     format: /UPC.?A|EAN.?13/,
     text: "036000291452",
@@ -230,7 +230,7 @@ test("barcode: SVG download scans back", async ({ page }) => {
   const svg = await grab(page, () =>
     page.getByRole("button", { name: "Download SVG" }).click(),
   );
-  expect(svg.name).toBe("barcode-code128.svg");
+  expect(svg.name).toBe("barcode-code128-kmra.svg");
   expect(svg.buffer.toString()).toContain("<svg");
   expect((await decodeOne(page, svg)).text).toBe("SVG-42");
 });
@@ -243,16 +243,16 @@ const CODES_2D: {
   file: string;
   format: RegExp;
 }[] = [
-  { path: "/data-matrix", file: "data-matrix.png", format: /Data ?Matrix/ },
-  { path: "/pdf417", file: "pdf417.png", format: /PDF417/ },
-  { path: "/codes-2d", chip: "Aztec", file: "aztec.png", format: /Aztec/ },
+  { path: "/data-matrix", file: "data-matrix-kmra.png", format: /Data ?Matrix/ },
+  { path: "/pdf417", file: "pdf417-kmra.png", format: /PDF417/ },
+  { path: "/codes-2d", chip: "Aztec", file: "aztec-kmra.png", format: /Aztec/ },
   {
     path: "/codes-2d",
     chip: "Micro QR",
-    file: "micro-qr.png",
+    file: "micro-qr-kmra.png",
     format: /Micro ?QR/,
   },
-  { path: "/codes-2d", chip: "rMQR", file: "rmqr.png", format: /rMQR/i },
+  { path: "/codes-2d", chip: "rMQR", file: "rmqr-kmra.png", format: /rMQR/i },
 ];
 
 for (const c of CODES_2D)
@@ -288,12 +288,12 @@ test("bulk: one PNG per line in a zip, each scans back", async ({ page }) => {
   const zip = await grab(page, () =>
     page.getByRole("button", { name: "Download 3 as zip" }).click(),
   );
-  expect(zip.name).toBe("qr-codes-kmra.zip");
+  expect(zip.name).toBe("qr-codes-bulk-kmra.zip");
   const files = unzip(zip.buffer);
   const names = Object.keys(files).sort();
   expect(names).toHaveLength(3);
-  expect(names).toContain("Table-1.png");
-  expect(names).toContain("003-Plain-text-line.png");
+  expect(names).toContain("Table-1-kmra.png");
+  expect(names).toContain("003-Plain-text-line-kmra.png");
   const first = names.find((n) => n.startsWith("001-"))!;
   const reads = await decode(
     page,
@@ -305,8 +305,8 @@ test("bulk: one PNG per line in a zip, each scans back", async ({ page }) => {
   );
   expect(Object.fromEntries(reads.map((r) => [r.file, r.text]))).toEqual({
     [first]: "https://kmra.dev",
-    "Table-1.png": "https://example.com/menu?table=1",
-    "003-Plain-text-line.png": "Plain text line",
+    "Table-1-kmra.png": "https://example.com/menu?table=1",
+    "003-Plain-text-line-kmra.png": "Plain text line",
   });
 });
 
@@ -318,7 +318,7 @@ test("bulk: a link without a name gets a file name without the https", async ({
   const zip = await grab(page, () =>
     page.getByRole("button", { name: "Download 1 as zip" }).click(),
   );
-  expect(Object.keys(unzip(zip.buffer))).toEqual(["001-kmra.dev.png"]);
+  expect(Object.keys(unzip(zip.buffer))).toEqual(["001-kmra.dev-kmra.png"]);
 });
 
 test("bulk: SVG format", async ({ page }) => {
@@ -393,7 +393,7 @@ test("batch-scan: many images, a CSV, and the ones without a code", async ({
   const csv = await grab(page, () =>
     page.getByRole("button", { name: "Download CSV" }).click(),
   );
-  expect(csv.name).toBe("scanned-codes.csv");
+  expect(csv.name).toBe("scanned-codes-kmra.csv");
   const text = csv.buffer.toString("utf8");
   expect(text.charCodeAt(0)).toBe(0xfeff);
   const lines = text.slice(1).trim().split("\r\n");

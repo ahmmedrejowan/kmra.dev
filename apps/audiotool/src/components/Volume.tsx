@@ -16,7 +16,7 @@ export default function Volume({ preset }: ToolProps) {
   return (
     <Workspace
       tool="volume"
-      suffix={vol > 1 ? "louder" : "quieter"}
+      suffix="volume"
       action={vol > 1 ? T("Make louder") : T("Make quieter")}
       dropTitle={T("Drop audio files to change their volume")}
       idle={T("Pick a volume other than 100%.")}

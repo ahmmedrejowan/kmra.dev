@@ -61,7 +61,7 @@ export default function Speed({ preset }: ToolProps) {
   return (
     <Workspace
       tool="speed"
-      suffix={`${Math.round(speed * 100) / 100}x`}
+      suffix="speed"
       action={speed > 1 ? T("Speed up") : T("Slow down")}
       dropTitle={T("Drop a video to change its speed")}
       idle={T("Pick a speed other than 1×.")}

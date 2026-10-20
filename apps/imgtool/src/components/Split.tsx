@@ -123,7 +123,7 @@ function SplitView() {
     try {
       const files = await tiles();
       if (asZip)
-        await downloadZip(files, `${baseName(pic!.file.name)}-tiles.zip`);
+        await downloadZip(files, `${baseName(pic!.file.name)}-split.zip`);
       else
         for (const f of files) {
           downloadBlob(f.blob, f.name);

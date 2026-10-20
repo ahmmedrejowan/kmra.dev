@@ -46,7 +46,7 @@ export default function Rotate({ preset }: ToolProps) {
   return (
     <Workspace
       tool="rotate"
-      suffix={flip && !turn ? "flipped" : "rotated"}
+      suffix="rotate"
       action={flip && !turn ? T("Flip") : T("Rotate")}
       dropTitle={T("Drop a video to rotate it")}
       idle={T("Pick a turn or a flip.")}

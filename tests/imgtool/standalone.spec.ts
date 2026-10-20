@@ -82,7 +82,7 @@ test("EXIF viewer lists tags and saves them as JSON", async ({ page }) => {
   const d = await download(page, () =>
     page.getByRole("button", { name: "JSON", exact: true }).click(),
   );
-  expect(d.suggestedFilename()).toBe("exif-metadata.json");
+  expect(d.suggestedFilename()).toBe("exif-metadata-kmra.json");
   const json = JSON.parse((await bytes(d)).toString("utf8"));
   expect(JSON.stringify(json)).toContain("KmraTestCam");
 });
@@ -119,7 +119,7 @@ test("palette finds colours and saves a PNG swatch", async ({ page }) => {
   const d = await download(page, () =>
     page.getByRole("button", { name: "PNG", exact: true }).click(),
   );
-  expect(d.suggestedFilename()).toBe("photo-palette.png");
+  expect(d.suggestedFilename()).toBe("photo-palette-kmra.png");
   expect(info(await bytes(d)).type).toBe("png");
 });
 
@@ -143,7 +143,7 @@ test("favicon pack from an SVG logo", async ({ page }) => {
   const d = await download(page, () =>
     page.getByRole("button", { name: "Download favicon pack" }).click(),
   );
-  expect(d.suggestedFilename()).toBe("favicons.zip");
+  expect(d.suggestedFilename()).toBe("favicon-kmra.zip");
   const files = Object.fromEntries(
     unzip(await bytes(d)).map((f) => [f.name, f.data]),
   );

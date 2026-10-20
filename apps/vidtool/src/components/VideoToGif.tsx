@@ -64,7 +64,7 @@ export default function VideoToGif(_: ToolProps) {
     <Workspace
       tool="video-to-gif"
       multiple={false}
-      suffix=""
+      suffix="video-to-gif"
       action={T("Make GIF")}
       dropTitle={T("Drop a video to make a GIF")}
       idle={T("This file has no picture to make a GIF from.")}
