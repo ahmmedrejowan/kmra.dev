@@ -21,7 +21,7 @@ const groups = taskSections(appId, locale);
   <section class="block cat" id={id}>
     <div class="sechead primary">
       <h2>{label}</h2>
-      <p>{tr(locale, "{n} use cases", { n: items.length })}</p>
+      <p>{tr(locale, items.length === 1 ? "{n} use case" : "{n} use cases", { n: items.length })}</p>
     </div>
     <TaskList tasks={items} icons={icons} />
   </section>

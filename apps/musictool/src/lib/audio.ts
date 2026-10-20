@@ -54,9 +54,14 @@ export function reducedMotion(): boolean {
   }
 }
 
-/** A small per-page hook for the tests: tools register what they schedule or measure here. */
+/**
+ * A small per-page hook for the tests: tools register what they schedule or measure here. Only
+ * when the end-to-end tests ask for it (they set `window.kmraTest` before the page loads), so
+ * visitors never get the debug object.
+ */
 export function testHook(name: string, value: unknown) {
   if (typeof window === "undefined") return;
-  const w = window as unknown as { kmraMusic?: Record<string, unknown> };
+  const w = window as unknown as { kmraTest?: boolean; kmraMusic?: Record<string, unknown> };
+  if (w.kmraTest !== true) return;
   (w.kmraMusic ??= {})[name] = value;
 }

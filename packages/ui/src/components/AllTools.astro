@@ -20,7 +20,7 @@ const total = groups.reduce((a, g) => a + g.items.length, 0);
   <section class="block cat" id={id}>
     <div class="sechead primary">
       <h2>{label}</h2>
-      <p>{tr(locale, "{n} tools", { n: items.length })}</p>
+      <p>{tr(locale, items.length === 1 ? "{n} tool" : "{n} tools", { n: items.length })}</p>
     </div>
     <ToolCards tools={items} />
   </section>

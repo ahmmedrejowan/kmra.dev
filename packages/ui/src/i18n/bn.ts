@@ -15,6 +15,7 @@ export const BN: Record<string, string> = {
   "About kmra and what's next": "kmra সম্পর্কে আর সামনে কী আসছে",
   "You're here": "আপনি এখানে",
   "{n} tools": "{n}টি টুল",
+  "{n} tool": "{n}টি টুল",
   "In progress": "কাজ চলছে",
   "Search tools": "টুল খুঁজুন",
   "Search tools and tasks": "টুল আর কাজ খুঁজুন",
@@ -674,6 +675,7 @@ export const BN: Record<string, string> = {
   // All tools, use cases, more tools
   "{n} tools in all": "মোট {n}টি টুল",
   "{n} use cases": "{n}টি ব্যবহার",
+  "{n} use case": "{n}টি ব্যবহার",
   "All image tools": "সব ছবির টুল",
   "Every image tool on ImgTool, by category. All free, and everything runs on your device.":
     "ImgTool-এর সব ছবির টুল, বিভাগ অনুযায়ী। সব বিনামূল্যে, আর সব কাজ হয় আপনার ডিভাইসে।",

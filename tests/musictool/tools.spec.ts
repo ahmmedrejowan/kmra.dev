@@ -486,6 +486,21 @@ test("Bangla pages are translated", async ({ page }) => {
   await expect(page.getByRole("link", { name: "টিউনার খুলুন" })).toBeVisible();
 });
 
+test("visitors don't get the test hooks; one tool reads \"1 tool\"", async ({ browser }, info) => {
+  // A plain page, without the test fixture that switches the hooks on
+  const page = await browser.newPage();
+  const base = info.project.use.baseURL!;
+  await page.goto(`${base}/metronome`);
+  await page.locator(".tool-area").waitFor();
+  await page.getByRole("button", { name: "Start", exact: true }).first().click();
+  await page.waitForTimeout(300);
+  expect(await page.evaluate(() => "kmraMusic" in window)).toBe(false);
+  await page.goto(`${base}/tools`);
+  await expect(page.locator("#tune .sechead p")).toHaveText("1 tool");
+  await expect(page.locator("#rhythm .sechead p")).toHaveText("3 tools");
+  await page.close();
+});
+
 test("every ready tool has a test above", () => {
   const tested = new Set([
     "tuner",

@@ -34,8 +34,9 @@ export const test = base.extend<{ allowConsole: RegExp[] }>({
       if (allowConsole.some((r) => r.test(text))) return;
       errors.push(`console: ${text}`);
     });
-    // Each test starts in the default mode and language
+    // Each test starts in the default mode and language, with the tools' test hooks switched on
     await page.addInitScript(() => {
+      (window as unknown as { kmraTest: boolean }).kmraTest = true;
       try {
         if (!sessionStorage.getItem("kmra-test-init")) {
           localStorage.clear();
