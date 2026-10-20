@@ -59,11 +59,11 @@ export const bn: Record<string, AppContent> = {
       convert: {
         name: "কনভার্ট",
         title: "ছবির ফরম্যাট বদলান",
-        description: "HEIC, PNG, WebP আর অন্য ফরম্যাট থেকে JPEG, PNG বা WebP।",
-        blurb: "HEIC, PNG, WebP থেকে JPG",
+        description: "HEIC, PNG, WebP আর অন্য ফরম্যাট থেকে JPEG, PNG, WebP, AVIF, GIF, BMP, TIFF বা ICO।",
+        blurb: "JPG, PNG, WebP, AVIF, ICO…",
         steps: [
           "এক বা একাধিক ছবি দিন, আইফোনের HEIC ছবিও।",
-          "JPEG, PNG বা WebP বেছে নিন।",
+          "কোন ফরম্যাটে বানাবেন বেছে নিন: ছবিটি এখন যে ফরম্যাটে আছে সেটি ছাড়া সবগুলো।",
           "ডাউনলোড করুন। আপনার আসল ছবি যেমন ছিল তেমনই থাকে।",
         ],
       },

@@ -15,6 +15,7 @@ import {
 import {
   fitDims,
   hasGeometry,
+  OPAQUE,
   outType,
   RATIOS,
   type Crop,
@@ -618,8 +619,8 @@ export function render(
   if (s.mark) watermark(out, s.mark, extras.logo ?? null);
   if (s.frame) out = frame(out, s.frame);
   if (s.sheet) out = sheet(out, s.sheet);
-  if (outType(srcType, s) === "image/jpeg") {
-    // JPEG has no transparency; paint white (or the chosen background) underneath.
+  if (OPAQUE.has(outType(srcType, s))) {
+    // JPEG and BMP have no transparency; paint white (or the chosen background) underneath.
     const [c, x] = canvas(out.width, out.height);
     x.fillStyle = s.bg?.mode === "color" ? s.bg.color : "#fff";
     x.fillRect(0, 0, c.width, c.height);

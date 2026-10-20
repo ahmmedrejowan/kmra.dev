@@ -12,18 +12,57 @@ import {
   type Watermark,
 } from "./fx";
 
-export type Format = "image/jpeg" | "image/png" | "image/webp";
+export type Format =
+  | "image/jpeg"
+  | "image/png"
+  | "image/webp"
+  | "image/avif"
+  | "image/gif"
+  | "image/bmp"
+  | "image/tiff"
+  | "image/x-icon";
 
+/** Every format the tools save, in the order they're offered */
 export const FORMATS: Record<Format, string> = {
   "image/jpeg": "JPEG",
   "image/png": "PNG",
   "image/webp": "WebP",
+  "image/avif": "AVIF",
+  "image/gif": "GIF",
+  "image/bmp": "BMP",
+  "image/tiff": "TIFF",
+  "image/x-icon": "ICO",
 };
 export const EXT: Record<Format, string> = {
   "image/jpeg": "jpg",
   "image/png": "png",
   "image/webp": "webp",
+  "image/avif": "avif",
+  "image/gif": "gif",
+  "image/bmp": "bmp",
+  "image/tiff": "tif",
+  "image/x-icon": "ico",
 };
+
+/** A file's format as one of ours, from its MIME type or extension (null for HEIC and others) */
+export function formatOf(file: { type: string; name: string }): Format | null {
+  const t = file.type.toLowerCase();
+  const alias: Record<string, Format> = {
+    "image/jpg": "image/jpeg",
+    "image/vnd.microsoft.icon": "image/x-icon",
+    "image/x-ms-bmp": "image/bmp",
+    "image/tif": "image/tiff",
+  };
+  if (t in FORMATS) return t as Format;
+  if (t in alias) return alias[t]!;
+  const ext = file.name.toLowerCase().split(".").pop() ?? "";
+  const byExt: Record<string, Format> = { jpg: "image/jpeg", jpeg: "image/jpeg", jfif: "image/jpeg", tif: "image/tiff" };
+  if (byExt[ext]) return byExt[ext]!;
+  return (Object.keys(EXT) as Format[]).find((f) => EXT[f] === ext) ?? null;
+}
+
+/** Formats without transparency: the render paints a background under them */
+export const OPAQUE = new Set<Format>(["image/jpeg", "image/bmp"]);
 
 export interface Settings {
   type: Format;
@@ -422,6 +461,7 @@ export function outType(srcType: string, s: Settings): Format {
   return s.type;
 }
 
+/** Formats with a quality setting */
 export function isLossy(t: Format): boolean {
-  return t !== "image/png";
+  return t === "image/jpeg" || t === "image/webp" || t === "image/avif";
 }

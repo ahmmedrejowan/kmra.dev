@@ -2706,6 +2706,11 @@ input[type="range"] {
   color: var(--acc);
   border-color: var(--acc);
 }
+/* One line under a format picker saying what the chosen format is good for */
+.fmt-hint {
+  display: block;
+  margin-top: 8px;
+}
 .chips {
   display: flex;
   flex-wrap: wrap;

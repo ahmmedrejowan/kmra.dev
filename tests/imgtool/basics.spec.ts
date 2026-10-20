@@ -47,6 +47,36 @@ test("convert PNG to WebP", async ({ page }) => {
   expect(info(b)).toEqual({ type: "webp", w: 800, h: 600 });
 });
 
+test("convert never offers the format the image is already in", async ({ page }) => {
+  await start(page, "/convert", gen("photo.jpg"));
+  const offered = await page.getByRole("group", { name: "Convert to" }).getByRole("button").allInnerTexts();
+  expect(offered).toEqual(["PNG", "WebP", "AVIF", "GIF", "BMP", "TIFF", "ICO"]);
+  // A JPG starts on PNG, with a line about what it's good for
+  await expect(
+    page.getByRole("group", { name: "Convert to" }).getByRole("button", { name: "PNG" }),
+  ).toHaveAttribute("aria-pressed", "true");
+  await expect(page.locator(".fmt-hint")).toHaveText("Sharp edges and transparency. Bigger files.");
+});
+
+for (const [label, kind, ext, w, h] of [
+  ["AVIF", "avif", "avif", 1600, 1200],
+  ["GIF", "gif", "gif", 1600, 1200],
+  ["BMP", "bmp", "bmp", 1600, 1200],
+  ["TIFF", "tiff", "tif", 1600, 1200],
+  ["ICO", "ico", "ico", 256, 256],
+] as const)
+  test(`convert JPEG to ${label}`, async ({ page }) => {
+    await start(page, "/convert", gen("photo.jpg"));
+    await page.getByRole("group", { name: "Convert to" }).getByRole("button", { name: label }).click();
+    const { d, b } = await save(page, { summary: new RegExp(`${w} × ${h}, ${label}`), timeout: 60000 });
+    expect(d.suggestedFilename()).toBe(`photo-convert-kmra.${ext}`);
+    expect(info(b)).toEqual({ type: kind, w, h });
+    // The result shows on screen (TIFF through a PNG preview)
+    expect(
+      await page.locator(".stage .cmp img.after").evaluate((i: HTMLImageElement) => i.naturalWidth),
+    ).toBe(w);
+  });
+
 test("convert WebP to JPEG", async ({ page }) => {
   await start(page, "/convert", gen("photo.webp"));
   const { d, b } = await save(page);

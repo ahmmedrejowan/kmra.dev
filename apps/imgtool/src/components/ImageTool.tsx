@@ -59,6 +59,7 @@ import {
   hasGeometry,
   onlyEncodes,
   isLossy,
+  formatOf,
   outDims,
   outType,
   RATIOS,
@@ -344,6 +345,14 @@ function ImageToolView({ tool, preset, tools, lang = "en" }: Props) {
   const ZOOMS = [0.1, 0.25, 0.5, 0.75, 1, 1.5, 2, 3, 4];
   // Back to "fit" whenever another file is shown
   useEffect(() => setZoom(null), [item?.key]);
+  // Convert never offers the image's own format: when the chosen one matches it, pick another
+  // (a JPG goes to PNG, anything else to JPEG)
+  useEffect(() => {
+    if (tool !== "convert" || !item) return;
+    const src = formatOf(item.file);
+    if (src && src === s.type)
+      setS((p) => ({ ...p, keepFormat: false, type: src === "image/jpeg" ? "image/png" : "image/jpeg" }));
+  }, [item?.key, s.type]);
 
   /** Width in image pixels of what's on screen: the result when it's shown alone, else the original */
   function shownWidth(): number {
@@ -405,7 +414,7 @@ function ImageToolView({ tool, preset, tools, lang = "en" }: Props) {
       try {
         const r = noBigger(await engine.encode(item.key, item.file.type, s), item, s);
         if (id !== reqRef.current) return;
-        const next = { ...r, key: item.key, url: URL.createObjectURL(r.blob) };
+        const next = { ...r, key: item.key, url: URL.createObjectURL(r.preview ?? r.blob) };
         const old = outRef.current;
         outRef.current = next;
         setOut(next);
@@ -692,6 +701,24 @@ function ImageToolView({ tool, preset, tools, lang = "en" }: Props) {
     );
   }
 
+  /** Like seg, but the buttons wrap: for longer lists such as the formats */
+  function chipGroup<T extends string>(
+    options: [T, string][],
+    value: T,
+    onPick: (v: T) => void,
+    label: string,
+  ) {
+    return (
+      <div className="chips" role="group" aria-label={label}>
+        {options.map(([v, l]) => (
+          <button key={v} type="button" aria-pressed={v === value} onClick={() => onPick(v)}>
+            {l}
+          </button>
+        ))}
+      </div>
+    );
+  }
+
   function seg<T extends string | boolean>(
     options: [T, string][],
     value: T,
@@ -850,12 +877,27 @@ function ImageToolView({ tool, preset, tools, lang = "en" }: Props) {
     </>
   );
 
-  const formatOpts = (withOriginal: boolean): [string, string][] => [
+  /** The format of the file on screen; Convert doesn't offer it as a destination */
+  const srcFormat = item ? formatOf(item.file) : null;
+  const formatOpts = (withOriginal: boolean, exclude: Format | null = null): [string, string][] => [
     ...(withOriginal ? ([["keep", T("Original")]] as [string, string][]) : []),
-    ["image/jpeg", T("JPEG")],
-    ["image/png", T("PNG")],
-    ["image/webp", T("WebP")],
+    ...(Object.keys(FORMATS) as Format[])
+      .filter((f) => f !== exclude)
+      .map((f) => [f, T(FORMATS[f])] as [string, string]),
   ];
+  const FORMAT_HINT: Record<Format, string> = {
+    "image/jpeg": "Photos at small sizes. No transparency.",
+    "image/png": "Sharp edges and transparency. Bigger files.",
+    "image/webp": "Smaller than JPEG and PNG, and keeps transparency.",
+    "image/avif": "The smallest files. Takes a little longer to make.",
+    "image/gif": "Up to 256 colours. For simple graphics.",
+    "image/bmp": "No compression, so very big files. No transparency.",
+    "image/tiff": "Uncompressed, for printing and archives.",
+    "image/x-icon": "An icon for Windows or a website, up to 256 × 256.",
+  };
+  const formatHint = (f: Format) => (
+    <small className="muted fmt-hint">{T(FORMAT_HINT[f])}</small>
+  );
   const formatValue = s.keepFormat ? "keep" : s.type;
   const pickFormat = (v: string) =>
     v === "keep"
@@ -951,7 +993,7 @@ function ImageToolView({ tool, preset, tools, lang = "en" }: Props) {
   const saveAsCtl = (
     <div className="ctl">
       <span className="lbl">{T("Save as")}</span>
-      {seg<string>(formatOpts(true), formatValue, pickFormat, T("Save as"))}
+      {chipGroup<string>(formatOpts(true), formatValue, pickFormat, T("Save as"))}
     </div>
   );
 
@@ -1045,6 +1087,7 @@ function ImageToolView({ tool, preset, tools, lang = "en" }: Props) {
                 [
                   ["image/jpeg", T("JPEG")],
                   ["image/webp", T("WebP")],
+                  ["image/avif", T("AVIF")],
                 ],
                 s.type,
                 (v) => set({ type: v as Format, keepFormat: false }),
@@ -1060,12 +1103,13 @@ function ImageToolView({ tool, preset, tools, lang = "en" }: Props) {
           <>
             <div className="ctl">
               <span className="lbl">{T("Convert to")}</span>
-              {seg<string>(
-                formatOpts(false),
+              {chipGroup<string>(
+                formatOpts(false, srcFormat),
                 s.type,
                 (v) => set({ type: v as Format, keepFormat: false }),
                 T("Convert to"),
               )}
+              {formatHint(s.type)}
             </div>
             {qualityCtl("q")}
           </>
@@ -1076,7 +1120,7 @@ function ImageToolView({ tool, preset, tools, lang = "en" }: Props) {
             {dimsCtl}
             <div className="ctl">
               <span className="lbl">{T("Save as")}</span>
-              {seg<string>(
+              {chipGroup<string>(
                 formatOpts(true),
                 formatValue,
                 pickFormat,
@@ -1094,7 +1138,7 @@ function ImageToolView({ tool, preset, tools, lang = "en" }: Props) {
             </p>
             <div className="ctl">
               <span className="lbl">{T("Save as")}</span>
-              {seg<string>(
+              {chipGroup<string>(
                 formatOpts(true),
                 formatValue,
                 pickFormat,
@@ -1342,7 +1386,9 @@ function ImageToolView({ tool, preset, tools, lang = "en" }: Props) {
             <span
               className={`delta up${tool === "compress" || s.target ? "" : " neutral"}`}
             >
-              {-pct}% {T("larger")}
+              {-pct >= 200
+                ? T("{n}× larger", { n: Math.round(outForItem.blob.size / item.file.size) })
+                : `${-pct}% ${T("larger")}`}
             </span>
           )}
         </div>
@@ -1855,7 +1901,7 @@ function ImageToolView({ tool, preset, tools, lang = "en" }: Props) {
               "format",
               T("Format"),
               "convert",
-              seg<string>(
+              chipGroup<string>(
                 formatOpts(true),
                 formatValue,
                 pickFormat,

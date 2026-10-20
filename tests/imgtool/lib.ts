@@ -4,7 +4,7 @@ import { inflateRawSync } from "node:zlib";
 import type { Page, Download } from "@playwright/test";
 import { expect, download, bytes, openTool, addFiles } from "../helpers.ts";
 
-export type Kind = "png" | "jpeg" | "webp" | "gif" | "ico" | "zip" | "unknown";
+export type Kind = "png" | "jpeg" | "webp" | "gif" | "ico" | "zip" | "avif" | "bmp" | "tiff" | "unknown";
 
 /** File type from magic bytes. */
 export function kind(b: Buffer): Kind {
@@ -17,6 +17,9 @@ export function kind(b: Buffer): Kind {
     return "webp";
   if (b.subarray(0, 4).toString("latin1") === "GIF8") return "gif";
   if (b.readUInt32BE(0) === 0x00000100) return "ico";
+  if (b.subarray(4, 12).toString("latin1") === "ftypavif") return "avif";
+  if (b.subarray(0, 2).toString("latin1") === "BM") return "bmp";
+  if (b.subarray(0, 4).toString("latin1") === "II*\0") return "tiff";
   if (b.readUInt32LE(0) === 0x04034b50) return "zip";
   return "unknown";
 }
@@ -28,6 +31,32 @@ export function info(b: Buffer): { type: Kind; w: number; h: number } {
     return { type, w: b.readUInt32BE(16), h: b.readUInt32BE(20) };
   if (type === "gif")
     return { type, w: b.readUInt16LE(6), h: b.readUInt16LE(8) };
+  if (type === "bmp")
+    return { type, w: b.readInt32LE(18), h: Math.abs(b.readInt32LE(22)) };
+  if (type === "tiff") {
+    // ImageWidth (256) and ImageLength (257) from the first IFD
+    const ifd = b.readUInt32LE(4);
+    const n = b.readUInt16LE(ifd);
+    let w = 0;
+    let h = 0;
+    for (let i = 0; i < n; i++) {
+      const e = ifd + 2 + i * 12;
+      const tag = b.readUInt16LE(e);
+      const val = b.readUInt16LE(e + 2) === 3 ? b.readUInt16LE(e + 8) : b.readUInt32LE(e + 8);
+      if (tag === 256) w = val;
+      if (tag === 257) h = val;
+    }
+    return { type, w, h };
+  }
+  if (type === "avif") {
+    // The "ispe" box holds the image size
+    const at = b.indexOf("ispe");
+    return at > 0 ? { type, w: b.readUInt32BE(at + 8), h: b.readUInt32BE(at + 12) } : { type, w: 0, h: 0 };
+  }
+  if (type === "ico") {
+    // One entry: a 0 byte means 256
+    return { type, w: b[6] || 256, h: b[7] || 256 };
+  }
   if (type === "webp") {
     const chunk = b.subarray(12, 16).toString("latin1");
     if (chunk === "VP8 ")
