@@ -50,7 +50,12 @@ export default function PaletteGenerator({ preset }: ToolProps) {
 
   function regenerate() {
     if (mode === "random")
-      setRand((r) => randomPalette(r.length, r.map((c, i) => (locks[i] ? c : null))));
+      setRand((r) =>
+        randomPalette(
+          r.length,
+          r.map((c, i) => (locks[i] ? c : null)),
+        ),
+      );
     else setBase(randomColor());
   }
 
@@ -64,8 +69,13 @@ export default function PaletteGenerator({ preset }: ToolProps) {
     setLocks((l) => Array.from({ length: n }, (_, i) => l[i] ?? false));
   }
 
-  const name = (prefix.trim() || "palette").toLowerCase().replace(/[^a-z0-9-]+/g, "-");
-  const entries: [string, Rgba][] = colors.map((c, i) => [`${name}-${i + 1}`, c]);
+  const name = (prefix.trim() || "palette")
+    .toLowerCase()
+    .replace(/[^a-z0-9-]+/g, "-");
+  const entries: [string, Rgba][] = colors.map((c, i) => [
+    `${name}-${i + 1}`,
+    c,
+  ]);
   const code =
     out === "css"
       ? cssVariables(entries)
@@ -103,7 +113,9 @@ export default function PaletteGenerator({ preset }: ToolProps) {
   ];
   const about =
     mode === "random"
-      ? T("Colours that go together. Lock the ones you like and press Space for new ones.")
+      ? T(
+          "Colours that go together. Lock the ones you like and press Space for new ones.",
+        )
       : T(SCHEMES.find((s) => s.id === mode)!.about);
 
   return (
@@ -137,7 +149,12 @@ export default function PaletteGenerator({ preset }: ToolProps) {
             onChange={resize}
           />
         ) : (
-          <ColorField label={T("Base colour")} value={base} onChange={setBase} alpha={false} />
+          <ColorField
+            label={T("Base colour")}
+            value={base}
+            onChange={setBase}
+            alpha={false}
+          />
         )}
         <button type="button" className="btn acc ct-regen" onClick={regenerate}>
           <Icon name="shuffle" />
@@ -165,7 +182,11 @@ export default function PaletteGenerator({ preset }: ToolProps) {
                       type="button"
                       className="ct-pbtn"
                       aria-pressed={!!locks[i]}
-                      aria-label={locks[i] ? T("Unlock {hex}", { hex }) : T("Lock {hex}", { hex })}
+                      aria-label={
+                        locks[i]
+                          ? T("Unlock {hex}", { hex })
+                          : T("Lock {hex}", { hex })
+                      }
                       title={locks[i] ? T("Unlock") : T("Lock")}
                       onClick={() =>
                         setLocks((l) => l.map((v, j) => (j === i ? !v : v)))
@@ -243,7 +264,11 @@ export default function PaletteGenerator({ preset }: ToolProps) {
         </label>
         <CodeOut code={code} label={T("Export")} />
         <div className="ct-actions">
-          <button type="button" className="btn sm ct-png" onClick={() => void png()}>
+          <button
+            type="button"
+            className="btn sm ct-png"
+            onClick={() => void png()}
+          >
             <Icon name="image" />
             {T("Download PNG")}
           </button>

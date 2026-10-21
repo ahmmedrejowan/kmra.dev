@@ -198,7 +198,10 @@ export function CopyBtn({
  * A name not used yet in `taken` (compared ignoring case, as most file systems do):
  * "photo-kmra.jpg", then "photo-2-kmra.jpg", "photo-3-kmra.jpg"…
  */
-export function uniqueName(name: string, taken: Record<string, unknown>): string {
+export function uniqueName(
+  name: string,
+  taken: Record<string, unknown>,
+): string {
   const used = new Set(Object.keys(taken).map((k) => k.toLowerCase()));
   if (!used.has(name.toLowerCase())) return name;
   const m = /^(.*?)(-kmra)?(\.[^.]+)?$/.exec(name)!;

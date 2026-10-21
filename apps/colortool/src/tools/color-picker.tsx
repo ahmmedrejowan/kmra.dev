@@ -1,4 +1,10 @@
-import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type CSSProperties,
+} from "react";
 import { useLp, useT } from "@kmra/ui/lib/i18n-react";
 import { Icon } from "@kmra/ui/components/Icon";
 import { copyText } from "@kmra/ui/components/kit";
@@ -76,11 +82,19 @@ export default function ColorPicker({ preset }: ToolProps) {
   const black = col("#000");
   const ramp: [string, Rgba][] = [
     ...[0.8, 0.6, 0.4, 0.2].map(
-      (t) => [`${T("Tint")} ${Math.round(t * 100)}%`, fit(mix(opaque, white, t))] as [string, Rgba],
+      (t) =>
+        [
+          `${T("Tint")} ${Math.round(t * 100)}%`,
+          fit(mix(opaque, white, t)),
+        ] as [string, Rgba],
     ),
     [T("Base"), opaque],
     ...[0.2, 0.4, 0.6, 0.8].map(
-      (t) => [`${T("Shade")} ${Math.round(t * 100)}%`, fit(mix(opaque, black, t))] as [string, Rgba],
+      (t) =>
+        [
+          `${T("Shade")} ${Math.round(t * 100)}%`,
+          fit(mix(opaque, black, t)),
+        ] as [string, Rgba],
     ),
   ];
 
@@ -130,14 +144,25 @@ export default function ColorPicker({ preset }: ToolProps) {
               onKeyDown={(e) => e.key === "Enter" && e.currentTarget.blur()}
             />
           </div>
-          <p className={`ct-hint${bad ? " bad" : ""}`} role={bad ? "alert" : undefined}>
+          <p
+            className={`ct-hint${bad ? " bad" : ""}`}
+            role={bad ? "alert" : undefined}
+          >
             {bad
-              ? T("That isn't a colour yet. Try #1e90ff, rgb(30 144 255) or a name like teal.")
-              : T("HEX, RGB, HSL, HWB, OKLCH, OKLab, CMYK, names, or just 30 144 255.")}
+              ? T(
+                  "That isn't a colour yet. Try #1e90ff, rgb(30 144 255) or a name like teal.",
+                )
+              : T(
+                  "HEX, RGB, HSL, HWB, OKLCH, OKLab, CMYK, names, or just 30 144 255.",
+                )}
           </p>
         </div>
         <div className="ct-actions">
-          <button type="button" className="btn sm" onClick={() => setColor(randomColor())}>
+          <button
+            type="button"
+            className="btn sm"
+            onClick={() => setColor(randomColor())}
+          >
             <Icon name="shuffle" />
             {T("Random colour")}
           </button>
@@ -192,13 +217,15 @@ export default function ColorPicker({ preset }: ToolProps) {
 
         <div className="ct-rows" aria-label={T("Formats")}>
           {rows.map(([id, label, value]) => (
-            <CopyRow key={id} id={id} label={label} value={value} on={id === focus} />
+            <CopyRow
+              key={id}
+              id={id}
+              label={label}
+              value={value}
+              on={id === focus}
+            />
           ))}
-          <CopyRow
-            id="name"
-            label={T("Nearest name")}
-            value={name.name}
-          />
+          <CopyRow id="name" label={T("Nearest name")} value={name.name} />
         </div>
 
         <div className="ct-subhead">

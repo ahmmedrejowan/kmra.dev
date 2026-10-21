@@ -1,6 +1,10 @@
 /** ICO file holding PNG images (supported by every current browser and Windows) */
-export async function icoFromPngs(images: { size: number; blob: Blob }[]): Promise<Blob> {
-  const datas = await Promise.all(images.map(async (i) => new Uint8Array(await i.blob.arrayBuffer())));
+export async function icoFromPngs(
+  images: { size: number; blob: Blob }[],
+): Promise<Blob> {
+  const datas = await Promise.all(
+    images.map(async (i) => new Uint8Array(await i.blob.arrayBuffer())),
+  );
   const head = 6 + 16 * images.length;
   const total = head + datas.reduce((a, d) => a + d.length, 0);
   const buf = new Uint8Array(total);

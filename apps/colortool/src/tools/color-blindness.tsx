@@ -59,7 +59,9 @@ export default function ColorBlindness(_: ToolProps) {
   const [source, setSource] = useState<"colors" | "image">("colors");
   const [type, setType] = useState<Cvd>("deuteranopia");
   const [text, setText] = useState(DEFAULT);
-  const [img, setImg] = useState<{ name: string; data: ImageData } | null>(null);
+  const [img, setImg] = useState<{ name: string; data: ImageData } | null>(
+    null,
+  );
   const [busy, setBusy] = useState(false);
   const orig = useRef<HTMLCanvasElement>(null);
   const sim = useRef<HTMLCanvasElement>(null);
@@ -108,24 +110,27 @@ export default function ColorBlindness(_: ToolProps) {
     o.height = data.height;
     o.getContext("2d")!.putImageData(data, 0, 0);
     setBusy(true);
-    run(data.data.slice().buffer, type).then((buf) => {
-      if (!live) return;
-      const s = sim.current!;
-      s.width = data.width;
-      s.height = data.height;
-      s.getContext("2d")!.putImageData(
-        new ImageData(new Uint8ClampedArray(buf), data.width, data.height),
-        0,
-        0,
-      );
-      s.dataset.type = type;
-      s.dataset.ready = "1";
-      setBusy(false);
-    }, () => {
-      if (!live) return;
-      setBusy(false);
-      toast(T("Couldn't simulate this image. Try a smaller one."));
-    });
+    run(data.data.slice().buffer, type).then(
+      (buf) => {
+        if (!live) return;
+        const s = sim.current!;
+        s.width = data.width;
+        s.height = data.height;
+        s.getContext("2d")!.putImageData(
+          new ImageData(new Uint8ClampedArray(buf), data.width, data.height),
+          0,
+          0,
+        );
+        s.dataset.type = type;
+        s.dataset.ready = "1";
+        setBusy(false);
+      },
+      () => {
+        if (!live) return;
+        setBusy(false);
+        toast(T("Couldn't simulate this image. Try a smaller one."));
+      },
+    );
     return () => {
       live = false;
       if (sim.current) sim.current.dataset.ready = "";
@@ -150,7 +155,11 @@ export default function ColorBlindness(_: ToolProps) {
           <span className="ct-glabel">
             <span>{T("Colour vision")}</span>
           </span>
-          <div className="ct-types" role="radiogroup" aria-label={T("Colour vision")}>
+          <div
+            className="ct-types"
+            role="radiogroup"
+            aria-label={T("Colour vision")}
+          >
             {CVD_TYPES.map((x) => (
               <button
                 key={x.id}
@@ -198,7 +207,11 @@ export default function ColorBlindness(_: ToolProps) {
             </>
           )
         )}
-        <FileInput inputRef={files.pickRef} onFiles={files.take} multiple={false} />
+        <FileInput
+          inputRef={files.pickRef}
+          onFiles={files.take}
+          multiple={false}
+        />
       </div>
 
       <div className="ct-main">
@@ -222,7 +235,10 @@ export default function ColorBlindness(_: ToolProps) {
                     <span
                       className="ct-cvd-sw sim"
                       data-hex={toHex(after, false)}
-                      style={{ background: css(after), color: css(textOn(after)) }}
+                      style={{
+                        background: css(after),
+                        color: css(textOn(after)),
+                      }}
                     >
                       {toHex(after, false)}
                     </span>
@@ -231,7 +247,9 @@ export default function ColorBlindness(_: ToolProps) {
                 );
               })}
               {!colors.length && (
-                <p className="ct-hint">{T("Add colours on the left, one per line.")}</p>
+                <p className="ct-hint">
+                  {T("Add colours on the left, one per line.")}
+                </p>
               )}
             </div>
             {colors.length > 0 && (
@@ -255,13 +273,19 @@ export default function ColorBlindness(_: ToolProps) {
                       {colors.map(({ c }, i) => (
                         <tr key={i}>
                           <td>
-                            <i style={{ background: css(c) }} title={toHex(c, false)} />
+                            <i
+                              style={{ background: css(c) }}
+                              title={toHex(c, false)}
+                            />
                           </td>
                           {CVD_TYPES.map((x) => {
                             const s = simulate(c, x.id);
                             return (
                               <td key={x.id}>
-                                <i style={{ background: css(s) }} title={toHex(s, false)} />
+                                <i
+                                  style={{ background: css(s) }}
+                                  title={toHex(s, false)}
+                                />
                               </td>
                             );
                           })}
@@ -277,11 +301,19 @@ export default function ColorBlindness(_: ToolProps) {
           <>
             <div className={`ct-compare${busy ? " working" : ""}`}>
               <figure>
-                <canvas ref={orig} className="checker" aria-label={T("Original")} />
+                <canvas
+                  ref={orig}
+                  className="checker"
+                  aria-label={T("Original")}
+                />
                 <figcaption>{T("Normal vision")}</figcaption>
               </figure>
               <figure>
-                <canvas ref={sim} className="checker ct-sim" aria-label={T(info.name)} />
+                <canvas
+                  ref={sim}
+                  className="checker ct-sim"
+                  aria-label={T(info.name)}
+                />
                 <figcaption>
                   {T(info.name)} · {T(info.about)}
                 </figcaption>
@@ -315,7 +347,9 @@ export default function ColorBlindness(_: ToolProps) {
           />
         )}
         <p className="ct-cap">
-          {T("Simulated with the Machado, Oliveira and Fernandes (2009) model in linear RGB. The -anomaly types show a medium strength (0.6).")}
+          {T(
+            "Simulated with the Machado, Oliveira and Fernandes (2009) model in linear RGB. The -anomaly types show a medium strength (0.6).",
+          )}
         </p>
       </div>
     </div>

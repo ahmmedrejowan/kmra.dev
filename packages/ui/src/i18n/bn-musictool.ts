@@ -183,7 +183,8 @@ export const BN_MUSICTOOL: Record<string, string> = {
   Accent: "অ্যাকসেন্ট",
   Mix: "মিক্স",
   "Times through the loop": "লুপ কতবার বাজবে",
-  "{s} seconds. The file loops without a gap.": "{s} সেকেন্ড। ফাইলটি কোনো ফাঁক ছাড়াই লুপ হয়।",
+  "{s} seconds. The file loops without a gap.":
+    "{s} সেকেন্ড। ফাইলটি কোনো ফাঁক ছাড়াই লুপ হয়।",
   "Making the file…": "ফাইল তৈরি হচ্ছে…",
   "Download {format}": "{format} ডাউনলোড করুন",
   Kick: "কিক",
@@ -289,7 +290,8 @@ export const BN_MUSICTOOL: Record<string, string> = {
 
   // Scales
   "Notes in the scale": "স্কেলের নোট",
-  "{scale} on the {instrument} fretboard": "{instrument}-এর ফ্রেটবোর্ডে {scale}",
+  "{scale} on the {instrument} fretboard":
+    "{instrument}-এর ফ্রেটবোর্ডে {scale}",
   "Play up": "উপরের দিকে বাজান",
   Down: "নিচের দিকে",
   "Up and down": "উপরে ও নিচে",

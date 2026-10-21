@@ -4,7 +4,17 @@ import { inflateRawSync } from "node:zlib";
 import type { Page, Download } from "@playwright/test";
 import { expect, download, bytes, openTool, addFiles } from "../helpers.ts";
 
-export type Kind = "png" | "jpeg" | "webp" | "gif" | "ico" | "zip" | "avif" | "bmp" | "tiff" | "unknown";
+export type Kind =
+  | "png"
+  | "jpeg"
+  | "webp"
+  | "gif"
+  | "ico"
+  | "zip"
+  | "avif"
+  | "bmp"
+  | "tiff"
+  | "unknown";
 
 /** File type from magic bytes. */
 export function kind(b: Buffer): Kind {
@@ -42,7 +52,10 @@ export function info(b: Buffer): { type: Kind; w: number; h: number } {
     for (let i = 0; i < n; i++) {
       const e = ifd + 2 + i * 12;
       const tag = b.readUInt16LE(e);
-      const val = b.readUInt16LE(e + 2) === 3 ? b.readUInt16LE(e + 8) : b.readUInt32LE(e + 8);
+      const val =
+        b.readUInt16LE(e + 2) === 3
+          ? b.readUInt16LE(e + 8)
+          : b.readUInt32LE(e + 8);
       if (tag === 256) w = val;
       if (tag === 257) h = val;
     }
@@ -51,7 +64,9 @@ export function info(b: Buffer): { type: Kind; w: number; h: number } {
   if (type === "avif") {
     // The "ispe" box holds the image size
     const at = b.indexOf("ispe");
-    return at > 0 ? { type, w: b.readUInt32BE(at + 8), h: b.readUInt32BE(at + 12) } : { type, w: 0, h: 0 };
+    return at > 0
+      ? { type, w: b.readUInt32BE(at + 8), h: b.readUInt32BE(at + 12) }
+      : { type, w: 0, h: 0 };
   }
   if (type === "ico") {
     // One entry: a 0 byte means 256

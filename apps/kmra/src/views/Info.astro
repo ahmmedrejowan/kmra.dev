@@ -17,9 +17,13 @@ const home = { label: "kmra.dev", href: lp(locale, "/") };
 const P = {
   privacy: {
     title: T("Privacy"),
-    description: T("Your files stay on your device. No accounts, no cookies. What kmra stores, and what it doesn't."),
+    description: T(
+      "Your files stay on your device. No accounts, no cookies. What kmra stores, and what it doesn't.",
+    ),
     icon: "shield" as const,
-    intro: T("Short version: your files never leave your device, and nothing identifies you."),
+    intro: T(
+      "Short version: your files never leave your device, and nothing identifies you.",
+    ),
   },
   about: {
     title: T("About"),
@@ -31,8 +35,17 @@ const P = {
 ---
 
 <Hub title={`${P.title} · kmra.dev`} description={P.description}>
-  <PageHead crumbs={[home, { label: P.title }]} icon={P.icon} title={P.title} intro={P.intro} />
+  <PageHead
+    crumbs={[home, { label: P.title }]}
+    icon={P.icon}
+    title={P.title}
+    intro={P.intro}
+  />
   <div class="wrap page-body">
-    {page === "privacy" ? <PrivacyContent brand="kmra.dev" ai /> : <AboutContent />}
+    {page === "privacy" ? (
+      <PrivacyContent brand="kmra.dev" ai />
+    ) : (
+      <AboutContent />
+    )}
   </div>
 </Hub>

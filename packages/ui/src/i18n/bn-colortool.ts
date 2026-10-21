@@ -155,7 +155,8 @@ export const BN_COLORTOOL: Record<string, string> = {
   "Colours, one per line": "রং, প্রতি লাইনে একটি",
   "Choose another image": "অন্য ছবি বেছে নিন",
   "Normal vision": "স্বাভাবিক দৃষ্টি",
-  "Add colours on the left, one per line.": "বাঁ দিকে রং লিখুন, প্রতি লাইনে একটি।",
+  "Add colours on the left, one per line.":
+    "বাঁ দিকে রং লিখুন, প্রতি লাইনে একটি।",
   "Every type at once": "সব ধরন একসঙ্গে",
   "Download simulated image": "সিমুলেট করা ছবি ডাউনলোড করুন",
   "Couldn't open that image. Try JPEG, PNG or WebP.":

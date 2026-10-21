@@ -40,33 +40,57 @@ function Mini() {
     <div className={`mt-mini${m.running ? " on" : ""}`}>
       <div className="mt-mini-main">
         <div className="mt-mini-tempo">
-          <button type="button" className="mt-round sm" aria-label={T("Slower")} onClick={() => setBpm(clampBpm(bpm - 4))}>
+          <button
+            type="button"
+            className="mt-round sm"
+            aria-label={T("Slower")}
+            onClick={() => setBpm(clampBpm(bpm - 4))}
+          >
             <Icon name="minus" />
           </button>
           <div className="mt-mini-bpm" data-value={bpm}>
             <output aria-live="polite">{num(bpm)}</output>
-            <span>
-              BPM · {T(tempoName(bpm))}
-            </span>
+            <span>BPM · {T(tempoName(bpm))}</span>
           </div>
-          <button type="button" className="mt-round sm" aria-label={T("Faster")} onClick={() => setBpm(clampBpm(bpm + 4))}>
+          <button
+            type="button"
+            className="mt-round sm"
+            aria-label={T("Faster")}
+            onClick={() => setBpm(clampBpm(bpm + 4))}
+          >
             <Icon name="plus" />
           </button>
         </div>
         <div className="mt-mini-dots" aria-hidden="true">
           {settings.accents.map((a, i) => (
-            <span key={i} className={`${a === 2 ? "acc" : ""}${m.now?.beat === i ? " on" : ""}`} />
+            <span
+              key={i}
+              className={`${a === 2 ? "acc" : ""}${m.now?.beat === i ? " on" : ""}`}
+            />
           ))}
         </div>
-        <button type="button" className={`btn lg mt-mini-go${m.running ? "" : " acc"}`} onClick={m.toggle}>
+        <button
+          type="button"
+          className={`btn lg mt-mini-go${m.running ? "" : " acc"}`}
+          onClick={m.toggle}
+        >
           <Icon name={m.running ? "stop" : "play"} />
           {m.running ? T("Stop") : T("Start the metronome")}
         </button>
       </div>
       <div className="mt-mini-foot">
-        <div className="seg mt-mini-sig" role="group" aria-label={T("Beats per bar")}>
+        <div
+          className="seg mt-mini-sig"
+          role="group"
+          aria-label={T("Beats per bar")}
+        >
           {[2, 3, 4, 6].map((b) => (
-            <button key={b} type="button" aria-pressed={beats === b} onClick={() => setBeats(b)}>
+            <button
+              key={b}
+              type="button"
+              aria-pressed={beats === b}
+              onClick={() => setBeats(b)}
+            >
               {num(b)}/{num(4)}
             </button>
           ))}

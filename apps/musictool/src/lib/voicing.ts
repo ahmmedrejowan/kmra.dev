@@ -28,9 +28,24 @@ export interface Fretted {
 }
 
 export const FRETTED: Record<Fretted["id"], Fretted> = {
-  guitar: { id: "guitar", strings: [40, 45, 50, 55, 59, 64], rootBass: true, minStrings: 4 },
-  ukulele: { id: "ukulele", strings: [67, 60, 64, 69], rootBass: false, minStrings: 4 },
-  bass: { id: "bass", strings: [28, 33, 38, 43], rootBass: true, minStrings: 2 },
+  guitar: {
+    id: "guitar",
+    strings: [40, 45, 50, 55, 59, 64],
+    rootBass: true,
+    minStrings: 4,
+  },
+  ukulele: {
+    id: "ukulele",
+    strings: [67, 60, 64, 69],
+    rootBass: false,
+    minStrings: 4,
+  },
+  bass: {
+    id: "bass",
+    strings: [28, 33, 38, 43],
+    rootBass: true,
+    minStrings: 2,
+  },
 };
 
 const SPAN = 4;
@@ -46,7 +61,8 @@ export function voicings(chord: Chord, inst: Fretted, limit = 8): Voicing[] {
   const rootPc = chord.pcs[0]!;
   // With five-note chords on four strings, the fifth may go
   const fifthPc = chord.type.iv.find((iv) => iv[0] === 4)?.[1];
-  const optional = fifthPc === 7 && chord.pcs.length >= 4 ? mod(rootPc + 7, 12) : -1;
+  const optional =
+    fifthPc === 7 && chord.pcs.length >= 4 ? mod(rootPc + 7, 12) : -1;
   const need = [...pcs].filter((p) => p !== optional);
 
   const found = new Map<string, Voicing>();
@@ -55,7 +71,8 @@ export function voicings(chord: Chord, inst: Fretted, limit = 8): Voicing[] {
       const opts: number[] = [];
       if (inst.rootBass && s < 2) opts.push(-1);
       if (pcs.has(mod(open, 12))) opts.push(0);
-      for (let f = Math.max(1, lo); f < lo + SPAN; f++) if (pcs.has(mod(open + f, 12))) opts.push(f);
+      for (let f = Math.max(1, lo); f < lo + SPAN; f++)
+        if (pcs.has(mod(open + f, 12))) opts.push(f);
       return opts;
     });
     const pick: number[] = [];
@@ -81,7 +98,13 @@ export function voicings(chord: Chord, inst: Fretted, limit = 8): Voicing[] {
   return [...found.values()].sort((a, b) => b.score - a.score).slice(0, limit);
 }
 
-function judge(frets: number[], inst: Fretted, chord: Chord, need: number[], rootPc: number): Voicing | null {
+function judge(
+  frets: number[],
+  inst: Fretted,
+  chord: Chord,
+  need: number[],
+  rootPc: number,
+): Voicing | null {
   const sounding = frets.map((f, s) => (f < 0 ? null : inst.strings[s]! + f));
   const notes = sounding.filter((n): n is number => n !== null);
   if (notes.length < inst.minStrings) return null;
@@ -106,7 +129,10 @@ function judge(frets: number[], inst: Fretted, chord: Chord, need: number[], roo
     for (let s = from; s <= to; s++) if (frets[s]! < min) ok = false;
     if (ok) barre = { fret: min, from, to };
   }
-  const others = frets.filter((f, s) => f > 0 && !(barre && f === barre.fret && s >= barre.from && s <= barre.to));
+  const others = frets.filter(
+    (f, s) =>
+      f > 0 && !(barre && f === barre.fret && s >= barre.from && s <= barre.to),
+  );
   const fingerCount = others.length + (barre ? 1 : 0);
   if (fingerCount > 4) return null;
   if (!barre && fretted.length > 4) return null;
@@ -135,12 +161,17 @@ function judge(frets: number[], inst: Fretted, chord: Chord, need: number[], roo
 }
 
 /** Finger numbers: 1 for the barre/lowest fret, then by fret and string, at most 4 */
-function assignFingers(frets: number[], barre: Voicing["barre"], min: number): number[] | null {
+function assignFingers(
+  frets: number[],
+  barre: Voicing["barre"],
+  min: number,
+): number[] | null {
   const fingers = frets.map(() => 0);
   const rest: [number, number][] = [];
   frets.forEach((f, s) => {
     if (f <= 0) return;
-    if (barre && f === barre.fret && s >= barre.from && s <= barre.to) fingers[s] = 1;
+    if (barre && f === barre.fret && s >= barre.from && s <= barre.to)
+      fingers[s] = 1;
     else rest.push([f, s]);
   });
   rest.sort((a, b) => a[0] - b[0] || a[1] - b[1]);
@@ -160,7 +191,9 @@ function bassPatterns(chord: Chord, inst: Fretted): Voicing[] {
   const rootPc = chord.pcs[0]!;
   const out: Voicing[] = [];
   const fifth = chord.type.iv.find((iv) => iv[0] === 4)?.[1];
-  const third = chord.type.iv.find((iv) => iv[0] === 2 || iv[0] === 1 || iv[0] === 3)?.[1];
+  const third = chord.type.iv.find(
+    (iv) => iv[0] === 2 || iv[0] === 1 || iv[0] === 3,
+  )?.[1];
   for (let s = 0; s < 2; s++) {
     const open = inst.strings[s]!;
     for (const r of [mod(rootPc - open, 12), mod(rootPc - open, 12) + 12]) {

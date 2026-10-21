@@ -14,13 +14,22 @@ export interface ExportJob {
 const SR = 44100;
 
 async function mp3([L, R]: [Float32Array, Float32Array]): Promise<ArrayBuffer> {
-  const { Output, Mp3OutputFormat, BufferTarget, AudioSampleSource, AudioSample, canEncodeAudio } =
-    await import("mediabunny");
+  const {
+    Output,
+    Mp3OutputFormat,
+    BufferTarget,
+    AudioSampleSource,
+    AudioSample,
+    canEncodeAudio,
+  } = await import("mediabunny");
   if (!(await canEncodeAudio("mp3"))) {
     const { registerMp3Encoder } = await import("@mediabunny/mp3-encoder");
     registerMp3Encoder();
   }
-  const output = new Output({ format: new Mp3OutputFormat(), target: new BufferTarget() });
+  const output = new Output({
+    format: new Mp3OutputFormat(),
+    target: new BufferTarget(),
+  });
   const source = new AudioSampleSource({ codec: "mp3", bitrate: 192_000 });
   output.addAudioTrack(source);
   await output.start();
@@ -48,7 +57,9 @@ async function mp3([L, R]: [Float32Array, Float32Array]): Promise<ArrayBuffer> {
 self.onmessage = async (e: MessageEvent<ExportJob>) => {
   try {
     const { pattern, loops, format } = e.data;
-    const sounds = Object.fromEntries(DRUMS.map((d) => [d, synth(d, SR)])) as Record<DrumId, Float32Array>;
+    const sounds = Object.fromEntries(
+      DRUMS.map((d) => [d, synth(d, SR)]),
+    ) as Record<DrumId, Float32Array>;
     const mix = mixdown(pattern, SR, loops, sounds);
     const out = format === "mp3" ? await mp3(mix) : wav(mix, SR);
     (self as unknown as Worker).postMessage({ ok: true, data: out }, [out]);

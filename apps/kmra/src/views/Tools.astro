@@ -14,7 +14,9 @@ const all = apps.flatMap((a) => toolsOf(a, locale));
 
 <Hub
   title={T("All {n} tools · kmra.dev", { n: totalTools })}
-  description={T("Every kmra tool in one place: images, PDFs, video, audio, QR codes, text in pictures, code, colours, calculations and music. Search or filter by app.")}
+  description={T(
+    "Every kmra tool in one place: images, PDFs, video, audio, QR codes, text in pictures, code, colours, calculations and music. Search or filter by app.",
+  )}
 >
   <section class="hero-band hub-hero" style="padding-block: 64px 44px">
     <div class="wrap hero-center">
@@ -37,8 +39,16 @@ const all = apps.flatMap((a) => toolsOf(a, locale));
           {T("All")} <small>{tr(locale, "{n}", { n: totalTools })}</small>
         </button>
         {apps.map((a) => (
-          <button type="button" class="hue" style={hueStyle(a.accent)} data-app={a.id} aria-pressed="false">
-            <i />{a.short} <small>{tr(locale, "{n}", { n: toolsOf(a).length })}</small>
+          <button
+            type="button"
+            class="hue"
+            style={hueStyle(a.accent)}
+            data-app={a.id}
+            aria-pressed="false"
+          >
+            <i />
+            {a.short}{" "}
+            <small>{tr(locale, "{n}", { n: toolsOf(a).length })}</small>
           </button>
         ))}
       </div>
@@ -59,7 +69,9 @@ const all = apps.flatMap((a) => toolsOf(a, locale));
         ))}
       </div>
       <p class="hub-empty" id="empty" hidden>
-        {T("No tool matches that. Try fewer words, or search with ⌘K for use cases too.")}
+        {T(
+          "No tool matches that. Try fewer words, or search with ⌘K for use cases too.",
+        )}
       </p>
     </div>
   </section>
@@ -67,8 +79,12 @@ const all = apps.flatMap((a) => toolsOf(a, locale));
 
 <script>
   const q = document.getElementById("q") as HTMLInputElement;
-  const cells = [...document.querySelectorAll<HTMLElement>("#grid > .hub-cell")];
-  const pills = [...document.querySelectorAll<HTMLButtonElement>(".hub-filters button")];
+  const cells = [
+    ...document.querySelectorAll<HTMLElement>("#grid > .hub-cell"),
+  ];
+  const pills = [
+    ...document.querySelectorAll<HTMLButtonElement>(".hub-filters button"),
+  ];
   let app = new URLSearchParams(location.search).get("app") ?? "";
   function apply() {
     const words = q.value.toLowerCase().split(/\s+/).filter(Boolean);
@@ -80,7 +96,9 @@ const all = apps.flatMap((a) => toolsOf(a, locale));
       el.hidden = !ok;
       if (ok) shown++;
     }
-    pills.forEach((p) => p.setAttribute("aria-pressed", String((p.dataset.app ?? "") === app)));
+    pills.forEach((p) =>
+      p.setAttribute("aria-pressed", String((p.dataset.app ?? "") === app)),
+    );
     document.getElementById("empty")!.hidden = shown > 0;
   }
   q.addEventListener("input", apply);

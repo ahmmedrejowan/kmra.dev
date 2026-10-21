@@ -1,4 +1,9 @@
-import { useRef, useState, type CSSProperties, type PointerEvent as RPointerEvent } from "react";
+import {
+  useRef,
+  useState,
+  type CSSProperties,
+  type PointerEvent as RPointerEvent,
+} from "react";
 import { useT } from "@kmra/ui/lib/i18n-react";
 import { Icon } from "@kmra/ui/components/Icon";
 import { Seg, Slider } from "@kmra/ui/components/controls";
@@ -24,9 +29,15 @@ interface Stop {
 }
 
 const SPOTS: [number, number][] = [
-  [0, 0], [50, 0], [100, 0],
-  [0, 50], [50, 50], [100, 50],
-  [0, 100], [50, 100], [100, 100],
+  [0, 0],
+  [50, 0],
+  [100, 0],
+  [0, 50],
+  [50, 50],
+  [100, 50],
+  [0, 100],
+  [50, 100],
+  [100, 100],
 ];
 const SIZES: [string, number, number][] = [
   ["1920 × 1080", 1920, 1080],
@@ -41,7 +52,9 @@ let uid = 10;
 export default function GradientGenerator({ preset }: ToolProps) {
   const T = useT();
   const [kind, setKind] = useState<Kind>(
-    preset?.type === "radial" || preset?.type === "conic" ? preset.type : "linear",
+    preset?.type === "radial" || preset?.type === "conic"
+      ? preset.type
+      : "linear",
   );
   const [stops, setStops] = useState<Stop[]>([
     { id: 1, color: col("#ff7a59"), pos: 0 },
@@ -63,8 +76,12 @@ export default function GradientGenerator({ preset }: ToolProps) {
   const polar = space === "oklch" || space === "hsl";
 
   const method =
-    space === "srgb" ? "" : `in ${space}${polar && hue === "longer" ? " longer hue" : ""}`;
-  const list = sorted.map((s) => `${hexOf(s.color)} ${round(s.pos)}%`).join(", ");
+    space === "srgb"
+      ? ""
+      : `in ${space}${polar && hue === "longer" ? " longer hue" : ""}`;
+  const list = sorted
+    .map((s) => `${hexOf(s.color)} ${round(s.pos)}%`)
+    .join(", ");
   const pos = `at ${at[0]}% ${at[1]}%`;
   const head =
     kind === "linear"
@@ -95,7 +112,9 @@ export default function GradientGenerator({ preset }: ToolProps) {
       const b = sorted[i]!;
       if (p <= b.pos) {
         const k = b.pos === a.pos ? 1 : (p - a.pos) / (b.pos - a.pos);
-        return fit(mix(a.color, b.color, k, space === "srgb" ? "srgb" : space, hue));
+        return fit(
+          mix(a.color, b.color, k, space === "srgb" ? "srgb" : space, hue),
+        );
       }
     }
     return sorted[sorted.length - 1]!.color;
@@ -108,7 +127,10 @@ export default function GradientGenerator({ preset }: ToolProps) {
 
   function addAt(p: number) {
     const id = uid++;
-    setStops((s) => [...s, { id, color: colorAt(p / 100), pos: Math.round(p) }]);
+    setStops((s) => [
+      ...s,
+      { id, color: colorAt(p / 100), pos: Math.round(p) },
+    ]);
     setSel(id);
   }
 
@@ -124,7 +146,8 @@ export default function GradientGenerator({ preset }: ToolProps) {
     setSel(id);
     const el = e.currentTarget;
     el.setPointerCapture(e.pointerId);
-    const move = (ev: PointerEvent) => update(id, { pos: Math.round(pctAt(ev) * 10) / 10 });
+    const move = (ev: PointerEvent) =>
+      update(id, { pos: Math.round(pctAt(ev) * 10) / 10 });
     const up = () => {
       el.removeEventListener("pointermove", move);
       el.removeEventListener("pointerup", up);
@@ -151,16 +174,27 @@ export default function GradientGenerator({ preset }: ToolProps) {
       const len = Math.abs(W * Math.sin(a)) + Math.abs(H * Math.cos(a));
       const dx = (Math.sin(a) * len) / 2;
       const dy = (-Math.cos(a) * len) / 2;
-      g.fillStyle = fill(g.createLinearGradient(W / 2 - dx, H / 2 - dy, W / 2 + dx, H / 2 + dy));
+      g.fillStyle = fill(
+        g.createLinearGradient(W / 2 - dx, H / 2 - dy, W / 2 + dx, H / 2 + dy),
+      );
       g.fillRect(0, 0, W, H);
     } else if (kind === "conic") {
-      g.fillStyle = fill(g.createConicGradient(((angle - 90) * Math.PI) / 180, cx, cy));
+      g.fillStyle = fill(
+        g.createConicGradient(((angle - 90) * Math.PI) / 180, cx, cy),
+      );
       g.fillRect(0, 0, W, H);
     } else {
       // farthest-corner, as CSS does by default
-      const corners = [[0, 0], [W, 0], [0, H], [W, H]] as const;
+      const corners = [
+        [0, 0],
+        [W, 0],
+        [0, H],
+        [W, H],
+      ] as const;
       const far = corners.reduce((m, [x, y]) =>
-        Math.hypot(x - cx, y - cy) > Math.hypot(m[0] - cx, m[1] - cy) ? [x, y] : m,
+        Math.hypot(x - cx, y - cy) > Math.hypot(m[0] - cx, m[1] - cy)
+          ? [x, y]
+          : m,
       );
       let rx: number;
       let ry: number;
@@ -247,7 +281,12 @@ export default function GradientGenerator({ preset }: ToolProps) {
             </div>
           </div>
         )}
-        <Seg label={T("Mix in")} options={spaces} value={space} onPick={setSpace} />
+        <Seg
+          label={T("Mix in")}
+          options={spaces}
+          value={space}
+          onPick={setSpace}
+        />
         {polar && (
           <Seg
             label={T("Hue")}
@@ -261,10 +300,15 @@ export default function GradientGenerator({ preset }: ToolProps) {
         )}
         <p className="ct-hint">
           {space === "srgb"
-            ? T("sRGB is the browser default. Some pairs turn grey in the middle.")
-            : T("Mixing in {space} keeps the middle bright. Browsers from 2023 on read it; older ones use the plain line.", {
-                space: spaces.find((s) => s[0] === space)![1],
-              })}
+            ? T(
+                "sRGB is the browser default. Some pairs turn grey in the middle.",
+              )
+            : T(
+                "Mixing in {space} keeps the middle bright. Browsers from 2023 on read it; older ones use the plain line.",
+                {
+                  space: spaces.find((s) => s[0] === space)![1],
+                },
+              )}
         </p>
       </div>
 
@@ -290,8 +334,13 @@ export default function GradientGenerator({ preset }: ToolProps) {
                 className="ct-handle"
                 data-pos={s.pos}
                 aria-pressed={s.id === current.id}
-                aria-label={T("Stop {hex} at {pos}%", { hex: hexOf(s.color), pos: round(s.pos) })}
-                style={{ left: `${s.pos}%`, "--c": css(s.color) } as CSSProperties}
+                aria-label={T("Stop {hex} at {pos}%", {
+                  hex: hexOf(s.color),
+                  pos: round(s.pos),
+                })}
+                style={
+                  { left: `${s.pos}%`, "--c": css(s.color) } as CSSProperties
+                }
                 onPointerDown={(e) => drag(e, s.id)}
                 onClick={(e) => e.stopPropagation()}
                 onKeyDown={(e) => {
@@ -309,7 +358,9 @@ export default function GradientGenerator({ preset }: ToolProps) {
             ))}
           </div>
           <p className="ct-cap">
-            {T("Click the bar to add a stop, drag stops to move them. Arrow keys move the chosen stop.")}
+            {T(
+              "Click the bar to add a stop, drag stops to move them. Arrow keys move the chosen stop.",
+            )}
           </p>
         </div>
 
@@ -362,7 +413,11 @@ export default function GradientGenerator({ preset }: ToolProps) {
               ))}
             </select>
           </label>
-          <button type="button" className="btn sm ct-png" onClick={() => void png()}>
+          <button
+            type="button"
+            className="btn sm ct-png"
+            onClick={() => void png()}
+          >
             <Icon name="download" />
             {T("Download PNG")}
           </button>

@@ -89,7 +89,9 @@ test("color-picker opens the colour from the link", async ({ page }) => {
 
 /* ---------- mixer ---------- */
 
-test("color-mixer mixes black and white in OKLab and sRGB", async ({ page }) => {
+test("color-mixer mixes black and white in OKLab and sRGB", async ({
+  page,
+}) => {
   await openTool(page, "/color-mixer");
   await field(page, "First colour").fill("#000000");
   await field(page, "Second colour").fill("#ffffff");
@@ -195,8 +197,11 @@ test("shades builds 50–950 with the base on its closest step", async ({
       return r! * 0.2126 + g! * 0.7152 + b! * 0.0722;
     }),
   );
-  for (let i = 1; i < lum.length; i++) expect(lum[i]!).toBeLessThan(lum[i - 1]!);
-  await expect(page.locator(".ct-code pre")).toContainText("--brand-500: #1e90ff;");
+  for (let i = 1; i < lum.length; i++)
+    expect(lum[i]!).toBeLessThan(lum[i - 1]!);
+  await expect(page.locator(".ct-code pre")).toContainText(
+    "--brand-500: #1e90ff;",
+  );
 
   // A pale colour lands on 50, a dark one near the end
   await field(page, "Base colour").fill("#fef2f2");
@@ -240,7 +245,9 @@ test("contrast-checker: 21:1, #777 on white and the nearest passing colour", asy
   expect(hex).toMatch(/^#([0-9a-f]{2})\1\1$/);
   await fix.click();
   await expect(check("aa-normal")).toHaveAttribute("data-pass", "true");
-  expect(Number(await ratio.getAttribute("data-ratio"))).toBeGreaterThanOrEqual(4.5);
+  expect(Number(await ratio.getAttribute("data-ratio"))).toBeGreaterThanOrEqual(
+    4.5,
+  );
   await expect(field(page, "Text colour")).toHaveValue(hex);
 
   await btn(page, "Swap text and background").click();
@@ -274,14 +281,19 @@ test("color-blindness simulates colours and an image", async ({ page }) => {
     return c.toDataURL("image/png").split(",")[1]!;
   });
   await page.locator('[data-type="deuteranopia"]').click();
-  await page
-    .locator(".tool-area input[type=file]")
-    .setInputFiles({ name: "two.png", mimeType: "image/png", buffer: Buffer.from(data, "base64") });
+  await page.locator(".tool-area input[type=file]").setInputFiles({
+    name: "two.png",
+    mimeType: "image/png",
+    buffer: Buffer.from(data, "base64"),
+  });
   const out = page.locator('canvas.ct-sim[data-ready="1"]');
   await expect(out).toHaveAttribute("data-type", "deuteranopia");
   const px = await out.evaluate((c) => {
     const g = (c as HTMLCanvasElement).getContext("2d")!;
-    return [...g.getImageData(8, 8, 1, 1).data, ...g.getImageData(48, 8, 1, 1).data];
+    return [
+      ...g.getImageData(8, 8, 1, 1).data,
+      ...g.getImageData(48, 8, 1, 1).data,
+    ];
   });
   // Red seen with deuteranopia ≈ rgb(163, 144, 0); it isn't red any more
   expect(Math.abs(px[0]! - 163)).toBeLessThan(3);
@@ -294,11 +306,15 @@ test("color-blindness simulates colours and an image", async ({ page }) => {
   expect(Math.abs(px[6]! - 58)).toBeLessThan(4);
 
   const d = await download(page, () => page.locator(".ct-dl").click());
-  expect(d.suggestedFilename()).toBe("two-color-blindness-deuteranopia-kmra.png");
+  expect(d.suggestedFilename()).toBe(
+    "two-color-blindness-deuteranopia-kmra.png",
+  );
   expect(png(await bytes(d))).toEqual({ w: 64, h: 32 });
 });
 
-test("color-blindness: an image can be removed, back to the drop box", async ({ page }) => {
+test("color-blindness: an image can be removed, back to the drop box", async ({
+  page,
+}) => {
   await openTool(page, "/color-blindness");
   await page
     .getByRole("group", { name: "Check" })
@@ -313,13 +329,17 @@ test("color-blindness: an image can be removed, back to the drop box", async ({ 
     g.fillRect(0, 0, 16, 16);
     return c.toDataURL("image/png").split(",")[1]!;
   });
-  await page
-    .locator(".tool-area input[type=file]")
-    .setInputFiles({ name: "photo-compress-kmra.png", mimeType: "image/png", buffer: Buffer.from(data, "base64") });
+  await page.locator(".tool-area input[type=file]").setInputFiles({
+    name: "photo-compress-kmra.png",
+    mimeType: "image/png",
+    buffer: Buffer.from(data, "base64"),
+  });
   await expect(page.locator('canvas.ct-sim[data-ready="1"]')).toHaveCount(1);
   // A file that came from kmra.dev keeps one tag, not two
   const d = await download(page, () => page.locator(".ct-dl").click());
-  expect(d.suggestedFilename()).toBe("photo-compress-color-blindness-deuteranopia-kmra.png");
+  expect(d.suggestedFilename()).toBe(
+    "photo-compress-color-blindness-deuteranopia-kmra.png",
+  );
   await page.getByRole("button", { name: "Remove image" }).click();
   await expect(page.locator("canvas.ct-sim")).toHaveCount(0);
   await expect(page.getByText("Drop an image here")).toBeVisible();
@@ -356,11 +376,20 @@ test("gradient-generator writes CSS and a PNG", async ({ page }) => {
   await expect(handles).toHaveCount(3);
 
   await btn(page, "Radial").click();
-  await expect(grad).toHaveAttribute("data-css", /^radial-gradient\(in oklch circle at 50% 50%, /);
+  await expect(grad).toHaveAttribute(
+    "data-css",
+    /^radial-gradient\(in oklch circle at 50% 50%, /,
+  );
   await btn(page, "Conic").click();
-  await expect(grad).toHaveAttribute("data-css", /^conic-gradient\(in oklch from 135deg at 50% 50%, /);
+  await expect(grad).toHaveAttribute(
+    "data-css",
+    /^conic-gradient\(in oklch from 135deg at 50% 50%, /,
+  );
   await btn(page, "sRGB").click();
-  await expect(grad).toHaveAttribute("data-css", /^conic-gradient\(from 135deg at 50% 50%, /);
+  await expect(grad).toHaveAttribute(
+    "data-css",
+    /^conic-gradient\(from 135deg at 50% 50%, /,
+  );
 
   await btn(page, "Linear").first().click();
   await page.getByLabel("Image size").selectOption({ label: "1080 × 1080" });
@@ -402,19 +431,33 @@ test("every use-case page applies its preset", async ({ page }) => {
     "hex-to-hsl": async (p) =>
       expect(p.locator(".ct-row.on")).toHaveAttribute("data-id", "hsl"),
     "complementary-colors": async (p) =>
-      expect(p.locator(".ct-palette")).toHaveAttribute("data-mode", "complementary"),
+      expect(p.locator(".ct-palette")).toHaveAttribute(
+        "data-mode",
+        "complementary",
+      ),
     "analogous-colors": async (p) =>
-      expect(p.locator(".ct-palette")).toHaveAttribute("data-mode", "analogous"),
+      expect(p.locator(".ct-palette")).toHaveAttribute(
+        "data-mode",
+        "analogous",
+      ),
     "triadic-colors": async (p) =>
       expect(p.locator(".ct-palette")).toHaveAttribute("data-mode", "triadic"),
     "monochromatic-colors": async (p) =>
-      expect(p.locator(".ct-palette")).toHaveAttribute("data-mode", "monochromatic"),
+      expect(p.locator(".ct-palette")).toHaveAttribute(
+        "data-mode",
+        "monochromatic",
+      ),
     "tailwind-color-palette": async (p) =>
       expect(p.locator(".ct-code pre")).toContainText("@theme {"),
     "linear-gradient": async (p) =>
-      expect(p.locator(".ct-grad")).toHaveAttribute("data-css", /^linear-gradient/),
+      expect(p.locator(".ct-grad")).toHaveAttribute(
+        "data-css",
+        /^linear-gradient/,
+      ),
   };
-  expect(Object.keys(checks).sort()).toEqual(app.tasks.map((t) => t.slug).sort());
+  expect(Object.keys(checks).sort()).toEqual(
+    app.tasks.map((t) => t.slug).sort(),
+  );
   for (const [slug, check] of Object.entries(checks)) {
     await openTool(page, `/${slug}`);
     await check(page);
@@ -428,17 +471,20 @@ test("home page palette changes on Space and links to the generator", async ({
   const cells = page.locator(".ct-strip-cell");
   await expect(cells).toHaveCount(5);
   await page.waitForLoadState("networkidle");
-  const before = await cells.evaluateAll((e) => e.map((x) => (x as HTMLElement).dataset.hex));
+  const before = await cells.evaluateAll((e) =>
+    e.map((x) => (x as HTMLElement).dataset.hex),
+  );
   await page.locator("h1").click();
   await page.keyboard.press("Space");
   await expect
-    .poll(() => cells.evaluateAll((e) => e.map((x) => (x as HTMLElement).dataset.hex)))
+    .poll(() =>
+      cells.evaluateAll((e) => e.map((x) => (x as HTMLElement).dataset.hex)),
+    )
     .not.toEqual(before);
   await btn(page, "New palette").click();
-  await expect(page.getByRole("link", { name: "Open the palette generator" })).toHaveAttribute(
-    "href",
-    "/palette-generator",
-  );
+  await expect(
+    page.getByRole("link", { name: "Open the palette generator" }),
+  ).toHaveAttribute("href", "/palette-generator");
 });
 
 test("Bangla pages translate the tools", async ({ page }) => {

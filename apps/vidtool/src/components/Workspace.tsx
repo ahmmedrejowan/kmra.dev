@@ -187,7 +187,8 @@ export function Workspace({
         try {
           const info = await probe(it.file);
           // Nothing to play (no picture, no sound): a damaged or unrelated file
-          if (!info.video && !info.audio) throw new Error("No picture or sound found");
+          if (!info.video && !info.audio)
+            throw new Error("No picture or sound found");
           patch(it.key, { info });
         } catch (e) {
           patch(it.key, {

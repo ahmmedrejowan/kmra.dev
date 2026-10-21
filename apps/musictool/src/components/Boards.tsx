@@ -63,17 +63,46 @@ export function Fretboard({
       );
     }
   return (
-    <svg className="mt-fretboard" viewBox={`0 0 ${w} ${h}`} width={w} role="img" aria-label={title}>
-      <rect className="mt-fb-wood" x={left} y={top - 14} width={frets * fw} height={(n - 1) * sg + 28} rx={4} />
+    <svg
+      className="mt-fretboard"
+      viewBox={`0 0 ${w} ${h}`}
+      width={w}
+      role="img"
+      aria-label={title}
+    >
+      <rect
+        className="mt-fb-wood"
+        x={left}
+        y={top - 14}
+        width={frets * fw}
+        height={(n - 1) * sg + 28}
+        rx={4}
+      />
       {INLAYS.filter((f) => f <= frets).map((f) => (
-        <circle key={f} className="mt-fb-inlay" cx={fx(f) - fw / 2} cy={top + ((n - 1) * sg) / 2} r={5} />
+        <circle
+          key={f}
+          className="mt-fb-inlay"
+          cx={fx(f) - fw / 2}
+          cy={top + ((n - 1) * sg) / 2}
+          r={5}
+        />
       ))}
       {[12, 24]
         .filter((f) => f <= frets)
         .map((f) => (
           <g key={f}>
-            <circle className="mt-fb-inlay" cx={fx(f) - fw / 2} cy={top + ((n - 1) * sg) / 2 - sg} r={5} />
-            <circle className="mt-fb-inlay" cx={fx(f) - fw / 2} cy={top + ((n - 1) * sg) / 2 + sg} r={5} />
+            <circle
+              className="mt-fb-inlay"
+              cx={fx(f) - fw / 2}
+              cy={top + ((n - 1) * sg) / 2 - sg}
+              r={5}
+            />
+            <circle
+              className="mt-fb-inlay"
+              cx={fx(f) - fw / 2}
+              cy={top + ((n - 1) * sg) / 2 + sg}
+              r={5}
+            />
           </g>
         ))}
       {Array.from({ length: frets + 1 }, (_, f) => (
@@ -87,12 +116,26 @@ export function Fretboard({
         />
       ))}
       {strings.map((_, s) => (
-        <line key={s} className="mt-fb-string" x1={left} x2={fx(frets)} y1={sy(s)} y2={sy(s)} style={{ strokeWidth: 1 + (n - 1 - s) * 0.35 }} />
+        <line
+          key={s}
+          className="mt-fb-string"
+          x1={left}
+          x2={fx(frets)}
+          y1={sy(s)}
+          y2={sy(s)}
+          style={{ strokeWidth: 1 + (n - 1 - s) * 0.35 }}
+        />
       ))}
       {[...INLAYS, 12, 24]
         .filter((f) => f <= frets)
         .map((f) => (
-          <text key={f} className="mt-fb-num" x={fx(f) - fw / 2} y={h - 6} textAnchor="middle">
+          <text
+            key={f}
+            className="mt-fb-num"
+            x={fx(f) - fw / 2}
+            y={h - 6}
+            textAnchor="middle"
+          >
             {f}
           </text>
         ))}
@@ -126,17 +169,33 @@ export function Piano({
   const bw = 26;
   const bh = 94;
   const whites: number[] = [];
-  for (let o = 0; o < octaves; o++) for (const p of WHITE) whites.push(from + o * 12 + p);
+  for (let o = 0; o < octaves; o++)
+    for (const p of WHITE) whites.push(from + o * 12 + p);
   whites.push(from + octaves * 12);
-  const marked = (m: number) => (inScale ? inScale.includes(m) : byPc.has(mod(m, 12)));
+  const marked = (m: number) =>
+    inScale ? inScale.includes(m) : byPc.has(mod(m, 12));
   const w = whites.length * ww;
   const key = (m: number, x: number, black: boolean) => {
     const mk = marked(m) ? byPc.get(mod(m, 12)) : undefined;
     return (
-      <g key={m} className={`mt-key ${black ? "black" : "white"}${mk ? " in" : ""}${mk?.root ? " root" : ""}${active === m ? " on" : ""}`} data-midi={m}>
-        <rect x={x} y={0} width={black ? bw : ww} height={black ? bh : wh} rx={black ? 3 : 5} />
+      <g
+        key={m}
+        className={`mt-key ${black ? "black" : "white"}${mk ? " in" : ""}${mk?.root ? " root" : ""}${active === m ? " on" : ""}`}
+        data-midi={m}
+      >
+        <rect
+          x={x}
+          y={0}
+          width={black ? bw : ww}
+          height={black ? bh : wh}
+          rx={black ? 3 : 5}
+        />
         {mk && (
-          <text x={x + (black ? bw : ww) / 2} y={(black ? bh : wh) - 12} textAnchor="middle">
+          <text
+            x={x + (black ? bw : ww) / 2}
+            y={(black ? bh : wh) - 12}
+            textAnchor="middle"
+          >
             {mk.label}
           </text>
         )}
@@ -144,11 +203,18 @@ export function Piano({
     );
   };
   return (
-    <svg className="mt-piano" viewBox={`-1 -1 ${w + 2} ${wh + 2}`} role="img" aria-label={T("Piano keyboard")}>
+    <svg
+      className="mt-piano"
+      viewBox={`-1 -1 ${w + 2} ${wh + 2}`}
+      role="img"
+      aria-label={T("Piano keyboard")}
+    >
       {whites.map((m, i) => key(m, i * ww, false))}
       {whites.flatMap((m, i) => {
         const b = m + 1;
-        return BLACK.includes(mod(b, 12)) && i < whites.length - 1 ? [key(b, (i + 1) * ww - bw / 2, true)] : [];
+        return BLACK.includes(mod(b, 12)) && i < whites.length - 1
+          ? [key(b, (i + 1) * ww - bw / 2, true)]
+          : [];
       })}
     </svg>
   );

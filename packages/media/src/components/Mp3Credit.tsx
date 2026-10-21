@@ -10,7 +10,11 @@ export function Mp3Credit() {
   return (
     <p className="muted mp3-credit">
       {T("MP3s are made with the")}{" "}
-      <a href="https://lame.sourceforge.io/" target="_blank" rel="noopener noreferrer">
+      <a
+        href="https://lame.sourceforge.io/"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
         {T("LAME encoder")}
       </a>
       .

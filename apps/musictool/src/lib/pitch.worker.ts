@@ -22,12 +22,15 @@ function onBlock(block: Float32Array) {
   if (filled < n) return;
   const p = detectPitch(ring, rate);
   let level = 0;
-  for (let i = n - block.length; i < n; i++) level = Math.max(level, Math.abs(ring[i]!));
+  for (let i = n - block.length; i < n; i++)
+    level = Math.max(level, Math.abs(ring[i]!));
   (self as unknown as Worker).postMessage({ pitch: p, level });
 }
 
 self.onmessage = (
-  e: MessageEvent<{ sampleRate: number; port?: MessagePort } | { block: Float32Array }>,
+  e: MessageEvent<
+    { sampleRate: number; port?: MessagePort } | { block: Float32Array }
+  >,
 ) => {
   const d = e.data;
   if ("block" in d) return onBlock(d.block);
@@ -36,5 +39,6 @@ self.onmessage = (
   filled = 0;
   input?.close();
   input = d.port ?? null;
-  if (input) input.onmessage = (m: MessageEvent<Float32Array>) => onBlock(m.data);
+  if (input)
+    input.onmessage = (m: MessageEvent<Float32Array>) => onBlock(m.data);
 };

@@ -16,7 +16,10 @@ import {
 } from "../lib/color";
 import { ColorField } from "../lib/ui";
 
-const GROUPS: { what: string; checks: { id: string; level: string; need: number }[] }[] = [
+const GROUPS: {
+  what: string;
+  checks: { id: string; level: string; need: number }[];
+}[] = [
   {
     what: "Normal text",
     checks: [
@@ -61,9 +64,7 @@ export default function ContrastChecker(_: ToolProps) {
         .map((d) => passingLightness(from, against, target, d))
         .filter((c): c is Rgba => !!c);
       // The option closest to the original colour
-      const best = opts.sort(
-        (x, y) => dist(x, from) - dist(y, from),
-      )[0];
+      const best = opts.sort((x, y) => dist(x, from) - dist(y, from))[0];
       // Skip suggestions that would turn the design upside down (white into near black)
       if (best && Math.abs(toOklch(best)[0] - toOklch(from)[0]) < 0.45)
         fixes.push({ target, which, c: best });
@@ -74,7 +75,11 @@ export default function ContrastChecker(_: ToolProps) {
     <div className="ct-card side-first inputs-first">
       <div className="ct-side">
         <ColorField label={T("Text colour")} value={fg} onChange={setFg} />
-        <ColorField label={T("Background colour")} value={bg} onChange={setBg} />
+        <ColorField
+          label={T("Background colour")}
+          value={bg}
+          onChange={setBg}
+        />
         <button
           type="button"
           className="btn sm ct-swap"
@@ -87,18 +92,27 @@ export default function ContrastChecker(_: ToolProps) {
           {T("Swap text and background")}
         </button>
         <p className="ct-hint">
-          {T("Large text is at least 24px, or 18.66px bold. A see-through text colour is blended with the background first.")}
+          {T(
+            "Large text is at least 24px, or 18.66px bold. A see-through text colour is blended with the background first.",
+          )}
         </p>
       </div>
 
       <div className="ct-main">
         <div
           className="ct-sample"
-          style={{ "--s-fg": css(fg), "--s-bg": css(withAlpha(bg, 1)) } as CSSProperties}
+          style={
+            {
+              "--s-fg": css(fg),
+              "--s-bg": css(withAlpha(bg, 1)),
+            } as CSSProperties
+          }
         >
           <p className="ct-sample-big">{T("Large text, 24px")}</p>
           <p>
-            {T("Normal text, 16px. The quick brown fox jumps over the lazy dog, and the colours stay easy to read.")}
+            {T(
+              "Normal text, 16px. The quick brown fox jumps over the lazy dog, and the colours stay easy to read.",
+            )}
           </p>
           <div className="ct-sample-ui">
             <span className="ct-sample-btn">{T("Button")}</span>
@@ -148,7 +162,8 @@ export default function ContrastChecker(_: ToolProps) {
             <div className="ct-fixes">
               {fixes.map((f, i) => {
                 const hex = toHex(f.c, false);
-                const r = f.which === "text" ? contrast(f.c, bg) : contrast(fg, f.c);
+                const r =
+                  f.which === "text" ? contrast(f.c, bg) : contrast(fg, f.c);
                 return (
                   <button
                     key={i}
@@ -156,7 +171,9 @@ export default function ContrastChecker(_: ToolProps) {
                     className="ct-fix"
                     data-fix={`${f.which}-${f.target}`}
                     data-hex={hex}
-                    onClick={() => (f.which === "text" ? setFg(f.c) : setBg(f.c))}
+                    onClick={() =>
+                      f.which === "text" ? setFg(f.c) : setBg(f.c)
+                    }
                   >
                     <span
                       className="ct-fix-sw"
@@ -170,7 +187,9 @@ export default function ContrastChecker(_: ToolProps) {
                     </span>
                     <span className="ct-fix-text">
                       <strong>
-                        {f.which === "text" ? T("Text {hex}", { hex }) : T("Background {hex}", { hex })}
+                        {f.which === "text"
+                          ? T("Text {hex}", { hex })
+                          : T("Background {hex}", { hex })}
                       </strong>
                       <span>
                         {ratioText(r)} · {f.target === 7 ? "AAA" : "AA"}

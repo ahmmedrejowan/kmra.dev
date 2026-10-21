@@ -18,27 +18,83 @@ export interface MetaSummary {
   more: number;
 }
 
-const str = (v: unknown) => (v === undefined || v === null ? "" : String(v).trim());
+const str = (v: unknown) =>
+  v === undefined || v === null ? "" : String(v).trim();
 
 function when(v: unknown): string {
   if (v instanceof Date && !Number.isNaN(+v))
-    return v.toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" });
+    return v.toLocaleString(undefined, {
+      dateStyle: "medium",
+      timeStyle: "short",
+    });
   return str(v);
 }
 
 /** Tags shown as their own rows (or deliberately not counted as "more") */
 const LISTED = new Set([
-  "latitude", "longitude", "GPSLatitude", "GPSLongitude", "GPSLatitudeRef", "GPSLongitudeRef",
-  "GPSAltitude", "GPSAltitudeRef", "Make", "Model", "LensModel", "LensMake", "DateTimeOriginal",
-  "CreateDate", "DateTime", "ModifyDate", "Software", "CreatorTool", "Artist", "Byline", "creator",
-  "Copyright", "CopyrightNotice", "rights", "BodySerialNumber", "SerialNumber", "CameraSerialNumber",
-  "LensSerialNumber", "CameraOwnerName", "OwnerName", "ImageDescription", "Caption", "description",
-  "Keywords", "subject", "City", "Country", "State", "Sublocation", "HostComputer",
-  "ThumbnailOffset", "ThumbnailLength", "JPEGInterchangeFormat", "JPEGInterchangeFormatLength",
+  "latitude",
+  "longitude",
+  "GPSLatitude",
+  "GPSLongitude",
+  "GPSLatitudeRef",
+  "GPSLongitudeRef",
+  "GPSAltitude",
+  "GPSAltitudeRef",
+  "Make",
+  "Model",
+  "LensModel",
+  "LensMake",
+  "DateTimeOriginal",
+  "CreateDate",
+  "DateTime",
+  "ModifyDate",
+  "Software",
+  "CreatorTool",
+  "Artist",
+  "Byline",
+  "creator",
+  "Copyright",
+  "CopyrightNotice",
+  "rights",
+  "BodySerialNumber",
+  "SerialNumber",
+  "CameraSerialNumber",
+  "LensSerialNumber",
+  "CameraOwnerName",
+  "OwnerName",
+  "ImageDescription",
+  "Caption",
+  "description",
+  "Keywords",
+  "subject",
+  "City",
+  "Country",
+  "State",
+  "Sublocation",
+  "HostComputer",
+  "ThumbnailOffset",
+  "ThumbnailLength",
+  "JPEGInterchangeFormat",
+  "JPEGInterchangeFormatLength",
   // Not personal, not worth counting
-  "Orientation", "XResolution", "YResolution", "ResolutionUnit", "ExifImageWidth", "ExifImageHeight",
-  "ColorSpace", "YCbCrPositioning", "ImageWidth", "ImageHeight", "BitDepth", "ColorType",
-  "Compression", "Filter", "Interlace", "ExifVersion", "FlashpixVersion", "ComponentsConfiguration",
+  "Orientation",
+  "XResolution",
+  "YResolution",
+  "ResolutionUnit",
+  "ExifImageWidth",
+  "ExifImageHeight",
+  "ColorSpace",
+  "YCbCrPositioning",
+  "ImageWidth",
+  "ImageHeight",
+  "BitDepth",
+  "ColorType",
+  "Compression",
+  "Filter",
+  "Interlace",
+  "ExifVersion",
+  "FlashpixVersion",
+  "ComponentsConfiguration",
 ]);
 
 const first = (o: Record<string, unknown>, ...keys: string[]) => {
@@ -82,19 +138,51 @@ export async function readSummary(file: Blob): Promise<MetaSummary | null> {
   const lon = o.longitude as number | undefined;
   if (typeof lat === "number" && typeof lon === "number")
     add("Location", `${lat.toFixed(5)}, ${lon.toFixed(5)}`, true);
-  add("Place", [o.Sublocation, o.City, o.State, o.Country].map(str).filter(Boolean).join(", "), true);
-  add("Camera", [str(o.Make), str(o.Model)].filter(Boolean).join(" ").replace(/^(\S+) \1 /, "$1 "));
+  add(
+    "Place",
+    [o.Sublocation, o.City, o.State, o.Country]
+      .map(str)
+      .filter(Boolean)
+      .join(", "),
+    true,
+  );
+  add(
+    "Camera",
+    [str(o.Make), str(o.Model)]
+      .filter(Boolean)
+      .join(" ")
+      .replace(/^(\S+) \1 /, "$1 "),
+  );
   add("Lens", str(first(o, "LensModel")));
-  add("Taken", when(first(o, "DateTimeOriginal", "CreateDate", "DateTime", "ModifyDate")));
-  add("Serial number", str(first(o, "BodySerialNumber", "SerialNumber", "CameraSerialNumber")), true);
+  add(
+    "Taken",
+    when(first(o, "DateTimeOriginal", "CreateDate", "DateTime", "ModifyDate")),
+  );
+  add(
+    "Serial number",
+    str(first(o, "BodySerialNumber", "SerialNumber", "CameraSerialNumber")),
+    true,
+  );
   add("Owner", str(first(o, "CameraOwnerName", "OwnerName")), true);
   const author = first(o, "Artist", "Byline", "creator");
-  add("Author", Array.isArray(author) ? author.map(str).join(", ") : str(author), true);
+  add(
+    "Author",
+    Array.isArray(author) ? author.map(str).join(", ") : str(author),
+    true,
+  );
   const rights = first(o, "Copyright", "CopyrightNotice", "rights");
-  add("Copyright", typeof rights === "object" && rights ? str(Object.values(rights)[0]) : str(rights));
+  add(
+    "Copyright",
+    typeof rights === "object" && rights
+      ? str(Object.values(rights)[0])
+      : str(rights),
+  );
   add("Software", str(first(o, "Software", "CreatorTool", "HostComputer")));
   const desc = first(o, "ImageDescription", "Caption", "description");
-  add("Description", typeof desc === "object" && desc ? str(Object.values(desc)[0]) : str(desc));
+  add(
+    "Description",
+    typeof desc === "object" && desc ? str(Object.values(desc)[0]) : str(desc),
+  );
   const kw = first(o, "Keywords", "subject");
   add("Keywords", Array.isArray(kw) ? kw.map(str).join(", ") : str(kw));
   // A small copy of the photo inside the file: it can still show what was cropped out
@@ -102,6 +190,8 @@ export async function readSummary(file: Blob): Promise<MetaSummary | null> {
     add("Preview copy", "A small copy of the photo inside the file", true);
   // Private rows first
   rows.sort((a, b) => Number(!!b.private) - Number(!!a.private));
-  const more = Object.keys(o).filter((k) => !LISTED.has(k) && !k.startsWith("GPS") && str(o[k])).length;
+  const more = Object.keys(o).filter(
+    (k) => !LISTED.has(k) && !k.startsWith("GPS") && str(o[k]),
+  ).length;
   return { rows, more };
 }

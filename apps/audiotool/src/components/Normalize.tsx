@@ -27,7 +27,9 @@ export default function Normalize(_: ToolProps) {
             </div>
           </dl>
           <p className="note">
-            {T("Every file comes out equally loud: the level podcast apps and streaming services aim for.")}
+            {T(
+              "Every file comes out equally loud: the level podcast apps and streaming services aim for.",
+            )}
           </p>
         </>
       )}

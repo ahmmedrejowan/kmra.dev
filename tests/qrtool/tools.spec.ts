@@ -243,7 +243,11 @@ const CODES_2D: {
   file: string;
   format: RegExp;
 }[] = [
-  { path: "/data-matrix", file: "data-matrix-kmra.png", format: /Data ?Matrix/ },
+  {
+    path: "/data-matrix",
+    file: "data-matrix-kmra.png",
+    format: /Data ?Matrix/,
+  },
   { path: "/pdf417", file: "pdf417-kmra.png", format: /PDF417/ },
   { path: "/codes-2d", chip: "Aztec", file: "aztec-kmra.png", format: /Aztec/ },
   {

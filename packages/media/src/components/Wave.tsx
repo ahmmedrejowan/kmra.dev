@@ -17,8 +17,9 @@ export function drawPeaks(
   const n = peaks.length / 2;
   // Scale so the loudest part fills most of the height (quiet files stay visible)
   let top = 0.05;
-  for (let i = 0; i < peaks.length; i++) top = Math.max(top, Math.abs(peaks[i]!));
-  const k = (H / 2) * 0.92 / top;
+  for (let i = 0; i < peaks.length; i++)
+    top = Math.max(top, Math.abs(peaks[i]!));
+  const k = ((H / 2) * 0.92) / top;
   const mid = H / 2;
   const cut = (opts.played ?? 0) * W;
   ctx.save();
@@ -43,7 +44,8 @@ export function drawPeaks(
 
 /** The page's accent colour, for waveforms */
 export function waveColors(el: Element) {
-  const color = getComputedStyle(el).getPropertyValue("--acc").trim() || "#d6409f";
+  const color =
+    getComputedStyle(el).getPropertyValue("--acc").trim() || "#d6409f";
   return { color };
 }
 
@@ -58,7 +60,9 @@ export function usePeaks(file: Blob | null, n = 1200) {
     setFailed(false);
     if (!file) return;
     const f =
-      file instanceof File ? file : new File([file], "audio", { type: file.type });
+      file instanceof File
+        ? file
+        : new File([file], "audio", { type: file.type });
     const ac = new AbortController();
     waveform(f, n, { signal: ac.signal })
       .then((p) => cur.current === file && setPeaks(p))

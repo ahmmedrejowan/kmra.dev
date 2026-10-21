@@ -5,10 +5,18 @@ import { Metronome, type MetroSettings } from "./metronome";
  * A metronome for a component: start/stop, live settings, and the beat that is sounding now
  * (followed on the audio clock with requestAnimationFrame, so the lights match the clicks).
  */
-export function useMetronome(settings: MetroSettings, onBpm?: (bpm: number) => void) {
+export function useMetronome(
+  settings: MetroSettings,
+  onBpm?: (bpm: number) => void,
+) {
   const ref = useRef<Metronome | null>(null);
   const [running, setRunning] = useState(false);
-  const [now, setNow] = useState<{ beat: number; sub: number; bar: number; n: number } | null>(null);
+  const [now, setNow] = useState<{
+    beat: number;
+    sub: number;
+    bar: number;
+    n: number;
+  } | null>(null);
   const onBpmRef = useRef(onBpm);
   onBpmRef.current = onBpm;
 

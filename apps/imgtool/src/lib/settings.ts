@@ -56,7 +56,12 @@ export function formatOf(file: { type: string; name: string }): Format | null {
   if (t in FORMATS) return t as Format;
   if (t in alias) return alias[t]!;
   const ext = file.name.toLowerCase().split(".").pop() ?? "";
-  const byExt: Record<string, Format> = { jpg: "image/jpeg", jpeg: "image/jpeg", jfif: "image/jpeg", tif: "image/tiff" };
+  const byExt: Record<string, Format> = {
+    jpg: "image/jpeg",
+    jpeg: "image/jpeg",
+    jfif: "image/jpeg",
+    tif: "image/tiff",
+  };
   if (byExt[ext]) return byExt[ext]!;
   return (Object.keys(EXT) as Format[]).find((f) => EXT[f] === ext) ?? null;
 }

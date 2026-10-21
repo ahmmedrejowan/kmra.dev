@@ -61,10 +61,10 @@ function probe(buf: Buffer, ext: string) {
 }
 /** Mean loudness in dBFS (ffmpeg volumedetect) */
 function meanDb(path: string): number {
-  const err = execFileSync(
-    "sh",
-    ["-c", `ffmpeg -hide_banner -i "${path}" -af volumedetect -f null - 2>&1`],
-  ).toString();
+  const err = execFileSync("sh", [
+    "-c",
+    `ffmpeg -hide_banner -i "${path}" -af volumedetect -f null - 2>&1`,
+  ]).toString();
   return Number(/mean_volume: (-?[\d.]+) dB/.exec(err)?.[1] ?? NaN);
 }
 
@@ -75,7 +75,9 @@ async function runJob(page: Page) {
   await expect(res).toBeVisible({ timeout: 150_000 });
   const engine = (await res.getAttribute("data-engine"))!;
   const size = Number(await res.getAttribute("data-bytes"));
-  const d = await download(page, () => page.locator(".vt-download").first().click());
+  const d = await download(page, () =>
+    page.locator(".vt-download").first().click(),
+  );
   const buf = await bytes(d);
   expect(buf.length).toBe(size);
   return { engine, size, buf, name: d.suggestedFilename() };
@@ -93,7 +95,9 @@ test("convert MP3 to WAV, and WAV to M4A", async ({ page }) => {
   await addFiles(page, gen(AUD.mp3));
   await expect(page.locator(".vt-details")).toContainText("stereo");
   // MP3 is the default output: the LAME encoder is credited, with its notice file served
-  await expect(page.locator(".mp3-credit")).toHaveText("MP3s are made with the LAME encoder.");
+  await expect(page.locator(".mp3-credit")).toHaveText(
+    "MP3s are made with the LAME encoder.",
+  );
   expect((await page.request.get("/NOTICE-mp3.txt")).ok()).toBe(true);
   await pick(page, "Format", "WAV");
   await expect(page.locator(".mp3-credit")).toHaveCount(0);
@@ -112,7 +116,9 @@ test("convert MP3 to WAV, and WAV to M4A", async ({ page }) => {
   expect(Math.abs(p.dur - 4)).toBeLessThan(0.15);
 });
 
-test("use cases convert M4A, FLAC (320 kbps) and OGG Opus to MP3", async ({ page }) => {
+test("use cases convert M4A, FLAC (320 kbps) and OGG Opus to MP3", async ({
+  page,
+}) => {
   for (const [slug, file, secs] of [
     ["/m4a-to-mp3", AUD.m4a, 5],
     ["/flac-to-mp3", AUD.flac, 3],
@@ -128,7 +134,9 @@ test("use cases convert M4A, FLAC (320 kbps) and OGG Opus to MP3", async ({ page
   }
 });
 
-test("compress by quality as speech (mono) and to a target size", async ({ page }) => {
+test("compress by quality as speech (mono) and to a target size", async ({
+  page,
+}) => {
   await openTool(page, "/compress");
   await addFiles(page, gen(AUD.mp3));
   await pick(page, "Quality (kbps)", "48");
@@ -149,7 +157,9 @@ test("compress by quality as speech (mono) and to a target size", async ({ page 
   expect(Math.abs(p.dur - 4)).toBeLessThan(0.15);
 });
 
-test("video to audio: MP3, and M4A copied without re-encoding", async ({ page }) => {
+test("video to audio: MP3, and M4A copied without re-encoding", async ({
+  page,
+}) => {
   await openTool(page, "/video-to-audio");
   await addFiles(page, gen(VID.landscape));
   await expect(page.locator(".vt-details")).toContainText("Left out");
@@ -193,9 +203,20 @@ test("the iPhone ringtone page makes a 30 s M4R", async ({ page }) => {
   // A 45 s song: the ringtone starts as its first 30 seconds
   const song = save(
     execFileSync("ffmpeg", [
-      "-hide_banner", "-loglevel", "error", "-f", "lavfi", "-i",
-      "sine=frequency=330:duration=45", "-c:a", "libmp3lame", "-b:a", "128k",
-      "-f", "mp3", "-",
+      "-hide_banner",
+      "-loglevel",
+      "error",
+      "-f",
+      "lavfi",
+      "-i",
+      "sine=frequency=330:duration=45",
+      "-c:a",
+      "libmp3lame",
+      "-b:a",
+      "128k",
+      "-f",
+      "mp3",
+      "-",
     ]),
     "mp3",
   );
@@ -232,7 +253,18 @@ test("fade, speed (2×, 0.5×), reverse and pitch keep or change the length as t
   expect(Math.abs(p.dur - 6)).toBeLessThan(0.15);
   // The first half second is much quieter than the original's
   const head = save(
-    execFileSync("ffmpeg", ["-hide_banner", "-loglevel", "error", "-i", p.path, "-t", "0.4", "-f", "wav", "-"]),
+    execFileSync("ffmpeg", [
+      "-hide_banner",
+      "-loglevel",
+      "error",
+      "-i",
+      p.path,
+      "-t",
+      "0.4",
+      "-f",
+      "wav",
+      "-",
+    ]),
     "wav",
   );
   expect(meanDb(head)).toBeLessThan(meanDb(gen(AUD.mp3)) - 10);
@@ -280,7 +312,9 @@ test("volume and normalize make a quiet recording louder", async ({ page }) => {
   expect(norm - before).toBeGreaterThan(10);
 });
 
-test("remove silence cuts the gaps; stereo to mono gives one channel", async ({ page }) => {
+test("remove silence cuts the gaps; stereo to mono gives one channel", async ({
+  page,
+}) => {
   await openTool(page, "/remove-silence");
   await addFiles(page, gen(AUD.gaps));
   let r = await runJob(page);
@@ -335,9 +369,21 @@ test("Bangla pages translate the tools", async ({ page }) => {
 
 test("every ready tool has a test above", () => {
   const tested = new Set([
-    "convert", "compress", "video-to-audio", "trim", "merge", "fade", "speed",
-    "reverse", "pitch", "volume", "normalize", "remove-silence", "mono",
-    "voice-recorder", "audio-info",
+    "convert",
+    "compress",
+    "video-to-audio",
+    "trim",
+    "merge",
+    "fade",
+    "speed",
+    "reverse",
+    "pitch",
+    "volume",
+    "normalize",
+    "remove-silence",
+    "mono",
+    "voice-recorder",
+    "audio-info",
   ]);
   const missing = app.tools.filter((t) => t.ready && !tested.has(t.slug));
   expect(missing.map((t) => t.slug)).toEqual([]);

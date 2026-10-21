@@ -25,7 +25,9 @@ export default function MusicTool({
   const fallback = <div className="mt-card mt-loading" />;
   return (
     <LangProvider lang={lang}>
-      <Suspense fallback={fallback}>{Tool && mounted ? <Tool preset={preset} /> : fallback}</Suspense>
+      <Suspense fallback={fallback}>
+        {Tool && mounted ? <Tool preset={preset} /> : fallback}
+      </Suspense>
     </LangProvider>
   );
 }

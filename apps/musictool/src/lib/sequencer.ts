@@ -91,7 +91,10 @@ export class Sequencer {
     if (this.next >= p.steps) this.next = 0;
     if (!this.bus) return;
     const c = audio();
-    for (const d of DRUMS) this.channels.get(d)!.gain.setTargetAtTime(channelGain(p, d), c.currentTime, 0.01);
+    for (const d of DRUMS)
+      this.channels
+        .get(d)!
+        .gain.setTargetAtTime(channelGain(p, d), c.currentTime, 0.01);
   }
 
   private play(d: DrumId, vel: number, at: number) {
@@ -132,7 +135,9 @@ export class Sequencer {
     this.log = [];
     this.pump();
     try {
-      this.timer = new Worker(new URL("./clock.worker.ts", import.meta.url), { type: "module" });
+      this.timer = new Worker(new URL("./clock.worker.ts", import.meta.url), {
+        type: "module",
+      });
       this.timer.onmessage = () => this.pump();
       this.timer.postMessage(INTERVAL);
     } catch {
@@ -197,7 +202,8 @@ export class Sequencer {
     if (!this.playing) return null;
     const now = audio().currentTime;
     let last: Step | null = null;
-    while (this.queue.length && this.queue[0]!.time <= now) last = this.queue.shift()!;
+    while (this.queue.length && this.queue[0]!.time <= now)
+      last = this.queue.shift()!;
     return last;
   }
 }

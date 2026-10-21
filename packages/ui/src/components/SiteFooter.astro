@@ -1,11 +1,5 @@
 ---
-import {
-  CONTACT,
-  getApp,
-  HUB,
-  localizeApp,
-  type AppId,
-} from "@kmra/registry";
+import { CONTACT, getApp, HUB, localizeApp, type AppId } from "@kmra/registry";
 import Wordmark from "./Wordmark.astro";
 import Icon from "./Icon.astro";
 import { markSvg } from "../lib/brand";
@@ -76,12 +70,12 @@ const taskList = app.tasks
                 "Small, private tools. Everything runs in your browser, so what you play and type stays on your device.",
               )
             : app.noFiles
-            ? T(
-                "Small, private tools. Everything runs in your browser, so what you type stays on your device.",
-              )
-            : T(
-                "Small tools for everyday files. Everything runs in your browser, so your files stay on your device.",
-              )}
+              ? T(
+                  "Small, private tools. Everything runs in your browser, so what you type stays on your device.",
+                )
+              : T(
+                  "Small tools for everyday files. Everything runs in your browser, so your files stay on your device.",
+                )}
         </p>
         <a class="fmail" href={`mailto:${CONTACT.email}`}>
           {CONTACT.email}

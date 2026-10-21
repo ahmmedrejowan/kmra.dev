@@ -61,7 +61,10 @@ export function reducedMotion(): boolean {
  */
 export function testHook(name: string, value: unknown) {
   if (typeof window === "undefined") return;
-  const w = window as unknown as { kmraTest?: boolean; kmraMusic?: Record<string, unknown> };
+  const w = window as unknown as {
+    kmraTest?: boolean;
+    kmraMusic?: Record<string, unknown>;
+  };
   if (w.kmraTest !== true) return;
   (w.kmraMusic ??= {})[name] = value;
 }

@@ -256,11 +256,21 @@ export function toCmyk(c: Rgba): [number, number, number, number] {
   const { r, g, b } = clip(c);
   const k = 1 - Math.max(r, g, b);
   if (k >= 1) return [0, 0, 0, 1];
-  return [(1 - r - k) / (1 - k), (1 - g - k) / (1 - k), (1 - b - k) / (1 - k), k];
+  return [
+    (1 - r - k) / (1 - k),
+    (1 - g - k) / (1 - k),
+    (1 - b - k) / (1 - k),
+    k,
+  ];
 }
 
 export function cmykToRgb(c: number, m: number, y: number, k: number, a = 1) {
-  return { r: (1 - c) * (1 - k), g: (1 - m) * (1 - k), b: (1 - y) * (1 - k), a };
+  return {
+    r: (1 - c) * (1 - k),
+    g: (1 - m) * (1 - k),
+    b: (1 - y) * (1 - k),
+    a,
+  };
 }
 
 /* ---------- parsing ---------- */
@@ -289,7 +299,9 @@ function unit(tok: string, wholeIsPct = true): number {
 function hue(tok: string): number {
   if (tok === "none") return 0;
   const m =
-    /^([+-]?(?:\d+\.?\d*|\.\d+)(?:e[+-]?\d+)?)(deg|rad|grad|turn|°)?$/i.exec(tok);
+    /^([+-]?(?:\d+\.?\d*|\.\d+)(?:e[+-]?\d+)?)(deg|rad|grad|turn|°)?$/i.exec(
+      tok,
+    );
   if (!m) throw new ColorError("The hue isn't a number or an angle.");
   const v = parseFloat(m[1]!);
   const u = (m[2] ?? "deg").toLowerCase();
@@ -386,7 +398,9 @@ export function parseColor(input: string): { color: Rgba; kind: Kind } {
     if (!m) throw new ColorError(FORMS);
     fn = m[1] === "srgb" ? "srgb" : m[1] === "srgb-linear" ? "srgb-linear" : "";
     if (!fn)
-      throw new ColorError("Only color(srgb …) and color(srgb-linear …) are read.");
+      throw new ColorError(
+        "Only color(srgb …) and color(srgb-linear …) are read.",
+      );
     inner = m[2]!;
   }
   const { ch, a } = args(inner);
@@ -409,18 +423,33 @@ export function parseColor(input: string): { color: Rgba; kind: Kind } {
     case "hsl":
     case "hsla":
       return {
-        color: hslToRgb(hue(c[0]!), clamp01(unit(c[1]!)), clamp01(unit(c[2]!)), A),
+        color: hslToRgb(
+          hue(c[0]!),
+          clamp01(unit(c[1]!)),
+          clamp01(unit(c[2]!)),
+          A,
+        ),
         kind: "hsl",
       };
     case "hsv":
     case "hsb":
       return {
-        color: hsvToRgb(hue(c[0]!), clamp01(unit(c[1]!)), clamp01(unit(c[2]!)), A),
+        color: hsvToRgb(
+          hue(c[0]!),
+          clamp01(unit(c[1]!)),
+          clamp01(unit(c[2]!)),
+          A,
+        ),
         kind: "hsv",
       };
     case "hwb":
       return {
-        color: hwbToRgb(hue(c[0]!), clamp01(unit(c[1]!)), clamp01(unit(c[2]!)), A),
+        color: hwbToRgb(
+          hue(c[0]!),
+          clamp01(unit(c[1]!)),
+          clamp01(unit(c[2]!)),
+          A,
+        ),
         kind: "hwb",
       };
     case "cmyk":
@@ -620,7 +649,8 @@ export function passingLightness(
   const end = dir === "lighter" ? 1 : 0;
   const at = (L: number) => mapOklch(L, C, H, 1);
   if (contrast(at(end), bg) < target) return null;
-  if (contrast(withAlpha(fit(fg), 1), bg) >= target) return withAlpha(fit(fg), 1);
+  if (contrast(withAlpha(fit(fg), 1), bg) >= target)
+    return withAlpha(fit(fg), 1);
   let lo = L0; // fails
   let hi = end; // passes
   for (let i = 0; i < 40; i++) {

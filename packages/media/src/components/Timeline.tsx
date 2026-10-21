@@ -76,7 +76,11 @@ export function Timeline({
     if (wave) {
       const ac = new AbortController();
       void waveform(file, Math.min(4000, c.width), { signal: ac.signal })
-        .then((p) => !ac.signal.aborted && drawPeaks(c, p, { ...waveColors(c), played: 0 }))
+        .then(
+          (p) =>
+            !ac.signal.aborted &&
+            drawPeaks(c, p, { ...waveColors(c), played: 0 }),
+        )
         .catch(() => {});
       return () => ac.abort();
     }

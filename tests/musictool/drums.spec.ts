@@ -28,7 +28,9 @@ import {
 import { getApp } from "../../packages/registry/src/index.ts";
 
 const SR = 22050;
-const sounds = Object.fromEntries(DRUMS.map((d) => [d, synth(d, SR)])) as Record<DrumId, Float32Array>;
+const sounds = Object.fromEntries(
+  DRUMS.map((d) => [d, synth(d, SR)]),
+) as Record<DrumId, Float32Array>;
 const energy = (x: Float32Array, from: number, to: number) => {
   let e = 0;
   for (let i = from; i < to; i++) e += x[i]! * x[i]!;
@@ -62,7 +64,9 @@ test("starter patterns: valid rows, unique ids, and every use case points at one
     // Every starter has a kick on the downbeat
     expect(p.grid.kick[0]).toBeGreaterThan(0);
   }
-  for (const t of getApp("musictool").tasks.filter((t) => t.tool === "beat-maker"))
+  for (const t of getApp("musictool").tasks.filter(
+    (t) => t.tool === "beat-maker",
+  ))
     expect(starter(t.preset.pattern), t.slug).toBeTruthy();
 });
 
@@ -95,7 +99,12 @@ test("a beat survives a link, and bad links are ignored", () => {
 test("stored patterns are checked before use", () => {
   expect(sane(null)).toBeNull();
   expect(sane({ steps: 5, grid: {} })).toBeNull();
-  const p = sane({ steps: 16, bpm: 5000, grid: { kick: [2, 9, 1] }, vol: { kick: 3 } })!;
+  const p = sane({
+    steps: 16,
+    bpm: 5000,
+    grid: { kick: [2, 9, 1] },
+    vol: { kick: 3 },
+  })!;
   expect(p.bpm).toBe(240);
   expect(p.grid.kick.slice(0, 4)).toEqual([2, 0, 1, 0]);
   expect(p.grid.kick).toHaveLength(16);
@@ -146,7 +155,9 @@ test("mixdown: exact loop length, hits where the steps are, tails wrap, no clipp
   expect(energy(L, 0, 400)).toBeCloseTo(energy(R, 0, 400), 6);
   // Silence just before the snare (step 8 = 1 s), sound right after it
   const snareAt = SR * 1;
-  expect(energy(L, snareAt - 200, snareAt)).toBeLessThan(energy(L, snareAt, snareAt + 200) / 100);
+  expect(energy(L, snareAt - 200, snareAt)).toBeLessThan(
+    energy(L, snareAt, snareAt + 200) / 100,
+  );
   // An open hat on the last step rings past the end and wraps to the start of the file
   const tail = emptyPattern(16, 120, 0);
   tail.grid.open[15] = 2;
@@ -160,7 +171,8 @@ test("mixdown: exact loop length, hits where the steps are, tails wrap, no clipp
   }
   const [A, B] = mixdown(loud, SR, 1, sounds);
   let peak = 0;
-  for (let i = 0; i < A.length; i++) peak = Math.max(peak, Math.abs(A[i]!), Math.abs(B[i]!));
+  for (let i = 0; i < A.length; i++)
+    peak = Math.max(peak, Math.abs(A[i]!), Math.abs(B[i]!));
   expect(peak).toBeLessThanOrEqual(0.95 + 1e-6);
 });
 
@@ -177,14 +189,17 @@ test("mixdown: a closed hat cuts an open hat short", () => {
   const from = Math.round(0.25 * SR) + 80;
   const to = Math.round(0.45 * SR);
   expect(energy(free, from, to)).toBeGreaterThan(0.05);
-  expect(Math.abs(energy(both, from, to) - energy(justHat, from, to))).toBeLessThan(1e-3);
+  expect(
+    Math.abs(energy(both, from, to) - energy(justHat, from, to)),
+  ).toBeLessThan(1e-3);
 });
 
 test("WAV: a valid 16-bit stereo header and the samples in order", () => {
   const L = new Float32Array([0, 0.5, -1]);
   const R = new Float32Array([1, -0.5, 0]);
   const b = new DataView(wav([L, R], 44100));
-  const s = (o: number) => String.fromCharCode(...new Uint8Array(b.buffer, o, 4));
+  const s = (o: number) =>
+    String.fromCharCode(...new Uint8Array(b.buffer, o, 4));
   expect(s(0)).toBe("RIFF");
   expect(s(8)).toBe("WAVE");
   expect(b.getUint16(22, true)).toBe(2);

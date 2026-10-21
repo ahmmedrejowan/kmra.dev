@@ -240,7 +240,12 @@ export default function AudioInfo(_: ToolProps) {
   };
 
   const input = (
-    <MediaInput inputRef={pickRef} onFiles={take} multiple accept={AUDIO_ACCEPT} />
+    <MediaInput
+      inputRef={pickRef}
+      onFiles={take}
+      multiple
+      accept={AUDIO_ACCEPT}
+    />
   );
 
   if (!items.length)
@@ -282,7 +287,11 @@ export default function AudioInfo(_: ToolProps) {
       [
         it.file.name,
         ...(it.error
-          ? [T("This file couldn't be read. It may be damaged or not an audio file.")]
+          ? [
+              T(
+                "This file couldn't be read. It may be damaged or not an audio file.",
+              ),
+            ]
           : []),
         ...all[n]!.flatMap((s) => [
           "",

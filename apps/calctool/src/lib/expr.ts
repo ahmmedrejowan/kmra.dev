@@ -191,7 +191,14 @@ export function evaluate(src: string, opts: EvalOptions = {}): number {
   function mul(): Val {
     let left = unary();
     for (;;) {
-      if (isOp("*") || isOp("/") || isOp("mod") || isOp("ncr") || isOp("npr") || isOp("root")) {
+      if (
+        isOp("*") ||
+        isOp("/") ||
+        isOp("mod") ||
+        isOp("ncr") ||
+        isOp("npr") ||
+        isOp("root")
+      ) {
         const op = (toks[p++] as { v: string }).v;
         const right = unary();
         if (op === "*") left = { v: left.v * right.v };
@@ -317,7 +324,8 @@ function choose(n: number, r: number, combos: boolean): number {
   let v = 1;
   for (let i = 1; i <= k; i++) {
     v = combos ? (v * (n - k + i)) / i : v * (n - i + 1);
-    if (!Number.isFinite(v)) throw new CalcError("The answer is too big to show.");
+    if (!Number.isFinite(v))
+      throw new CalcError("The answer is too big to show.");
   }
   return Math.round(v);
 }
@@ -326,13 +334,17 @@ function choose(n: number, r: number, combos: boolean): number {
 function nthRoot(x: number, y: number): number {
   if (y === 0) throw new CalcError("A root needs a degree other than 0.");
   if (x < 0) {
-    if (Number.isInteger(y) && Math.abs(y) % 2 === 1) return -Math.pow(-x, 1 / y);
+    if (Number.isInteger(y) && Math.abs(y) % 2 === 1)
+      return -Math.pow(-x, 1 / y);
     throw new CalcError("Even roots of negative numbers have no real answer.");
   }
   const v = Math.pow(x, 1 / y);
   // 27 root 3 should be exactly 3, not 3.0000000000000004
   const r = Math.round(v);
-  return Math.abs(v - r) < 1e-12 && Math.abs(Math.pow(r, y) - x) < 1e-9 * Math.max(1, x) ? r : v;
+  return Math.abs(v - r) < 1e-12 &&
+    Math.abs(Math.pow(r, y) - x) < 1e-9 * Math.max(1, x)
+    ? r
+    : v;
 }
 
 function call(f: string, x: number, deg: boolean): number {

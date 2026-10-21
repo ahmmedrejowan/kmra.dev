@@ -38,7 +38,11 @@ export function ChordDiagram({
       data-frets={fretCode(v.frets)}
     >
       {v.base > 1 ? (
-        <text className="mt-chord-base" x={x(strings - 1) + 16} y={y(0) + fretH * 0.62}>
+        <text
+          className="mt-chord-base"
+          x={x(strings - 1) + 16}
+          y={y(0) + fretH * 0.62}
+        >
           {T("{n}fr", { n: v.base })}
         </text>
       ) : null}
@@ -51,14 +55,34 @@ export function ChordDiagram({
         y2={y(0)}
       />
       {Array.from({ length: frets }, (_, i) => (
-        <line key={i} className="mt-chord-fret" x1={x(0)} x2={x(strings - 1)} y1={y(i + 1)} y2={y(i + 1)} />
+        <line
+          key={i}
+          className="mt-chord-fret"
+          x1={x(0)}
+          x2={x(strings - 1)}
+          y1={y(i + 1)}
+          y2={y(i + 1)}
+        />
       ))}
       {Array.from({ length: strings }, (_, s) => (
-        <line key={s} className="mt-chord-string" x1={x(s)} x2={x(s)} y1={y(0)} y2={y(frets)} />
+        <line
+          key={s}
+          className="mt-chord-string"
+          x1={x(s)}
+          x2={x(s)}
+          y1={y(0)}
+          y2={y(frets)}
+        />
       ))}
       {v.frets.map((f, s) =>
         f <= 0 ? (
-          <text key={s} className={`mt-chord-top ${f < 0 ? "x" : "o"}`} x={x(s)} y={top - 14} textAnchor="middle">
+          <text
+            key={s}
+            className={`mt-chord-top ${f < 0 ? "x" : "o"}`}
+            x={x(s)}
+            y={top - 14}
+            textAnchor="middle"
+          >
             {f < 0 ? "×" : "○"}
           </text>
         ) : null,
@@ -74,11 +98,22 @@ export function ChordDiagram({
         />
       )}
       {v.frets.map((f, s) =>
-        f > 0 && !(v.barre && f === v.barre.fret && s >= v.barre.from && s <= v.barre.to && s !== v.barre.from) ? (
+        f > 0 &&
+        !(
+          v.barre &&
+          f === v.barre.fret &&
+          s >= v.barre.from &&
+          s <= v.barre.to &&
+          s !== v.barre.from
+        ) ? (
           <g key={s} className="mt-chord-dot">
             <circle cx={x(s)} cy={y(pos(f) - 1) + fretH / 2} r={15} />
             {v.fingers[s] ? (
-              <text x={x(s)} y={y(pos(f) - 1) + fretH / 2 + 5.5} textAnchor="middle">
+              <text
+                x={x(s)}
+                y={y(pos(f) - 1) + fretH / 2 + 5.5}
+                textAnchor="middle"
+              >
                 {v.fingers[s]}
               </text>
             ) : null}
@@ -86,7 +121,13 @@ export function ChordDiagram({
         ) : null,
       )}
       {labels?.map((l, s) => (
-        <text key={s} className="mt-chord-name" x={x(s)} y={y(frets) + 28} textAnchor="middle">
+        <text
+          key={s}
+          className="mt-chord-name"
+          x={x(s)}
+          y={y(frets) + 28}
+          textAnchor="middle"
+        >
           {l}
         </text>
       ))}

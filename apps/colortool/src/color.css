@@ -19,7 +19,10 @@
 /* The transparency checkerboard: only where alpha matters */
 .ct-card .checker,
 .ct-herowidget .checker {
-  background: repeating-conic-gradient(var(--ct-ck-a) 0% 25%, var(--ct-ck-b) 0% 50%)
+  background: repeating-conic-gradient(
+      var(--ct-ck-a) 0% 25%,
+      var(--ct-ck-b) 0% 50%
+    )
     0 0 / 16px 16px;
 }
 
@@ -205,8 +208,7 @@
   border-radius: 10px;
   background:
     linear-gradient(to top, #000, rgb(0 0 0 / 0)),
-    linear-gradient(to right, #fff, rgb(255 255 255 / 0)),
-    var(--hue);
+    linear-gradient(to right, #fff, rgb(255 255 255 / 0)), var(--hue);
   cursor: crosshair;
   touch-action: none;
   box-shadow: inset 0 0 0 1px rgb(0 0 0 / 0.08);
@@ -254,7 +256,10 @@
 }
 .ct-alpha-wrap {
   border-radius: 999px;
-  background: repeating-conic-gradient(var(--ct-ck-a) 0% 25%, var(--ct-ck-b) 0% 50%)
+  background: repeating-conic-gradient(
+      var(--ct-ck-a) 0% 25%,
+      var(--ct-ck-b) 0% 50%
+    )
     0 0 / 10px 10px;
 }
 .ct-alpha {
@@ -338,7 +343,10 @@
   padding: 0;
   cursor: pointer;
   overflow: hidden;
-  background: repeating-conic-gradient(var(--ct-ck-a) 0% 25%, var(--ct-ck-b) 0% 50%)
+  background: repeating-conic-gradient(
+      var(--ct-ck-a) 0% 25%,
+      var(--ct-ck-b) 0% 50%
+    )
     0 0 / 10px 10px;
   box-shadow: inset 0 0 0 1px rgb(0 0 0 / 0.1);
 }

@@ -3,7 +3,19 @@ import { useT } from "@kmra/ui/lib/i18n-react";
 import { Icon } from "@kmra/ui/components/Icon";
 import { Toggle } from "@kmra/ui/components/controls";
 import type { ToolProps } from ".";
-import { Card, Choice, Keys, NumInput, Pills, Range, busyTarget, load, pre, save, useNum } from "../lib/ui";
+import {
+  Card,
+  Choice,
+  Keys,
+  NumInput,
+  Pills,
+  Range,
+  busyTarget,
+  load,
+  pre,
+  save,
+  useNum,
+} from "../lib/ui";
 import {
   MAX_BPM,
   MIN_BPM,
@@ -33,7 +45,11 @@ const PREFS = "kmra-music-metronome";
 export default function MetronomeTool({ preset }: ToolProps) {
   const T = useT();
   const num = useNum();
-  const saved = load(PREFS, { sound: "click" as ClickSound, volume: 0.8, sub: 1 });
+  const saved = load(PREFS, {
+    sound: "click" as ClickSound,
+    volume: 0.8,
+    sub: 1,
+  });
   const [bpm, setBpmRaw] = useState(() => {
     try {
       const q = Number(new URLSearchParams(location.search).get("bpm"));
@@ -45,12 +61,21 @@ export default function MetronomeTool({ preset }: ToolProps) {
   });
   const [beats, setBeats] = useState(pre(preset?.beats, 4));
   const [unit, setUnit] = useState(pre(preset?.unit, 4));
-  const [accents, setAccents] = useState<Accent[]>(() => defaultAccents(beats, unit));
+  const [accents, setAccents] = useState<Accent[]>(() =>
+    defaultAccents(beats, unit),
+  );
   const [sub, setSub] = useState(saved.sub);
   const [sound, setSound] = useState<ClickSound>(saved.sound);
   const [volume, setVolume] = useState(saved.volume);
-  const [custom, setCustom] = useState(!METERS.some(([, b, u]) => b === beats && u === unit));
-  const [trainer, setTrainer] = useState({ on: false, step: 5, every: 4, max: 160 });
+  const [custom, setCustom] = useState(
+    !METERS.some(([, b, u]) => b === beats && u === unit),
+  );
+  const [trainer, setTrainer] = useState({
+    on: false,
+    step: 5,
+    every: 4,
+    max: 160,
+  });
   const taps = useRef<number[]>([]);
 
   const setBpm = (v: number) => setBpmRaw(clampBpm(v));
@@ -90,10 +115,17 @@ export default function MetronomeTool({ preset }: ToolProps) {
         if (busyTarget(e, true)) return;
         e.preventDefault();
         keys.current.toggle();
-      } else if (e.key === "ArrowUp" || e.key === "ArrowRight" || e.key === "ArrowDown" || e.key === "ArrowLeft") {
+      } else if (
+        e.key === "ArrowUp" ||
+        e.key === "ArrowRight" ||
+        e.key === "ArrowDown" ||
+        e.key === "ArrowLeft"
+      ) {
         if (busyTarget(e)) return;
         e.preventDefault();
-        const d = (e.key === "ArrowUp" || e.key === "ArrowRight" ? 1 : -1) * (e.shiftKey ? 10 : 1);
+        const d =
+          (e.key === "ArrowUp" || e.key === "ArrowRight" ? 1 : -1) *
+          (e.shiftKey ? 10 : 1);
         setBpmRaw((b) => clampBpm(b + d));
       } else if (e.key.toLowerCase() === "t") {
         if (busyTarget(e)) return;
@@ -105,21 +137,34 @@ export default function MetronomeTool({ preset }: ToolProps) {
   }, []);
 
   const cycle = (i: number) =>
-    setAccents((a) => a.map((v, j) => (j === i ? (((v + 2) % 3) as Accent) : v)));
-  const levelName = (v: Accent) => (v === 2 ? T("accent") : v === 1 ? T("normal") : T("muted"));
+    setAccents((a) =>
+      a.map((v, j) => (j === i ? (((v + 2) % 3) as Accent) : v)),
+    );
+  const levelName = (v: Accent) =>
+    v === 2 ? T("accent") : v === 1 ? T("normal") : T("muted");
 
   const stage = (
     <div className={`mt-metro${m.running ? " on" : ""}`}>
       <p className="mt-tempo-name">{T(tempoName(bpm))}</p>
       <div className="mt-bpm-row">
-        <button type="button" className="mt-round" aria-label={T("Slower")} onClick={() => setBpm(bpm - 1)}>
+        <button
+          type="button"
+          className="mt-round"
+          aria-label={T("Slower")}
+          onClick={() => setBpm(bpm - 1)}
+        >
           <Icon name="minus" />
         </button>
         <div className="mt-bpm" data-value={bpm}>
           <output aria-live="polite">{num(bpm)}</output>
           <span>BPM</span>
         </div>
-        <button type="button" className="mt-round" aria-label={T("Faster")} onClick={() => setBpm(bpm + 1)}>
+        <button
+          type="button"
+          className="mt-round"
+          aria-label={T("Faster")}
+          onClick={() => setBpm(bpm + 1)}
+        >
           <Icon name="plus" />
         </button>
       </div>
@@ -146,7 +191,10 @@ export default function MetronomeTool({ preset }: ToolProps) {
               type="button"
               className={`mt-dot l${v}${on ? " on" : ""}${on && m.now?.sub === 0 ? " hit" : ""}`}
               data-level={v === 2 ? "accent" : v === 1 ? "normal" : "mute"}
-              aria-label={T("Beat {n}: {level}", { n: num(i + 1), level: levelName(v) })}
+              aria-label={T("Beat {n}: {level}", {
+                n: num(i + 1),
+                level: levelName(v),
+              })}
               onClick={() => cycle(i)}
             >
               <span>{num(i + 1)}</span>
@@ -156,11 +204,25 @@ export default function MetronomeTool({ preset }: ToolProps) {
       </div>
       <p className="mt-sig">
         {num(beats)}/{num(unit)}
-        {sub > 1 && <> · {sub === 2 ? T("eighths") : sub === 3 ? T("triplets") : T("sixteenths")}</>}
+        {sub > 1 && (
+          <>
+            {" "}
+            ·{" "}
+            {sub === 2
+              ? T("eighths")
+              : sub === 3
+                ? T("triplets")
+                : T("sixteenths")}
+          </>
+        )}
         {trainer.on && <> · {T("speed trainer on")}</>}
       </p>
       <div className="mt-actions">
-        <button type="button" className={`btn lg ${m.running ? "" : "acc"}`} onClick={m.toggle}>
+        <button
+          type="button"
+          className={`btn lg ${m.running ? "" : "acc"}`}
+          onClick={m.toggle}
+        >
           <Icon name={m.running ? "stop" : "play"} />
           {m.running ? T("Stop") : T("Start")}
         </button>
@@ -184,7 +246,10 @@ export default function MetronomeTool({ preset }: ToolProps) {
       <Pills
         label={T("Time signature")}
         value={custom ? "custom" : `${beats}/${unit}`}
-        options={[...METERS.map(([l]) => [l, l] as [string, string]), ["custom", T("Custom")]]}
+        options={[
+          ...METERS.map(([l]) => [l, l] as [string, string]),
+          ["custom", T("Custom")],
+        ]}
         onPick={(v) => {
           if (v === "custom") return setCustom(true);
           setCustom(false);
@@ -194,7 +259,14 @@ export default function MetronomeTool({ preset }: ToolProps) {
       />
       {custom && (
         <div className="mt-row">
-          <NumInput label={T("Beats per bar")} name="beats" value={beats} min={1} max={16} onChange={(b) => meter(b, unit)} />
+          <NumInput
+            label={T("Beats per bar")}
+            name="beats"
+            value={beats}
+            min={1}
+            max={16}
+            onChange={(b) => meter(b, unit)}
+          />
           <Choice
             label={T("Beat unit")}
             value={unit}
@@ -236,7 +308,9 @@ export default function MetronomeTool({ preset }: ToolProps) {
         <Toggle
           label={T("Speed trainer")}
           on={trainer.on}
-          onChange={(on) => setTrainer({ ...trainer, on, max: Math.max(trainer.max, bpm) })}
+          onChange={(on) =>
+            setTrainer({ ...trainer, on, max: Math.max(trainer.max, bpm) })
+          }
         />
         {trainer.on && (
           <>

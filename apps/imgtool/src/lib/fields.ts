@@ -87,13 +87,19 @@ const NAMES: Record<string, string> = {
   GPSSpeed: "Speed",
 };
 
-const SENSITIVE = /^(GPS|DateTime|CreateDate|ModifyDate|OffsetTime|SubSecTime|Artist|Copyright|CameraOwnerName|OwnerName|.*SerialNumber|ImageUniqueID|HostComputer|MakerNote|UserComment|ImageDescription|XP)/;
+const SENSITIVE =
+  /^(GPS|DateTime|CreateDate|ModifyDate|OffsetTime|SubSecTime|Artist|Copyright|CameraOwnerName|OwnerName|.*SerialNumber|ImageUniqueID|HostComputer|MakerNote|UserComment|ImageDescription|XP)/;
 
 function groupOf(block: string, name: string): Group {
   if (block === "gps" || name.startsWith("GPS")) return "Location";
   if (/Date|Time|OffsetTime|SubSec/.test(name)) return "Date and time";
   if (/Artist|Copyright|Owner|Author|XP/.test(name)) return "People and rights";
-  if (/Make|Model|Serial|Software|HostComputer|Lens|BodySerial|ImageUniqueID|MakerNote/.test(name)) return "Device";
+  if (
+    /Make|Model|Serial|Software|HostComputer|Lens|BodySerial|ImageUniqueID|MakerNote/.test(
+      name,
+    )
+  )
+    return "Device";
   if (block === "exif" || block === "interop") return "Capture settings";
   return "Image";
 }
@@ -102,10 +108,16 @@ const SIZES = [0, 1, 1, 2, 4, 8, 1, 1, 2, 4, 8, 4, 8, 4];
 
 function show(v: unknown): string {
   if (v === undefined || v === null) return "";
-  if (v instanceof Date && !Number.isNaN(+v)) return v.toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" });
-  if (v instanceof Uint8Array || ArrayBuffer.isView(v)) return `${(v as Uint8Array).byteLength} bytes`;
+  if (v instanceof Date && !Number.isNaN(+v))
+    return v.toLocaleString(undefined, {
+      dateStyle: "medium",
+      timeStyle: "short",
+    });
+  if (v instanceof Uint8Array || ArrayBuffer.isView(v))
+    return `${(v as Uint8Array).byteLength} bytes`;
   if (Array.isArray(v)) return v.map(show).join(", ");
-  if (typeof v === "number") return Number.isInteger(v) ? String(v) : String(+v.toFixed(5));
+  if (typeof v === "number")
+    return Number.isInteger(v) ? String(v) : String(+v.toFixed(5));
   if (typeof v === "object") return JSON.stringify(v);
   return String(v).replace(/\0+$/, "").trim();
 }
@@ -119,8 +131,13 @@ export async function listFields(file: Blob): Promise<Field[] | null> {
   let keys: Map<string, Map<number, string>> = new Map();
   try {
     const mod = await import("exifr");
-    const exifr = (mod.default ?? mod) as typeof mod.default & { tagKeys?: Map<string, Map<number, string>> };
-    keys = (mod as unknown as { tagKeys?: typeof keys }).tagKeys ?? exifr.tagKeys ?? new Map();
+    const exifr = (mod.default ?? mod) as typeof mod.default & {
+      tagKeys?: Map<string, Map<number, string>>;
+    };
+    keys =
+      (mod as unknown as { tagKeys?: typeof keys }).tagKeys ??
+      exifr.tagKeys ??
+      new Map();
     blocks =
       ((await exifr.parse(bytes, {
         tiff: true,
@@ -147,7 +164,11 @@ export async function listFields(file: Blob): Promise<Field[] | null> {
   return fieldsOf(parsed, blocks, keys);
 }
 
-function fieldsOf(p: Parsed, blocks: Record<string, Record<string, unknown>>, keys: Map<string, Map<number, string>>): Field[] {
+function fieldsOf(
+  p: Parsed,
+  blocks: Record<string, Record<string, unknown>>,
+  keys: Map<string, Map<number, string>>,
+): Field[] {
   const out: Field[] = [];
   const ids = new Set(fieldIds(p));
   if (p.tiff) {
@@ -155,9 +176,15 @@ function fieldsOf(p: Parsed, blocks: Record<string, Record<string, unknown>>, ke
       for (const e of p.tiff[block]) {
         const id = `${block}:${e.tag}`;
         if (!ids.has(id)) continue;
-        const name = keys.get(block === "interop" ? "interop" : block)?.get(e.tag) ?? `Tag ${e.tag}`;
+        const name =
+          keys.get(block === "interop" ? "interop" : block)?.get(e.tag) ??
+          `Tag ${e.tag}`;
         let value = show(blocks[block]?.[e.tag]);
-        if (!value) value = e.type === 2 ? new TextDecoder().decode(e.data).replace(/\0+$/, "") : `${e.count * (SIZES[e.type] ?? 1)} bytes`;
+        if (!value)
+          value =
+            e.type === 2
+              ? new TextDecoder().decode(e.data).replace(/\0+$/, "")
+              : `${e.count * (SIZES[e.type] ?? 1)} bytes`;
         out.push({
           id,
           group: groupOf(block, name),
@@ -173,7 +200,9 @@ function fieldsOf(p: Parsed, blocks: Record<string, Record<string, unknown>>, ke
         id: "ifd1",
         group: "Preview copy",
         label: "Preview copy (EXIF)",
-        value: p.tiff.thumb ? `A small copy of the photo, ${Math.max(1, Math.round(p.tiff.thumb.length / 1024))} KB` : "Preview details",
+        value: p.tiff.thumb
+          ? `A small copy of the photo, ${Math.max(1, Math.round(p.tiff.thumb.length / 1024))} KB`
+          : "Preview details",
         sensitive: true,
       });
   }
@@ -187,13 +216,24 @@ function fieldsOf(p: Parsed, blocks: Record<string, Record<string, unknown>>, ke
           label: x.name,
           value: x.value || "(empty)",
           // History, document ids, creators, rights and places say who and where
-          sensitive: /(xmpMM:|dc:creator|dc:rights|photoshop:(City|State|Country|Credit|AuthorsPosition)|Iptc4xmpCore:Location|exif:GPS|xmp:CreatorTool|photoshop:DateCreated|xmp:(Create|Modify|Metadata)Date)/.test(x.name),
+          sensitive:
+            /(xmpMM:|dc:creator|dc:rights|photoshop:(City|State|Country|Credit|AuthorsPosition)|Iptc4xmpCore:Location|exif:GPS|xmp:CreatorTool|photoshop:DateCreated|xmp:(Create|Modify|Metadata)Date)/.test(
+              x.name,
+            ),
         });
-    else out.push({ id: "xmp", group: "Editing data (XMP)", label: "Editing data", value: `${p.xmp.length} characters`, sensitive: true });
+    else
+      out.push({
+        id: "xmp",
+        group: "Editing data (XMP)",
+        label: "Editing data",
+        value: `${p.xmp.length} characters`,
+        sensitive: true,
+      });
   }
   const iptcSeen = new Set<string>();
   for (const r of p.iptc) {
-    const id = r.record === 2 ? `iptc:${r.dataset}` : `iptc:r${r.record}:${r.dataset}`;
+    const id =
+      r.record === 2 ? `iptc:${r.dataset}` : `iptc:r${r.record}:${r.dataset}`;
     const value = new TextDecoder().decode(r.data);
     const prev = out.find((f) => f.id === id);
     if (iptcSeen.has(id) && prev) {
@@ -201,28 +241,76 @@ function fieldsOf(p: Parsed, blocks: Record<string, Record<string, unknown>>, ke
       continue;
     }
     iptcSeen.add(id);
-    const name = r.record === 2 ? (IPTC_NAMES[r.dataset] ?? `Dataset ${r.dataset}`) : `Record ${r.record}, dataset ${r.dataset}`;
+    const name =
+      r.record === 2
+        ? (IPTC_NAMES[r.dataset] ?? `Dataset ${r.dataset}`)
+        : `Record ${r.record}, dataset ${r.dataset}`;
     out.push({
       id,
       group: "Caption and credits (IPTC)",
       label: name,
       value,
-      sensitive: [55, 60, 62, 63, 80, 85, 90, 92, 95, 100, 101, 110, 115, 116, 118, 122].includes(r.dataset),
+      sensitive: [
+        55, 60, 62, 63, 80, 85, 90, 92, 95, 100, 101, 110, 115, 116, 118, 122,
+      ].includes(r.dataset),
     });
   }
-  if (p.comment !== null) out.push({ id: "comment", group: "Other", label: "Comment", value: p.comment.trim() || "(empty)", sensitive: true });
-  if (p.jfxx) out.push({ id: "jfxx", group: "Preview copy", label: "Preview copy (JFIF)", value: "A small copy of the photo", sensitive: true });
+  if (p.comment !== null)
+    out.push({
+      id: "comment",
+      group: "Other",
+      label: "Comment",
+      value: p.comment.trim() || "(empty)",
+      sensitive: true,
+    });
+  if (p.jfxx)
+    out.push({
+      id: "jfxx",
+      group: "Preview copy",
+      label: "Preview copy (JFIF)",
+      value: "A small copy of the photo",
+      sensitive: true,
+    });
   for (const t of p.pngText)
-    out.push({ id: `png:text:${t.keyword}`, group: "Other", label: t.keyword, value: t.value, sensitive: /author|copyright|comment|description|source|location|creation/i.test(t.keyword) });
-  if (p.pngTime) out.push({ id: "png:time", group: "Date and time", label: "Last edited", value: "Time stamp", sensitive: true });
+    out.push({
+      id: `png:text:${t.keyword}`,
+      group: "Other",
+      label: t.keyword,
+      value: t.value,
+      sensitive:
+        /author|copyright|comment|description|source|location|creation/i.test(
+          t.keyword,
+        ),
+    });
+  if (p.pngTime)
+    out.push({
+      id: "png:time",
+      group: "Date and time",
+      label: "Last edited",
+      value: "Time stamp",
+      sensitive: true,
+    });
   for (const e of p.extras)
     out.push({
       id: e.id,
       group: "Other",
-      label: e.id === "extra:photoshop" ? "Photoshop data" : e.id === "extra:xmp-extension" ? "More editing data (XMP)" : `Extra data (${e.id.slice(6)})`,
+      label:
+        e.id === "extra:photoshop"
+          ? "Photoshop data"
+          : e.id === "extra:xmp-extension"
+            ? "More editing data (XMP)"
+            : `Extra data (${e.id.slice(6)})`,
       value: `${Math.max(1, Math.round(e.size / 1024))} KB`,
       sensitive: true,
     });
-  if (p.icc) out.push({ id: "icc", group: "Image", label: "Colour profile", value: "Keeps the colours right", sensitive: false, display: true });
+  if (p.icc)
+    out.push({
+      id: "icc",
+      group: "Image",
+      label: "Colour profile",
+      value: "Keeps the colours right",
+      sensitive: false,
+      display: true,
+    });
   return out;
 }

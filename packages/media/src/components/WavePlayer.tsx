@@ -165,7 +165,9 @@ export function WavePlayer({
         </span>
         {bad && (
           <span className="muted wp-bad">
-            {T("This browser can't play this format, but the tools still work.")}
+            {T(
+              "This browser can't play this format, but the tools still work.",
+            )}
           </span>
         )}
       </div>

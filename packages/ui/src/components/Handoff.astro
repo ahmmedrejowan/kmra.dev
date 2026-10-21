@@ -19,9 +19,13 @@
       import { hubOrigin } from "@kmra/registry";
       import { stashFiles } from "../lib/handoff";
 
-      const allowed = [hubOrigin(false), ...(import.meta.env.DEV ? [hubOrigin(true)] : [])];
+      const allowed = [
+        hubOrigin(false),
+        ...(import.meta.env.DEV ? [hubOrigin(true)] : []),
+      ];
       addEventListener("message", async (e: MessageEvent) => {
-        if (!allowed.includes(e.origin) || e.data?.type !== "kmra:files") return;
+        if (!allowed.includes(e.origin) || e.data?.type !== "kmra:files")
+          return;
         const files = (e.data.files as unknown[]).filter(
           (f): f is File => f instanceof File,
         );

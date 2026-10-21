@@ -4,7 +4,15 @@ import { Icon } from "@kmra/ui/components/Icon";
 import type { ToolProps } from ".";
 import { Card, Choice, Pills, Select, load, save } from "../lib/ui";
 import { Fretboard, Piano, type Mark } from "../components/Boards";
-import { ROOTS, SCALES, freqOf, noteName, pc, scale, scaleType } from "../lib/theory";
+import {
+  ROOTS,
+  SCALES,
+  freqOf,
+  noteName,
+  pc,
+  scale,
+  scaleType,
+} from "../lib/theory";
 import { key } from "../lib/sound";
 import { audio } from "../lib/audio";
 
@@ -14,12 +22,22 @@ const BOARDS = { guitar: [40, 45, 50, 55, 59, 64], ukulele: [67, 60, 64, 69] };
 
 export default function Scales({ preset }: ToolProps) {
   const T = useT();
-  const saved = load(PREFS, { root: 9, scale: "minor-pentatonic", view: "guitar" as View, frets: 15, labels: "notes" });
+  const saved = load(PREFS, {
+    root: 9,
+    scale: "minor-pentatonic",
+    view: "guitar" as View,
+    frets: 15,
+    labels: "notes",
+  });
   const [rootIdx, setRootIdx] = useState(saved.root);
-  const [scaleId, setScaleId] = useState(typeof preset?.scale === "string" ? preset.scale : saved.scale);
+  const [scaleId, setScaleId] = useState(
+    typeof preset?.scale === "string" ? preset.scale : saved.scale,
+  );
   const [view, setView] = useState<View>(saved.view);
   const [frets, setFrets] = useState(saved.frets);
-  const [labels, setLabels] = useState<"notes" | "degrees">(saved.labels === "degrees" ? "degrees" : "notes");
+  const [labels, setLabels] = useState<"notes" | "degrees">(
+    saved.labels === "degrees" ? "degrees" : "notes",
+  );
   const [active, setActive] = useState<number | null>(null);
   const timers = useRef<number[]>([]);
 
@@ -28,7 +46,10 @@ export default function Scales({ preset }: ToolProps) {
     [rootIdx, scaleId, view, frets, labels],
   );
 
-  const sc = useMemo(() => scale(ROOTS[rootIdx]!, scaleType(scaleId)), [rootIdx, scaleId]);
+  const sc = useMemo(
+    () => scale(ROOTS[rootIdx]!, scaleType(scaleId)),
+    [rootIdx, scaleId],
+  );
   const marks: Mark[] = sc.notes.map((n, i) => ({
     pc: sc.pcs[i]!,
     label: labels === "notes" ? noteName(n) : sc.degrees[i]!,
@@ -47,26 +68,44 @@ export default function Scales({ preset }: ToolProps) {
   function play(order: "up" | "down" | "both") {
     stopPlaying();
     const c = audio();
-    const seq = order === "up" ? run : order === "down" ? [...run].reverse() : [...run, ...[...run].reverse().slice(1)];
+    const seq =
+      order === "up"
+        ? run
+        : order === "down"
+          ? [...run].reverse()
+          : [...run, ...[...run].reverse().slice(1)];
     const step = 0.34;
     const t0 = c.currentTime + 0.08;
     seq.forEach((m, i) => {
       key(freqOf(m), t0 + i * step, 0.9, 1.1);
-      timers.current.push(window.setTimeout(() => setActive(m), (0.08 + i * step) * 1000));
+      timers.current.push(
+        window.setTimeout(() => setActive(m), (0.08 + i * step) * 1000),
+      );
     });
-    timers.current.push(window.setTimeout(() => setActive(null), (0.08 + seq.length * step + 0.2) * 1000));
+    timers.current.push(
+      window.setTimeout(
+        () => setActive(null),
+        (0.08 + seq.length * step + 0.2) * 1000,
+      ),
+    );
   }
   useEffect(() => stopPlaying, []);
 
   const title = `${noteName(sc.root)} ${T(sc.type.name).toLowerCase()}`;
 
   const stage = (
-    <div className="mt-scale" data-notes={sc.notes.map((n) => noteName(n, true)).join(" ")}>
+    <div
+      className="mt-scale"
+      data-notes={sc.notes.map((n) => noteName(n, true)).join(" ")}
+    >
       <div className="mt-chord-head">
         <h2 className="mt-scale-title">{title}</h2>
         <ul className="mt-notes" aria-label={T("Notes in the scale")}>
           {sc.notes.map((n, i) => (
-            <li key={i} className={`${i === 0 ? "root" : ""}${active !== null && active % 12 === sc.pcs[i] ? " on" : ""}`}>
+            <li
+              key={i}
+              className={`${i === 0 ? "root" : ""}${active !== null && active % 12 === sc.pcs[i] ? " on" : ""}`}
+            >
               <strong>{noteName(n)}</strong>
               <small>{sc.degrees[i]}</small>
             </li>
@@ -75,7 +114,11 @@ export default function Scales({ preset }: ToolProps) {
       </div>
       <div className={`mt-board ${view}`}>
         {view === "piano" ? (
-          <Piano marks={marks} active={active} from={rootMidi >= 60 ? 60 : 48} />
+          <Piano
+            marks={marks}
+            active={active}
+            from={rootMidi >= 60 ? 60 : 48}
+          />
         ) : (
           <Fretboard
             strings={BOARDS[view]}

@@ -538,7 +538,9 @@ function PdfToolView({ tool, preset }: { tool: string; preset?: Preset }) {
         if (!metaStrip && !meta)
           throw new Error(T("The document info couldn't be read."));
         return [
-          await one(list, "", (d) => writeMeta(d, meta ?? META_BLANK, metaStrip)),
+          await one(list, "", (d) =>
+            writeMeta(d, meta ?? META_BLANK, metaStrip),
+          ),
         ];
       case "to-image": {
         const chosen = list.filter((p) => picked.has(p.id));
@@ -1338,7 +1340,9 @@ function PdfToolView({ tool, preset }: { tool: string; preset?: Preset }) {
                     <span key={d.key} className="desk-doc">
                       <span className="desk-doc-pick" title={d.file.name}>
                         {docs.length > 1 && (
-                          <b className="pg-file">{String.fromCharCode(65 + i)}</b>
+                          <b className="pg-file">
+                            {String.fromCharCode(65 + i)}
+                          </b>
                         )}
                         <span className="nm">{d.file.name}</span>
                         <small>
@@ -1382,17 +1386,18 @@ function PdfToolView({ tool, preset }: { tool: string; preset?: Preset }) {
             {outs && (
               <div className="sz">
                 <b>{formatBytes(totalOut)}</b>
-                {(tool === "compress" || tool === "grayscale") && madeIn > 0 && (
-                  <span className={`delta${totalOut > madeIn ? " up" : ""}`}>
-                    {totalOut <= madeIn
-                      ? T("{n}% smaller", {
-                          n: Math.round((1 - totalOut / madeIn) * 100),
-                        })
-                      : T("{n}% larger", {
-                          n: Math.round((totalOut / madeIn - 1) * 100),
-                        })}
-                  </span>
-                )}
+                {(tool === "compress" || tool === "grayscale") &&
+                  madeIn > 0 && (
+                    <span className={`delta${totalOut > madeIn ? " up" : ""}`}>
+                      {totalOut <= madeIn
+                        ? T("{n}% smaller", {
+                            n: Math.round((1 - totalOut / madeIn) * 100),
+                          })
+                        : T("{n}% larger", {
+                            n: Math.round((totalOut / madeIn - 1) * 100),
+                          })}
+                    </span>
+                  )}
               </div>
             )}
             {outs && outs.length > 1 && (
@@ -1413,7 +1418,9 @@ function PdfToolView({ tool, preset }: { tool: string; preset?: Preset }) {
             {outs && tool === "compress" && larger > 0 && (
               <small className="warn">
                 {madeFrom.length === 1
-                  ? T("This PDF is already well compressed. Keep your original.")
+                  ? T(
+                      "This PDF is already well compressed. Keep your original.",
+                    )
                   : T(
                       "{n} of {t} files are already well compressed. Keep those originals.",
                       { n: larger, t: madeFrom.length },

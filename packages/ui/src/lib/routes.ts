@@ -20,13 +20,15 @@ export const faviconSvg = (appId: BrandId) =>
   new Response(markSvg(appId, brandOf(appId).accent.light), {
     headers: { "Content-Type": "image/svg+xml" },
   });
-export const favicon = (appId: BrandId) => bin(faviconIco(appId), "image/x-icon");
+export const favicon = (appId: BrandId) =>
+  bin(faviconIco(appId), "image/x-icon");
 export const icon = (appId: BrandId, size: number, maskable = false) =>
   bin(iconPng(appId, size, maskable), "image/png");
 
 export function manifest(appId: BrandId) {
   const app = brandOf(appId);
-  const full = appId === "kmra" ? "kmra.dev" : `${app.brand.join("")} by kmra.dev`;
+  const full =
+    appId === "kmra" ? "kmra.dev" : `${app.brand.join("")} by kmra.dev`;
   return new Response(
     JSON.stringify(
       {
@@ -128,7 +130,8 @@ export function ogPages(appId: AppId): OgPage[] {
     {
       slug: "more-tools",
       title: "More tools from kmra",
-      subtitle: "Free, private tools for images, PDFs, video, audio, QR codes, text in pictures, code, colours, calculations and music.",
+      subtitle:
+        "Free, private tools for images, PDFs, video, audio, QR codes, text in pictures, code, colours, calculations and music.",
       icon: "zap",
     },
     {

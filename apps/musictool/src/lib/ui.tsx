@@ -41,14 +41,13 @@ export function Card({
 export function useNum() {
   const lang = useLang();
   return useMemo(
-    () =>
-      (v: number | string, digits?: number) => {
-        const s =
-          typeof v === "number" && digits !== undefined
-            ? v.toFixed(digits)
-            : String(v);
-        return lang === "bn" ? bnDigits(s) : s;
-      },
+    () => (v: number | string, digits?: number) => {
+      const s =
+        typeof v === "number" && digits !== undefined
+          ? v.toFixed(digits)
+          : String(v);
+      return lang === "bn" ? bnDigits(s) : s;
+    },
     [lang],
   );
 }
@@ -139,7 +138,11 @@ export function Choice<V extends string | number | boolean>({
   return (
     <div className="mt-field">
       <span className="mt-label">{label}</span>
-      <div className={`seg mt-seg ${className}`} role="group" aria-label={label}>
+      <div
+        className={`seg mt-seg ${className}`}
+        role="group"
+        aria-label={label}
+      >
         {options.map(([v, l]) => (
           <button
             key={String(v)}
@@ -220,7 +223,11 @@ export function NumInput({
   const [text, setText] = useState(show(value));
   useEffect(() => setText(show(value)), [value]);
   const commit = (raw: string) => {
-    const v = Number(raw.replace(/[০-৯]/g, (d) => String("০১২৩৪৫৬৭৮৯".indexOf(d))).replace(",", "."));
+    const v = Number(
+      raw
+        .replace(/[০-৯]/g, (d) => String("০১২৩৪৫৬৭৮৯".indexOf(d)))
+        .replace(",", "."),
+    );
     if (!Number.isFinite(v) || raw.trim() === "") return setText(show(value));
     const c = Math.min(max, Math.max(min, v));
     onChange(Number(c.toFixed(decimals)));
@@ -247,7 +254,10 @@ export function NumInput({
             if (e.key !== "ArrowUp" && e.key !== "ArrowDown") return;
             e.preventDefault();
             const k = e.shiftKey ? 10 : 1;
-            const next = Math.min(max, Math.max(min, value + (e.key === "ArrowUp" ? step : -step) * k));
+            const next = Math.min(
+              max,
+              Math.max(min, value + (e.key === "ArrowUp" ? step : -step) * k),
+            );
             onChange(Number(next.toFixed(decimals)));
           }}
         />
@@ -345,7 +355,10 @@ export function NotePicker({
           value={oct}
           onChange={(e) => onChange((Number(e.target.value) + 1) * 12 + pcv)}
         >
-          {Array.from({ length: maxOctave - minOctave + 1 }, (_, i) => minOctave + i).map((o) => (
+          {Array.from(
+            { length: maxOctave - minOctave + 1 },
+            (_, i) => minOctave + i,
+          ).map((o) => (
             <option key={o} value={o}>
               {T("Octave {n}", { n: num(o) })}
             </option>
@@ -404,8 +417,14 @@ export function busyTarget(e: KeyboardEvent, alsoButtons = false): boolean {
   const t = e.target as HTMLElement | null;
   if (!t) return false;
   if (t.isContentEditable) return true;
-  if (t instanceof HTMLTextAreaElement || t instanceof HTMLSelectElement) return true;
-  if (t instanceof HTMLInputElement) return t.type !== "checkbox" && t.type !== "radio";
-  if (alsoButtons && (t instanceof HTMLButtonElement || t instanceof HTMLAnchorElement)) return true;
+  if (t instanceof HTMLTextAreaElement || t instanceof HTMLSelectElement)
+    return true;
+  if (t instanceof HTMLInputElement)
+    return t.type !== "checkbox" && t.type !== "radio";
+  if (
+    alsoButtons &&
+    (t instanceof HTMLButtonElement || t instanceof HTMLAnchorElement)
+  )
+    return true;
   return e.metaKey || e.ctrlKey || e.altKey;
 }

@@ -215,7 +215,13 @@ function InspectView({ mode }: { mode: Mode }) {
     if (it?.url) URL.revokeObjectURL(it.url);
     setEntries((p) => p.filter((_, j) => j !== i));
     // Keep the same photo on screen when another one goes
-    setCur((c) => (c > i ? c - 1 : c === i ? Math.max(0, Math.min(c, entries.length - 2)) : c));
+    setCur((c) =>
+      c > i
+        ? c - 1
+        : c === i
+          ? Math.max(0, Math.min(c, entries.length - 2))
+          : c,
+    );
   }
 
   async function add(files: File[]) {

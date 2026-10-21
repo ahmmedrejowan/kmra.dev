@@ -47,15 +47,24 @@ test("convert PNG to WebP", async ({ page }) => {
   expect(info(b)).toEqual({ type: "webp", w: 800, h: 600 });
 });
 
-test("convert never offers the format the image is already in", async ({ page }) => {
+test("convert never offers the format the image is already in", async ({
+  page,
+}) => {
   await start(page, "/convert", gen("photo.jpg"));
-  const offered = await page.getByRole("group", { name: "Convert to" }).getByRole("button").allInnerTexts();
+  const offered = await page
+    .getByRole("group", { name: "Convert to" })
+    .getByRole("button")
+    .allInnerTexts();
   expect(offered).toEqual(["PNG", "WebP", "AVIF", "GIF", "BMP", "TIFF", "ICO"]);
   // A JPG starts on PNG, with a line about what it's good for
   await expect(
-    page.getByRole("group", { name: "Convert to" }).getByRole("button", { name: "PNG" }),
+    page
+      .getByRole("group", { name: "Convert to" })
+      .getByRole("button", { name: "PNG" }),
   ).toHaveAttribute("aria-pressed", "true");
-  await expect(page.locator(".fmt-hint")).toHaveText("Sharp edges and transparency. Bigger files.");
+  await expect(page.locator(".fmt-hint")).toHaveText(
+    "Sharp edges and transparency. Bigger files.",
+  );
 });
 
 for (const [label, kind, ext, w, h] of [
@@ -67,13 +76,21 @@ for (const [label, kind, ext, w, h] of [
 ] as const)
   test(`convert JPEG to ${label}`, async ({ page }) => {
     await start(page, "/convert", gen("photo.jpg"));
-    await page.getByRole("group", { name: "Convert to" }).getByRole("button", { name: label }).click();
-    const { d, b } = await save(page, { summary: new RegExp(`${w} × ${h}, ${label}`), timeout: 60000 });
+    await page
+      .getByRole("group", { name: "Convert to" })
+      .getByRole("button", { name: label })
+      .click();
+    const { d, b } = await save(page, {
+      summary: new RegExp(`${w} × ${h}, ${label}`),
+      timeout: 60000,
+    });
     expect(d.suggestedFilename()).toBe(`photo-convert-kmra.${ext}`);
     expect(info(b)).toEqual({ type: kind, w, h });
     // The result shows on screen (TIFF through a PNG preview)
     expect(
-      await page.locator(".stage .cmp img.after").evaluate((i: HTMLImageElement) => i.naturalWidth),
+      await page
+        .locator(".stage .cmp img.after")
+        .evaluate((i: HTMLImageElement) => i.naturalWidth),
     ).toBe(w);
   });
 

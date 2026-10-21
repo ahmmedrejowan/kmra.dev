@@ -25,13 +25,17 @@ const worklets = new WeakSet<BaseAudioContext>();
 export function micProblem(e: unknown): MicProblem {
   const name = (e as { name?: string })?.name ?? "";
   if (name === "NotAllowedError" || name === "SecurityError") return "denied";
-  if (name === "NotFoundError" || name === "OverconstrainedError") return "nomic";
+  if (name === "NotFoundError" || name === "OverconstrainedError")
+    return "nomic";
   if (name === "NotReadableError" || name === "AbortError") return "busy";
   return "other";
 }
 
-export async function listen(onReading: (r: Reading) => void): Promise<Listener> {
-  if (!navigator.mediaDevices?.getUserMedia) throw Object.assign(new Error("insecure"), { name: "Insecure" });
+export async function listen(
+  onReading: (r: Reading) => void,
+): Promise<Listener> {
+  if (!navigator.mediaDevices?.getUserMedia)
+    throw Object.assign(new Error("insecure"), { name: "Insecure" });
   const c = audio();
   const stream = await navigator.mediaDevices.getUserMedia({
     audio: {
@@ -42,7 +46,9 @@ export async function listen(onReading: (r: Reading) => void): Promise<Listener>
     video: false,
   });
   testHook("mic", stream);
-  const worker = new Worker(new URL("./pitch.worker.ts", import.meta.url), { type: "module" });
+  const worker = new Worker(new URL("./pitch.worker.ts", import.meta.url), {
+    type: "module",
+  });
   worker.onmessage = (e: MessageEvent<Reading>) => onReading(e.data);
 
   const src = c.createMediaStreamSource(stream);
@@ -65,7 +71,9 @@ export async function listen(onReading: (r: Reading) => void): Promise<Listener>
       channelCountMode: "explicit",
     });
     const ch = new MessageChannel();
-    worker.postMessage({ sampleRate: c.sampleRate, port: ch.port2 }, [ch.port2]);
+    worker.postMessage({ sampleRate: c.sampleRate, port: ch.port2 }, [
+      ch.port2,
+    ]);
     tap.port.postMessage({ port: ch.port1 }, [ch.port1]);
     node = tap;
   } catch {

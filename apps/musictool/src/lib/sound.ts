@@ -24,7 +24,10 @@ export function pluckBuffer(freq: number, seconds = 2.6): AudioBuffer {
   const delay = sr / freq - 0.5;
   const burst = Math.ceil(delay) + 2;
   // Low strings ring longer; damping per pass
-  const decay = Math.min(0.9985, 0.9965 + (0.002 * 110) / Math.max(110, freq) - 0.0006);
+  const decay = Math.min(
+    0.9985,
+    0.9965 + (0.002 * 110) / Math.max(110, freq) - 0.0006,
+  );
   let seed = 7 + Math.round(freq * 13);
   let prev = 0;
   for (let i = 0; i < n; i++) {
@@ -93,11 +96,17 @@ function normalise(y: Float32Array, peak: number) {
 
 function fadeTail(y: Float32Array, sr: number) {
   const k = Math.min(y.length, Math.floor(sr * 0.05));
-  for (let i = 0; i < k; i++) y[y.length - 1 - i] = y[y.length - 1 - i]! * (i / k);
+  for (let i = 0; i < k; i++)
+    y[y.length - 1 - i] = y[y.length - 1 - i]! * (i / k);
 }
 
 /** Play a buffer at a time; returns the source so it can be stopped early */
-export function playBuffer(buf: AudioBuffer, when = 0, gain = 1, dest?: AudioNode) {
+export function playBuffer(
+  buf: AudioBuffer,
+  when = 0,
+  gain = 1,
+  dest?: AudioNode,
+) {
   const c = audio();
   const src = c.createBufferSource();
   src.buffer = buf;
@@ -164,7 +173,8 @@ export function clickBuffer(sound: ClickSound, level: ClickLevel): AudioBuffer {
     const t = i / sr;
     let v: number;
     if (sound === "beep") {
-      const env = Math.min(1, t / 0.002) * (t < len - 0.012 ? 1 : (len - t) / 0.012);
+      const env =
+        Math.min(1, t / 0.002) * (t < len - 0.012 ? 1 : (len - t) / 0.012);
       v = env * Math.sin(2 * Math.PI * pitch * t) * 0.7;
     } else if (sound === "wood") {
       lp += 0.35 * (noise() - lp);

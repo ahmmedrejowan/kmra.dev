@@ -20,10 +20,18 @@ export type Scheme =
   | "monochromatic";
 
 export const SCHEMES: { id: Scheme; name: string; about: string }[] = [
-  { id: "complementary", name: "Complementary", about: "Opposite hues, 180° apart." },
+  {
+    id: "complementary",
+    name: "Complementary",
+    about: "Opposite hues, 180° apart.",
+  },
   { id: "analogous", name: "Analogous", about: "Neighbours, 30° either side." },
   { id: "triadic", name: "Triadic", about: "Three hues, 120° apart." },
-  { id: "tetradic", name: "Tetradic", about: "Two complementary pairs, 60° apart." },
+  {
+    id: "tetradic",
+    name: "Tetradic",
+    about: "Two complementary pairs, 60° apart.",
+  },
   {
     id: "split-complementary",
     name: "Split complementary",
@@ -110,7 +118,8 @@ export function randomPalette(
     const L = Math.min(0.97, Ls[i]!);
     const H = mod360(H0 + pick[i % pick.length]! + (rand() - 0.5) * 16);
     // Very light and very dark colours get less chroma
-    const C = baseC * (L > 0.9 ? 0.4 : L < 0.35 ? 0.7 : 1) * (0.7 + rand() * 0.6);
+    const C =
+      baseC * (L > 0.9 ? 0.4 : L < 0.35 ? 0.7 : 1) * (0.7 + rand() * 0.6);
     return col(toHex(mapOklch(L, C, H, 1, 0), false));
   });
 }
@@ -119,7 +128,9 @@ export function randomPalette(
 
 export const STEPS = [50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950];
 /** Tailwind v4's lightness ramp (OKLCH L), averaged over its colour scales */
-const RAMP = [0.975, 0.935, 0.885, 0.81, 0.71, 0.63, 0.55, 0.485, 0.425, 0.375, 0.28];
+const RAMP = [
+  0.975, 0.935, 0.885, 0.81, 0.71, 0.63, 0.55, 0.485, 0.425, 0.375, 0.28,
+];
 /** Chroma relative to the strongest step, as in Tailwind's scales */
 const CHROMA = [0.06, 0.13, 0.25, 0.44, 0.72, 0.92, 1, 0.93, 0.77, 0.6, 0.38];
 
@@ -146,12 +157,25 @@ export function shadeScale(base0: Rgba): Shade[] {
   return STEPS.map((step, i) => {
     if (i === at) return { step, color: base, base: true };
     // Full shift at the base's step, fading to none at both ends
-    const w = i < at ? (at === 0 ? 0 : i / at) : at === last ? 0 : (last - i) / (last - at);
+    const w =
+      i < at
+        ? at === 0
+          ? 0
+          : i / at
+        : at === last
+          ? 0
+          : (last - i) / (last - at);
     const l = Math.min(0.99, Math.max(0.12, RAMP[i]! + shift * w));
     // Greys stay grey; pale colours may grow up to a moderate chroma in the middle steps
     const c =
-      C < 0.004 ? 0 : Math.min(0.37, (C * CHROMA[i]!) / CHROMA[at]!, C * 6 + 0.03);
-    return { step, color: col(toHex(mapOklch(l, c, H, 1, 0), false)), base: false };
+      C < 0.004
+        ? 0
+        : Math.min(0.37, (C * CHROMA[i]!) / CHROMA[at]!, C * 6 + 0.03);
+    return {
+      step,
+      color: col(toHex(mapOklch(l, c, H, 1, 0), false)),
+      base: false,
+    };
   });
 }
 

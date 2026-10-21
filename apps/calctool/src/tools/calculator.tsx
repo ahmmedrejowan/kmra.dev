@@ -70,7 +70,12 @@ const KEYS: Key[] = [
  * Scientific keys: [label, insert, name] and, after 2nd, the same for the second function.
  * Inserts that start with ":" are actions rather than text.
  */
-type SciKey = [label: string, insert: string, name: string, second?: [string, string, string]];
+type SciKey = [
+  label: string,
+  insert: string,
+  name: string,
+  second?: [string, string, string],
+];
 
 const SCI: SciKey[] = [
   ["2nd", ":2nd", "Second functions"],
@@ -78,9 +83,24 @@ const SCI: SciKey[] = [
   ["cos", "cos(", "Cosine", ["cos⁻¹", "acos(", "Inverse cosine"]],
   ["tan", "tan(", "Tangent", ["tan⁻¹", "atan(", "Inverse tangent"]],
   ["e", "e", "Euler's number"],
-  ["sinh", "sinh(", "Hyperbolic sine", ["sinh⁻¹", "asinh(", "Inverse hyperbolic sine"]],
-  ["cosh", "cosh(", "Hyperbolic cosine", ["cosh⁻¹", "acosh(", "Inverse hyperbolic cosine"]],
-  ["tanh", "tanh(", "Hyperbolic tangent", ["tanh⁻¹", "atanh(", "Inverse hyperbolic tangent"]],
+  [
+    "sinh",
+    "sinh(",
+    "Hyperbolic sine",
+    ["sinh⁻¹", "asinh(", "Inverse hyperbolic sine"],
+  ],
+  [
+    "cosh",
+    "cosh(",
+    "Hyperbolic cosine",
+    ["cosh⁻¹", "acosh(", "Inverse hyperbolic cosine"],
+  ],
+  [
+    "tanh",
+    "tanh(",
+    "Hyperbolic tangent",
+    ["tanh⁻¹", "atanh(", "Inverse hyperbolic tangent"],
+  ],
   ["log", "log(", "Logarithm, base 10", ["10ˣ", "10^", "Ten to the power"]],
   ["ln", "ln(", "Natural logarithm", ["eˣ", "e^", "e to the power"]],
   ["x³", "^3", "Cube", ["∛x", "∛(", "Cube root"]],
@@ -129,7 +149,8 @@ export default function Calculator({ preset }: ToolProps) {
   useEffect(() => {
     setHistory(store<Entry[]>(HISTORY_KEY, []).slice(0, 50));
     // A use-case page sets the mode; otherwise the last one picked comes back
-    if (preset?.mode === undefined) setSci(store<string>(MODE_KEY, "basic") === "scientific");
+    if (preset?.mode === undefined)
+      setSci(store<string>(MODE_KEY, "basic") === "scientific");
     const m = store<number>(MEMORY_KEY, 0);
     setMemory(Number.isFinite(m) ? m : 0);
     try {
@@ -215,7 +236,12 @@ export default function Calculator({ preset }: ToolProps) {
   const caret = useRef<number | null>(null);
   function selection(el: HTMLInputElement | null): [number, number] {
     const cur = exprRef.current;
-    if (el && el.value === cur && el.selectionStart !== null && el.selectionEnd !== null)
+    if (
+      el &&
+      el.value === cur &&
+      el.selectionStart !== null &&
+      el.selectionEnd !== null
+    )
       return [el.selectionStart, el.selectionEnd];
     const at = Math.min(caret.current ?? cur.length, cur.length);
     return [at, at];
@@ -417,41 +443,45 @@ export default function Calculator({ preset }: ToolProps) {
         {live && <CopyIcon text={live} what={T("Answer")} />}
       </div>
       <div className={`calc-pads${sci ? " sci" : ""}`}>
-      {sci && (
-        <div className="calc-keys calc-sci" role="group" aria-label={T("Scientific keys")}>
-          {SCI.map((key) => {
-            const alt = second && key[3];
-            const [label, , name] = alt ? key[3]! : key;
-            return (
-              <button
-                key={key[0]}
-                type="button"
-                className={`fn${key[1] === ":2nd" ? " shift" : ""}${alt ? " alt" : ""}`}
-                aria-label={T(name)}
-                aria-pressed={key[1] === ":2nd" ? second : undefined}
-                onMouseDown={(e) => e.preventDefault()}
-                onClick={() => pressSci(key)}
-              >
-                {label}
-              </button>
-            );
-          })}
-        </div>
-      )}
-      <div className="calc-keys">
-        {KEYS.map(([label, k, kind, name]) => (
-          <button
-            key={label}
-            type="button"
-            className={kind}
-            aria-label={name ? T(name) : undefined}
-            onMouseDown={(e) => e.preventDefault()}
-            onClick={() => press(k)}
+        {sci && (
+          <div
+            className="calc-keys calc-sci"
+            role="group"
+            aria-label={T("Scientific keys")}
           >
-            {k === "back" ? <Icon name="back" /> : label}
-          </button>
-        ))}
-      </div>
+            {SCI.map((key) => {
+              const alt = second && key[3];
+              const [label, , name] = alt ? key[3]! : key;
+              return (
+                <button
+                  key={key[0]}
+                  type="button"
+                  className={`fn${key[1] === ":2nd" ? " shift" : ""}${alt ? " alt" : ""}`}
+                  aria-label={T(name)}
+                  aria-pressed={key[1] === ":2nd" ? second : undefined}
+                  onMouseDown={(e) => e.preventDefault()}
+                  onClick={() => pressSci(key)}
+                >
+                  {label}
+                </button>
+              );
+            })}
+          </div>
+        )}
+        <div className="calc-keys">
+          {KEYS.map(([label, k, kind, name]) => (
+            <button
+              key={label}
+              type="button"
+              className={kind}
+              aria-label={name ? T(name) : undefined}
+              onMouseDown={(e) => e.preventDefault()}
+              onClick={() => press(k)}
+            >
+              {k === "back" ? <Icon name="back" /> : label}
+            </button>
+          ))}
+        </div>
       </div>
     </CalcCard>
   );

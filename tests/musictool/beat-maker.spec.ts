@@ -8,7 +8,9 @@ import { bytes, download, expect, openTool, test } from "../helpers.ts";
 
 const area = (page: Page) => page.locator(".tool-area");
 const btn = (page: Page, name: string | RegExp) =>
-  area(page).getByRole("button", { name, exact: typeof name === "string" }).first();
+  area(page)
+    .getByRole("button", { name, exact: typeof name === "string" })
+    .first();
 const cell = (page: Page, drum: string, step: number) =>
   area(page).locator(`.mt-cell[data-drum="${drum}"][data-step="${step}"]`);
 const row = (page: Page, drum: string) =>
@@ -23,7 +25,9 @@ interface Step {
 }
 const log = (page: Page) =>
   page.evaluate(() =>
-    (window as unknown as { kmraMusic: { beats: { log: Step[] } } }).kmraMusic.beats.log.map((s) => ({
+    (
+      window as unknown as { kmraMusic: { beats: { log: Step[] } } }
+    ).kmraMusic.beats.log.map((s) => ({
       ...s,
       drums: s.drums.map((d) => [...d]),
     })),
@@ -44,7 +48,8 @@ function pcm(buf: Buffer) {
 }
 const energy = (x: Float32Array, from: number, to: number) => {
   let e = 0;
-  for (let i = Math.max(0, from); i < Math.min(x.length, to); i++) e += x[i]! * x[i]!;
+  for (let i = Math.max(0, from); i < Math.min(x.length, to); i++)
+    e += x[i]! * x[i]!;
   return e;
 };
 
@@ -55,11 +60,18 @@ async function fresh(page: Page, path = "/beat-maker") {
   await openTool(page, path);
 }
 
-test("beat maker: plays the starter beat on time, with swing on the off-beats", async ({ page }) => {
+test("beat maker: plays the starter beat on time, with swing on the off-beats", async ({
+  page,
+}) => {
   await fresh(page);
   // The hip-hop starter: 90 BPM, 40% swing
-  await expect(area(page).getByRole("button", { name: "Hip-hop" })).toHaveAttribute("aria-pressed", "true");
-  await expect(area(page).locator(".mt-beat-bpm")).toHaveAttribute("data-value", "90");
+  await expect(
+    area(page).getByRole("button", { name: "Hip-hop" }),
+  ).toHaveAttribute("aria-pressed", "true");
+  await expect(area(page).locator(".mt-beat-bpm")).toHaveAttribute(
+    "data-value",
+    "90",
+  );
   await btn(page, "Play").click();
   await expect(area(page).locator(".mt-cell.now").first()).toBeVisible();
   await page.waitForTimeout(1700);
@@ -68,7 +80,7 @@ test("beat maker: plays the starter beat on time, with swing on the off-beats", 
   await expect(area(page).locator(".mt-cell.now")).toHaveCount(0);
   expect(steps.length).toBeGreaterThanOrEqual(8);
   const len = 60 / 90 / 4;
-  const swing = ((0.4 * len) / 3);
+  const swing = (0.4 * len) / 3;
   // Even steps on the grid, odd steps late by the swing
   const t0 = steps[0]!.time;
   expect(steps[0]!.step).toBe(0);
@@ -85,7 +97,9 @@ test("beat maker: plays the starter beat on time, with swing on the off-beats", 
   expect(steps[0]!.drums.find(([d]) => d === "kick")![1]).toBe(2);
 });
 
-test("beat maker: edits while playing are heard on the next pass", async ({ page }) => {
+test("beat maker: edits while playing are heard on the next pass", async ({
+  page,
+}) => {
   await fresh(page);
   await btn(page, "Clear").click();
   await btn(page, "Play").click();
@@ -99,13 +113,18 @@ test("beat maker: edits while playing are heard on the next pass", async ({ page
   expect(claps.every((s) => s.step === 12)).toBe(true);
 });
 
-test("beat maker: draw, drag, accents, undo, redo, clear and lengths", async ({ page }) => {
+test("beat maker: draw, drag, accents, undo, redo, clear and lengths", async ({
+  page,
+}) => {
   await fresh(page);
   await btn(page, "Clear").click();
   expect(await row(page, "kick")).toEqual(Array(16).fill(0));
   await cell(page, "kick", 0).click();
   await expect(cell(page, "kick", 0)).toHaveAttribute("aria-pressed", "true");
-  await expect(cell(page, "kick", 0)).toHaveAttribute("aria-label", "Kick, step 1: on");
+  await expect(cell(page, "kick", 0)).toHaveAttribute(
+    "aria-label",
+    "Kick, step 1: on",
+  );
   // Drag across four hi-hat steps paints them all
   const a = (await cell(page, "hat", 0).boundingBox())!;
   const b = (await cell(page, "hat", 3).boundingBox())!;
@@ -126,54 +145,85 @@ test("beat maker: draw, drag, accents, undo, redo, clear and lengths", async ({ 
   await btn(page, "Redo").click();
   expect((await row(page, "hat")).slice(0, 4)).toEqual([0, 0, 0, 1]);
   // Accent mode
-  await area(page).getByRole("group", { name: "New steps" }).getByRole("button", { name: "Accent" }).click();
+  await area(page)
+    .getByRole("group", { name: "New steps" })
+    .getByRole("button", { name: "Accent" })
+    .click();
   await cell(page, "snare", 4).click();
   await expect(cell(page, "snare", 4)).toHaveAttribute("data-v", "2");
   // Two bars: the bar repeats and is shown a page at a time
-  await area(page).getByRole("group", { name: "Length" }).getByRole("button", { name: "2 bars" }).click();
-  await expect(area(page).getByRole("button", { name: "Steps 17–32" })).toBeVisible();
+  await area(page)
+    .getByRole("group", { name: "Length" })
+    .getByRole("button", { name: "2 bars" })
+    .click();
+  await expect(
+    area(page).getByRole("button", { name: "Steps 17–32" }),
+  ).toBeVisible();
   await area(page).getByRole("button", { name: "Steps 17–32" }).click();
   await expect(cell(page, "snare", 20)).toHaveAttribute("data-v", "2");
   await expect(cell(page, "kick", 16)).toHaveAttribute("data-v", "1");
   // 3/4: twelve steps on one page
-  await area(page).getByRole("group", { name: "Length" }).getByRole("button", { name: "3/4 bar" }).click();
-  await expect(area(page).locator('.mt-cell[data-drum="kick"]')).toHaveCount(12);
+  await area(page)
+    .getByRole("group", { name: "Length" })
+    .getByRole("button", { name: "3/4 bar" })
+    .click();
+  await expect(area(page).locator('.mt-cell[data-drum="kick"]')).toHaveCount(
+    12,
+  );
   await expect(area(page).locator(".mt-beat-pages")).toHaveCount(0);
   // Keyboard: Ctrl+Z goes back to two bars
   await page.locator("body").press("Control+z");
-  await expect(area(page).locator('.mt-cell[data-drum="kick"]')).toHaveCount(16);
+  await expect(area(page).locator('.mt-cell[data-drum="kick"]')).toHaveCount(
+    16,
+  );
   await btn(page, "Clear").click();
   expect((await row(page, "snare")).every((v) => v === 0)).toBe(true);
   await expect(btn(page, "Download WAV")).toBeDisabled();
 });
 
-test("beat maker: downloads a WAV that loops exactly, with mute and solo applied", async ({ page }) => {
+test("beat maker: downloads a WAV that loops exactly, with mute and solo applied", async ({
+  page,
+}) => {
   await fresh(page, "/rock-drum-beat");
-  await area(page).getByRole("group", { name: "Times through the loop" }).getByRole("button", { name: "1", exact: true }).click();
-  await expect(area(page).getByText("2.2 seconds. The file loops without a gap.")).toBeVisible();
-  const full = pcm(await bytes(await download(page, () => btn(page, "Download WAV").click())));
+  await area(page)
+    .getByRole("group", { name: "Times through the loop" })
+    .getByRole("button", { name: "1", exact: true })
+    .click();
+  await expect(
+    area(page).getByText("2.2 seconds. The file loops without a gap."),
+  ).toBeVisible();
+  const full = pcm(
+    await bytes(await download(page, () => btn(page, "Download WAV").click())),
+  );
   expect(full.rate).toBe(44100);
   expect(full.channels).toBe(2);
   // 110 BPM, 16 sixteenths
-  expect(full.L.length).toBe(Math.round((16 * 60) / 110 / 4 * 44100));
-  const stepAt = (i: number) => Math.round((i * 60) / 110 / 4 * 44100);
+  expect(full.L.length).toBe(Math.round(((16 * 60) / 110 / 4) * 44100));
+  const stepAt = (i: number) => Math.round(((i * 60) / 110 / 4) * 44100);
   // Kick and hat on step 0, snare on step 4
   expect(energy(full.L, 0, 2000)).toBeGreaterThan(5);
   expect(energy(full.L, stepAt(4), stepAt(4) + 2000)).toBeGreaterThan(5);
   // Solo the snare: the downbeat (kick and hat only) goes quiet, the snare stays
   await btn(page, "Solo Snare").click();
-  const solo = pcm(await bytes(await download(page, () => btn(page, "Download WAV").click())));
+  const solo = pcm(
+    await bytes(await download(page, () => btn(page, "Download WAV").click())),
+  );
   expect(energy(solo.L, 0, 1500)).toBeLessThan(energy(full.L, 0, 1500) / 50);
   expect(energy(solo.L, stepAt(4), stepAt(4) + 2000)).toBeGreaterThan(5);
   // Mute the snare as well as soloing it: solo wins, as on a mixer
   await btn(page, "Mute Snare").click();
-  const both = pcm(await bytes(await download(page, () => btn(page, "Download WAV").click())));
+  const both = pcm(
+    await bytes(await download(page, () => btn(page, "Download WAV").click())),
+  );
   expect(energy(both.L, stepAt(4), stepAt(4) + 2000)).toBeGreaterThan(5);
 });
 
 test("beat maker: downloads an MP3", async ({ page }) => {
   await fresh(page);
-  await area(page).getByRole("group", { name: "File" }).getByRole("button", { name: "MP3" }).click();
+  await area(page)
+    .getByRole("group", { name: "File" })
+    .getByRole("button", { name: "MP3" })
+    .click();
   const d = await download(page, () => btn(page, "Download MP3").click());
   expect(d.suggestedFilename()).toBe("beat-90bpm-kmra.mp3");
   const b = await bytes(d);
@@ -188,35 +238,58 @@ test("beat maker: downloads an MP3", async ({ page }) => {
   expect(b.length).toBeLessThan(400_000);
 });
 
-test("beat maker: a link carries the beat, and it's kept after a reload", async ({ page, context }) => {
+test("beat maker: a link carries the beat, and it's kept after a reload", async ({
+  page,
+  context,
+}) => {
   await context.grantPermissions(["clipboard-read", "clipboard-write"]);
   await fresh(page);
   await btn(page, "Clear").click();
   await cell(page, "tomLow", 6).click();
   await btn(page, "Faster").click();
   await btn(page, "Copy link").click();
-  await expect(area(page).locator("p[role=status]")).toHaveText("Link copied. Anyone who opens it hears this beat.");
+  await expect(area(page).locator("p[role=status]")).toHaveText(
+    "Link copied. Anyone who opens it hears this beat.",
+  );
   const link = await page.evaluate(() => navigator.clipboard.readText());
-  expect(link).toMatch(/\/beat-maker#bpm=91&swing=40&steps=16&tomLow=0000001000000000$/);
+  expect(link).toMatch(
+    /\/beat-maker#bpm=91&swing=40&steps=16&tomLow=0000001000000000$/,
+  );
   // Saved on this device
   await page.reload();
   await area(page).locator(".mt-cell").first().waitFor();
   await expect(cell(page, "tomLow", 6)).toHaveAttribute("data-v", "1");
-  await expect(area(page).locator(".mt-beat-bpm")).toHaveAttribute("data-value", "91");
+  await expect(area(page).locator(".mt-beat-bpm")).toHaveAttribute(
+    "data-value",
+    "91",
+  );
   // Someone else opening the link
   await page.evaluate(() => localStorage.clear());
   await page.goto("about:blank");
-  await openTool(page, "/beat-maker#bpm=123&swing=0&steps=16&kick=2000200020002000");
-  await expect(area(page).locator(".mt-beat-bpm")).toHaveAttribute("data-value", "123");
-  expect(await row(page, "kick")).toEqual([2, 0, 0, 0, 2, 0, 0, 0, 2, 0, 0, 0, 2, 0, 0, 0]);
+  await openTool(
+    page,
+    "/beat-maker#bpm=123&swing=0&steps=16&kick=2000200020002000",
+  );
+  await expect(area(page).locator(".mt-beat-bpm")).toHaveAttribute(
+    "data-value",
+    "123",
+  );
+  expect(await row(page, "kick")).toEqual([
+    2, 0, 0, 0, 2, 0, 0, 0, 2, 0, 0, 0, 2, 0, 0, 0,
+  ]);
   expect((await row(page, "hat")).every((v) => v === 0)).toBe(true);
 });
 
-test("beat maker: keyboard plays, changes the tempo and toggles a focused step", async ({ page }) => {
+test("beat maker: keyboard plays, changes the tempo and toggles a focused step", async ({
+  page,
+}) => {
   await fresh(page);
   await page.locator("body").press("ArrowUp");
   await page.locator("body").press("Shift+ArrowUp");
-  await expect(area(page).locator(".mt-beat-bpm")).toHaveAttribute("data-value", "101");
+  await expect(area(page).locator(".mt-beat-bpm")).toHaveAttribute(
+    "data-value",
+    "101",
+  );
   await page.locator("body").press("Space");
   await expect(btn(page, "Stop")).toBeVisible();
   await page.locator("body").press("Space");
@@ -238,7 +311,9 @@ test("beat maker: phones show eight steps at a time", async ({ page }) => {
   await area(page).getByRole("button", { name: "Steps 9–16" }).click();
   await expect(cell(page, "kick", 10)).toHaveAttribute("data-v", "2");
   // No sideways scrolling
-  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);
+  expect(
+    await page.evaluate(() => document.documentElement.scrollWidth),
+  ).toBeLessThanOrEqual(390);
 });
 
 test("beat maker in Bangla", async ({ page }) => {
@@ -246,6 +321,11 @@ test("beat maker in Bangla", async ({ page }) => {
   await expect(page.locator("h1")).toHaveText("বিট মেকার: অনলাইন ড্রাম মেশিন");
   await expect(btn(page, "চালান")).toBeVisible();
   await expect(area(page).locator(".mt-beat-bpm output")).toHaveText("৯০");
-  await expect(area(page).getByRole("group", { name: "শুরুর প্যাটার্ন" })).toBeVisible();
-  await expect(cell(page, "kick", 0)).toHaveAttribute("aria-label", "কিক, স্টেপ ১: অ্যাকসেন্ট");
+  await expect(
+    area(page).getByRole("group", { name: "শুরুর প্যাটার্ন" }),
+  ).toBeVisible();
+  await expect(cell(page, "kick", 0)).toHaveAttribute(
+    "aria-label",
+    "কিক, স্টেপ ১: অ্যাকসেন্ট",
+  );
 });

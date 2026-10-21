@@ -186,7 +186,9 @@ export default function ImageToText({ preset }: { preset?: Preset }) {
         setActive(null);
         setRun(null);
         if (hadEdits)
-          toast(T("Read again with the new settings. Your edits were replaced."));
+          toast(
+            T("Read again with the new settings. Your edits were replaced."),
+          );
         if (missing.length) refreshCached();
       } catch (err) {
         if (ctl.signal.aborted) return;
@@ -398,7 +400,9 @@ export default function ImageToText({ preset }: { preset?: Preset }) {
                   ? run
                     ? { text: T("Reading again with the new settings…") }
                     : {
-                        text: T("This text was read with the earlier settings."),
+                        text: T(
+                          "This text was read with the earlier settings.",
+                        ),
                         bad: true,
                       }
                   : null

@@ -11,13 +11,15 @@ const PAGES: OgPage[] = [
   {
     slug: "tools",
     title: `All ${totalTools} kmra tools`,
-    subtitle: "Search every tool, or pick an app. Free, and your files stay on your device.",
+    subtitle:
+      "Search every tool, or pick an app. Free, and your files stay on your device.",
     icon: "grid",
   },
   {
     slug: "privacy",
     title: "Privacy",
-    subtitle: "Files stay on your device. No accounts, no tracking of your files.",
+    subtitle:
+      "Files stay on your device. No accounts, no tracking of your files.",
     icon: "shield",
   },
   {

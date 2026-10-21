@@ -28,12 +28,16 @@ export default function Shades({ preset }: ToolProps) {
   const T = useT();
   const [base, setBase] = useHashColor(col("#1e90ff"));
   const [label, setLabel] = useState("brand");
-  const [out, setOut] = useState<Out>(preset?.format === "tailwind" ? "theme" : "css");
+  const [out, setOut] = useState<Out>(
+    preset?.format === "tailwind" ? "theme" : "css",
+  );
   const [fmt, setFmt] = useState<ValueFormat>("hex");
 
   const scale = shadeScale(base);
   const name = slugName(label);
-  const entries = scale.map((s) => [`${name}-${s.step}`, s.color] as [string, typeof s.color]);
+  const entries = scale.map(
+    (s) => [`${name}-${s.step}`, s.color] as [string, typeof s.color],
+  );
   const code =
     out === "theme"
       ? themeBlock(entries, fmt)
@@ -46,11 +50,19 @@ export default function Shades({ preset }: ToolProps) {
   return (
     <div className="ct-card side-first inputs-first">
       <div className="ct-side">
-        <ColorField label={T("Base colour")} value={base} onChange={setBase} alpha={false} />
+        <ColorField
+          label={T("Base colour")}
+          value={base}
+          onChange={setBase}
+          alpha={false}
+        />
         <p className="ct-hint">
-          {T("Your colour lands on step {step}, unchanged. The other steps follow a smooth lightness ramp in OKLCH.", {
-            step: at.step,
-          })}
+          {T(
+            "Your colour lands on step {step}, unchanged. The other steps follow a smooth lightness ramp in OKLCH.",
+            {
+              step: at.step,
+            },
+          )}
         </p>
         <label className="ct-inline col">
           <span>{T("Colour name")}</span>
@@ -94,7 +106,10 @@ export default function Shades({ preset }: ToolProps) {
                 className={`ct-shade${s.base ? " base" : ""}`}
                 data-step={s.step}
                 data-hex={hex}
-                style={{ background: css(s.color), color: css(textOn(s.color)) }}
+                style={{
+                  background: css(s.color),
+                  color: css(textOn(s.color)),
+                }}
                 aria-label={T("Copy {step}: {hex}", { step: s.step, hex })}
                 title={toOklchString(s.color)}
                 onClick={() =>
@@ -116,7 +131,9 @@ export default function Shades({ preset }: ToolProps) {
           })}
         </div>
         <p className="ct-cap">
-          {T("Click a step to copy it. The small number is its contrast on white; 4.5:1 or more is fine for text.")}
+          {T(
+            "Click a step to copy it. The small number is its contrast on white; 4.5:1 or more is fine for text.",
+          )}
         </p>
         <CodeOut
           code={code}

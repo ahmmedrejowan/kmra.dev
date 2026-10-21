@@ -11,7 +11,16 @@
  * - `STARTERS`: the starter patterns; `toHash`/`fromHash`: a pattern in a link.
  */
 
-export const DRUMS = ["kick", "snare", "clap", "hat", "open", "tomLow", "tomHigh", "rim"] as const;
+export const DRUMS = [
+  "kick",
+  "snare",
+  "clap",
+  "hat",
+  "open",
+  "tomLow",
+  "tomHigh",
+  "rim",
+] as const;
 export type DrumId = (typeof DRUMS)[number];
 
 export const DRUM_NAMES: Record<DrumId, string> = {
@@ -47,7 +56,8 @@ export const STEPS_PER_BEAT = 4;
 
 export const MIN_BPM = 40;
 export const MAX_BPM = 240;
-export const clampBpm = (v: number) => Math.min(MAX_BPM, Math.max(MIN_BPM, Math.round(v)));
+export const clampBpm = (v: number) =>
+  Math.min(MAX_BPM, Math.max(MIN_BPM, Math.round(v)));
 
 export interface Pattern {
   bpm: number;
@@ -83,7 +93,9 @@ export function resize(p: Pattern, steps: number): Pattern {
   return {
     ...p,
     steps,
-    grid: each((d) => Array.from({ length: steps }, (_, i) => p.grid[d][i % p.steps] ?? 0)),
+    grid: each((d) =>
+      Array.from({ length: steps }, (_, i) => p.grid[d][i % p.steps] ?? 0),
+    ),
   };
 }
 
@@ -94,12 +106,14 @@ export function audible(p: Pattern, d: DrumId): boolean {
 }
 
 /** Gain of a drum's channel: its volume on a gentle curve, 0 when it isn't heard */
-export const channelGain = (p: Pattern, d: DrumId) => (audible(p, d) ? p.vol[d] * p.vol[d] : 0);
+export const channelGain = (p: Pattern, d: DrumId) =>
+  audible(p, d) ? p.vol[d] * p.vol[d] : 0;
 
 export const stepLength = (bpm: number) => 60 / bpm / STEPS_PER_BEAT;
 
 /** How late the off-beat sixteenths play: up to a third of a step (the triplet) */
-export const swingDelay = (bpm: number, swing: number) => ((swing / 100) * stepLength(bpm)) / 3;
+export const swingDelay = (bpm: number, swing: number) =>
+  ((swing / 100) * stepLength(bpm)) / 3;
 
 /** Seconds from the start of the loop to step `i` */
 export const stepTime = (i: number, bpm: number, swing: number) =>
@@ -107,7 +121,8 @@ export const stepTime = (i: number, bpm: number, swing: number) =>
 
 export const loopLength = (p: Pattern) => p.steps * stepLength(p.bpm);
 
-export const hits = (p: Pattern) => DRUMS.reduce((n, d) => n + p.grid[d].filter(Boolean).length, 0);
+export const hits = (p: Pattern) =>
+  DRUMS.reduce((n, d) => n + p.grid[d].filter(Boolean).length, 0);
 
 /* ---------- sounds ---------- */
 
@@ -149,14 +164,21 @@ function finish(y: Float32Array, sr: number, peak: number) {
   if (m > 0) for (let i = 0; i < y.length; i++) y[i] = (y[i]! / m) * peak;
   // A short fade at the end so nothing clicks
   const k = Math.min(y.length, Math.floor(sr * 0.006));
-  for (let i = 0; i < k; i++) y[y.length - 1 - i] = y[y.length - 1 - i]! * (i / k);
+  for (let i = 0; i < k; i++)
+    y[y.length - 1 - i] = y[y.length - 1 - i]! * (i / k);
   return y;
 }
 
 /** The 808 hi-hat's six detuned square waves: the metallic part of a hat */
 const METAL = [205.3, 304.4, 369.6, 522.7, 540, 800];
 
-function hat(sr: number, seconds: number, decay: number, seed: number, peak: number) {
+function hat(
+  sr: number,
+  seconds: number,
+  decay: number,
+  seed: number,
+  peak: number,
+) {
   const n = Math.floor(sr * seconds);
   const y = new Float32Array(n);
   const r = noise(seed);
@@ -183,7 +205,8 @@ function tom(sr: number, f0: number, decay: number, seed: number) {
   for (let i = 0; i < n; i++) {
     const t = i / sr;
     ph += (2 * Math.PI * f0 * (1 + 0.45 * Math.exp(-t / 0.03))) / sr;
-    y[i] = Math.sin(ph) * Math.exp(-t / decay) + r() * 0.15 * Math.exp(-t / 0.01);
+    y[i] =
+      Math.sin(ph) * Math.exp(-t / decay) + r() * 0.15 * Math.exp(-t / 0.01);
   }
   return finish(y, sr, 0.8);
 }
@@ -215,12 +238,14 @@ export function synth(id: DrumId, sr: number): Float32Array {
       for (let i = 0; i < n; i++) {
         const t = i / sr;
         body[i] =
-          (Math.sin(2 * Math.PI * 185 * t) * 0.6 + Math.sin(2 * Math.PI * 330 * t) * 0.35) *
+          (Math.sin(2 * Math.PI * 185 * t) * 0.6 +
+            Math.sin(2 * Math.PI * 330 * t) * 0.35) *
           Math.exp(-t / 0.06);
         wires[i] = r();
       }
       highpass(wires, sr, 1500);
-      for (let i = 0; i < n; i++) body[i] = body[i]! * 0.55 + wires[i]! * Math.exp(-i / sr / 0.11) * 0.8;
+      for (let i = 0; i < n; i++)
+        body[i] = body[i]! * 0.55 + wires[i]! * Math.exp(-i / sr / 0.11) * 0.8;
       return finish(body, sr, 0.85);
     }
     case "clap": {
@@ -235,7 +260,8 @@ export function synth(id: DrumId, sr: number): Float32Array {
       for (let i = 0; i < n; i++) {
         const t = i / sr;
         let e = 0;
-        for (const t0 of [0, 0.011, 0.022]) if (t >= t0) e = Math.max(e, Math.exp(-(t - t0) / 0.004));
+        for (const t0 of [0, 0.011, 0.022])
+          if (t >= t0) e = Math.max(e, Math.exp(-(t - t0) / 0.004));
         if (t >= 0.031) e = Math.max(e, 0.8 * Math.exp(-(t - 0.031) / 0.09));
         y[i] = y[i]! * e;
       }
@@ -256,7 +282,8 @@ export function synth(id: DrumId, sr: number): Float32Array {
       for (let i = 0; i < n; i++) {
         const t = i / sr;
         y[i] =
-          (Math.sin(2 * Math.PI * 1720 * t) * 0.6 + Math.sin(2 * Math.PI * 480 * t) * 0.5) *
+          (Math.sin(2 * Math.PI * 1720 * t) * 0.6 +
+            Math.sin(2 * Math.PI * 480 * t) * 0.5) *
             Math.exp(-t / 0.009) +
           r() * 0.3 * Math.exp(-t / 0.003);
       }
@@ -292,7 +319,8 @@ export function mixdown(
   const hatTimes: number[] = [];
   for (let k = 0; k < loops; k++)
     for (let i = 0; i < p.steps; i++)
-      if (p.grid.hat[i] && audible(p, "hat")) hatTimes.push(k * loop + stepTime(i, p.bpm, p.swing));
+      if (p.grid.hat[i] && audible(p, "hat"))
+        hatTimes.push(k * loop + stepTime(i, p.bpm, p.swing));
   for (const d of DRUMS) {
     const g = channelGain(p, d);
     if (g === 0) continue;
@@ -305,14 +333,19 @@ export function mixdown(
         const t = k * loop + stepTime(i, p.bpm, p.swing);
         let len = s.length;
         if (d === "open") {
-          const next = hatTimes.find((h) => h > t) ?? (hatTimes.length ? hatTimes[0]! + loop * loops : Infinity);
+          const next =
+            hatTimes.find((h) => h > t) ??
+            (hatTimes.length ? hatTimes[0]! + loop * loops : Infinity);
           len = Math.min(len, Math.round((next - t) * sr));
         }
         const fade = Math.min(len, Math.floor(sr * 0.005));
         const start = Math.round(t * sr);
         const a = g * VEL_GAIN[v];
         for (let j = 0; j < len; j++) {
-          const x = s[j]! * a * (j >= len - fade && len < s.length ? (len - j) / fade : 1);
+          const x =
+            s[j]! *
+            a *
+            (j >= len - fade && len < s.length ? (len - j) / fade : 1);
           const at = (start + j) % total;
           L[at] = L[at]! + x * gl;
           R[at] = R[at]! + x * gr;
@@ -320,7 +353,8 @@ export function mixdown(
       }
   }
   let peak = 0;
-  for (let i = 0; i < total; i++) peak = Math.max(peak, Math.abs(L[i]!), Math.abs(R[i]!));
+  for (let i = 0; i < total; i++)
+    peak = Math.max(peak, Math.abs(L[i]!), Math.abs(R[i]!));
   if (peak > 0.95) {
     const k = 0.95 / peak;
     for (let i = 0; i < total; i++) {
@@ -332,11 +366,15 @@ export function mixdown(
 }
 
 /** 16-bit stereo WAV */
-export function wav([L, R]: [Float32Array, Float32Array], sr: number): ArrayBuffer {
+export function wav(
+  [L, R]: [Float32Array, Float32Array],
+  sr: number,
+): ArrayBuffer {
   const n = L.length;
   const buf = new ArrayBuffer(44 + n * 4);
   const v = new DataView(buf);
-  const str = (o: number, s: string) => [...s].forEach((c, i) => v.setUint8(o + i, c.charCodeAt(0)));
+  const str = (o: number, s: string) =>
+    [...s].forEach((c, i) => v.setUint8(o + i, c.charCodeAt(0)));
   str(0, "RIFF");
   v.setUint32(4, 36 + n * 4, true);
   str(8, "WAVE");
@@ -350,7 +388,8 @@ export function wav([L, R]: [Float32Array, Float32Array], sr: number): ArrayBuff
   v.setUint16(34, 16, true);
   str(36, "data");
   v.setUint32(40, n * 4, true);
-  const q = (x: number) => Math.max(-32768, Math.min(32767, Math.round(x * 32767)));
+  const q = (x: number) =>
+    Math.max(-32768, Math.min(32767, Math.round(x * 32767)));
   for (let i = 0; i < n; i++) {
     v.setInt16(44 + i * 4, q(L[i]!), true);
     v.setInt16(46 + i * 4, q(R[i]!), true);
@@ -491,7 +530,10 @@ export function fromStarter(s: Starter, keep?: Pattern): Pattern {
   const p = emptyPattern(s.steps, s.bpm, s.swing);
   for (const d of DRUMS) {
     const row = s.rows[d];
-    if (row) p.grid[d] = Array.from({ length: s.steps }, (_, i) => cell(row[i] ?? "."));
+    if (row)
+      p.grid[d] = Array.from({ length: s.steps }, (_, i) =>
+        cell(row[i] ?? "."),
+      );
   }
   // Keep the reader's mix when switching patterns
   if (keep) {
@@ -512,7 +554,8 @@ export function toHash(p: Pattern): string {
   q.set("bpm", String(p.bpm));
   q.set("swing", String(p.swing));
   q.set("steps", String(p.steps));
-  for (const d of DRUMS) if (p.grid[d].some(Boolean)) q.set(d, p.grid[d].join(""));
+  for (const d of DRUMS)
+    if (p.grid[d].some(Boolean)) q.set(d, p.grid[d].join(""));
   if (DRUMS.some((d) => p.vol[d] !== DEFAULT_VOL))
     q.set("vol", DRUMS.map((d) => Math.round(p.vol[d] * 100)).join(","));
   const muted = DRUMS.filter((d) => p.mute[d]);
@@ -529,7 +572,10 @@ export function fromHash(hash: string): Pattern | null {
   if (!(LENGTHS as readonly number[]).includes(steps)) return null;
   if (!DRUMS.some((d) => q.has(d))) return null;
   const bpm = clampBpm(Number(q.get("bpm")) || 100);
-  const swing = Math.min(100, Math.max(0, Math.round(Number(q.get("swing")) || 0)));
+  const swing = Math.min(
+    100,
+    Math.max(0, Math.round(Number(q.get("swing")) || 0)),
+  );
   const p = emptyPattern(steps, bpm, swing);
   for (const d of DRUMS) {
     const row = q.get(d);
@@ -545,8 +591,10 @@ export function fromHash(hash: string): Pattern | null {
       const v = vol[i]!;
       if (Number.isFinite(v)) p.vol[d] = Math.min(1, Math.max(0, v / 100));
     });
-  for (const d of q.get("mute")?.split(",") ?? []) if (d in p.mute) p.mute[d as DrumId] = true;
-  for (const d of q.get("solo")?.split(",") ?? []) if (d in p.solo) p.solo[d as DrumId] = true;
+  for (const d of q.get("mute")?.split(",") ?? [])
+    if (d in p.mute) p.mute[d as DrumId] = true;
+  for (const d of q.get("solo")?.split(",") ?? [])
+    if (d in p.solo) p.solo[d as DrumId] = true;
   return p;
 }
 
@@ -554,12 +602,20 @@ export function fromHash(hash: string): Pattern | null {
 export function sane(v: unknown): Pattern | null {
   if (!v || typeof v !== "object") return null;
   const o = v as Partial<Pattern>;
-  if (!(LENGTHS as readonly number[]).includes(o.steps as number) || !o.grid) return null;
-  const p = emptyPattern(o.steps!, clampBpm(Number(o.bpm) || 100), Math.min(100, Math.max(0, Number(o.swing) || 0)));
+  if (!(LENGTHS as readonly number[]).includes(o.steps as number) || !o.grid)
+    return null;
+  const p = emptyPattern(
+    o.steps!,
+    clampBpm(Number(o.bpm) || 100),
+    Math.min(100, Math.max(0, Number(o.swing) || 0)),
+  );
   for (const d of DRUMS) {
     const row = o.grid[d];
     if (Array.isArray(row))
-      p.grid[d] = Array.from({ length: p.steps }, (_, i) => (row[i] === 1 || row[i] === 2 ? row[i] : 0) as Vel);
+      p.grid[d] = Array.from(
+        { length: p.steps },
+        (_, i) => (row[i] === 1 || row[i] === 2 ? row[i] : 0) as Vel,
+      );
     const vol = o.vol?.[d];
     if (typeof vol === "number" && vol >= 0 && vol <= 1) p.vol[d] = vol;
     p.mute[d] = o.mute?.[d] === true;

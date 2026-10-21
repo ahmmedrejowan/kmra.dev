@@ -156,7 +156,12 @@ const schema = [
   </section>
 
   <div class="wrap tool-area">
-    <ColorTool client:load slug={tool.slug} lang={locale} preset={task?.preset} />
+    <ColorTool
+      client:load
+      slug={tool.slug}
+      lang={locale}
+      preset={task?.preset}
+    />
 
     {tool.ready && tool.steps && <InfoCard steps={tool.steps} items={info} />}
 

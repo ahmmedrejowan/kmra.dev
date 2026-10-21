@@ -66,7 +66,9 @@ test("a file from an earlier tool drops its kmra tag: clip-trim-mute", async ({
 test.describe("a batch with a broken file", () => {
   // The engine reports the broken file in the console; that's expected here
   test.use({
-    allowConsole: [/video engine stopped|moov atom not found|Invalid data|ERR_FILE_NOT_FOUND/],
+    allowConsole: [
+      /video engine stopped|moov atom not found|Invalid data|ERR_FILE_NOT_FOUND/,
+    ],
   });
   test("a batch: unique names, zip shown while a failed file is selected, remove keeps the selection", async ({
     page,

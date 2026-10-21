@@ -50,7 +50,9 @@ export default function RemoveSilence(_: ToolProps) {
             onPick={setMin}
           />
           <p className="note">
-            {T("A short pause stays where each gap was, so speech doesn't run together. Pick Background noise for recordings with a hum.")}
+            {T(
+              "A short pause stays where each gap was, so speech doesn't run together. Pick Background noise for recordings with a hum.",
+            )}
           </p>
         </>
       )}

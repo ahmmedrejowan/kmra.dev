@@ -55,7 +55,11 @@ const jsonLd = [
     name: "kmra.dev",
     url: site.toString(),
     description: desc,
-    publisher: { "@type": "Organization", name: "kmra.dev", url: "https://kmra.dev" },
+    publisher: {
+      "@type": "Organization",
+      name: "kmra.dev",
+      url: "https://kmra.dev",
+    },
   },
   ...schema,
 ];
@@ -71,10 +75,34 @@ const palette: PaletteItem[] = [
       icon: p.icon,
     };
   }),
-  { group: T("Help"), name: T("All tools"), hint: "kmra.dev", href: L("/tools"), icon: "grid" },
-  { group: T("Help"), name: T("Privacy"), hint: T("What we store"), href: L("/privacy"), icon: "shield" },
-  { group: T("Help"), name: T("About"), hint: "kmra.dev", href: L("/about"), icon: "layers" },
-  { group: T("Help"), name: T("Keyboard shortcuts"), hint: "?", href: "#shortcuts", icon: "sliders" },
+  {
+    group: T("Help"),
+    name: T("All tools"),
+    hint: "kmra.dev",
+    href: L("/tools"),
+    icon: "grid",
+  },
+  {
+    group: T("Help"),
+    name: T("Privacy"),
+    hint: T("What we store"),
+    href: L("/privacy"),
+    icon: "shield",
+  },
+  {
+    group: T("Help"),
+    name: T("About"),
+    hint: "kmra.dev",
+    href: L("/about"),
+    icon: "layers",
+  },
+  {
+    group: T("Help"),
+    name: T("Keyboard shortcuts"),
+    hint: "?",
+    href: "#shortcuts",
+    icon: "sliders",
+  },
 ];
 const year = new Date().getFullYear();
 // Footer: two apps per column, two tools each; an odd last slot says more are on the way
@@ -93,7 +121,10 @@ const cols = Array.from({ length: Math.ceil(apps.length / 2) }, (_, i) => [
     <meta name="msvalidate.01" content="1A20507FD30F025DFEDE13A418175F01" />
     <title>{title}</title>
     <meta name="description" content={desc} />
-    <meta name="robots" content={noindex ? "noindex, follow" : "index, follow"} />
+    <meta
+      name="robots"
+      content={noindex ? "noindex, follow" : "index, follow"}
+    />
     {!noindex && <link rel="canonical" href={canonical} />}
     <meta name="application-name" content="kmra.dev" />
     <meta name="apple-mobile-web-app-title" content="kmra.dev" />
@@ -112,12 +143,27 @@ const cols = Array.from({ length: Math.ceil(apps.length / 2) }, (_, i) => [
     <meta property="og:image" content={ogImage} />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
-    <meta property="og:locale" content={LOCALES.find((l) => l.code === lang)?.og ?? "en_US"} />
-    {!noindex && alternates.map((a) => (
-      <link rel="alternate" hreflang={a.code} href={new URL(a.href, site).toString()} />
-    ))}
+    <meta
+      property="og:locale"
+      content={LOCALES.find((l) => l.code === lang)?.og ?? "en_US"}
+    />
+    {!noindex &&
+      alternates.map((a) => (
+        <link
+          rel="alternate"
+          hreflang={a.code}
+          href={new URL(a.href, site).toString()}
+        />
+      ))}
     {!noindex && (
-      <link rel="alternate" hreflang="x-default" href={new URL(alternates.find((a) => a.code === "en")!.href, site).toString()} />
+      <link
+        rel="alternate"
+        hreflang="x-default"
+        href={new URL(
+          alternates.find((a) => a.code === "en")!.href,
+          site,
+        ).toString()}
+      />
     )}
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content={title} />
@@ -133,30 +179,44 @@ const cols = Array.from({ length: Math.ceil(apps.length / 2) }, (_, i) => [
     </script>
   </head>
   <body class="hub">
-    <a href="#main" class="sr-only skip">{T("Skip to content")}</a>
+    <a href="#main" class="sr-only skip">
+      {T("Skip to content")}
+    </a>
     <header class="site">
       <div class="wrap">
         <div class="hd">
           <a class="logo" href={L("/")} aria-label={T("kmra.dev home")}>
             <span class="wm">
               <span class="wm-mark" set:html={mark} aria-hidden="true" />
-              <span class="wm-text"><span class="wm-b">kmra</span><span class="hub-dot">.dev</span></span>
+              <span class="wm-text">
+                <span class="wm-b">kmra</span>
+                <span class="hub-dot">.dev</span>
+              </span>
             </span>
           </a>
           <nav aria-label={T("Main")} style="display: contents">
             <div class="menu">
-              <button type="button" aria-expanded="false" aria-controls="m-tools">
+              <button
+                type="button"
+                aria-expanded="false"
+                aria-controls="m-tools"
+              >
                 {T("Tools")} <Icon name="down" />
               </button>
               <div class="mega cols" id="m-tools" style="--cols: 3" hidden>
                 {apps.map((a) => {
                   const list = toolsOf(a, lang);
                   return (
-                    <div class="mgrp hue" style={`--acc-l:${a.accent.light};--acc-d:${a.accent.dark};--acc-soft-l:${a.accent.softLight};--acc-soft-d:${a.accent.softDark}`}>
+                    <div
+                      class="mgrp hue"
+                      style={`--acc-l:${a.accent.light};--acc-d:${a.accent.dark};--acc-soft-l:${a.accent.softLight};--acc-soft-d:${a.accent.softDark}`}
+                    >
                       <h6>{a.short}</h6>
                       {list.slice(0, 3).map((e) => (
                         <a class="mi" href={e.href}>
-                          <span class="tile"><Icon name={e.tool.icon} /></span>
+                          <span class="tile">
+                            <Icon name={e.tool.icon} />
+                          </span>
                           <span>
                             <strong>{e.tool.name}</strong>
                             <small>{e.tool.blurb}</small>
@@ -164,7 +224,10 @@ const cols = Array.from({ length: Math.ceil(apps.length / 2) }, (_, i) => [
                         </a>
                       ))}
                       <a class="mi-more" href={link(a.id, "/tools", lang)}>
-                        {T("All {n} in {app}", { n: list.length, app: a.brand.join("") })}
+                        {T("All {n} in {app}", {
+                          n: list.length,
+                          app: a.brand.join(""),
+                        })}
                       </a>
                     </div>
                   );
@@ -177,22 +240,43 @@ const cols = Array.from({ length: Math.ceil(apps.length / 2) }, (_, i) => [
               </div>
             </div>
             <div class="menu">
-              <button type="button" aria-expanded="false" aria-controls="m-apps">
+              <button
+                type="button"
+                aria-expanded="false"
+                aria-controls="m-apps"
+              >
                 {T("Apps")} <Icon name="down" />
               </button>
               <div class="mega apps-menu" id="m-apps" hidden>
                 <div class="apps-head">
                   <h6>{T("kmra apps")}</h6>
                   <span class="apps-more">
-                    <a href={L("/tools")}>{T("All {n} tools", { n: totalTools })}</a>
+                    <a href={L("/tools")}>
+                      {T("All {n} tools", { n: totalTools })}
+                    </a>
                   </span>
                 </div>
                 {apps.map((a) => (
-                  <a class="app-item" href={link(a.id, "/", lang)} style={`--app:${a.accent.light}`}>
-                    <span class="app-item-mark" set:html={markSvg(a.id, a.accent.light)} aria-hidden="true" />
+                  <a
+                    class="app-item"
+                    href={link(a.id, "/", lang)}
+                    style={`--app:${a.accent.light}`}
+                  >
+                    <span
+                      class="app-item-mark"
+                      set:html={markSvg(a.id, a.accent.light)}
+                      aria-hidden="true"
+                    />
                     <span class="app-item-text">
-                      <span class="app-item-name"><span set:html={`<span style="color:var(--app)">${a.brand[0]}</span>${a.brand[1]}`} /></span>
-                      <small>{a.tagline.split(/[.।]/)[0]}{lang === "bn" ? "।" : "."}</small>
+                      <span class="app-item-name">
+                        <span
+                          set:html={`<span style="color:var(--app)">${a.brand[0]}</span>${a.brand[1]}`}
+                        />
+                      </span>
+                      <small>
+                        {a.tagline.split(/[.।]/)[0]}
+                        {lang === "bn" ? "।" : "."}
+                      </small>
                       <span class="app-item-meta">
                         <span>{T("{n} tools", { n: toolsOf(a).length })}</span>
                         <span>{a.id}.kmra.dev</span>
@@ -202,23 +286,45 @@ const cols = Array.from({ length: Math.ceil(apps.length / 2) }, (_, i) => [
                 ))}
               </div>
             </div>
-            <a class="navlink" href={L("/privacy")}>{T("Privacy")}</a>
-            <a class="navlink" href={L("/about")}>{T("About")}</a>
+            <a class="navlink" href={L("/privacy")}>
+              {T("Privacy")}
+            </a>
+            <a class="navlink" href={L("/about")}>
+              {T("About")}
+            </a>
           </nav>
           <div class="right">
-            <button class="kbtn" type="button" data-palette aria-label={T("Search tools")}>
+            <button
+              class="kbtn"
+              type="button"
+              data-palette
+              aria-label={T("Search tools")}
+            >
               <Icon name="search" />
               <span>{T("Search {n} tools", { n: totalTools })}</span>
               <kbd data-keys="mod+K">⌘K</kbd>
             </button>
             <div class="menu lang">
-              <button type="button" class="iconbtn" aria-expanded="false" aria-controls="m-lang" aria-label={T("Language")} title={T("Language")}>
+              <button
+                type="button"
+                class="iconbtn"
+                aria-expanded="false"
+                aria-controls="m-lang"
+                aria-label={T("Language")}
+                title={T("Language")}
+              >
                 <Icon name="languages" />
               </button>
               <div class="mega single lang-menu" id="m-lang" hidden>
                 <h6>{T("Language")}</h6>
                 {alternates.map((l) => (
-                  <a class="mi" href={l.href} hreflang={l.code} lang={l.code} aria-current={l.current ? "true" : undefined}>
+                  <a
+                    class="mi"
+                    href={l.href}
+                    hreflang={l.code}
+                    lang={l.code}
+                    aria-current={l.current ? "true" : undefined}
+                  >
                     <span>
                       <strong>{l.native}</strong>
                       {l.native !== l.name && <small>{l.name}</small>}
@@ -228,11 +334,23 @@ const cols = Array.from({ length: Math.ceil(apps.length / 2) }, (_, i) => [
                 ))}
               </div>
             </div>
-            <button class="iconbtn" type="button" id="theme-toggle" aria-label={T("Switch light or dark theme")}>
+            <button
+              class="iconbtn"
+              type="button"
+              id="theme-toggle"
+              aria-label={T("Switch light or dark theme")}
+            >
               <Icon name="moon" class="ico theme-moon" />
               <Icon name="sun" class="ico theme-sun" />
             </button>
-            <button class="iconbtn burger" type="button" id="burger" aria-label={T("Menu")} aria-expanded="false" aria-controls="drawer">
+            <button
+              class="iconbtn burger"
+              type="button"
+              id="burger"
+              aria-label={T("Menu")}
+              aria-expanded="false"
+              aria-controls="drawer"
+            >
               <Icon name="menu" />
             </button>
           </div>
@@ -240,7 +358,14 @@ const cols = Array.from({ length: Math.ceil(apps.length / 2) }, (_, i) => [
         <nav class="drawer" id="drawer" aria-label={T("Menu")} hidden>
           <div class="drawer-langs">
             {alternates.map((l) => (
-              <a href={l.href} hreflang={l.code} lang={l.code} aria-current={l.current ? "true" : undefined}>{l.native}</a>
+              <a
+                href={l.href}
+                hreflang={l.code}
+                lang={l.code}
+                aria-current={l.current ? "true" : undefined}
+              >
+                {l.native}
+              </a>
             ))}
           </div>
           <h6>{T("kmra apps")}</h6>
@@ -248,10 +373,14 @@ const cols = Array.from({ length: Math.ceil(apps.length / 2) }, (_, i) => [
             <a href={link(a.id, "/", lang)}>
               <span class="appdot" style={`background:${a.accent.light}`} />
               {a.brand.join("")}
-              <small class="muted">{T("{n} tools", { n: toolsOf(a).length })}</small>
+              <small class="muted">
+                {T("{n} tools", { n: toolsOf(a).length })}
+              </small>
             </a>
           ))}
-          <a class="drawer-all" href={L("/tools")}>{T("All {n} tools", { n: totalTools })}</a>
+          <a class="drawer-all" href={L("/tools")}>
+            {T("All {n} tools", { n: totalTools })}
+          </a>
           <a href={L("/privacy")}>{T("Privacy")}</a>
           <a href={L("/about")}>{T("About")}</a>
         </nav>
@@ -267,12 +396,28 @@ const cols = Array.from({ length: Math.ceil(apps.length / 2) }, (_, i) => [
             <a href={L("/")} aria-label={T("kmra.dev home")}>
               <span class="wm lg">
                 <span class="wm-mark" set:html={mark} aria-hidden="true" />
-                <span class="wm-text"><span class="wm-b">kmra</span><span class="hub-dot">.dev</span></span>
+                <span class="wm-text">
+                  <span class="wm-b">kmra</span>
+                  <span class="hub-dot">.dev</span>
+                </span>
               </span>
             </a>
-            <p>{T("Small tools for everyday files. Everything runs in your browser, so your files stay on your device.")}</p>
-            <a class="fmail" href={`mailto:${CONTACT.email}`}>{CONTACT.email}</a>
-            <a class="fmail" href={CONTACT.source} rel="noopener" target="_blank">{T("Source code on GitHub")}</a>
+            <p>
+              {T(
+                "Small tools for everyday files. Everything runs in your browser, so your files stay on your device.",
+              )}
+            </p>
+            <a class="fmail" href={`mailto:${CONTACT.email}`}>
+              {CONTACT.email}
+            </a>
+            <a
+              class="fmail"
+              href={CONTACT.source}
+              rel="noopener"
+              target="_blank"
+            >
+              {T("Source code on GitHub")}
+            </a>
           </div>
           {cols.map((pair) => (
             <div class="hub-fcol">
@@ -280,12 +425,20 @@ const cols = Array.from({ length: Math.ceil(apps.length / 2) }, (_, i) => [
                 a ? (
                   <div class="hub-fapp">
                     <strong>
-                      <a class="fapp-title" href={link(a.id, "/", lang)} set:html={`<span style="color:${a.accent.light}">${a.brand[0]}</span>${a.brand[1]}`} />
+                      <a
+                        class="fapp-title"
+                        href={link(a.id, "/", lang)}
+                        set:html={`<span style="color:${a.accent.light}">${a.brand[0]}</span>${a.brand[1]}`}
+                      />
                     </strong>
                     <ul>
-                      {toolsOf(a, lang).slice(0, 2).map((e) => (
-                        <li><a href={e.href}>{e.tool.name}</a></li>
-                      ))}
+                      {toolsOf(a, lang)
+                        .slice(0, 2)
+                        .map((e) => (
+                          <li>
+                            <a href={e.href}>{e.tool.name}</a>
+                          </li>
+                        ))}
                     </ul>
                   </div>
                 ) : (
@@ -300,17 +453,26 @@ const cols = Array.from({ length: Math.ceil(apps.length / 2) }, (_, i) => [
         <div class="fbottom">
           <span>
             © {year} kmra.dev ·{" "}
-            <a href={CONTACT.source} rel="noopener" target="_blank">{T("Open source")}</a>
+            <a href={CONTACT.source} rel="noopener" target="_blank">
+              {T("Open source")}
+            </a>
           </span>
           <span class="flangs">
             <Icon name="languages" />
             {alternates.map((l) => (
-              <a href={l.href} hreflang={l.code} lang={l.code} aria-current={l.current ? "true" : undefined}>{l.native}</a>
+              <a
+                href={l.href}
+                hreflang={l.code}
+                lang={l.code}
+                aria-current={l.current ? "true" : undefined}
+              >
+                {l.native}
+              </a>
             ))}
           </span>
           <span>
-            <a href={L("/privacy")}>{T("Privacy")}</a> ·{" "}
-            {T("Made by")} <a href={CONTACT.portfolio}>{CONTACT.maker}</a>
+            <a href={L("/privacy")}>{T("Privacy")}</a> · {T("Made by")}{" "}
+            <a href={CONTACT.portfolio}>{CONTACT.maker}</a>
           </span>
         </div>
       </div>
@@ -319,8 +481,13 @@ const cols = Array.from({ length: Math.ceil(apps.length / 2) }, (_, i) => [
     <Shortcuts client:idle lang={lang} />
     <Analytics />
     <script is:inline>
-      if ("serviceWorker" in navigator && !/^(localhost|127\.0\.0\.1)$/.test(location.hostname)) {
-        addEventListener("load", () => navigator.serviceWorker.register("/sw.js").catch(() => {}));
+      if (
+        "serviceWorker" in navigator &&
+        !/^(localhost|127\.0\.0\.1)$/.test(location.hostname)
+      ) {
+        addEventListener("load", () =>
+          navigator.serviceWorker.register("/sw.js").catch(() => {}),
+        );
       }
     </script>
     <script>
@@ -328,13 +495,18 @@ const cols = Array.from({ length: Math.ceil(apps.length / 2) }, (_, i) => [
       document.querySelectorAll<HTMLElement>("[data-keys]").forEach((el) => {
         el.textContent = formatKeys(el.dataset.keys ?? "");
       });
-      const menus = () => [...document.querySelectorAll<HTMLButtonElement>(".menu > button")];
+      const menus = () => [
+        ...document.querySelectorAll<HTMLButtonElement>(".menu > button"),
+      ];
       function setMenu(btn: HTMLButtonElement, open: boolean) {
         btn.setAttribute("aria-expanded", String(open));
-        const panel = document.getElementById(btn.getAttribute("aria-controls") ?? "");
+        const panel = document.getElementById(
+          btn.getAttribute("aria-controls") ?? "",
+        );
         if (panel) panel.hidden = !open;
       }
-      const closeAll = (except?: Element) => menus().forEach((b) => b !== except && setMenu(b, false));
+      const closeAll = (except?: Element) =>
+        menus().forEach((b) => b !== except && setMenu(b, false));
       document.addEventListener("click", (e) => {
         const target = e.target as Element;
         const btn = target.closest<HTMLButtonElement>(".menu > button");
@@ -345,7 +517,10 @@ const cols = Array.from({ length: Math.ceil(apps.length / 2) }, (_, i) => [
         }
         if (!target.closest(".mega")) closeAll();
       });
-      document.addEventListener("keydown", (e) => e.key === "Escape" && closeAll());
+      document.addEventListener(
+        "keydown",
+        (e) => e.key === "Escape" && closeAll(),
+      );
       const burger = document.getElementById("burger")!;
       const drawer = document.getElementById("drawer")!;
       burger.addEventListener("click", () => {
@@ -354,23 +529,41 @@ const cols = Array.from({ length: Math.ceil(apps.length / 2) }, (_, i) => [
       });
       document.getElementById("theme-toggle")!.addEventListener("click", () => {
         const root = document.documentElement;
-        const dark = root.dataset.theme ? root.dataset.theme === "dark" : matchMedia("(prefers-color-scheme: dark)").matches;
+        const dark = root.dataset.theme
+          ? root.dataset.theme === "dark"
+          : matchMedia("(prefers-color-scheme: dark)").matches;
         root.dataset.theme = dark ? "light" : "dark";
-        try { localStorage.setItem("kmra-theme", root.dataset.theme); } catch {}
+        try {
+          localStorage.setItem("kmra-theme", root.dataset.theme);
+        } catch {}
       });
-      document.querySelectorAll("[data-palette]").forEach((b) =>
-        b.addEventListener("click", () => window.dispatchEvent(new CustomEvent("kmra:palette"))),
-      );
+      document
+        .querySelectorAll("[data-palette]")
+        .forEach((b) =>
+          b.addEventListener("click", () =>
+            window.dispatchEvent(new CustomEvent("kmra:palette")),
+          ),
+        );
     </script>
   </body>
 </html>
 
 <style is:global>
-  .theme-sun { display: none; }
-  :root[data-theme="dark"] .theme-sun { display: block; }
-  :root[data-theme="dark"] .theme-moon { display: none; }
+  .theme-sun {
+    display: none;
+  }
+  :root[data-theme="dark"] .theme-sun {
+    display: block;
+  }
+  :root[data-theme="dark"] .theme-moon {
+    display: none;
+  }
   @media (prefers-color-scheme: dark) {
-    :root:not([data-theme="light"]) .theme-sun { display: block; }
-    :root:not([data-theme="light"]) .theme-moon { display: none; }
+    :root:not([data-theme="light"]) .theme-sun {
+      display: block;
+    }
+    :root:not([data-theme="light"]) .theme-moon {
+      display: none;
+    }
   }
 </style>

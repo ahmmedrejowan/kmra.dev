@@ -19,7 +19,10 @@ const hasFfmpeg = (() => {
 test.beforeEach(() => test.skip(!hasFfmpeg, "needs ffmpeg to check outputs"));
 test.use({
   launchOptions: {
-    args: ["--use-fake-ui-for-media-stream", "--use-fake-device-for-media-stream"],
+    args: [
+      "--use-fake-ui-for-media-stream",
+      "--use-fake-device-for-media-stream",
+    ],
   },
 });
 
@@ -29,15 +32,33 @@ function probe(buf: Buffer, ext: string) {
   const p = join(dir, `rec${n++}.${ext}`);
   writeFileSync(p, buf);
   const j = JSON.parse(
-    execFileSync("ffprobe", ["-v", "error", "-show_format", "-show_streams", "-of", "json", p]).toString(),
-  ) as { format: { duration: string }; streams: { codec_type: string; codec_name: string }[] };
+    execFileSync("ffprobe", [
+      "-v",
+      "error",
+      "-show_format",
+      "-show_streams",
+      "-of",
+      "json",
+      p,
+    ]).toString(),
+  ) as {
+    format: { duration: string };
+    streams: { codec_type: string; codec_name: string }[];
+  };
   return {
     audio: j.streams.find((s) => s.codec_type === "audio"),
     dur: Number(j.format.duration),
   };
 }
-const pick = (page: import("@playwright/test").Page, label: string, option: string) =>
-  page.getByRole("group", { name: label }).getByRole("button", { name: option }).click();
+const pick = (
+  page: import("@playwright/test").Page,
+  label: string,
+  option: string,
+) =>
+  page
+    .getByRole("group", { name: label })
+    .getByRole("button", { name: option })
+    .click();
 
 test("records the (fake) microphone, then saves MP3 and WAV", async ({
   page,

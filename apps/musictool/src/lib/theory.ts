@@ -27,10 +27,13 @@ const ACC = { "-2": "𝄫", "-1": "♭", "0": "", "1": "♯", "2": "𝄪" } as R
   string,
   string
 >;
-const ACC_ASCII = { "-2": "bb", "-1": "b", "0": "", "1": "#", "2": "##" } as Record<
-  string,
-  string
->;
+const ACC_ASCII = {
+  "-2": "bb",
+  "-1": "b",
+  "0": "",
+  "1": "#",
+  "2": "##",
+} as Record<string, string>;
 
 /** "F♯" (or "F#" with ascii) */
 export function noteName(n: Spelled, ascii = false): string {
@@ -82,8 +85,34 @@ export const ROOTS: Spelled[] = [
 ].map((s) => parseNote(s)!);
 
 /** Chromatic names for the tuner and pickers, sharps by default. */
-export const SHARPS = ["C", "C♯", "D", "D♯", "E", "F", "F♯", "G", "G♯", "A", "A♯", "B"];
-export const FLATS = ["C", "D♭", "D", "E♭", "E", "F", "G♭", "G", "A♭", "A", "B♭", "B"];
+export const SHARPS = [
+  "C",
+  "C♯",
+  "D",
+  "D♯",
+  "E",
+  "F",
+  "F♯",
+  "G",
+  "G♯",
+  "A",
+  "A♯",
+  "B",
+];
+export const FLATS = [
+  "C",
+  "D♭",
+  "D",
+  "E♭",
+  "E",
+  "F",
+  "G♭",
+  "G",
+  "A♭",
+  "A",
+  "B♭",
+  "B",
+];
 
 /* ---------- pitch and frequency ---------- */
 
@@ -165,7 +194,18 @@ export function degreeLabel([steps, semis]: Iv): string {
   const octave = Math.floor(steps / 7);
   const natural = NATURAL[steps % 7]! + 12 * octave;
   const d = semis - natural;
-  const acc = d === 0 ? "" : d === -1 ? "♭" : d === 1 ? "♯" : d === -2 ? "𝄫" : d === 2 ? "𝄪" : "";
+  const acc =
+    d === 0
+      ? ""
+      : d === -1
+        ? "♭"
+        : d === 1
+          ? "♯"
+          : d === -2
+            ? "𝄫"
+            : d === 2
+              ? "𝄪"
+              : "";
   return acc + String(steps + 1);
 }
 
@@ -201,7 +241,12 @@ export const CHORDS: ChordType[] = [
   { id: "m7", symbol: "m7", name: "Minor 7th", iv: [R, m3, P5, m7] },
   { id: "sus2", symbol: "sus2", name: "Suspended 2nd", iv: [R, M2, P5] },
   { id: "sus4", symbol: "sus4", name: "Suspended 4th", iv: [R, P4, P5] },
-  { id: "7sus4", symbol: "7sus4", name: "7th suspended 4th", iv: [R, P4, P5, m7] },
+  {
+    id: "7sus4",
+    symbol: "7sus4",
+    name: "7th suspended 4th",
+    iv: [R, P4, P5, m7],
+  },
   { id: "dim", symbol: "dim", name: "Diminished", iv: [R, m3, d5] },
   { id: "dim7", symbol: "dim7", name: "Diminished 7th", iv: [R, m3, d5, d7] },
   { id: "m7b5", symbol: "m7♭5", name: "Half-diminished", iv: [R, m3, d5, m7] },
@@ -215,7 +260,8 @@ export const CHORDS: ChordType[] = [
   { id: "5", symbol: "5", name: "Power chord", iv: [R, P5] },
 ];
 
-export const chordType = (id: string) => CHORDS.find((c) => c.id === id) ?? CHORDS[0]!;
+export const chordType = (id: string) =>
+  CHORDS.find((c) => c.id === id) ?? CHORDS[0]!;
 
 export interface Chord {
   root: Spelled;
@@ -247,36 +293,77 @@ export interface ScaleType {
   iv: Iv[];
 }
 
-const steps = (semis: number[], st: number[]): Iv[] => semis.map((s, i) => [st[i]!, s] as const);
+const steps = (semis: number[], st: number[]): Iv[] =>
+  semis.map((s, i) => [st[i]!, s] as const);
 const SEVEN = [0, 1, 2, 3, 4, 5, 6];
 
 export const SCALES: ScaleType[] = [
   { id: "major", name: "Major", iv: steps([0, 2, 4, 5, 7, 9, 11], SEVEN) },
-  { id: "minor", name: "Natural minor", iv: steps([0, 2, 3, 5, 7, 8, 10], SEVEN) },
-  { id: "harmonic-minor", name: "Harmonic minor", iv: steps([0, 2, 3, 5, 7, 8, 11], SEVEN) },
-  { id: "melodic-minor", name: "Melodic minor", iv: steps([0, 2, 3, 5, 7, 9, 11], SEVEN) },
-  { id: "major-pentatonic", name: "Major pentatonic", iv: steps([0, 2, 4, 7, 9], [0, 1, 2, 4, 5]) },
-  { id: "minor-pentatonic", name: "Minor pentatonic", iv: steps([0, 3, 5, 7, 10], [0, 2, 3, 4, 6]) },
-  { id: "blues", name: "Blues", iv: steps([0, 3, 5, 6, 7, 10], [0, 2, 3, 4, 4, 6]) },
+  {
+    id: "minor",
+    name: "Natural minor",
+    iv: steps([0, 2, 3, 5, 7, 8, 10], SEVEN),
+  },
+  {
+    id: "harmonic-minor",
+    name: "Harmonic minor",
+    iv: steps([0, 2, 3, 5, 7, 8, 11], SEVEN),
+  },
+  {
+    id: "melodic-minor",
+    name: "Melodic minor",
+    iv: steps([0, 2, 3, 5, 7, 9, 11], SEVEN),
+  },
+  {
+    id: "major-pentatonic",
+    name: "Major pentatonic",
+    iv: steps([0, 2, 4, 7, 9], [0, 1, 2, 4, 5]),
+  },
+  {
+    id: "minor-pentatonic",
+    name: "Minor pentatonic",
+    iv: steps([0, 3, 5, 7, 10], [0, 2, 3, 4, 6]),
+  },
+  {
+    id: "blues",
+    name: "Blues",
+    iv: steps([0, 3, 5, 6, 7, 10], [0, 2, 3, 4, 4, 6]),
+  },
   { id: "ionian", name: "Ionian", iv: steps([0, 2, 4, 5, 7, 9, 11], SEVEN) },
   { id: "dorian", name: "Dorian", iv: steps([0, 2, 3, 5, 7, 9, 10], SEVEN) },
-  { id: "phrygian", name: "Phrygian", iv: steps([0, 1, 3, 5, 7, 8, 10], SEVEN) },
+  {
+    id: "phrygian",
+    name: "Phrygian",
+    iv: steps([0, 1, 3, 5, 7, 8, 10], SEVEN),
+  },
   { id: "lydian", name: "Lydian", iv: steps([0, 2, 4, 6, 7, 9, 11], SEVEN) },
-  { id: "mixolydian", name: "Mixolydian", iv: steps([0, 2, 4, 5, 7, 9, 10], SEVEN) },
+  {
+    id: "mixolydian",
+    name: "Mixolydian",
+    iv: steps([0, 2, 4, 5, 7, 9, 10], SEVEN),
+  },
   { id: "aeolian", name: "Aeolian", iv: steps([0, 2, 3, 5, 7, 8, 10], SEVEN) },
   { id: "locrian", name: "Locrian", iv: steps([0, 1, 3, 5, 6, 8, 10], SEVEN) },
   {
     id: "chromatic",
     name: "Chromatic",
-    iv: steps([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11], [0, 0, 1, 1, 2, 3, 3, 4, 4, 5, 5, 6]),
+    iv: steps(
+      [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
+      [0, 0, 1, 1, 2, 3, 3, 4, 4, 5, 5, 6],
+    ),
   },
 ];
 
-export const scaleType = (id: string) => SCALES.find((s) => s.id === id) ?? SCALES[0]!;
+export const scaleType = (id: string) =>
+  SCALES.find((s) => s.id === id) ?? SCALES[0]!;
 
 /** Flat keys spell the chromatic scale with flats */
-const usesFlats = (root: Spelled) => root.a < 0 || (root.l === 3 && root.a === 0);
-const CHROMATIC_FLAT = steps([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11], [0, 1, 1, 2, 2, 3, 4, 4, 5, 5, 6, 6]);
+const usesFlats = (root: Spelled) =>
+  root.a < 0 || (root.l === 3 && root.a === 0);
+const CHROMATIC_FLAT = steps(
+  [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
+  [0, 1, 1, 2, 2, 3, 4, 4, 5, 5, 6, 6],
+);
 
 export interface Scale {
   root: Spelled;
@@ -289,7 +376,8 @@ export interface Scale {
 }
 
 export function scale(root: Spelled, type: ScaleType): Scale {
-  const iv = type.id === "chromatic" && usesFlats(root) ? CHROMATIC_FLAT : type.iv;
+  const iv =
+    type.id === "chromatic" && usesFlats(root) ? CHROMATIC_FLAT : type.iv;
   const notes = iv.map((i) => transpose(root, i));
   return {
     root,
@@ -326,7 +414,12 @@ export const INSTRUMENTS: Instrument[] = [
     tunings: [
       { id: "standard", name: "Standard", strings: [40, 45, 50, 55, 59, 64] },
       { id: "drop-d", name: "Drop D", strings: [38, 45, 50, 55, 59, 64] },
-      { id: "half-step-down", name: "Half-step down", strings: [39, 44, 49, 54, 58, 63], flats: true },
+      {
+        id: "half-step-down",
+        name: "Half-step down",
+        strings: [39, 44, 49, 54, 58, 63],
+        flats: true,
+      },
       { id: "open-g", name: "Open G", strings: [38, 43, 50, 55, 59, 62] },
       { id: "open-d", name: "Open D", strings: [38, 45, 50, 54, 57, 62] },
       { id: "dadgad", name: "DADGAD", strings: [38, 45, 50, 55, 57, 62] },
@@ -346,16 +439,45 @@ export const INSTRUMENTS: Instrument[] = [
     name: "Bass",
     tunings: [
       { id: "4-string", name: "4 strings (EADG)", strings: [28, 33, 38, 43] },
-      { id: "5-string", name: "5 strings (BEADG)", strings: [23, 28, 33, 38, 43] },
+      {
+        id: "5-string",
+        name: "5 strings (BEADG)",
+        strings: [23, 28, 33, 38, 43],
+      },
     ],
   },
-  { id: "violin", name: "Violin", tunings: [{ id: "standard", name: "Standard (GDAE)", strings: [55, 62, 69, 76] }] },
-  { id: "viola", name: "Viola", tunings: [{ id: "standard", name: "Standard (CGDA)", strings: [48, 55, 62, 69] }] },
-  { id: "cello", name: "Cello", tunings: [{ id: "standard", name: "Standard (CGDA)", strings: [36, 43, 50, 57] }] },
-  { id: "mandolin", name: "Mandolin", tunings: [{ id: "standard", name: "Standard (GDAE)", strings: [55, 62, 69, 76] }] },
+  {
+    id: "violin",
+    name: "Violin",
+    tunings: [
+      { id: "standard", name: "Standard (GDAE)", strings: [55, 62, 69, 76] },
+    ],
+  },
+  {
+    id: "viola",
+    name: "Viola",
+    tunings: [
+      { id: "standard", name: "Standard (CGDA)", strings: [48, 55, 62, 69] },
+    ],
+  },
+  {
+    id: "cello",
+    name: "Cello",
+    tunings: [
+      { id: "standard", name: "Standard (CGDA)", strings: [36, 43, 50, 57] },
+    ],
+  },
+  {
+    id: "mandolin",
+    name: "Mandolin",
+    tunings: [
+      { id: "standard", name: "Standard (GDAE)", strings: [55, 62, 69, 76] },
+    ],
+  },
 ];
 
-export const instrument = (id: string) => INSTRUMENTS.find((i) => i.id === id) ?? INSTRUMENTS[0]!;
+export const instrument = (id: string) =>
+  INSTRUMENTS.find((i) => i.id === id) ?? INSTRUMENTS[0]!;
 
 /** The string closest to a frequency (in cents), or null when there are no strings */
 export function nearestString(freq: number, strings: number[], a4 = 440) {

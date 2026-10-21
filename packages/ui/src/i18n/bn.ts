@@ -261,32 +261,38 @@ export const BN: Record<string, string> = {
   "PNG is lossless, so there's no quality setting. Pick JPEG or WebP for smaller files.":
     "PNG লসলেস, তাই মানের সেটিং নেই। ছোট ফাইলের জন্য JPEG বা WebP বেছে নিন।",
   "Exact size": "নির্দিষ্ট সাইজ",
-  "This kind of file is saved again from its pixels, so all of its hidden data goes.": "এই ধরনের ফাইল পিক্সেল থেকে আবার সেভ হয়, তাই এর সব লুকানো তথ্য চলে যায়।",
+  "This kind of file is saved again from its pixels, so all of its hidden data goes.":
+    "এই ধরনের ফাইল পিক্সেল থেকে আবার সেভ হয়, তাই এর সব লুকানো তথ্য চলে যায়।",
   "Remove all": "সব সরান",
   "Sensitive only": "শুধু স্পর্শকাতর",
   "Select all": "সব বাছুন",
   "Unselect all": "কোনোটি না",
   "Choose fields to remove": "কোন তথ্য সরাবেন বেছে নিন",
-  "Everything goes except the orientation and colour profile, which keep the picture looking the same.": "ঘোরানো দিক আর রঙের প্রোফাইল ছাড়া সব সরে যায়; ওই দুটি ছবিকে আগের মতো দেখায়।",
-  "Removes what says where, when and who: location, dates, names, serial numbers and the like.": "যা জানায় কোথায়, কখন আর কে, সেগুলো সরায়: লোকেশন, তারিখ, নাম, সিরিয়াল নম্বর ইত্যাদি।",
-  "Tick what to remove; unticked fields stay in the file.": "যা সরাবেন তাতে টিক দিন; টিক না দেওয়া তথ্য ফাইলে থেকে যায়।",
+  "Everything goes except the orientation and colour profile, which keep the picture looking the same.":
+    "ঘোরানো দিক আর রঙের প্রোফাইল ছাড়া সব সরে যায়; ওই দুটি ছবিকে আগের মতো দেখায়।",
+  "Removes what says where, when and who: location, dates, names, serial numbers and the like.":
+    "যা জানায় কোথায়, কখন আর কে, সেগুলো সরায়: লোকেশন, তারিখ, নাম, সিরিয়াল নম্বর ইত্যাদি।",
+  "Tick what to remove; unticked fields stay in the file.":
+    "যা সরাবেন তাতে টিক দিন; টিক না দেওয়া তথ্য ফাইলে থেকে যায়।",
   "Removing {n} of {t} fields": "{t}টির মধ্যে {n}টি তথ্য সরানো হচ্ছে",
   "People and rights": "মানুষ ও স্বত্ব",
-  "Device": "ডিভাইস",
+  Device: "ডিভাইস",
   "Capture settings": "ছবি তোলার সেটিংস",
   "Caption and credits (IPTC)": "ক্যাপশন আর ক্রেডিট (IPTC)",
   "{n} of {t}": "{t}টির মধ্যে {n}টি",
   "Says where, when or who": "কোথায়, কখন বা কে তা জানায়",
-  "Sensitive": "স্পর্শকাতর",
-  "No hidden data in this photo. The download is the same file.": "এই ছবিতে কোনো লুকানো তথ্য নেই। ডাউনলোড একই ফাইল।",
+  Sensitive: "স্পর্শকাতর",
+  "No hidden data in this photo. The download is the same file.":
+    "এই ছবিতে কোনো লুকানো তথ্য নেই। ডাউনলোড একই ফাইল।",
   "Camera maker": "ক্যামেরার নির্মাতা",
   "Lens maker": "লেন্সের নির্মাতা",
-  "Computer": "কম্পিউটার",
+  Computer: "কম্পিউটার",
   "Lens serial number": "লেন্সের সিরিয়াল নম্বর",
-  "Modified": "বদলানো হয়েছে",
-  "Maker notes (the camera's private data)": "মেকার নোট (ক্যামেরার নিজস্ব তথ্য)",
+  Modified: "বদলানো হয়েছে",
+  "Maker notes (the camera's private data)":
+    "মেকার নোট (ক্যামেরার নিজস্ব তথ্য)",
   "Unique image ID": "ছবির অনন্য আইডি",
-  "Altitude": "উচ্চতা",
+  Altitude: "উচ্চতা",
   "Latitude (north or south)": "অক্ষাংশ (উত্তর বা দক্ষিণ)",
   "Longitude (east or west)": "দ্রাঘিমাংশ (পূর্ব বা পশ্চিম)",
   "Altitude reference": "উচ্চতার ভিত্তি",
@@ -309,8 +315,10 @@ export const BN: Record<string, string> = {
   "Saved again from the pixels, so none of the hidden data comes along.":
     "পিক্সেল থেকে আবার সেভ করা হয়েছে, তাই লুকানো তথ্যের কিছুই সঙ্গে আসে না।",
   "Removed: {list}": "সরানো হয়েছে: {list}",
-  "And {n} more camera details, such as exposure and ISO.": "আর এক্সপোজার, ISO-র মতো আরও {n}টি ক্যামেরার তথ্য।",
-  "{n} camera details, such as exposure and ISO.": "এক্সপোজার, ISO-র মতো {n}টি ক্যামেরার তথ্য।",
+  "And {n} more camera details, such as exposure and ISO.":
+    "আর এক্সপোজার, ISO-র মতো আরও {n}টি ক্যামেরার তথ্য।",
+  "{n} camera details, such as exposure and ISO.":
+    "এক্সপোজার, ISO-র মতো {n}টি ক্যামেরার তথ্য।",
   "No location, camera or date found. The download is still saved without any hidden data.":
     "কোনো লোকেশন, ক্যামেরা বা তারিখ পাওয়া যায়নি। তবুও ডাউনলোড কোনো লুকানো তথ্য ছাড়াই সেভ হয়।",
   Place: "জায়গা",
@@ -336,14 +344,22 @@ export const BN: Record<string, string> = {
   BMP: "BMP",
   TIFF: "TIFF",
   ICO: "ICO",
-  "Photos at small sizes. No transparency.": "ছোট সাইজে ছবির জন্য। স্বচ্ছতা থাকে না।",
-  "Sharp edges and transparency. Bigger files.": "ধারালো কিনারা আর স্বচ্ছতা। ফাইল বড় হয়।",
-  "Smaller than JPEG and PNG, and keeps transparency.": "JPEG আর PNG-র চেয়ে ছোট, স্বচ্ছতাও থাকে।",
-  "The smallest files. Takes a little longer to make.": "সবচেয়ে ছোট ফাইল। বানাতে একটু বেশি সময় লাগে।",
-  "Up to 256 colours. For simple graphics.": "সর্বোচ্চ ২৫৬টি রং। সাধারণ গ্রাফিক্সের জন্য।",
-  "No compression, so very big files. No transparency.": "কোনো কম্প্রেশন নেই, তাই ফাইল অনেক বড়। স্বচ্ছতা থাকে না।",
-  "Uncompressed, for printing and archives.": "কম্প্রেশন ছাড়া, প্রিন্ট আর সংরক্ষণের জন্য।",
-  "An icon for Windows or a website, up to 256 × 256.": "উইন্ডোজ বা ওয়েবসাইটের আইকন, সর্বোচ্চ ২৫৬ × ২৫৬।",
+  "Photos at small sizes. No transparency.":
+    "ছোট সাইজে ছবির জন্য। স্বচ্ছতা থাকে না।",
+  "Sharp edges and transparency. Bigger files.":
+    "ধারালো কিনারা আর স্বচ্ছতা। ফাইল বড় হয়।",
+  "Smaller than JPEG and PNG, and keeps transparency.":
+    "JPEG আর PNG-র চেয়ে ছোট, স্বচ্ছতাও থাকে।",
+  "The smallest files. Takes a little longer to make.":
+    "সবচেয়ে ছোট ফাইল। বানাতে একটু বেশি সময় লাগে।",
+  "Up to 256 colours. For simple graphics.":
+    "সর্বোচ্চ ২৫৬টি রং। সাধারণ গ্রাফিক্সের জন্য।",
+  "No compression, so very big files. No transparency.":
+    "কোনো কম্প্রেশন নেই, তাই ফাইল অনেক বড়। স্বচ্ছতা থাকে না।",
+  "Uncompressed, for printing and archives.":
+    "কম্প্রেশন ছাড়া, প্রিন্ট আর সংরক্ষণের জন্য।",
+  "An icon for Windows or a website, up to 256 × 256.":
+    "উইন্ডোজ বা ওয়েবসাইটের আইকন, সর্বোচ্চ ২৫৬ × ২৫৬।",
   "Already under {n} KB.": "আগে থেকেই {n} KB-র নিচে।",
   "Your file": "আপনার ফাইল",
   "It's already smaller than these settings would make it, so you get your original file. Lower the quality or pick a size to go smaller.":
@@ -799,7 +815,8 @@ export const BN: Record<string, string> = {
     "লিখতে লিখতেই ফলাফল দেখা যায়, কপি বা সেভ করার জন্য তৈরি।",
   "Every kmra site sends a security policy that stops the page from contacting any other server. Even if there were a bug, your browser would refuse to send what you type anywhere.":
     "প্রতিটি kmra সাইট একটি নিরাপত্তা নীতি পাঠায়, যা পেজকে অন্য কোনো সার্ভারের সঙ্গে যোগাযোগ করতে দেয় না। কোনো ত্রুটি থাকলেও আপনার ব্রাউজার আপনি যা লেখেন তা কোথাও পাঠাতে দেবে না।",
-  "Use any tool. Nothing is sent while it works.": "যেকোনো টুল ব্যবহার করুন। কাজ চলার সময় কিছুই পাঠানো হয় না।",
+  "Use any tool. Nothing is sent while it works.":
+    "যেকোনো টুল ব্যবহার করুন। কাজ চলার সময় কিছুই পাঠানো হয় না।",
   "Small, private tools. Everything runs in your browser, so what you play and type stays on your device.":
     "ছোট, ব্যক্তিগত টুল। সব কাজ হয় আপনার ব্রাউজারে, তাই আপনি যা বাজান আর লেখেন তা আপনার ডিভাইসেই থাকে।",
   "What you play stays on your device": "আপনি যা বাজান তা আপনার ডিভাইসেই থাকে",
@@ -813,30 +830,35 @@ export const BN: Record<string, string> = {
   "LAME encoder": "LAME এনকোডার দিয়ে",
   // Image workspace
   "More edits": "আরও এডিট",
-  "Edits": "এডিট",
+  Edits: "এডিট",
   "{n} on": "{n}টি চালু",
   "Clear other edits": "অন্য এডিট মুছুন",
-  "Another format or other edits are on, so the picture is saved again and all of its hidden data goes.": "অন্য ফরম্যাট বা অন্য এডিট চালু আছে, তাই ছবিটি আবার সেভ হবে আর এর সব লুকানো তথ্য চলে যাবে।",
-  "{format} has no quality setting. Pick JPEG, WebP or AVIF for smaller files.": "{format}-এ কোয়ালিটি সেটিং নেই। ছোট ফাইলের জন্য JPEG, WebP বা AVIF বেছে নিন।",
+  "Another format or other edits are on, so the picture is saved again and all of its hidden data goes.":
+    "অন্য ফরম্যাট বা অন্য এডিট চালু আছে, তাই ছবিটি আবার সেভ হবে আর এর সব লুকানো তথ্য চলে যাবে।",
+  "{format} has no quality setting. Pick JPEG, WebP or AVIF for smaller files.":
+    "{format}-এ কোয়ালিটি সেটিং নেই। ছোট ফাইলের জন্য JPEG, WebP বা AVIF বেছে নিন।",
   "This format": "এই ফরম্যাট",
-  "Width": "প্রস্থ",
-  "Height": "উচ্চতা",
-  "Add a photo to see the result. What you choose now applies to it.": "ফলাফল দেখতে একটি ছবি যোগ করুন। এখন যা বেছে নেবেন, তা ছবিটিতে প্রয়োগ হবে।",
-  "Add a photo to see the hidden data in it.": "এর লুকানো তথ্য দেখতে একটি ছবি যোগ করুন।",
-  "Start": "শুরু",
-  "History": "ইতিহাস",
+  Width: "প্রস্থ",
+  Height: "উচ্চতা",
+  "Add a photo to see the result. What you choose now applies to it.":
+    "ফলাফল দেখতে একটি ছবি যোগ করুন। এখন যা বেছে নেবেন, তা ছবিটিতে প্রয়োগ হবে।",
+  "Add a photo to see the hidden data in it.":
+    "এর লুকানো তথ্য দেখতে একটি ছবি যোগ করুন।",
+  Start: "শুরু",
+  History: "ইতিহাস",
   "{n} steps": "{n}টি ধাপ",
-  "Undo": "আগের অবস্থায় ফিরুন",
-  "Redo": "আবার করুন",
+  Undo: "আগের অবস্থায় ফিরুন",
+  Redo: "আবার করুন",
   "Undo ({keys})": "আগের অবস্থায় ফিরুন ({keys})",
   "Redo ({keys})": "আবার করুন ({keys})",
   "Start over": "নতুন করে শুরু",
   "Show {name}": "{name} দেখান",
   "Hide {name}": "{name} লুকান",
-  "Show": "দেখান",
-  "Hide": "লুকান",
+  Show: "দেখান",
+  Hide: "লুকান",
   "Show its settings": "এর সেটিংস দেখান",
-  "No changes yet. What you add shows up here.": "এখনো কোনো পরিবর্তন নেই। যা যোগ করবেন তা এখানে দেখাবে।",
+  "No changes yet. What you add shows up here.":
+    "এখনো কোনো পরিবর্তন নেই। যা যোগ করবেন তা এখানে দেখাবে।",
   "{name} hidden": "{name} লুকানো",
   "{name} shown": "{name} দেখানো",
   "{name} added": "{name} যোগ হয়েছে",
@@ -846,90 +868,125 @@ export const BN: Record<string, string> = {
   "Metadata choice": "মেটাডেটা বাছাই",
   "Settings changed": "সেটিংস বদলেছে",
   "Size target": "সাইজের লক্ষ্য",
-  "Rotate": "ঘোরান",
-  "Filter": "ফিল্টার",
+  Rotate: "ঘোরান",
+  Filter: "ফিল্টার",
   "Blur {n} areas": "{n}টি অংশ ঝাপসা",
   "{n} photos": "{n}টি ছবি",
   "{n} photo": "{n}টি ছবি",
   "No photos yet": "এখনো কোনো ছবি নেই",
-  "{name}: this photo only. Use for all photos": "{name}: শুধু এই ছবিতে। সব ছবিতে ব্যবহার করুন",
-  "{name}: all photos. Use for this photo only": "{name}: সব ছবিতে। শুধু এই ছবিতে ব্যবহার করুন",
-  "Only this photo. Click to use it for all photos": "শুধু এই ছবিতে। সব ছবিতে ব্যবহার করতে ক্লিক করুন",
-  "All photos. Click to use it for this photo only": "সব ছবিতে। শুধু এই ছবিতে ব্যবহার করতে ক্লিক করুন",
+  "{name}: this photo only. Use for all photos":
+    "{name}: শুধু এই ছবিতে। সব ছবিতে ব্যবহার করুন",
+  "{name}: all photos. Use for this photo only":
+    "{name}: সব ছবিতে। শুধু এই ছবিতে ব্যবহার করুন",
+  "Only this photo. Click to use it for all photos":
+    "শুধু এই ছবিতে। সব ছবিতে ব্যবহার করতে ক্লিক করুন",
+  "All photos. Click to use it for this photo only":
+    "সব ছবিতে। শুধু এই ছবিতে ব্যবহার করতে ক্লিক করুন",
   "This photo": "এই ছবি",
-  "Copy this photo's changes to all photos": "এই ছবির পরিবর্তন সব ছবিতে কপি করুন",
+  "Copy this photo's changes to all photos":
+    "এই ছবির পরিবর্তন সব ছবিতে কপি করুন",
   "Copied to all {n} photos.": "সব {n}টি ছবিতে কপি হয়েছে।",
   "Copied to all photos": "সব ছবিতে কপি হয়েছে",
   "Has changes of its own": "এর নিজস্ব পরিবর্তন আছে",
   "{name} ({photo})": "{name} ({photo})",
   "{name}: this photo only": "{name}: শুধু এই ছবিতে",
   "{name}: all photos": "{name}: সব ছবিতে",
-  "Crop, blur areas and history cleared. Your other settings are kept.": "ক্রপ, ঝাপসা অংশ আর ইতিহাস মুছে গেছে। আপনার অন্য সেটিংস রাখা আছে।",
+  "Crop, blur areas and history cleared. Your other settings are kept.":
+    "ক্রপ, ঝাপসা অংশ আর ইতিহাস মুছে গেছে। আপনার অন্য সেটিংস রাখা আছে।",
   "Also applied": "এগুলোও প্রয়োগ হচ্ছে",
   "Edit in Advanced": "অ্যাডভান্সডে এডিট করুন",
-  "Changes marked All apply to every photo.": "“সব” চিহ্নিত পরিবর্তন সব ছবিতে প্রয়োগ হয়।",
+  "Changes marked All apply to every photo.":
+    "“সব” চিহ্নিত পরিবর্তন সব ছবিতে প্রয়োগ হয়।",
   "Not on this photo.": "এই ছবিতে নেই।",
   "Add {name}": "{name} যোগ করুন",
-  "On": "চালু",
+  On: "চালু",
   "Preparing {i} of {n}…": "{n}টির মধ্যে {i}টি তৈরি হচ্ছে…",
   "{i} of {n}…": "{n}টির {i}টি…",
-  "Skipped {list}: it couldn't be processed, perhaps too large for this device.": "{list} বাদ গেছে: প্রসেস করা যায়নি, সম্ভবত এই ডিভাইসের জন্য খুব বড়।",
-  "Left out {list}: one kind of file at a time.": "{list} বাদ গেছে: একবারে এক ধরনের ফাইল।",
+  "Skipped {list}: it couldn't be processed, perhaps too large for this device.":
+    "{list} বাদ গেছে: প্রসেস করা যায়নি, সম্ভবত এই ডিভাইসের জন্য খুব বড়।",
+  "Left out {list}: one kind of file at a time.":
+    "{list} বাদ গেছে: একবারে এক ধরনের ফাইল।",
   "File {i} of {n}": "{n}টির মধ্যে {i} নম্বর ফাইল",
   "This file has no video to change.": "এই ফাইলে বদলানোর মতো কোনো ভিডিও নেই।",
   "Add GIFs": "GIF যোগ করুন",
   "Reading the GIF": "GIF পড়া হচ্ছে",
   "GIF details": "GIF-এর বিবরণ",
-  "This file couldn't be read. It may be damaged or not a GIF.": "এই ফাইলটি পড়া যায়নি। এটি নষ্ট হতে পারে বা GIF নয়।",
+  "This file couldn't be read. It may be damaged or not a GIF.":
+    "এই ফাইলটি পড়া যায়নি। এটি নষ্ট হতে পারে বা GIF নয়।",
   "{action} from {n} GIFs": "{n}টি GIF থেকে {action}",
   "This GIF couldn't be processed.": "এই GIF প্রসেস করা যায়নি।",
-  "{n} left out: they can't be read or have no picture. Remove them or add other videos.": "{n}টি বাদ পড়েছে: এগুলো পড়া যায় না বা এগুলোতে ছবি নেই। এগুলো সরান বা অন্য ভিডিও যোগ করুন।",
+  "{n} left out: they can't be read or have no picture. Remove them or add other videos.":
+    "{n}টি বাদ পড়েছে: এগুলো পড়া যায় না বা এগুলোতে ছবি নেই। এগুলো সরান বা অন্য ভিডিও যোগ করুন।",
   "No picture, left out": "ছবি নেই, বাদ পড়েছে",
   "No sound, left out": "শব্দ নেই, বাদ পড়েছে",
   "no sound": "শব্দ নেই",
   "can't be read": "পড়া যায় না",
-  "This file is already under {size}, so there's nothing to compress.": "এই ফাইলটি আগেই {size}-এর কম, তাই ছোট করার কিছু নেই।",
-  "This file is already at {kbps} kbps or less, so it wouldn't get smaller. Pick a lower quality.": "এই ফাইলটি আগেই {kbps} kbps বা তার কম, তাই এটি ছোট হবে না। কম মান বেছে নিন।",
-  "This video's sound isn't AAC, so it can't be copied as it is. It's encoded at 192k instead.": "এই ভিডিওর শব্দ AAC নয়, তাই যেমন আছে তেমন কপি করা যায় না। এর বদলে 192k-তে এনকোড করা হয়।",
+  "This file is already under {size}, so there's nothing to compress.":
+    "এই ফাইলটি আগেই {size}-এর কম, তাই ছোট করার কিছু নেই।",
+  "This file is already at {kbps} kbps or less, so it wouldn't get smaller. Pick a lower quality.":
+    "এই ফাইলটি আগেই {kbps} kbps বা তার কম, তাই এটি ছোট হবে না। কম মান বেছে নিন।",
+  "This video's sound isn't AAC, so it can't be copied as it is. It's encoded at 192k instead.":
+    "এই ভিডিওর শব্দ AAC নয়, তাই যেমন আছে তেমন কপি করা যায় না। এর বদলে 192k-তে এনকোড করা হয়।",
   "Couldn't read {names}.": "{names} পড়া যায়নি।",
   "{name} couldn't be read.": "{name} পড়া যায়নি।",
-  "Only the first file is checked: {name}": "শুধু প্রথম ফাইলটি যাচাই করা হচ্ছে: {name}",
-  "Only the first file is used: {name}": "শুধু প্রথম ফাইলটি ব্যবহার করা হচ্ছে: {name}",
-  "No image without a code so far. Still reading…": "এখন পর্যন্ত কোড ছাড়া কোনো ছবি নেই। এখনও পড়া হচ্ছে…",
-  "None of the lines fit in a QR code. Shorten them and try again.": "কোনো লাইনই একটি QR কোডে আঁটে না। ছোট করে আবার চেষ্টা করুন।",
-  "1 line is too long for a QR code and will be skipped.": "১টি লাইন QR কোডের জন্য বেশি লম্বা, তাই বাদ যাবে।",
-  "{n} lines are too long for a QR code and will be skipped.": "{n}টি লাইন QR কোডের জন্য বেশি লম্বা, তাই বাদ যাবে।",
+  "Only the first file is checked: {name}":
+    "শুধু প্রথম ফাইলটি যাচাই করা হচ্ছে: {name}",
+  "Only the first file is used: {name}":
+    "শুধু প্রথম ফাইলটি ব্যবহার করা হচ্ছে: {name}",
+  "No image without a code so far. Still reading…":
+    "এখন পর্যন্ত কোড ছাড়া কোনো ছবি নেই। এখনও পড়া হচ্ছে…",
+  "None of the lines fit in a QR code. Shorten them and try again.":
+    "কোনো লাইনই একটি QR কোডে আঁটে না। ছোট করে আবার চেষ্টা করুন।",
+  "1 line is too long for a QR code and will be skipped.":
+    "১টি লাইন QR কোডের জন্য বেশি লম্বা, তাই বাদ যাবে।",
+  "{n} lines are too long for a QR code and will be skipped.":
+    "{n}টি লাইন QR কোডের জন্য বেশি লম্বা, তাই বাদ যাবে।",
   "Also applied from Advanced": "অ্যাডভান্সড থেকে আরও যা লাগানো আছে",
   "Reset style": "স্টাইল রিসেট করুন",
-  "That logo couldn't be read. Try a PNG or JPG.": "লোগোটি পড়া যায়নি। PNG বা JPG দিয়ে চেষ্টা করুন।",
-  "Error correction is set to Max so the code still scans.": "কোড যেন স্ক্যান হয়, তাই এরর কারেকশন সর্বোচ্চে রাখা হয়েছে।",
+  "That logo couldn't be read. Try a PNG or JPG.":
+    "লোগোটি পড়া যায়নি। PNG বা JPG দিয়ে চেষ্টা করুন।",
+  "Error correction is set to Max so the code still scans.":
+    "কোড যেন স্ক্যান হয়, তাই এরর কারেকশন সর্বোচ্চে রাখা হয়েছে।",
   "{name} is too large to open here.": "{name} এখানে খোলার জন্য অনেক বড়।",
   "{name} is empty.": "{name} ফাইলটি খালি।",
-  "Couldn't simulate this image. Try a smaller one.": "এই ছবিটি সিমুলেট করা যায়নি। আরও ছোট একটি দিয়ে চেষ্টা করুন।",
+  "Couldn't simulate this image. Try a smaller one.":
+    "এই ছবিটি সিমুলেট করা যায়নি। আরও ছোট একটি দিয়ে চেষ্টা করুন।",
   "Remove image": "ছবি সরান",
-  "That would remove every page of this file.": "এতে এই ফাইলের সব পাতা সরে যাবে।",
+  "That would remove every page of this file.":
+    "এতে এই ফাইলের সব পাতা সরে যাবে।",
   "No pages picked in this file.": "এই ফাইলে কোনো পাতা বাছা হয়নি।",
-  "Those ranges don't fit this file's {n} pages.": "এই পরিসরগুলো এই ফাইলের {n}টি পাতার সাথে মেলে না।",
+  "Those ranges don't fit this file's {n} pages.":
+    "এই পরিসরগুলো এই ফাইলের {n}টি পাতার সাথে মেলে না।",
   "Every page was deleted.": "সব পাতা মুছে ফেলা হয়েছে।",
-  "None of the files could be done. See the notes below.": "কোনো ফাইলের কাজ করা গেল না। নিচের নোট দেখুন।",
+  "None of the files could be done. See the notes below.":
+    "কোনো ফাইলের কাজ করা গেল না। নিচের নোট দেখুন।",
   "{name} was left out: {reason}": "{name} বাদ গেছে: {reason}",
-  "{n} files were left out. See the notes below.": "{n}টি ফাইল বাদ গেছে। নিচের নোট দেখুন।",
+  "{n} files were left out. See the notes below.":
+    "{n}টি ফাইল বাদ গেছে। নিচের নোট দেখুন।",
   "The document info couldn't be read.": "ডকুমেন্টের তথ্য পড়া গেল না।",
   "Making the zip…": "জিপ তৈরি হচ্ছে…",
-  "The zip couldn't be made. Try saving each file separately.": "জিপ তৈরি করা গেল না। প্রতিটি ফাইল আলাদা করে সেভ করে দেখুন।",
+  "The zip couldn't be made. Try saving each file separately.":
+    "জিপ তৈরি করা গেল না। প্রতিটি ফাইল আলাদা করে সেভ করে দেখুন।",
   "Saving file {n} of {t}…": "{t}টির মধ্যে {n} নম্বর ফাইল সেভ হচ্ছে…",
-  "{n} of {t} files couldn't get under the limit even at the lowest setting. They're as small as they can get.": "{t}টির মধ্যে {n}টি ফাইল সবচেয়ে কম সেটিংয়েও সীমার নিচে নামানো গেল না। এগুলো যতটা সম্ভব ছোট করা হয়েছে।",
-  "{n} of {t} files are already well compressed. Keep those originals.": "{t}টির মধ্যে {n}টি ফাইল আগেই ভালোভাবে কম্প্রেস করা। সেগুলোর মূল ফাইল রেখে দিন।",
-  "This PDF's document info couldn't be read, so it can't be edited here. You can still remove it all.": "এই পিডিএফের ডকুমেন্ট তথ্য পড়া গেল না, তাই এখানে বদলানো যাবে না। তবে সব তথ্য সরাতে পারেন।",
+  "{n} of {t} files couldn't get under the limit even at the lowest setting. They're as small as they can get.":
+    "{t}টির মধ্যে {n}টি ফাইল সবচেয়ে কম সেটিংয়েও সীমার নিচে নামানো গেল না। এগুলো যতটা সম্ভব ছোট করা হয়েছে।",
+  "{n} of {t} files are already well compressed. Keep those originals.":
+    "{t}টির মধ্যে {n}টি ফাইল আগেই ভালোভাবে কম্প্রেস করা। সেগুলোর মূল ফাইল রেখে দিন।",
+  "This PDF's document info couldn't be read, so it can't be edited here. You can still remove it all.":
+    "এই পিডিএফের ডকুমেন্ট তথ্য পড়া গেল না, তাই এখানে বদলানো যাবে না। তবে সব তথ্য সরাতে পারেন।",
   "Remove PDF": "পিডিএফ সরান",
   "Remove this image": "এই ছবিটি সরান",
-  "Retry": "আবার চেষ্টা করুন",
+  Retry: "আবার চেষ্টা করুন",
   "Retry {name}": "{name} আবার চেষ্টা করুন",
-  "Only {name} was opened. A PDF opens on its own, so 1 other file was left out.": "শুধু {name} খোলা হয়েছে। পিডিএফ একা খোলে, তাই অন্য ১টি ফাইল বাদ গেছে।",
-  "Only {name} was opened. A PDF opens on its own, so {n} other files were left out.": "শুধু {name} খোলা হয়েছে। পিডিএফ একা খোলে, তাই অন্য {n}টি ফাইল বাদ গেছে।",
-  "Read again with the new settings. Your edits were replaced.": "নতুন সেটিংসে আবার পড়া হয়েছে। আপনার সম্পাদনাগুলো বদলে গেছে।",
+  "Only {name} was opened. A PDF opens on its own, so 1 other file was left out.":
+    "শুধু {name} খোলা হয়েছে। পিডিএফ একা খোলে, তাই অন্য ১টি ফাইল বাদ গেছে।",
+  "Only {name} was opened. A PDF opens on its own, so {n} other files were left out.":
+    "শুধু {name} খোলা হয়েছে। পিডিএফ একা খোলে, তাই অন্য {n}টি ফাইল বাদ গেছে।",
+  "Read again with the new settings. Your edits were replaced.":
+    "নতুন সেটিংসে আবার পড়া হয়েছে। আপনার সম্পাদনাগুলো বদলে গেছে।",
   "Reading again with the new settings…": "নতুন সেটিংসে আবার পড়া হচ্ছে…",
-  "This text was read with the earlier settings.": "এই টেক্সট আগের সেটিংসে পড়া হয়েছিল।",
+  "This text was read with the earlier settings.":
+    "এই টেক্সট আগের সেটিংসে পড়া হয়েছিল।",
   "Save as {f}": "{f} হিসেবে সেভ",
   "Screenshot frame": "স্ক্রিনশট ফ্রেম",
   "Fit to {r}": "{r}-এ ফিট",
@@ -939,8 +996,10 @@ export const BN: Record<string, string> = {
   "Source code": "সোর্স কোড",
   "Open source": "ওপেন সোর্স",
   "Source code on GitHub": "GitHub-এ সোর্স কোড",
-  "The code for every kmra.dev site is open source under the AGPL-3.0 licence. Read how a tool handles your files, report a problem or suggest a tool on GitHub.": "kmra.dev-এর প্রতিটি সাইটের কোড AGPL-3.0 লাইসেন্সে ওপেন সোর্স। কোনো টুল আপনার ফাইল কীভাবে সামলায় তা পড়ে দেখুন, সমস্যা জানান বা নতুন টুলের প্রস্তাব দিন GitHub-এ।",
-  "kmra.dev is open source, so anyone can read how each tool handles files:": "kmra.dev ওপেন সোর্স, তাই প্রতিটি টুল ফাইল কীভাবে সামলায় তা যে কেউ পড়ে দেখতে পারেন:",
+  "The code for every kmra.dev site is open source under the AGPL-3.0 licence. Read how a tool handles your files, report a problem or suggest a tool on GitHub.":
+    "kmra.dev-এর প্রতিটি সাইটের কোড AGPL-3.0 লাইসেন্সে ওপেন সোর্স। কোনো টুল আপনার ফাইল কীভাবে সামলায় তা পড়ে দেখুন, সমস্যা জানান বা নতুন টুলের প্রস্তাব দিন GitHub-এ।",
+  "kmra.dev is open source, so anyone can read how each tool handles files:":
+    "kmra.dev ওপেন সোর্স, তাই প্রতিটি টুল ফাইল কীভাবে সামলায় তা যে কেউ পড়ে দেখতে পারেন:",
   "the code on GitHub": "GitHub-এ কোড",
   "21 October 2026": "২১ অক্টোবর ২০২৬",
 };

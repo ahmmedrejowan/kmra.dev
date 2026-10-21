@@ -68,15 +68,24 @@ export default function ColorMixer(_: ToolProps) {
           reset={50}
           onChange={setRatio}
         />
-        <Seg label={T("Mix in")} options={spaces} value={space} onPick={setSpace} />
+        <Seg
+          label={T("Mix in")}
+          options={spaces}
+          value={space}
+          onPick={setSpace}
+        />
         <p className="ct-hint">
           {space === "oklab"
             ? T("OKLab mixes evenly, the way eyes see colour.")
             : space === "oklch"
               ? T("OKLCH keeps colours vivid by going round the hue wheel.")
               : space === "srgb"
-                ? T("sRGB is how browsers mix by default. Middles can look grey or dull.")
-                : T("Linear light mixes like real light, so middles look bright.")}
+                ? T(
+                    "sRGB is how browsers mix by default. Middles can look grey or dull.",
+                  )
+                : T(
+                    "Linear light mixes like real light, so middles look bright.",
+                  )}
         </p>
         <Slider
           label={T("Steps")}
@@ -87,7 +96,11 @@ export default function ColorMixer(_: ToolProps) {
           onChange={setN}
         />
         {space !== "srgb" && (
-          <Toggle label={T("Compare with sRGB")} on={compare} onChange={setCompare} />
+          <Toggle
+            label={T("Compare with sRGB")}
+            on={compare}
+            onChange={setCompare}
+          />
         )}
       </div>
 
@@ -116,7 +129,11 @@ export default function ColorMixer(_: ToolProps) {
 
         <div className="ct-subhead">
           <h3>{T("{n} steps", { n })}</h3>
-          <CopyBtn text={allCss} className="btn sm" label={T("Copy all as CSS")} />
+          <CopyBtn
+            text={allCss}
+            className="btn sm"
+            label={T("Copy all as CSS")}
+          />
         </div>
         <div className="ct-steps" data-steps={list.length}>
           {list.map((c, i) => (
@@ -144,7 +161,11 @@ export default function ColorMixer(_: ToolProps) {
             <p className="ct-cap">{T("The same steps mixed in sRGB")}</p>
             <div className="ct-steps thin" aria-hidden="true">
               {plain.map((c, i) => (
-                <span key={i} className="ct-step" style={{ background: css(c) }} />
+                <span
+                  key={i}
+                  className="ct-step"
+                  style={{ background: css(c) }}
+                />
               ))}
             </div>
           </>

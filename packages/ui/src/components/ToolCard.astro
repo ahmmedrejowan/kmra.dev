@@ -37,7 +37,10 @@ const bars = (() => {
     else if (s === "normalize") v = 0.62 + (h - 0.6) * 0.15;
     else if (s === "volume") v = Math.min(1, h * 1.25);
     else if (s === "reverse") v = BARS[n - 1 - i]!;
-    else if (s === "remove-silence" && ((i >= 8 && i <= 11) || (i >= 19 && i <= 21)))
+    else if (
+      s === "remove-silence" &&
+      ((i >= 8 && i <= 11) || (i >= 19 && i <= 21))
+    )
       v = 0.04;
     else if (s === "mono") v = h * 0.8;
     return {
@@ -68,9 +71,24 @@ const CALC: Record<string, [string, string]> = {
 };
 // ColorTool cards: the colours themselves
 const SWATCHES = ["#ff6b6b", "#ffb347", "#ffe066", "#4ecdc4", "#556cd6"];
-const SCALE = ["#fdf3df", "#fbe2b4", "#f7cc7e", "#f2b53c", "#e19a12", "#c27a00", "#9c5f05", "#7b4a0a", "#5f390c", "#3f2507", "#241503"];
+const SCALE = [
+  "#fdf3df",
+  "#fbe2b4",
+  "#f7cc7e",
+  "#f2b53c",
+  "#e19a12",
+  "#c27a00",
+  "#9c5f05",
+  "#7b4a0a",
+  "#5f390c",
+  "#3f2507",
+  "#241503",
+];
 const AUDIO_FORMATS: Record<string, [string[], string[]]> = {
-  convert: [["WAV", "FLAC"], ["MP3", "M4A"]],
+  convert: [
+    ["WAV", "FLAC"],
+    ["MP3", "M4A"],
+  ],
   "video-to-audio": [["MP4", "MOV"], ["MP3"]],
   compress: [["WAV"], ["MP3"]],
 };
@@ -152,9 +170,27 @@ const dm = (() => {
         {tool.slug === "tuner" ? (
           <span class="art-mus-tuner">
             <svg viewBox="0 0 120 64">
-              <path d="M10 60a50 50 0 0 1 100 0" fill="none" stroke="currentColor" stroke-opacity=".25" stroke-width="6" stroke-linecap="round" />
-              <path d="M52 12a50 50 0 0 1 16 0" fill="none" stroke="var(--acc)" stroke-width="6" stroke-linecap="round" />
-              <path d="M60 60 61 16" stroke="var(--fg)" stroke-width="3" stroke-linecap="round" />
+              <path
+                d="M10 60a50 50 0 0 1 100 0"
+                fill="none"
+                stroke="currentColor"
+                stroke-opacity=".25"
+                stroke-width="6"
+                stroke-linecap="round"
+              />
+              <path
+                d="M52 12a50 50 0 0 1 16 0"
+                fill="none"
+                stroke="var(--acc)"
+                stroke-width="6"
+                stroke-linecap="round"
+              />
+              <path
+                d="M60 60 61 16"
+                stroke="var(--fg)"
+                stroke-width="3"
+                stroke-linecap="round"
+              />
             </svg>
             <b>A4</b>
             <small>0¢ · in tune</small>
@@ -177,23 +213,41 @@ const dm = (() => {
           </span>
         ) : tool.slug === "beat-maker" ? (
           <span class="art-mus-grid">
-            {["o.o.o.o.o.o.o.oo", "....x.......x...", "x......o..x....."].map((row) => (
-              <span>
-                {[...row].map((c, i) => (
-                  <i class:list={{ on: c === "o", acc: c === "x", now: i === 4 }} />
-                ))}
-              </span>
-            ))}
+            {["o.o.o.o.o.o.o.oo", "....x.......x...", "x......o..x....."].map(
+              (row) => (
+                <span>
+                  {[...row].map((c, i) => (
+                    <i
+                      class:list={{
+                        on: c === "o",
+                        acc: c === "x",
+                        now: i === 4,
+                      }}
+                    />
+                  ))}
+                </span>
+              ),
+            )}
           </span>
         ) : tool.slug === "chords" ? (
           <span class="art-mus-chord">
             <svg viewBox="0 0 60 72">
               <path d="M8 10h44" stroke="var(--fg)" stroke-width="3" />
               {[0, 1, 2, 3, 4, 5].map((i) => (
-                <path d={`M${8 + i * 8.8} 10v56`} stroke="currentColor" stroke-opacity=".35" stroke-width="1.4" />
+                <path
+                  d={`M${8 + i * 8.8} 10v56`}
+                  stroke="currentColor"
+                  stroke-opacity=".35"
+                  stroke-width="1.4"
+                />
               ))}
               {[1, 2, 3, 4].map((i) => (
-                <path d={`M8 ${10 + i * 14}h44`} stroke="currentColor" stroke-opacity=".35" stroke-width="1.4" />
+                <path
+                  d={`M8 ${10 + i * 14}h44`}
+                  stroke="currentColor"
+                  stroke-opacity=".35"
+                  stroke-width="1.4"
+                />
               ))}
               <circle cx="16.8" cy="45" r="4" fill="var(--acc)" />
               <circle cx="25.6" cy="31" r="4" fill="var(--acc)" />
@@ -204,9 +258,7 @@ const dm = (() => {
         ) : tool.slug === "scales" ? (
           <span class="art-mus-keys">
             {[1, 0, 1, 0, 1, 1, 0, 1, 0, 1, 0, 1].map((w, i) =>
-              w ? (
-                <i class:list={{ on: [0, 2, 4, 7, 9].includes(i) }} />
-              ) : null,
+              w ? <i class:list={{ on: [0, 2, 4, 7, 9].includes(i) }} /> : null,
             )}
           </span>
         ) : tool.slug === "ear-trainer" ? (
@@ -249,9 +301,11 @@ const dm = (() => {
           </>
         ) : tool.slug === "color-mixer" ? (
           <>
-            {["#ff7f6e", "#e58a96", "#c493bf", "#9b9ce0", "#6aa4f5"].map((c) => (
-              <i style={`background:${c}`} />
-            ))}
+            {["#ff7f6e", "#e58a96", "#c493bf", "#9b9ce0", "#6aa4f5"].map(
+              (c) => (
+                <i style={`background:${c}`} />
+              ),
+            )}
           </>
         ) : tool.slug === "palette-generator" ? (
           <>
@@ -277,9 +331,11 @@ const dm = (() => {
               ))}
             </span>
             <span>
-              {["#a39a6e", "#c9b45c", "#e8d968", "#9fb3cc", "#5d6fb0"].map((c) => (
-                <i style={`background:${c}`} />
-              ))}
+              {["#a39a6e", "#c9b45c", "#e8d968", "#9fb3cc", "#5d6fb0"].map(
+                (c) => (
+                  <i style={`background:${c}`} />
+                ),
+              )}
             </span>
           </span>
         ) : tool.slug === "gradient-generator" ? (
@@ -289,7 +345,11 @@ const dm = (() => {
         )}
       </div>
     ) : null}
-    {app === "colortool" || app === "calctool" || app === "musictool" ? null : app === "audiotool" && AUDIO_FORMATS[tool.slug] && tool.slug !== "compress" ? (
+    {app === "colortool" ||
+    app === "calctool" ||
+    app === "musictool" ? null : app === "audiotool" &&
+      AUDIO_FORMATS[tool.slug] &&
+      tool.slug !== "compress" ? (
       <div class="art-formats">
         {AUDIO_FORMATS[tool.slug]![0].map((f) => (
           <span>{f}</span>

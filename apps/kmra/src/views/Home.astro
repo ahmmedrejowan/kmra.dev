@@ -39,7 +39,9 @@ const kinds: DropKind[] = KINDS.map((k) => ({
       mark: markSvg(id, a.accent.light),
       tools: slugs.flatMap((slug) => {
         const e = list.find((x) => x.tool.slug === slug);
-        return e ? [{ name: e.tool.name, href: e.href, icon: e.tool.icon }] : [];
+        return e
+          ? [{ name: e.tool.name, href: e.href, icon: e.tool.icon }]
+          : [];
       }),
     };
   }),
@@ -61,7 +63,10 @@ const schema = [
 ];
 ---
 
-<Hub title={T("kmra.dev · Free tools that run in your browser")} schema={schema}>
+<Hub
+  title={T("kmra.dev · Free tools that run in your browser")}
+  schema={schema}
+>
   <section class="hero-band hub-hero screen">
     <div class="wrap hero-center">
       <h1 class="display">{T("Free tools for every file")}</h1>
@@ -76,7 +81,18 @@ const schema = [
         lang={locale}
         kinds={kinds}
         marks={apps.map((a) => markSvg(a.id, a.accent.light))}
-        formats={["JPG", "PNG", "HEIC", "PDF", "MP4", "MP3", "WAV", "GIF", "JSON", "CSV"]}
+        formats={[
+          "JPG",
+          "PNG",
+          "HEIC",
+          "PDF",
+          "MP4",
+          "MP3",
+          "WAV",
+          "GIF",
+          "JSON",
+          "CSV",
+        ]}
       />
       <nav class="hub-chips" aria-label={T("Popular tools")}>
         {chips.map((e) => (
@@ -93,25 +109,48 @@ const schema = [
     <div class="wrap">
       <div class="sechead primary">
         <h2>{T("{n} apps, one way of working", { n: apps.length })}</h2>
-        <p>{T("Each app has its own site. All of them are free, need no account and add no watermark.")}</p>
+        <p>
+          {T(
+            "Each app has its own site. All of them are free, need no account and add no watermark.",
+          )}
+        </p>
       </div>
       <div class="hub-apps">
         {apps.map((a) => {
           const list = toolsOf(a, locale);
           return (
-            <a class="hub-app hue" style={hueStyle(a.accent)} href={link(a.id, "/", locale)}>
+            <a
+              class="hub-app hue"
+              style={hueStyle(a.accent)}
+              href={link(a.id, "/", locale)}
+            >
               <div class="hub-app-top">
                 <div class="hub-app-head">
-                  <span class="hub-app-mark" set:html={markSvg(a.id, a.accent.light)} aria-hidden="true" />
-                  <span class="hub-app-name"><b>{a.brand[0]}</b>{a.brand[1]}</span>
-                  <span class="hub-app-count"><strong>{tr(locale, "{n}", { n: list.length })}</strong>{T("tools")}</span>
+                  <span
+                    class="hub-app-mark"
+                    set:html={markSvg(a.id, a.accent.light)}
+                    aria-hidden="true"
+                  />
+                  <span class="hub-app-name">
+                    <b>{a.brand[0]}</b>
+                    {a.brand[1]}
+                  </span>
+                  <span class="hub-app-count">
+                    <strong>{tr(locale, "{n}", { n: list.length })}</strong>
+                    {T("tools")}
+                  </span>
                 </div>
-                <p>{a.tagline.split(/[.।]/)[0]}{locale === "bn" ? "।" : "."}</p>
+                <p>
+                  {a.tagline.split(/[.।]/)[0]}
+                  {locale === "bn" ? "।" : "."}
+                </p>
               </div>
               <ul>
                 {list.slice(0, 4).map((e) => (
                   <li>
-                    <span class="tile"><Icon name={e.tool.icon} /></span>
+                    <span class="tile">
+                      <Icon name={e.tool.icon} />
+                    </span>
                     {e.tool.name}
                     <small>{e.tool.blurb}</small>
                   </li>
@@ -137,7 +176,10 @@ const schema = [
       </div>
     </div>
     <ToolShowcase tools={mixed(6, locale)} />
-    <div class="wrap" style="display: flex; justify-content: center; margin-top: 20px">
+    <div
+      class="wrap"
+      style="display: flex; justify-content: center; margin-top: 20px"
+    >
       <a class="btn lg" href={lp(locale, "/tools")}>
         <Icon name="grid" />
         {T("Browse all {n} tools", { n: totalTools })}
@@ -149,12 +191,19 @@ const schema = [
     <div class="wrap">
       <div class="sechead primary">
         <h2>{T("Popular tasks")}</h2>
-        <p>{T("Ready-made settings for everyday jobs, from {n} across the apps.", { n: totalTasks })}</p>
+        <p>
+          {T(
+            "Ready-made settings for everyday jobs, from {n} across the apps.",
+            { n: totalTasks },
+          )}
+        </p>
       </div>
       <div class="tasks">
         {tasks.map((t) => (
           <a class="task hue" style={hueStyle(t.app.accent)} href={t.href}>
-            <span class="tile"><Icon name={t.icon} /></span>
+            <span class="tile">
+              <Icon name={t.icon} />
+            </span>
             <span class="task-text">
               <strong>{t.task.name}</strong>
               <small>{t.task.short}</small>

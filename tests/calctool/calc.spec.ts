@@ -83,13 +83,17 @@ test("calculator: precedence, percentages, functions, history and keys", async (
   await expect(answer).toHaveText("-1");
 });
 
-test("scientific mode: functions, 2nd, keys, memory, and it's remembered", async ({ page }) => {
+test("scientific mode: functions, 2nd, keys, memory, and it's remembered", async ({
+  page,
+}) => {
   await openTool(page, "/calculator");
   const input = page.getByRole("textbox", { name: "Sum" });
   const answer = page.locator(".tool-area .calc-answer");
   const msg = page.locator(".tool-area .calc-screen .calc-msg");
   const key = (name: string) =>
-    page.locator(".tool-area .calc-pads").getByRole("button", { name, exact: true });
+    page
+      .locator(".tool-area .calc-pads")
+      .getByRole("button", { name, exact: true });
   await expect(page.locator(".calc-sci")).toHaveCount(0);
   await pick(page, "Scientific").click();
   await expect(page.locator(".calc-sci button")).toHaveCount(25);
@@ -121,7 +125,10 @@ test("scientific mode: functions, 2nd, keys, memory, and it's remembered", async
   await key("Second functions").click();
   await expect(key("Second functions")).toHaveAttribute("aria-pressed", "true");
   await key("Inverse sine").click();
-  await expect(key("Second functions")).toHaveAttribute("aria-pressed", "false");
+  await expect(key("Second functions")).toHaveAttribute(
+    "aria-pressed",
+    "false",
+  );
   await expect(key("Sine")).toBeVisible();
   for (const k of ["1", "Divide", "2", ")"]) await key(k).click();
   await expect(input).toHaveValue("asin(1÷2)");
@@ -158,10 +165,13 @@ test("scientific mode: functions, 2nd, keys, memory, and it's remembered", async
   // Keys pressed faster than the page redraws still land in order
   await page.evaluate(() => {
     const k = (n: string) =>
-      [...document.querySelectorAll<HTMLButtonElement>(".calc-pads button")].find(
+      [
+        ...document.querySelectorAll<HTMLButtonElement>(".calc-pads button"),
+      ].find(
         (b) => (b.getAttribute("aria-label") ?? b.textContent?.trim()) === n,
       )!;
-    for (const n of ["Clear", "1", "2", "Combinations", "3", "Delete", "4"]) k(n).click();
+    for (const n of ["Clear", "1", "2", "Combinations", "3", "Delete", "4"])
+      k(n).click();
   });
   await expect(input).toHaveValue("12 nCr 4");
   await expect(answer).toHaveText("495");
@@ -490,7 +500,10 @@ const presets: [string, (page: Page) => Promise<void>][] = [
   [
     "scientific-calculator",
     async (p) => {
-      await expect(pick(p, "Scientific")).toHaveAttribute("aria-pressed", "true");
+      await expect(pick(p, "Scientific")).toHaveAttribute(
+        "aria-pressed",
+        "true",
+      );
       await expect(p.locator(".calc-sci button")).toHaveCount(25);
     },
   ],
@@ -616,10 +629,15 @@ test("Bangla pages are translated, with Bangla digits", async ({ page }) => {
   // The scientific calculator in Bangla
   await openTool(page, "/bn/scientific-calculator");
   await expect(page.locator("h1")).toHaveText("সায়েন্টিফিক ক্যালকুলেটর");
-  await expect(pick(page, "সায়েন্টিফিক")).toHaveAttribute("aria-pressed", "true");
+  await expect(pick(page, "সায়েন্টিফিক")).toHaveAttribute(
+    "aria-pressed",
+    "true",
+  );
   await page.getByRole("textbox", { name: "হিসাব" }).fill("৫ nCr ২");
   await expect(page.locator(".tool-area .calc-answer")).toHaveText("১০");
-  await expect(page.getByRole("button", { name: "বিপরীত সংখ্যা" })).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: "বিপরীত সংখ্যা" }),
+  ).toBeVisible();
   await page.goto("/bn");
   await expect(page.locator("h1")).toContainText("ক্যালকুলেটর");
   await page.locator(".calc-mini input").fill("২ + ৩");

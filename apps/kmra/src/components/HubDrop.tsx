@@ -72,7 +72,9 @@ function Drop({
     if (!all.length) return;
     // Files of the first file's kind travel together (several PDFs to merge, a batch of photos)
     const k = kindOf(all[0]!, kinds);
-    const kept = k ? all.filter((f) => kindOf(f, kinds) === k) : all.slice(0, 1);
+    const kept = k
+      ? all.filter((f) => kindOf(f, kinds) === k)
+      : all.slice(0, 1);
     setFiles(kept);
     // Say what didn't come along, rather than dropping it quietly
     const left = all.filter((f) => !kept.includes(f));

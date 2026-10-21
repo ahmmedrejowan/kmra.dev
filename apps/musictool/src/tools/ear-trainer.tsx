@@ -46,7 +46,11 @@ interface Question {
 }
 
 /** Pick an item, missed ones more often: weight 1 … 8, doubled on a miss, lowered on a hit */
-function weighted(ids: string[], w: Record<string, number>, avoid?: string): string {
+function weighted(
+  ids: string[],
+  w: Record<string, number>,
+  avoid?: string,
+): string {
   const pool = ids.length > 1 && avoid ? ids.filter((i) => i !== avoid) : ids;
   const total = pool.reduce((a, i) => a + (w[i] ?? 1), 0);
   let r = Math.random() * total;
@@ -75,12 +79,25 @@ export default function EarTrainer(_: ToolProps) {
   const [dir, setDir] = useState<Dir>(prefs.dir);
   const [q, setQ] = useState<Question | null>(null);
   const [guess, setGuess] = useState<string | null>(null);
-  const [score, setScore] = useState({ right: 0, asked: 0, streak: 0, best: 0 });
-  const weights = useRef<Record<string, Record<string, number>>>(load(WEIGHTS, {}));
+  const [score, setScore] = useState({
+    right: 0,
+    asked: 0,
+    streak: 0,
+    best: 0,
+  });
+  const weights = useRef<Record<string, Record<string, number>>>(
+    load(WEIGHTS, {}),
+  );
   const last = useRef<string | undefined>(undefined);
 
   useEffect(
-    () => save(PREFS, { mode, intervals: picked.intervals, chords: picked.chords, dir }),
+    () =>
+      save(PREFS, {
+        mode,
+        intervals: picked.intervals,
+        chords: picked.chords,
+        dir,
+      }),
     [mode, picked, dir],
   );
 
@@ -105,13 +122,16 @@ export default function EarTrainer(_: ToolProps) {
         [7, 11, 14],
         [0, 4, 7],
       ]) {
-        for (const s of chord) key(freqOf(question.tonic + s - 12), t, 0.5, 0.9);
+        for (const s of chord)
+          key(freqOf(question.tonic + s - 12), t, 0.5, 0.9);
         t += 0.62;
       }
       t += 0.35;
     }
-    if (question.together) for (const m of question.notes) key(freqOf(m), t, 0.75, 1.8);
-    else question.notes.forEach((m, i) => key(freqOf(m), t + i * 0.7, 0.85, 1.3));
+    if (question.together)
+      for (const m of question.notes) key(freqOf(m), t, 0.75, 1.8);
+    else
+      question.notes.forEach((m, i) => key(freqOf(m), t + i * 0.7, 0.85, 1.3));
   }
 
   function next() {
@@ -127,7 +147,11 @@ export default function EarTrainer(_: ToolProps) {
     } else if (mode === "chords") {
       const root = 50 + Math.floor(Math.random() * 12);
       const iv = QUALITIES.find((c) => c.id === id)!.iv;
-      question = { answer: id, notes: iv.map((s) => root + s), together: dir !== "up" };
+      question = {
+        answer: id,
+        notes: iv.map((s) => root + s),
+        together: dir !== "up",
+      };
     } else {
       const tonic = 55 + Math.floor(Math.random() * 10);
       const semis = DEGREES.find((d) => d.id === id)!.semis;
@@ -144,10 +168,17 @@ export default function EarTrainer(_: ToolProps) {
     const ok = id === q.answer;
     setScore((s) => {
       const streak = ok ? s.streak + 1 : 0;
-      return { right: s.right + (ok ? 1 : 0), asked: s.asked + 1, streak, best: Math.max(s.best, streak) };
+      return {
+        right: s.right + (ok ? 1 : 0),
+        asked: s.asked + 1,
+        streak,
+        best: Math.max(s.best, streak),
+      };
     });
     const w = { ...(weights.current[mode] ?? {}) };
-    w[q.answer] = ok ? Math.max(1, (w[q.answer] ?? 1) - 1) : Math.min(8, (w[q.answer] ?? 1) * 2);
+    w[q.answer] = ok
+      ? Math.max(1, (w[q.answer] ?? 1) - 1)
+      : Math.min(8, (w[q.answer] ?? 1) * 2);
     if (!ok) w[id] = Math.min(8, (w[id] ?? 1) + 1);
     weights.current = { ...weights.current, [mode]: w };
     save(WEIGHTS, weights.current);
@@ -156,7 +187,9 @@ export default function EarTrainer(_: ToolProps) {
   function toggle(id: string) {
     setPicked((p) => {
       const cur = p[mode];
-      const nextList = cur.includes(id) ? cur.filter((x) => x !== id) : [...cur, id];
+      const nextList = cur.includes(id)
+        ? cur.filter((x) => x !== id)
+        : [...cur, id];
       return { ...p, [mode]: nextList.length >= 2 ? nextList : cur };
     });
     setQ(null);
@@ -216,27 +249,37 @@ export default function EarTrainer(_: ToolProps) {
               ? T("Which interval was that?")
               : mode === "chords"
                 ? T("Which chord was that?")
-                : T("Which degree of the scale was the last note? (key of {key})", { key: keyName ?? "" })
+                : T(
+                    "Which degree of the scale was the last note? (key of {key})",
+                    { key: keyName ?? "" },
+                  )
             : ok
               ? T("Right: {answer}", { answer: label(q.answer) })
               : T("Not quite: it was {answer}", { answer: label(q.answer) })}
       </p>
       <div className="mt-answers" role="group" aria-label={T("Answers")}>
         {shown.map((i, n) => {
-            const state = !guess || !q ? "" : i.id === q.answer ? " right" : i.id === guess ? " wrong" : "";
-            return (
-              <button
-                key={i.id}
-                type="button"
-                className={`mt-answer${state}`}
-                disabled={!q || guess !== null}
-                onClick={() => answer(i.id)}
-              >
-                {n < 9 && <kbd aria-hidden="true">{num(n + 1)}</kbd>}
-                {i.label}
-              </button>
-            );
-          })}
+          const state =
+            !guess || !q
+              ? ""
+              : i.id === q.answer
+                ? " right"
+                : i.id === guess
+                  ? " wrong"
+                  : "";
+          return (
+            <button
+              key={i.id}
+              type="button"
+              className={`mt-answer${state}`}
+              disabled={!q || guess !== null}
+              onClick={() => answer(i.id)}
+            >
+              {n < 9 && <kbd aria-hidden="true">{num(n + 1)}</kbd>}
+              {i.label}
+            </button>
+          );
+        })}
       </div>
       <div className="mt-actions">
         {!q || guess ? (
@@ -245,7 +288,12 @@ export default function EarTrainer(_: ToolProps) {
             {q ? T("Next") : T("Start")}
           </button>
         ) : null}
-        <button type="button" className="btn lg" onClick={() => q && playQ(q)} disabled={!q}>
+        <button
+          type="button"
+          className="btn lg"
+          onClick={() => q && playQ(q)}
+          disabled={!q}
+        >
           <Icon name="rotateRight" />
           {T("Play again")}
         </button>
@@ -278,10 +326,27 @@ export default function EarTrainer(_: ToolProps) {
       />
       {mode !== "degrees" && (
         <div className="mt-field">
-          <span className="mt-label">{mode === "intervals" ? T("Intervals to practise") : T("Chords to practise")}</span>
-          <div className="chips mt-pills" role="group" aria-label={mode === "intervals" ? T("Intervals to practise") : T("Chords to practise")}>
+          <span className="mt-label">
+            {mode === "intervals"
+              ? T("Intervals to practise")
+              : T("Chords to practise")}
+          </span>
+          <div
+            className="chips mt-pills"
+            role="group"
+            aria-label={
+              mode === "intervals"
+                ? T("Intervals to practise")
+                : T("Chords to practise")
+            }
+          >
             {items.map((i) => (
-              <button key={i.id} type="button" aria-pressed={picked[mode].includes(i.id)} onClick={() => toggle(i.id)}>
+              <button
+                key={i.id}
+                type="button"
+                aria-pressed={picked[mode].includes(i.id)}
+                onClick={() => toggle(i.id)}
+              >
                 {i.label}
               </button>
             ))}
@@ -309,11 +374,15 @@ export default function EarTrainer(_: ToolProps) {
       )}
       {mode === "degrees" && (
         <p className="mt-hint">
-          {T("A short chord progression sets the key, then one note plays. Name its degree: 1 is the key note.")}
+          {T(
+            "A short chord progression sets the key, then one note plays. Name its degree: 1 is the key note.",
+          )}
         </p>
       )}
       <p className="mt-hint">
-        {T("The ones you miss come back more often. Your progress is kept in this browser only.")}
+        {T(
+          "The ones you miss come back more often. Your progress is kept in this browser only.",
+        )}
       </p>
       <button
         type="button"

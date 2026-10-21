@@ -43,10 +43,13 @@ export function readTiff(b: Uint8Array): Tiff | null {
   const u32 = (o: number) => v.getUint32(o, le);
   if (u16(2) !== 42) return null;
   const seen = new Set<number>();
-  const readIfd = (at: number): { entries: Entry[]; ptr: Map<number, number>; next: number } => {
+  const readIfd = (
+    at: number,
+  ): { entries: Entry[]; ptr: Map<number, number>; next: number } => {
     const entries: Entry[] = [];
     const ptr = new Map<number, number>();
-    if (!at || at + 2 > b.length || seen.has(at)) return { entries, ptr, next: 0 };
+    if (!at || at + 2 > b.length || seen.has(at))
+      return { entries, ptr, next: 0 };
     seen.add(at);
     const n = u16(at);
     for (let i = 0; i < n; i++) {
@@ -76,13 +79,29 @@ export function readTiff(b: Uint8Array): Tiff | null {
   let thumb: Uint8Array | null = null;
   const tOff = i1.ptr.get(0x0201);
   const tLen = i1.ptr.get(0x0202);
-  if (tOff && tLen && tOff + tLen <= b.length) thumb = b.slice(tOff, tOff + tLen);
-  return { le, ifd0: i0.entries, exif: ex.entries, gps: gps.entries, interop: iop.entries, ifd1: i1.entries, thumb };
+  if (tOff && tLen && tOff + tLen <= b.length)
+    thumb = b.slice(tOff, tOff + tLen);
+  return {
+    le,
+    ifd0: i0.entries,
+    exif: ex.entries,
+    gps: gps.entries,
+    interop: iop.entries,
+    ifd1: i1.entries,
+    thumb,
+  };
 }
 
 /** True when there's nothing left worth writing */
 export function emptyTiff(t: Tiff): boolean {
-  return !t.ifd0.length && !t.exif.length && !t.gps.length && !t.interop.length && !t.ifd1.length && !t.thumb;
+  return (
+    !t.ifd0.length &&
+    !t.exif.length &&
+    !t.gps.length &&
+    !t.interop.length &&
+    !t.ifd1.length &&
+    !t.thumb
+  );
 }
 
 export function writeTiff(t: Tiff): Uint8Array<ArrayBuffer> {
@@ -95,15 +114,64 @@ export function writeTiff(t: Tiff): Uint8Array<ArrayBuffer> {
   const hasIfd1 = t.ifd1.length > 0 || !!t.thumb;
   const at: Record<string, number> = {};
   const plans: [string, Plan][] = [
-    ["ifd0", { entries: t.ifd0, ptrs: [...(hasExif ? [[0x8769, () => at.exif!] as [number, () => number]] : []), ...(hasGps ? [[0x8825, () => at.gps!] as [number, () => number]] : [])] }],
-    ...(hasExif ? [["exif", { entries: t.exif, ptrs: hasInterop ? [[0xa005, () => at.interop!] as [number, () => number]] : [] }] as [string, Plan]] : []),
-    ...(hasInterop ? [["interop", { entries: t.interop, ptrs: [] }] as [string, Plan]] : []),
-    ...(hasGps ? [["gps", { entries: t.gps, ptrs: [] }] as [string, Plan]] : []),
-    ...(hasIfd1 ? [["ifd1", { entries: t.ifd1, ptrs: t.thumb ? [[0x0201, () => at.thumb!], [0x0202, () => t.thumb!.length]] as [number, () => number][] : [] }] as [string, Plan]] : []),
+    [
+      "ifd0",
+      {
+        entries: t.ifd0,
+        ptrs: [
+          ...(hasExif
+            ? [[0x8769, () => at.exif!] as [number, () => number]]
+            : []),
+          ...(hasGps
+            ? [[0x8825, () => at.gps!] as [number, () => number]]
+            : []),
+        ],
+      },
+    ],
+    ...(hasExif
+      ? [
+          [
+            "exif",
+            {
+              entries: t.exif,
+              ptrs: hasInterop
+                ? [[0xa005, () => at.interop!] as [number, () => number]]
+                : [],
+            },
+          ] as [string, Plan],
+        ]
+      : []),
+    ...(hasInterop
+      ? [["interop", { entries: t.interop, ptrs: [] }] as [string, Plan]]
+      : []),
+    ...(hasGps
+      ? [["gps", { entries: t.gps, ptrs: [] }] as [string, Plan]]
+      : []),
+    ...(hasIfd1
+      ? [
+          [
+            "ifd1",
+            {
+              entries: t.ifd1,
+              ptrs: t.thumb
+                ? ([
+                    [0x0201, () => at.thumb!],
+                    [0x0202, () => t.thumb!.length],
+                  ] as [number, () => number][])
+                : [],
+            },
+          ] as [string, Plan],
+        ]
+      : []),
   ];
   // Layout: each IFD, then its long values; the preview last
   const ifdSize = (p: Plan) => 2 + (p.entries.length + p.ptrs.length) * 12 + 4;
-  const dataSize = (p: Plan) => p.entries.reduce((n, e) => n + (e.data.length > 4 ? e.data.length + (e.data.length & 1) : 0), 0);
+  const dataSize = (p: Plan) =>
+    p.entries.reduce(
+      (n, e) =>
+        n + (e.data.length > 4 ? e.data.length + (e.data.length & 1) : 0),
+      0,
+    );
   let pos = 8;
   for (const [name, p] of plans) {
     at[name] = pos;
@@ -121,7 +189,10 @@ export function writeTiff(t: Tiff): Uint8Array<ArrayBuffer> {
   for (const [name, p] of plans) {
     const start = at[name]!;
     const all = [
-      ...p.entries.map((e) => ({ tag: e.tag, write: (o: number, data: number) => writeEntry(o, e, data) })),
+      ...p.entries.map((e) => ({
+        tag: e.tag,
+        write: (o: number, data: number) => writeEntry(o, e, data),
+      })),
       ...p.ptrs.map(([tag, val]) => ({
         tag,
         write: (o: number) => {
@@ -153,7 +224,11 @@ export function writeTiff(t: Tiff): Uint8Array<ArrayBuffer> {
       } else x.write(o, 0);
     });
     // Next IFD: IFD0 links to IFD1
-    v.setUint32(start + 2 + all.length * 12, name === "ifd0" && hasIfd1 ? at.ifd1! : 0, le);
+    v.setUint32(
+      start + 2 + all.length * 12,
+      name === "ifd0" && hasIfd1 ? at.ifd1! : 0,
+      le,
+    );
   }
   if (t.thumb) out.set(t.thumb, at.thumb!);
   return out;
@@ -161,7 +236,8 @@ export function writeTiff(t: Tiff): Uint8Array<ArrayBuffer> {
 
 /** A copy without the given fields ("block:tag"; "ifd1" alone drops the whole preview) */
 export function withoutFields(t: Tiff, remove: Set<string>): Tiff {
-  const keep = (block: Block) => t[block].filter((e) => !remove.has(`${block}:${e.tag}`));
+  const keep = (block: Block) =>
+    t[block].filter((e) => !remove.has(`${block}:${e.tag}`));
   const dropPreview = remove.has("ifd1");
   return {
     le: t.le,

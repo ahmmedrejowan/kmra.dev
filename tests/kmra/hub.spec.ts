@@ -21,7 +21,18 @@ const PORTS: Record<string, number> = {
   "colortool.kmra.dev": 4610,
   "musictool.kmra.dev": 4611,
 };
-const APPS = ["imgtool", "pdftool", "vidtool", "devtool", "qrtool", "ocrtool", "audiotool", "calctool", "colortool", "musictool"];
+const APPS = [
+  "imgtool",
+  "pdftool",
+  "vidtool",
+  "devtool",
+  "qrtool",
+  "ocrtool",
+  "audiotool",
+  "calctool",
+  "colortool",
+  "musictool",
+];
 
 /** Serve https://kmra.dev and https://<app>.kmra.dev from the local builds */
 async function realSites(context: BrowserContext) {
@@ -75,8 +86,12 @@ test("dropping a PDF offers PDF and OCR tools; more expands; another file resets
   await expect(page.locator(".hub-file strong")).toHaveText("text6.pdf");
   const groups = page.locator(".hub-match");
   await expect(groups).toHaveCount(2);
-  await expect(groups.nth(0).locator("h3 > span:last-child")).toHaveText("PDFTool");
-  await expect(groups.nth(1).locator("h3 > span:last-child")).toHaveText("OCRTool");
+  await expect(groups.nth(0).locator("h3 > span:last-child")).toHaveText(
+    "PDFTool",
+  );
+  await expect(groups.nth(1).locator("h3 > span:last-child")).toHaveText(
+    "OCRTool",
+  );
   const pdf = groups.nth(0).locator(".hub-match-tools a");
   await expect(pdf).toHaveCount(6);
   await expect(pdf.first()).toHaveAttribute(
@@ -131,7 +146,10 @@ test.describe("handoff to the apps (real domains, routed to the local builds)", 
   }) => {
     await page.goto("https://kmra.dev/");
     await drop(page, gen("text6.pdf"));
-    await page.locator(".hub-match-tools a", { hasText: "Compress" }).first().click();
+    await page
+      .locator(".hub-match-tools a", { hasText: "Compress" })
+      .first()
+      .click();
     await expect(page).toHaveURL("https://pdftool.kmra.dev/compress");
     await expect(
       page.locator(".tool-area .result small").first(),
@@ -177,9 +195,9 @@ test.describe("handoff to the apps (real domains, routed to the local builds)", 
       .locator(".hub-match-tools a", { hasText: "JSON formatter" })
       .click();
     await expect(page).toHaveURL("https://devtool.kmra.dev/json-formatter");
-    await expect(
-      page.getByRole("textbox", { name: "Formatted" }),
-    ).toHaveValue('{\n  "b": 1,\n  "a": [\n    1,\n    2\n  ]\n}');
+    await expect(page.getByRole("textbox", { name: "Formatted" })).toHaveValue(
+      '{\n  "b": 1,\n  "a": [\n    1,\n    2\n  ]\n}',
+    );
   });
 
   test("an app's /handoff page may be framed by kmra.dev only (headers from the local servers)", async ({
@@ -233,13 +251,23 @@ test("privacy, about, 404, icons, share images, sitemap and robots", async ({
   page,
 }) => {
   await page.goto("/privacy");
-  await expect(page.locator("main")).toContainText("is passed to the tool's site");
+  await expect(page.locator("main")).toContainText(
+    "is passed to the tool's site",
+  );
   await page.goto("/about");
-  await expect(page.locator("main")).toContainText("video, audio, QR codes, text in pictures, code, colours, calculations and music");
+  await expect(page.locator("main")).toContainText(
+    "video, audio, QR codes, text in pictures, code, colours, calculations and music",
+  );
   const nf = await page.request.get("/nope");
   expect(nf.status()).toBe(404);
   expect(await nf.text()).toContain("<title>Page not found · kmra.dev</title>");
-  for (const p of ["/favicon.svg", "/favicon.ico", "/og/index.png", "/og/tools.png", "/manifest.webmanifest"]) {
+  for (const p of [
+    "/favicon.svg",
+    "/favicon.ico",
+    "/og/index.png",
+    "/og/tools.png",
+    "/manifest.webmanifest",
+  ]) {
     const r = await page.request.get(p);
     expect(r.status(), p).toBe(200);
   }
@@ -254,7 +282,10 @@ test("privacy, about, 404, icons, share images, sitemap and robots", async ({
   );
   // The IndexNow key file is served like the apps'
   const key = readFileSync(
-    new URL("../../apps/kmra/public/0f0695727b67e3fb00b1dc4dd4f0ff4f.txt", import.meta.url),
+    new URL(
+      "../../apps/kmra/public/0f0695727b67e3fb00b1dc4dd4f0ff4f.txt",
+      import.meta.url,
+    ),
     "utf8",
   ).trim();
   expect(key).toBe("0f0695727b67e3fb00b1dc4dd4f0ff4f");
@@ -265,7 +296,9 @@ test("every app links back to kmra.dev (footer, Apps menu, more-tools)", async (
 }) => {
   for (const [id, port] of Object.entries(PORTS)) {
     if (id === "kmra.dev") continue;
-    const home = await (await page.request.get(`http://localhost:${port}/`)).text();
+    const home = await (
+      await page.request.get(`http://localhost:${port}/`)
+    ).text();
     expect(home, id).toContain('href="https://kmra.dev/"');
     expect(home, id).toContain("Every app on kmra.dev");
     const more = await (
@@ -314,9 +347,17 @@ test("the Apps menu is a grid of styled app tiles on every site", async ({
     const tile = menu.locator("a.app-item").first();
     const look = await tile.evaluate((t) => {
       const c = getComputedStyle(t);
-      return { radius: c.borderTopLeftRadius, border: c.borderTopWidth, dir: c.flexDirection };
+      return {
+        radius: c.borderTopLeftRadius,
+        border: c.borderTopWidth,
+        dir: c.flexDirection,
+      };
     });
-    expect(look, host).toEqual({ radius: "14px", border: "1px", dir: "column" });
+    expect(look, host).toEqual({
+      radius: "14px",
+      border: "1px",
+      dir: "column",
+    });
     await expect(menu.locator("a.app-item"), host).toHaveCount(APPS.length);
     // Nothing spills off a 1280 px screen
     const box = (await menu.boundingBox())!;
@@ -325,7 +366,9 @@ test("the Apps menu is a grid of styled app tiles on every site", async ({
   }
 });
 
-test("the hero title sits near the top (no stretched hero)", async ({ page }) => {
+test("the hero title sits near the top (no stretched hero)", async ({
+  page,
+}) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto("/");
   const top = (await page.locator("h1").boundingBox())!.y;
@@ -337,11 +380,18 @@ test("the small kmra.dev next to each app's logo (header and footer) links to th
 }) => {
   for (const [host, port] of Object.entries(PORTS)) {
     if (host === "kmra.dev") continue;
-    const html = await (await page.request.get(`http://localhost:${port}/`)).text();
+    const html = await (
+      await page.request.get(`http://localhost:${port}/`)
+    ).text();
     const links = html.match(/<a class="wm-dom"[^>]*href="([^"]+)"/g) ?? [];
     expect(links.length, host).toBe(2);
-    for (const l of links) expect(l, host).toContain('href="https://kmra.dev/"');
-    const bn = await (await page.request.get(`http://localhost:${port}/bn`)).text();
-    expect(bn, host).toMatch(/<a class="wm-dom"[^>]*href="https:\/\/kmra\.dev\/bn"/);
+    for (const l of links)
+      expect(l, host).toContain('href="https://kmra.dev/"');
+    const bn = await (
+      await page.request.get(`http://localhost:${port}/bn`)
+    ).text();
+    expect(bn, host).toMatch(
+      /<a class="wm-dom"[^>]*href="https:\/\/kmra\.dev\/bn"/,
+    );
   }
 });

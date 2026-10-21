@@ -19,7 +19,9 @@ test("hears A4 at 440 Hz and shows it in tune", async ({ page, context }) => {
     .toBeLessThan(2);
   await expect(tuner).toHaveAttribute("data-state", "in-tune");
   await expect(page.locator(".mt-tuner-advice")).toHaveText("In tune");
-  expect(Math.abs(Number(await tuner.getAttribute("data-freq")) - 440)).toBeLessThan(0.6);
+  expect(
+    Math.abs(Number(await tuner.getAttribute("data-freq")) - 440),
+  ).toBeLessThan(0.6);
   await expect(page.locator(".mt-tuner-name")).toHaveText("A");
 
   // A4 = 442 Hz: the same tone now reads flat

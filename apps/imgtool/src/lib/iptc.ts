@@ -18,7 +18,11 @@ const text = (b: Uint8Array, at: number, n: number) =>
 /** Records from an APP13 payload (the bytes after the marker and length) */
 export function readIptc(payload: Uint8Array): IptcRecord[] {
   if (text(payload, 0, PS.length) !== PS) return [];
-  const v = new DataView(payload.buffer, payload.byteOffset, payload.byteLength);
+  const v = new DataView(
+    payload.buffer,
+    payload.byteOffset,
+    payload.byteLength,
+  );
   let pos = PS.length;
   while (pos + 12 <= payload.length) {
     if (text(payload, pos, 4) !== "8BIM") break;
@@ -60,13 +64,28 @@ export function writeIptc(recs: IptcRecord[]): Uint8Array<ArrayBuffer> {
   const body: number[] = [];
   for (const r of recs) {
     body.push(0x1c, r.record, r.dataset);
-    if (r.data.length < 0x8000) body.push(r.data.length >> 8, r.data.length & 0xff);
-    else body.push(0x80, 4, ...[24, 16, 8, 0].map((s) => (r.data.length >>> s) & 0xff));
+    if (r.data.length < 0x8000)
+      body.push(r.data.length >> 8, r.data.length & 0xff);
+    else
+      body.push(
+        0x80,
+        4,
+        ...[24, 16, 8, 0].map((s) => (r.data.length >>> s) & 0xff),
+      );
     body.push(...r.data);
   }
   const head = [...PS].map((c) => c.charCodeAt(0));
-  const res = [...[..."8BIM"].map((c) => c.charCodeAt(0)), 0x04, 0x04, 0, 0, ...[24, 16, 8, 0].map((s) => (body.length >>> s) & 0xff)];
-  const out = new Uint8Array(head.length + res.length + body.length + (body.length & 1));
+  const res = [
+    ...[..."8BIM"].map((c) => c.charCodeAt(0)),
+    0x04,
+    0x04,
+    0,
+    0,
+    ...[24, 16, 8, 0].map((s) => (body.length >>> s) & 0xff),
+  ];
+  const out = new Uint8Array(
+    head.length + res.length + body.length + (body.length & 1),
+  );
   out.set(head);
   out.set(res, head.length);
   out.set(body, head.length + res.length);

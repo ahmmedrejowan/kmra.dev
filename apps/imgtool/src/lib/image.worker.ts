@@ -3,7 +3,11 @@ import { isLossy, outType, type Format, type Settings } from "./settings";
 import { avif, bmp as toBmp, gif, ico, ICO_MAX, tiff } from "./encoders";
 
 /** Encode a rendered canvas: the browser for JPEG, PNG and WebP, our encoders for the rest */
-async function encodeAs(canvas: OffscreenCanvas, type: Format, q: number): Promise<Blob> {
+async function encodeAs(
+  canvas: OffscreenCanvas,
+  type: Format,
+  q: number,
+): Promise<Blob> {
   switch (type) {
     case "image/avif":
       return avif(canvas, q);
@@ -116,14 +120,22 @@ async function encode(
   const at = async (q: number) => ({
     blob: await encodeAs(canvas, type, q),
     // An icon is one square of at most 256 px
-    w: type === "image/x-icon" ? Math.min(ICO_MAX, Math.max(canvas.width, canvas.height)) : canvas.width,
-    h: type === "image/x-icon" ? Math.min(ICO_MAX, Math.max(canvas.width, canvas.height)) : canvas.height,
+    w:
+      type === "image/x-icon"
+        ? Math.min(ICO_MAX, Math.max(canvas.width, canvas.height))
+        : canvas.width,
+    h:
+      type === "image/x-icon"
+        ? Math.min(ICO_MAX, Math.max(canvas.width, canvas.height))
+        : canvas.height,
     type,
   });
   if (!s.target || !isLossy(type)) {
     const r = { ...(await at(s.quality)), q: s.quality, over: false };
     // Most browsers can't display TIFF: send a PNG of the same pixels to show on screen
-    return type === "image/tiff" ? { ...r, preview: await canvas.convertToBlob({ type: "image/png" }) } : r;
+    return type === "image/tiff"
+      ? { ...r, preview: await canvas.convertToBlob({ type: "image/png" }) }
+      : r;
   }
   const limit = s.target * 1024;
   let lo = 5;

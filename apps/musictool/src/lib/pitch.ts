@@ -130,11 +130,20 @@ export function detectPitch(
   sampleRate: number,
   opts: PitchOptions = {},
 ): Pitch | null {
-  const { minFreq = 27, maxFreq = 4200, gate = 0.004, minClarity = 0.8, k = 0.9 } = opts;
+  const {
+    minFreq = 27,
+    maxFreq = 4200,
+    gate = 0.004,
+    minClarity = 0.8,
+    k = 0.9,
+  } = opts;
   const level = rms(buf);
   if (level < gate || buf.length < 64) return null;
   const n = buf.length;
-  const maxLag = Math.min(Math.ceil(sampleRate / minFreq) + 2, Math.floor(n * 0.62));
+  const maxLag = Math.min(
+    Math.ceil(sampleRate / minFreq) + 2,
+    Math.floor(n * 0.62),
+  );
   const minLag = Math.max(2, Math.floor(sampleRate / maxFreq));
   const d = nsdf(buf, maxLag);
 
@@ -175,10 +184,18 @@ export function detectPitch(
 }
 
 /** Follow the period out to its multiples in the NSDF and re-measure it there */
-function refine(d: Float64Array, period: number, limit: number, clarity: number): number {
+function refine(
+  d: Float64Array,
+  period: number,
+  limit: number,
+  clarity: number,
+): number {
   const at = (k: number): number | null => {
     const centre = Math.round(period * k);
-    const span = Math.max(1, Math.min(Math.ceil(k * 0.05), Math.floor(period / 4)));
+    const span = Math.max(
+      1,
+      Math.min(Math.ceil(k * 0.05), Math.floor(period / 4)),
+    );
     let p = centre;
     for (let i = centre - span; i <= centre + span; i++)
       if (i > 0 && i < d.length - 1 && d[i]! > d[p]!) p = i;
@@ -188,7 +205,8 @@ function refine(d: Float64Array, period: number, limit: number, clarity: number)
     return h >= 0.75 * clarity ? pos / k : null;
   };
   const first = at(1);
-  if (first !== null && Math.abs(first - period) < period * 0.01) period = first;
+  if (first !== null && Math.abs(first - period) < period * 0.01)
+    period = first;
   let k = 2;
   while (period * k < limit) {
     const p = at(k);
@@ -250,25 +268,30 @@ export function fitFreq(
       for (let r = 0; r < m; r++) {
         const cr = col[r]!;
         rhs[r] = rhs[r]! + v * cr;
-        for (let c = r; c < m; c++) gram[r * m + c] = gram[r * m + c]! + cr * col[c]!;
+        for (let c = r; c < m; c++)
+          gram[r * m + c] = gram[r * m + c]! + cr * col[c]!;
       }
     }
-    for (let r = 0; r < m; r++) for (let c = 0; c < r; c++) gram[r * m + c] = gram[c * m + r]!;
+    for (let r = 0; r < m; r++)
+      for (let c = 0; c < r; c++) gram[r * m + c] = gram[c * m + r]!;
     // Solve Gram · β = rhs (Gaussian elimination with partial pivoting); energy = rhs · β
     const A = Float64Array.from(gram);
     const y = Float64Array.from(rhs);
     for (let k = 0; k < m; k++) {
       let piv = k;
-      for (let r = k + 1; r < m; r++) if (Math.abs(A[r * m + k]!) > Math.abs(A[piv * m + k]!)) piv = r;
+      for (let r = k + 1; r < m; r++)
+        if (Math.abs(A[r * m + k]!) > Math.abs(A[piv * m + k]!)) piv = r;
       if (Math.abs(A[piv * m + k]!) < 1e-12) return 0;
       if (piv !== k) {
-        for (let c = 0; c < m; c++) [A[k * m + c], A[piv * m + c]] = [A[piv * m + c]!, A[k * m + c]!];
+        for (let c = 0; c < m; c++)
+          [A[k * m + c], A[piv * m + c]] = [A[piv * m + c]!, A[k * m + c]!];
         [y[k], y[piv]] = [y[piv]!, y[k]!];
       }
       for (let r = k + 1; r < m; r++) {
         const fct = A[r * m + k]! / A[k * m + k]!;
         if (!fct) continue;
-        for (let c = k; c < m; c++) A[r * m + c] = A[r * m + c]! - fct * A[k * m + c]!;
+        for (let c = k; c < m; c++)
+          A[r * m + c] = A[r * m + c]! - fct * A[k * m + c]!;
         y[r] = y[r]! - fct * y[k]!;
       }
     }
@@ -366,7 +389,13 @@ export function synth(
   freq: number,
   sampleRate: number,
   length: number,
-  opts: { wave?: "sine" | "saw" | "square"; amp?: number; noise?: number; phase?: number; seed?: number } = {},
+  opts: {
+    wave?: "sine" | "saw" | "square";
+    amp?: number;
+    noise?: number;
+    phase?: number;
+    seed?: number;
+  } = {},
 ): Float32Array {
   const { wave = "sine", amp = 0.5, noise = 0, phase = 0.3 } = opts;
   let seed = opts.seed ?? 12345;

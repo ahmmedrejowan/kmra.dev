@@ -107,7 +107,9 @@ test("image to text: remove the image to go back to the drop box", async ({
     timeout: 200_000,
   });
   await page.getByRole("button", { name: "Remove ocr-note.png" }).click();
-  await expect(page.getByText("Drop an image, screenshot or scan")).toBeVisible();
+  await expect(
+    page.getByText("Drop an image, screenshot or scan"),
+  ).toBeVisible();
   await expect(page.locator(".oi-text textarea")).toHaveCount(0);
 });
 

@@ -163,7 +163,10 @@ test("batch OCR reads several files and downloads a zip and a combined file", as
     "ocr-ui-batch-ocr-kmra.txt",
   ]);
   expect(
-    recall(NOTE_LINES.join(" "), strFromU8(files["ocr-note-batch-ocr-kmra.txt"]!)),
+    recall(
+      NOTE_LINES.join(" "),
+      strFromU8(files["ocr-note-batch-ocr-kmra.txt"]!),
+    ),
   ).toBeGreaterThan(0.85);
 
   const md = await download(page, () =>

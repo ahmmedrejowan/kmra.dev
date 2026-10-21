@@ -82,7 +82,12 @@ function useHsv(value: Rgba) {
   if (s < 1e-3 || v < 1e-3) h = memo.current.h;
   if (v < 1e-3) s = memo.current.s;
   memo.current = { h, s };
-  return { h, s, v, remember: (hh: number, ss: number) => (memo.current = { h: hh, s: ss }) };
+  return {
+    h,
+    s,
+    v,
+    remember: (hh: number, ss: number) => (memo.current = { h: hh, s: ss }),
+  };
 }
 
 export function Picker({
@@ -442,7 +447,9 @@ export function useSpace(fn: () => void) {
       if (
         t &&
         (t.isContentEditable ||
-          t.closest("input, textarea, select, button, a, [role=slider], [role=dialog]"))
+          t.closest(
+            "input, textarea, select, button, a, [role=slider], [role=dialog]",
+          ))
       )
         return;
       e.preventDefault();
@@ -461,7 +468,13 @@ export function useHashColor(initial: Rgba): [Rgba, (c: Rgba) => void] {
       const h = decodeURIComponent(location.hash.slice(1));
       if (!h) return;
       try {
-        setC(parseColor(h.startsWith("#") || /^[0-9a-f]+$/i.test(h) ? `#${h.replace(/^#/, "")}` : h).color);
+        setC(
+          parseColor(
+            h.startsWith("#") || /^[0-9a-f]+$/i.test(h)
+              ? `#${h.replace(/^#/, "")}`
+              : h,
+          ).color,
+        );
       } catch {
         /* not a colour: ignore */
       }
@@ -474,7 +487,11 @@ export function useHashColor(initial: Rgba): [Rgba, (c: Rgba) => void] {
     const t = setTimeout(() => {
       const want = `#${toHex(c).slice(1)}`;
       if (location.hash !== want)
-        history.replaceState(null, "", `${location.pathname}${location.search}${want}`);
+        history.replaceState(
+          null,
+          "",
+          `${location.pathname}${location.search}${want}`,
+        );
     }, 150);
     return () => clearTimeout(t);
   }, [c]);

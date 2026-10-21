@@ -124,7 +124,13 @@ const groupAt = (g: string) => {
   return i < 0 ? 99 : i;
 };
 const railTools = app.tools
-  .map(({ slug, name, icon, ready, group }) => ({ slug, name, icon, ready, group }))
+  .map(({ slug, name, icon, ready, group }) => ({
+    slug,
+    name,
+    icon,
+    ready,
+    group,
+  }))
   .sort((a, b) => groupAt(a.group) - groupAt(b.group));
 ---
 
@@ -142,7 +148,13 @@ const railTools = app.tools
   />
   {page === "editor" ? (
     <div class="wrap tool-area">
-      <ImageTool client:load lang={locale} tool="editor" tools={railTools} brand={wsBrand} />
+      <ImageTool
+        client:load
+        lang={locale}
+        tool="editor"
+        tools={railTools}
+        brand={wsBrand}
+      />
     </div>
   ) : (
     <div class="wrap page-body">

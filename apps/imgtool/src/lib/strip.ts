@@ -12,12 +12,27 @@
  * REMOVE_ALL removes everything but the orientation (ifd0:274) and the colour profile, which the
  * picture needs to look the same.
  */
-import { emptyTiff, readTiff, withoutFields, writeTiff, type Tiff } from "./tiff";
+import {
+  emptyTiff,
+  readTiff,
+  withoutFields,
+  writeTiff,
+  type Tiff,
+} from "./tiff";
 import { readIptc, writeIptc, type IptcRecord } from "./iptc";
 import { readXmp, writeXmp } from "./xmp";
 
 /** Kinds of block that lost something, for the report */
-export type Removed = "exif" | "xmp" | "iptc" | "comment" | "thumbnail" | "extra" | "text" | "time" | "icc";
+export type Removed =
+  | "exif"
+  | "xmp"
+  | "iptc"
+  | "comment"
+  | "thumbnail"
+  | "extra"
+  | "text"
+  | "time"
+  | "icc";
 
 export interface Stripped {
   bytes: Uint8Array<ArrayBuffer>;
@@ -46,7 +61,8 @@ const ascii = (b: Uint8Array, at: number, n: number) =>
   String.fromCharCode(...b.subarray(at, Math.min(b.length, at + n)));
 const latin1 = (b: Uint8Array) => {
   let s = "";
-  for (let i = 0; i < b.length; i += 8192) s += String.fromCharCode(...b.subarray(i, i + 8192));
+  for (let i = 0; i < b.length; i += 8192)
+    s += String.fromCharCode(...b.subarray(i, i + 8192));
   return s;
 };
 const utf8 = (b: Uint8Array) => new TextDecoder().decode(b);
@@ -69,16 +85,20 @@ function concat(parts: Uint8Array[]): Uint8Array<ArrayBuffer> {
 const orientationOf = (t: Tiff | null) => {
   const e = t?.ifd0.find((x) => x.tag === 0x0112);
   if (!e) return 1;
-  const v = t!.le ? e.data[0]! | (e.data[1]! << 8) : (e.data[0]! << 8) | e.data[1]!;
+  const v = t!.le
+    ? e.data[0]! | (e.data[1]! << 8)
+    : (e.data[0]! << 8) | e.data[1]!;
   return v >= 1 && v <= 8 ? v : 1;
 };
 
 /** Is any field of this kind marked for removal? */
-const anyRemoved = (ids: string[], remove: (id: string) => boolean) => ids.some(remove);
+const anyRemoved = (ids: string[], remove: (id: string) => boolean) =>
+  ids.some(remove);
 
 function tiffIds(t: Tiff): string[] {
   const ids: string[] = [];
-  for (const b of ["ifd0", "exif", "gps", "interop"] as const) for (const e of t[b]) ids.push(`${b}:${e.tag}`);
+  for (const b of ["ifd0", "exif", "gps", "interop"] as const)
+    for (const e of t[b]) ids.push(`${b}:${e.tag}`);
   if (t.ifd1.length || t.thumb) ids.push("ifd1");
   return ids;
 }
@@ -92,11 +112,18 @@ function xmpIds(xml: string): string[] {
 function xmpAfter(xml: string, remove: (id: string) => boolean): string | null {
   const props = readXmp(xml);
   if (!props) return remove("xmp") ? null : xml;
-  if (!anyRemoved(props.map((p) => p.id), remove)) return xml;
+  if (
+    !anyRemoved(
+      props.map((p) => p.id),
+      remove,
+    )
+  )
+    return xml;
   return writeXmp(xml, remove);
 }
 
-const iptcId = (r: IptcRecord) => (r.record === 2 ? `iptc:${r.dataset}` : `iptc:r${r.record}:${r.dataset}`);
+const iptcId = (r: IptcRecord) =>
+  r.record === 2 ? `iptc:${r.dataset}` : `iptc:r${r.record}:${r.dataset}`;
 
 /* ---------- JPEG ---------- */
 
@@ -133,27 +160,45 @@ const app = (marker: number, body: Uint8Array) => {
 };
 
 function jpegParse(b: Uint8Array): Parsed {
-  const p: Parsed = { format: "jpeg", tiff: null, xmp: null, iptc: [], comment: null, icc: false, jfxx: false, pngText: [], pngTime: false, extras: [] };
+  const p: Parsed = {
+    format: "jpeg",
+    tiff: null,
+    xmp: null,
+    iptc: [],
+    comment: null,
+    icc: false,
+    jfxx: false,
+    pngText: [],
+    pngTime: false,
+    extras: [],
+  };
   for (const { m, seg } of jpegSegments(b).head) {
     const id = ascii(seg, 4, 35);
     const payload = seg.subarray(4);
     if (m === 0xe0) {
       if (id.startsWith("JFXX")) p.jfxx = true;
-    } else if (m === 0xe1 && id.startsWith("Exif")) p.tiff = readTiff(payload.subarray(6));
-    else if (m === 0xe1 && id.startsWith(XMP_ID)) p.xmp = utf8(payload.subarray(XMP_ID.length));
-    else if (m === 0xe1 && id.startsWith(XMP_EXT)) p.extras.push({ id: "extra:xmp-extension", size: seg.length });
+    } else if (m === 0xe1 && id.startsWith("Exif"))
+      p.tiff = readTiff(payload.subarray(6));
+    else if (m === 0xe1 && id.startsWith(XMP_ID))
+      p.xmp = utf8(payload.subarray(XMP_ID.length));
+    else if (m === 0xe1 && id.startsWith(XMP_EXT))
+      p.extras.push({ id: "extra:xmp-extension", size: seg.length });
     else if (m === 0xe2 && id.startsWith("ICC_PROFILE")) p.icc = true;
     else if (m === 0xed) {
       p.iptc = readIptc(payload);
       p.extras.push({ id: "extra:photoshop", size: seg.length });
     } else if (m === 0xfe) p.comment = latin1(payload);
-    else if (m >= 0xe1 && m <= 0xef && m !== 0xee) p.extras.push({ id: `extra:${extraName(m, id)}`, size: seg.length });
+    else if (m >= 0xe1 && m <= 0xef && m !== 0xee)
+      p.extras.push({ id: `extra:${extraName(m, id)}`, size: seg.length });
   }
   return p;
 }
 
 function extraName(m: number, id: string): string {
-  const name = id.replace(/\0[\s\S]*$/, "").replace(/[^\w.-]/g, "").slice(0, 16);
+  const name = id
+    .replace(/\0[\s\S]*$/, "")
+    .replace(/[^\w.-]/g, "")
+    .slice(0, 16);
   return `APP${m - 0xe0}${name ? `-${name}` : ""}`;
 }
 
@@ -190,14 +235,16 @@ function jpeg(b: Uint8Array, remove: (id: string) => boolean): Stripped {
       removed.add("exif");
       const after = withoutFields(t, new Set(ids.filter(remove)));
       orientation = orientationOf(after);
-      if (!emptyTiff(after)) keep.push(app(0xe1, concat([encode(EXIF_ID), writeTiff(after)])));
+      if (!emptyTiff(after))
+        keep.push(app(0xe1, concat([encode(EXIF_ID), writeTiff(after)])));
     } else if (m === 0xe1 && id.startsWith(XMP_ID)) {
       const xml = utf8(payload.subarray(XMP_ID.length));
       const after = xmpAfter(xml, remove);
       if (after === xml) keep.push(seg);
       else {
         removed.add("xmp");
-        if (after) keep.push(app(0xe1, concat([encode(XMP_ID), encode(after)])));
+        if (after)
+          keep.push(app(0xe1, concat([encode(XMP_ID), encode(after)])));
       }
     } else if (m === 0xe1 && id.startsWith(XMP_EXT)) {
       if (remove("extra:xmp-extension")) removed.add("xmp");
@@ -225,7 +272,8 @@ function jpeg(b: Uint8Array, remove: (id: string) => boolean): Stripped {
       else keep.push(seg);
     } else keep.push(seg);
   }
-  if (photoshopAt >= 0 && iptcKept?.length) keep.splice(photoshopAt, 0, app(0xed, writeIptc(iptcKept)));
+  if (photoshopAt >= 0 && iptcKept?.length)
+    keep.splice(photoshopAt, 0, app(0xed, writeIptc(iptcKept)));
   keep.push(rest);
   return { bytes: concat(keep), removed: [...removed], orientation };
 }
@@ -234,8 +282,23 @@ function jpeg(b: Uint8Array, remove: (id: string) => boolean): Stripped {
 
 /** PNG chunks that describe the pixels (and APNG frames) */
 const PNG_PICTURE = new Set([
-  "IHDR", "PLTE", "IDAT", "IEND", "tRNS", "gAMA", "cHRM", "sRGB", "sBIT", "bKGD", "pHYs", "cICP",
-  "mDCV", "cLLI", "acTL", "fcTL", "fdAT",
+  "IHDR",
+  "PLTE",
+  "IDAT",
+  "IEND",
+  "tRNS",
+  "gAMA",
+  "cHRM",
+  "sRGB",
+  "sBIT",
+  "bKGD",
+  "pHYs",
+  "cICP",
+  "mDCV",
+  "cLLI",
+  "acTL",
+  "fcTL",
+  "fdAT",
 ]);
 
 interface PngChunk {
@@ -251,7 +314,11 @@ function pngChunks(b: Uint8Array): PngChunk[] {
   while (pos + 12 <= b.length) {
     const len = v.getUint32(pos);
     const type = ascii(b, pos + 4, 4);
-    out.push({ type, data: b.subarray(pos + 8, pos + 8 + len), raw: b.subarray(pos, pos + 12 + len) });
+    out.push({
+      type,
+      data: b.subarray(pos + 8, pos + 8 + len),
+      raw: b.subarray(pos, pos + 12 + len),
+    });
     pos += 12 + len;
     if (type === "IEND") break;
   }
@@ -259,10 +326,15 @@ function pngChunks(b: Uint8Array): PngChunk[] {
 }
 
 /** A tEXt/zTXt/iTXt chunk's keyword and (for tEXt and iTXt) its text */
-function pngText(c: PngChunk): { keyword: string; value: string; xmp: boolean } {
+function pngText(c: PngChunk): {
+  keyword: string;
+  value: string;
+  xmp: boolean;
+} {
   const z = c.data.indexOf(0);
   const keyword = latin1(c.data.subarray(0, z));
-  if (c.type === "tEXt") return { keyword, value: latin1(c.data.subarray(z + 1)), xmp: false };
+  if (c.type === "tEXt")
+    return { keyword, value: latin1(c.data.subarray(z + 1)), xmp: false };
   if (c.type === "iTXt") {
     const compressed = c.data[z + 1] === 1;
     let p = z + 3;
@@ -291,13 +363,25 @@ function pngChunk(type: string, data: Uint8Array): Uint8Array {
   out.set(encode(type), 4);
   out.set(data, 8);
   let c = 0xffffffff;
-  for (let i = 4; i < 8 + data.length; i++) c = CRC[(c ^ out[i]!) & 0xff]! ^ (c >>> 8);
+  for (let i = 4; i < 8 + data.length; i++)
+    c = CRC[(c ^ out[i]!) & 0xff]! ^ (c >>> 8);
   v.setUint32(8 + data.length, (c ^ 0xffffffff) >>> 0);
   return out;
 }
 
 function pngParse(b: Uint8Array): Parsed {
-  const p: Parsed = { format: "png", tiff: null, xmp: null, iptc: [], comment: null, icc: false, jfxx: false, pngText: [], pngTime: false, extras: [] };
+  const p: Parsed = {
+    format: "png",
+    tiff: null,
+    xmp: null,
+    iptc: [],
+    comment: null,
+    icc: false,
+    jfxx: false,
+    pngText: [],
+    pngTime: false,
+    extras: [],
+  };
   for (const c of pngChunks(b)) {
     if (PNG_PICTURE.has(c.type)) continue;
     if (c.type === "iCCP") p.icc = true;
@@ -306,7 +390,11 @@ function pngParse(b: Uint8Array): Parsed {
     else if (c.type === "tEXt" || c.type === "zTXt" || c.type === "iTXt") {
       const t = pngText(c);
       if (t.xmp) p.xmp = t.value;
-      else p.pngText.push({ keyword: t.keyword, value: t.value || "(compressed text)" });
+      else
+        p.pngText.push({
+          keyword: t.keyword,
+          value: t.value || "(compressed text)",
+        });
     } else p.extras.push({ id: `extra:${c.type}`, size: c.raw.length });
   }
   return p;
@@ -369,7 +457,9 @@ function png(b: Uint8Array, remove: (id: string) => boolean): Stripped {
 
 /* ---------- WebP ---------- */
 
-function webpChunks(b: Uint8Array): { type: string; data: Uint8Array; raw: Uint8Array }[] {
+function webpChunks(
+  b: Uint8Array,
+): { type: string; data: Uint8Array; raw: Uint8Array }[] {
   const out: { type: string; data: Uint8Array; raw: Uint8Array }[] = [];
   const v = new DataView(b.buffer, b.byteOffset, b.byteLength);
   let pos = 12;
@@ -377,7 +467,11 @@ function webpChunks(b: Uint8Array): { type: string; data: Uint8Array; raw: Uint8
     const type = ascii(b, pos, 4);
     const size = v.getUint32(pos + 4, true);
     const end = Math.min(b.length, pos + 8 + size + (size & 1));
-    out.push({ type, data: b.subarray(pos + 8, pos + 8 + size), raw: b.subarray(pos, end) });
+    out.push({
+      type,
+      data: b.subarray(pos + 8, pos + 8 + size),
+      raw: b.subarray(pos, end),
+    });
     pos = end;
   }
   return out;
@@ -392,9 +486,23 @@ function webpChunk(type: string, data: Uint8Array): Uint8Array {
 }
 
 function webpParse(b: Uint8Array): Parsed {
-  const p: Parsed = { format: "webp", tiff: null, xmp: null, iptc: [], comment: null, icc: false, jfxx: false, pngText: [], pngTime: false, extras: [] };
+  const p: Parsed = {
+    format: "webp",
+    tiff: null,
+    xmp: null,
+    iptc: [],
+    comment: null,
+    icc: false,
+    jfxx: false,
+    pngText: [],
+    pngTime: false,
+    extras: [],
+  };
   for (const c of webpChunks(b)) {
-    if (c.type === "EXIF") p.tiff = readTiff(c.data.subarray(ascii(c.data, 0, 6) === EXIF_ID ? 6 : 0));
+    if (c.type === "EXIF")
+      p.tiff = readTiff(
+        c.data.subarray(ascii(c.data, 0, 6) === EXIF_ID ? 6 : 0),
+      );
     else if (c.type === "XMP ") p.xmp = utf8(c.data);
     else if (c.type === "ICCP") p.icc = true;
   }
@@ -456,7 +564,11 @@ function webp(b: Uint8Array, remove: (id: string) => boolean): Stripped {
   // VP8X flags: ICC (bit 5), EXIF (bit 3), XMP (bit 2) say what's left
   if (flagsAt >= 0) {
     const f = parts[flagsAt]!;
-    f[8] = (f[8]! & ~0x2c) | (hasIcc ? 0x20 : 0) | (hasExif ? 0x08 : 0) | (hasXmp ? 0x04 : 0);
+    f[8] =
+      (f[8]! & ~0x2c) |
+      (hasIcc ? 0x20 : 0) |
+      (hasExif ? 0x08 : 0) |
+      (hasXmp ? 0x04 : 0);
   }
   const body = concat(parts);
   const out = new Uint8Array(12 + body.length);
@@ -481,13 +593,28 @@ const kindOf = (b: Uint8Array): Kind | null =>
 /** What's in the file, for listing its fields (null for formats handled by re-rendering) */
 export function inspect(b: Uint8Array): Parsed | null {
   const k = kindOf(b);
-  return k === "jpeg" ? jpegParse(b) : k === "png" ? pngParse(b) : k === "webp" ? webpParse(b) : null;
+  return k === "jpeg"
+    ? jpegParse(b)
+    : k === "png"
+      ? pngParse(b)
+      : k === "webp"
+        ? webpParse(b)
+        : null;
 }
 
 /** The file without the fields `remove` picks (everything but orientation and colour by default) */
-export function stripMetadata(b: Uint8Array, remove: (id: string) => boolean = REMOVE_ALL): Stripped | null {
+export function stripMetadata(
+  b: Uint8Array,
+  remove: (id: string) => boolean = REMOVE_ALL,
+): Stripped | null {
   const k = kindOf(b);
-  return k === "jpeg" ? jpeg(b, remove) : k === "png" ? png(b, remove) : k === "webp" ? webp(b, remove) : null;
+  return k === "jpeg"
+    ? jpeg(b, remove)
+    : k === "png"
+      ? png(b, remove)
+      : k === "webp"
+        ? webp(b, remove)
+        : null;
 }
 
 /** Every field id in a parsed file */

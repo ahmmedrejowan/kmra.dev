@@ -1,9 +1,26 @@
-import { useEffect, useMemo, useRef, useState, type PointerEvent as RPointerEvent } from "react";
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type PointerEvent as RPointerEvent,
+} from "react";
 import { useT } from "@kmra/ui/lib/i18n-react";
 import { Icon } from "@kmra/ui/components/Icon";
 import { downloadBlob } from "@kmra/ui/lib/files";
 import type { ToolProps } from ".";
-import { Card, Choice, Keys, NumInput, Pills, Range, busyTarget, load, save, useNum } from "../lib/ui";
+import {
+  Card,
+  Choice,
+  Keys,
+  NumInput,
+  Pills,
+  Range,
+  busyTarget,
+  load,
+  save,
+  useNum,
+} from "../lib/ui";
 import {
   DRUMS,
   DRUM_NAMES,
@@ -44,7 +61,10 @@ const SHORT: Record<DrumId, string> = {
   rim: "Rim",
 };
 
-function initial(preset: ToolProps["preset"]): { p: Pattern; from: string | null } {
+function initial(preset: ToolProps["preset"]): {
+  p: Pattern;
+  from: string | null;
+} {
   try {
     const h = fromHash(location.hash);
     if (h) return { p: h, from: "link" };
@@ -112,10 +132,18 @@ export default function BeatMaker({ preset }: ToolProps) {
   const past = useRef<Pattern[]>([]);
   const future = useRef<Pattern[]>([]);
   const [, bump] = useState(0);
-  const prefs = load(PREFS, { draw: 1 as Vel, format: "wav" as "wav" | "mp3", loops: 4 });
+  const prefs = load(PREFS, {
+    draw: 1 as Vel,
+    format: "wav" as "wav" | "mp3",
+    loops: 4,
+  });
   const [draw, setDraw] = useState<Vel>(prefs.draw === 2 ? 2 : 1);
-  const [format, setFormat] = useState<"wav" | "mp3">(prefs.format === "mp3" ? "mp3" : "wav");
-  const [loops, setLoops] = useState([1, 2, 4, 8].includes(prefs.loops) ? prefs.loops : 4);
+  const [format, setFormat] = useState<"wav" | "mp3">(
+    prefs.format === "mp3" ? "mp3" : "wav",
+  );
+  const [loops, setLoops] = useState(
+    [1, 2, 4, 8].includes(prefs.loops) ? prefs.loops : 4,
+  );
   const [page, setPage] = useState(0);
   const [follow, setFollow] = useState(true);
   const [narrow, setNarrow] = useState(false);
@@ -131,7 +159,9 @@ export default function BeatMaker({ preset }: ToolProps) {
   useEffect(() => {
     const el = gridRef.current;
     if (!el || typeof ResizeObserver === "undefined") return;
-    const ro = new ResizeObserver(([e]) => setNarrow((e?.contentRect.width ?? 999) < 520));
+    const ro = new ResizeObserver(([e]) =>
+      setNarrow((e?.contentRect.width ?? 999) < 520),
+    );
     ro.observe(el);
     return () => ro.disconnect();
   }, []);
@@ -141,7 +171,8 @@ export default function BeatMaker({ preset }: ToolProps) {
   const cur = player.now?.step ?? -1;
   // Follow the playhead across pages while playing
   useEffect(() => {
-    if (player.running && follow && cur >= 0) setPage(Math.floor(cur / perPage));
+    if (player.running && follow && cur >= 0)
+      setPage(Math.floor(cur / perPage));
   }, [cur, follow, perPage, player.running]);
   useEffect(() => {
     if (page >= pages) setPage(0);
@@ -176,7 +207,11 @@ export default function BeatMaker({ preset }: ToolProps) {
   const tweak = (patch: Partial<Pattern>) => setP((x) => ({ ...x, ...patch }));
 
   // Painting: the first cell decides on or off, dragging applies the same to every cell crossed
-  const paint = useRef<{ value: Vel; base: Pattern; touched: Set<string> } | null>(null);
+  const paint = useRef<{
+    value: Vel;
+    base: Pattern;
+    touched: Set<string>;
+  } | null>(null);
   function setCell(d: DrumId, i: number, value: Vel) {
     const s = paint.current;
     const key = `${d}:${i}`;
@@ -200,9 +235,15 @@ export default function BeatMaker({ preset }: ToolProps) {
   }
   function move(e: RPointerEvent) {
     if (!paint.current) return;
-    const el = document.elementFromPoint(e.clientX, e.clientY)?.closest<HTMLElement>("[data-cell]");
+    const el = document
+      .elementFromPoint(e.clientX, e.clientY)
+      ?.closest<HTMLElement>("[data-cell]");
     if (!el) return;
-    setCell(el.dataset.drum as DrumId, Number(el.dataset.step), paint.current.value);
+    setCell(
+      el.dataset.drum as DrumId,
+      Number(el.dataset.step),
+      paint.current.value,
+    );
   }
   useEffect(() => {
     const up = () => {
@@ -233,7 +274,8 @@ export default function BeatMaker({ preset }: ToolProps) {
     if (!was && !player.running) player.seq.preview(d);
   }
 
-  const flag = (k: "mute" | "solo", d: DrumId) => tweak({ [k]: { ...p[k], [d]: !p[k][d] } });
+  const flag = (k: "mute" | "solo", d: DrumId) =>
+    tweak({ [k]: { ...p[k], [d]: !p[k][d] } });
 
   // Space plays, arrows change the tempo, ⌘/Ctrl+Z undoes
   const keys = useRef({ toggle: player.toggle, undo, redo });
@@ -279,8 +321,13 @@ export default function BeatMaker({ preset }: ToolProps) {
   function download() {
     setBusy(true);
     setNote(null);
-    const w = new Worker(new URL("../lib/beat-export.worker.ts", import.meta.url), { type: "module" });
-    w.onmessage = (e: MessageEvent<{ ok: boolean; data?: ArrayBuffer; error?: string }>) => {
+    const w = new Worker(
+      new URL("../lib/beat-export.worker.ts", import.meta.url),
+      { type: "module" },
+    );
+    w.onmessage = (
+      e: MessageEvent<{ ok: boolean; data?: ArrayBuffer; error?: string }>,
+    ) => {
       w.terminate();
       setBusy(false);
       if (!e.data.ok || !e.data.data) {
@@ -288,7 +335,10 @@ export default function BeatMaker({ preset }: ToolProps) {
         return;
       }
       const type = format === "mp3" ? "audio/mpeg" : "audio/wav";
-      downloadBlob(new Blob([e.data.data], { type }), `beat-${p.bpm}bpm.${format}`);
+      downloadBlob(
+        new Blob([e.data.data], { type }),
+        `beat-${p.bpm}bpm.${format}`,
+      );
     };
     w.onerror = () => {
       w.terminate();
@@ -300,10 +350,14 @@ export default function BeatMaker({ preset }: ToolProps) {
   }
 
   const start = page * perPage;
-  const shown = Array.from({ length: Math.min(perPage, p.steps - start) }, (_, k) => start + k);
+  const shown = Array.from(
+    { length: Math.min(perPage, p.steps - start) },
+    (_, k) => start + k,
+  );
   const beatOf = (i: number) => Math.floor(i / STEPS_PER_BEAT);
   const seconds = ((p.steps * 60) / p.bpm / STEPS_PER_BEAT) * loops;
-  const velName = (v: Vel) => (v === 2 ? T("accent") : v === 1 ? T("on") : T("off"));
+  const velName = (v: Vel) =>
+    v === 2 ? T("accent") : v === 1 ? T("on") : T("off");
   const count = hits(p);
 
   const stage = (
@@ -321,29 +375,63 @@ export default function BeatMaker({ preset }: ToolProps) {
           {player.running ? T("Stop") : T("Play")}
         </button>
         <div className="mt-beat-tempo">
-          <button type="button" className="mt-round sm" aria-label={T("Slower")} onClick={() => tweak({ bpm: clampBpm(p.bpm - 1) })}>
+          <button
+            type="button"
+            className="mt-round sm"
+            aria-label={T("Slower")}
+            onClick={() => tweak({ bpm: clampBpm(p.bpm - 1) })}
+          >
             <Icon name="minus" />
           </button>
           <div className="mt-beat-bpm" data-value={p.bpm}>
             <output aria-live="polite">{num(p.bpm)}</output>
             <span>BPM</span>
           </div>
-          <button type="button" className="mt-round sm" aria-label={T("Faster")} onClick={() => tweak({ bpm: clampBpm(p.bpm + 1) })}>
+          <button
+            type="button"
+            className="mt-round sm"
+            aria-label={T("Faster")}
+            onClick={() => tweak({ bpm: clampBpm(p.bpm + 1) })}
+          >
             <Icon name="plus" />
           </button>
         </div>
         <div className="mt-beat-tools">
-          <button type="button" className="btn" onClick={undo} disabled={!past.current.length} aria-label={T("Undo")} title={T("Undo")}>
+          <button
+            type="button"
+            className="btn"
+            onClick={undo}
+            disabled={!past.current.length}
+            aria-label={T("Undo")}
+            title={T("Undo")}
+          >
             <Icon name="undo" />
           </button>
-          <button type="button" className="btn" onClick={redo} disabled={!future.current.length} aria-label={T("Redo")} title={T("Redo")}>
+          <button
+            type="button"
+            className="btn"
+            onClick={redo}
+            disabled={!future.current.length}
+            aria-label={T("Redo")}
+            title={T("Redo")}
+          >
             <Icon name="redo" />
           </button>
           <button
             type="button"
             className="btn"
             disabled={!count}
-            onClick={() => commit({ ...emptyPattern(p.steps, p.bpm, p.swing), vol: p.vol, mute: p.mute, solo: p.solo }, null)}
+            onClick={() =>
+              commit(
+                {
+                  ...emptyPattern(p.steps, p.bpm, p.swing),
+                  vol: p.vol,
+                  mute: p.mute,
+                  solo: p.solo,
+                },
+                null,
+              )
+            }
           >
             <Icon name="trash" />
             {T("Clear")}
@@ -352,7 +440,11 @@ export default function BeatMaker({ preset }: ToolProps) {
       </div>
 
       {pages > 1 && (
-        <div className="seg mt-seg mt-beat-pages" role="group" aria-label={T("Steps shown")}>
+        <div
+          className="seg mt-seg mt-beat-pages"
+          role="group"
+          aria-label={T("Steps shown")}
+        >
           {Array.from({ length: pages }, (_, k) => (
             <button
               key={k}
@@ -363,8 +455,13 @@ export default function BeatMaker({ preset }: ToolProps) {
                 if (player.running) setFollow(false);
               }}
             >
-              {T("Steps {a}–{b}", { a: num(k * perPage + 1), b: num(Math.min(p.steps, (k + 1) * perPage)) })}
-              {player.running && Math.floor(cur / perPage) === k && <i className="mt-beat-here" aria-hidden="true" />}
+              {T("Steps {a}–{b}", {
+                a: num(k * perPage + 1),
+                b: num(Math.min(p.steps, (k + 1) * perPage)),
+              })}
+              {player.running && Math.floor(cur / perPage) === k && (
+                <i className="mt-beat-here" aria-hidden="true" />
+              )}
             </button>
           ))}
         </div>
@@ -380,13 +477,17 @@ export default function BeatMaker({ preset }: ToolProps) {
         <div className="mt-beat-row mt-beat-head" aria-hidden="true">
           <span />
           {shown.map((i) => (
-            <span key={i} className={`mt-beat-n${i % STEPS_PER_BEAT === 0 ? " beat" : ""}${i === cur ? " now" : ""}`}>
+            <span
+              key={i}
+              className={`mt-beat-n${i % STEPS_PER_BEAT === 0 ? " beat" : ""}${i === cur ? " now" : ""}`}
+            >
               {i % STEPS_PER_BEAT === 0 ? num(beatOf(i) + 1) : "·"}
             </span>
           ))}
         </div>
         {DRUMS.map((d) => {
-          const heard = !p.mute[d] && (!DRUMS.some((x) => p.solo[x]) || p.solo[d]);
+          const heard =
+            !p.mute[d] && (!DRUMS.some((x) => p.solo[x]) || p.solo[d]);
           return (
             <div
               key={d}
@@ -399,7 +500,9 @@ export default function BeatMaker({ preset }: ToolProps) {
                 <button
                   type="button"
                   className="mt-beat-drum"
-                  title={T("Hear the {drum}", { drum: T(DRUM_NAMES[d]).toLowerCase() })}
+                  title={T("Hear the {drum}", {
+                    drum: T(DRUM_NAMES[d]).toLowerCase(),
+                  })}
                   onClick={() => player.seq.preview(d)}
                 >
                   {T(SHORT[d])}
@@ -476,7 +579,11 @@ export default function BeatMaker({ preset }: ToolProps) {
           options={STARTERS.map((s) => [s.id, T(s.name)] as [string, string])}
           onPick={(id) => commit(fromStarter(starter(id)!, p), id)}
         />
-        <p className="mt-hint">{T("Pick one to start from, then change it. Your beat is kept on this device.")}</p>
+        <p className="mt-hint">
+          {T(
+            "Pick one to start from, then change it. Your beat is kept on this device.",
+          )}
+        </p>
       </div>
       <div className="mt-group">
         <NumInput
@@ -500,7 +607,13 @@ export default function BeatMaker({ preset }: ToolProps) {
         <Choice
           label={T("Length")}
           value={p.steps}
-          options={LENGTHS.map((n) => [n, n === 12 ? T("3/4 bar") : n === 16 ? T("4/4 bar") : T("2 bars")] as [number, string])}
+          options={LENGTHS.map(
+            (n) =>
+              [
+                n,
+                n === 12 ? T("3/4 bar") : n === 16 ? T("4/4 bar") : T("2 bars"),
+              ] as [number, string],
+          )}
           onPick={(n) => n !== p.steps && commit(resize(p, n), null)}
         />
         <Choice
@@ -545,23 +658,42 @@ export default function BeatMaker({ preset }: ToolProps) {
           onPick={setLoops}
         />
         <p className="mt-hint">
-          {T("{s} seconds. The file loops without a gap.", { s: num(seconds, seconds < 10 ? 1 : 0) })}
+          {T("{s} seconds. The file loops without a gap.", {
+            s: num(seconds, seconds < 10 ? 1 : 0),
+          })}
         </p>
         {format === "mp3" && (
           <p className="mt-hint">
             {T("MP3s are made with the")}{" "}
-            <a href="https://lame.sourceforge.io/" target="_blank" rel="noopener noreferrer">
+            <a
+              href="https://lame.sourceforge.io/"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
               {T("LAME encoder")}
             </a>
             .
           </p>
         )}
         <div className="mt-side-actions">
-          <button type="button" className="btn acc" onClick={download} disabled={busy || !count} aria-busy={busy || undefined}>
+          <button
+            type="button"
+            className="btn acc"
+            onClick={download}
+            disabled={busy || !count}
+            aria-busy={busy || undefined}
+          >
             <Icon name="download" />
-            {busy ? T("Making the file…") : T("Download {format}", { format: format.toUpperCase() })}
+            {busy
+              ? T("Making the file…")
+              : T("Download {format}", { format: format.toUpperCase() })}
           </button>
-          <button type="button" className="btn" onClick={() => void copyLink()} disabled={!count}>
+          <button
+            type="button"
+            className="btn"
+            onClick={() => void copyLink()}
+            disabled={!count}
+          >
             <Icon name="link" />
             {T("Copy link")}
           </button>

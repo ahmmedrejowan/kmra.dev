@@ -3,5 +3,8 @@
 let id = 0;
 self.onmessage = (e: MessageEvent<number>) => {
   clearInterval(id);
-  id = self.setInterval(() => (self as unknown as Worker).postMessage(0), e.data);
+  id = self.setInterval(
+    () => (self as unknown as Worker).postMessage(0),
+    e.data,
+  );
 };

@@ -29,7 +29,10 @@ export async function stashFiles(files: File[], to?: string): Promise<void> {
   const db = await open();
   await new Promise<void>((resolve, reject) => {
     const tx = db.transaction(STORE, "readwrite");
-    tx.objectStore(STORE).put({ files, to: to ? pathOf(to) : null, at: Date.now() }, KEY);
+    tx.objectStore(STORE).put(
+      { files, to: to ? pathOf(to) : null, at: Date.now() },
+      KEY,
+    );
     tx.oncomplete = () => resolve();
     tx.onerror = () => reject(tx.error);
   });
@@ -52,7 +55,11 @@ export async function takeFiles(): Promise<File[]> {
     });
     db.close();
     if (!saved || Array.isArray(saved)) return [];
-    const { files, to, at } = saved as { files: File[]; to: string | null; at: number };
+    const { files, to, at } = saved as {
+      files: File[];
+      to: string | null;
+      at: number;
+    };
     if (Date.now() - at > FRESH_MS) return [];
     if (to && to !== location.pathname) return [];
     return files;

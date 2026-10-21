@@ -18,7 +18,9 @@ export default function Mono(_: ToolProps) {
       idle={T("This file is already mono.")}
       settings={() => (
         <p className="note">
-          {T("Left and right are mixed into one channel. Voices sound the same; the file gets smaller.")}
+          {T(
+            "Left and right are mixed into one channel. Voices sound the same; the file gets smaller.",
+          )}
         </p>
       )}
     />

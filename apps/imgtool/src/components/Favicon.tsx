@@ -27,7 +27,6 @@ const PNGS: { name: string; size: number; solid?: boolean }[] = [
 ];
 const ICO_SIZES = [16, 32, 48];
 
-
 interface Opts {
   fit: "cover" | "contain";
   pad: number;

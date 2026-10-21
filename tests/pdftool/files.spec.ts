@@ -19,8 +19,7 @@ import {
 const TEXT6 = gen("text6.pdf");
 const WIDE2 = gen("landscape2.pdf");
 const word = (t: string) => t.split(" ")[2];
-const skipped = (page: Page) =>
-  page.locator(".tool-area .skipped");
+const skipped = (page: Page) => page.locator(".tool-area .skipped");
 
 test("remove pages: a file that would lose every page is left out, the other still comes out", async ({
   page,

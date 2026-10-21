@@ -2558,7 +2558,8 @@ function ImageToolView({ tool, preset, tools, brand, lang = "en" }: Props) {
   };
   const srcFmt = item ? formatOf(item.file) : null;
   // Strip metadata cutting fields out of the file saves nothing again, so quality isn't used
-  const lossless = act === "strip-metadata" && eff.keepFormat && onlyEncodes(eff);
+  const lossless =
+    act === "strip-metadata" && eff.keepFormat && onlyEncodes(eff);
   const changes = CHANGES.filter(
     (id) =>
       clearOf(id, s) &&

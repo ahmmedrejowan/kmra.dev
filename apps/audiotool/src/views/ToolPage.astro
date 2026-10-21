@@ -156,7 +156,12 @@ const schema = [
   </section>
 
   <div class="wrap tool-area">
-    <AudioTool client:load tool={tool.slug} lang={locale} preset={task?.preset} />
+    <AudioTool
+      client:load
+      tool={tool.slug}
+      lang={locale}
+      preset={task?.preset}
+    />
 
     {tool.ready && tool.steps && <InfoCard steps={tool.steps} items={info} />}
 

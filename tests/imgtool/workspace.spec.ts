@@ -16,35 +16,54 @@ const workspace = async (page: Page, path: string, file: string) => {
   return ws;
 };
 const pick = (ws: ReturnType<Page["getByRole"]>, name: string) =>
-  ws.getByRole("navigation", { name: "Tools" }).getByRole("button", { name, exact: true }).click();
+  ws
+    .getByRole("navigation", { name: "Tools" })
+    .getByRole("button", { name, exact: true })
+    .click();
 const saveWs = (page: Page, ws: ReturnType<Page["getByRole"]>) =>
-  download(page, () => ws.getByRole("button", { name: "Download", exact: true }).click());
+  download(page, () =>
+    ws.getByRole("button", { name: "Download", exact: true }).click(),
+  );
 
 /** Everything from the first scan (SOS) on: the compressed picture itself */
 const scan = (b: Uint8Array) => {
-  for (let i = 2; i < b.length - 1; i++) if (b[i] === 0xff && b[i + 1] === 0xda) return Buffer.from(b.subarray(i));
+  for (let i = 2; i < b.length - 1; i++)
+    if (b[i] === 0xff && b[i + 1] === 0xda) return Buffer.from(b.subarray(i));
   return Buffer.alloc(0);
 };
 
-test("rail names every tool, and the page's tool opens with its own panel", async ({ page }) => {
+test("rail names every tool, and the page's tool opens with its own panel", async ({
+  page,
+}) => {
   const ws = await workspace(page, "/compress", "photo.jpg");
   const rail = ws.getByRole("navigation", { name: "Tools" });
-  await expect(rail.getByRole("button", { name: "Compress", exact: true })).toHaveAttribute("aria-pressed", "true");
+  await expect(
+    rail.getByRole("button", { name: "Compress", exact: true }),
+  ).toHaveAttribute("aria-pressed", "true");
   await expect(rail).toContainText("Strip metadata");
   await expect(ws.locator(".ws-tool h3")).toHaveText("Compress");
   await expect(ws.locator(".ws-tool")).toContainText("Exact size");
   // Other edits are folded away, with nothing on yet
-  await expect(ws.locator(".insp .more:not(.history)")).not.toHaveAttribute("open", "");
-  await expect(ws.locator(".insp .more:not(.history) summary small")).toHaveCount(0);
+  await expect(ws.locator(".insp .more:not(.history)")).not.toHaveAttribute(
+    "open",
+    "",
+  );
+  await expect(
+    ws.locator(".insp .more:not(.history) summary small"),
+  ).toHaveCount(0);
 });
 
-test("Convert from the Compress workspace gives the chosen format, even when bigger", async ({ page }) => {
+test("Convert from the Compress workspace gives the chosen format, even when bigger", async ({
+  page,
+}) => {
   const ws = await workspace(page, "/compress", "photo.png");
   await pick(ws, "Convert");
   await expect(ws.locator(".ws-tool h3")).toHaveText("Convert");
   const to = ws.getByRole("group", { name: "Convert to" });
   // The file's own format isn't offered
-  await expect(to.getByRole("button", { name: "PNG", exact: true })).toHaveCount(0);
+  await expect(
+    to.getByRole("button", { name: "PNG", exact: true }),
+  ).toHaveCount(0);
   await to.getByRole("button", { name: "BMP", exact: true }).click();
   await expect(ws).toContainText(/800 × 600, BMP/);
   await expect(ws).toContainText("BMP has no quality setting");
@@ -53,10 +72,14 @@ test("Convert from the Compress workspace gives the chosen format, even when big
   expect(info(await bytes(d))).toEqual({ type: "bmp", w: 800, h: 600 });
 });
 
-test("Strip metadata in the workspace lists fields and keeps the picture as it is", async ({ page }) => {
+test("Strip metadata in the workspace lists fields and keeps the picture as it is", async ({
+  page,
+}) => {
   const ws = await workspace(page, "/compress", "meta.jpg");
   await pick(ws, "Strip metadata");
-  await expect(ws.locator(".meta-count")).toHaveText("Removing 13 of 14 fields");
+  await expect(ws.locator(".meta-count")).toHaveText(
+    "Removing 13 of 14 fields",
+  );
   await expect(ws.locator(".meta-resave")).toHaveCount(0);
   const d = await saveWs(page, ws);
   expect(d.suggestedFilename()).toBe("meta-strip-metadata-kmra.jpg");
@@ -65,35 +88,57 @@ test("Strip metadata in the workspace lists fields and keeps the picture as it i
   expect(scan(b).equals(scan(readFileSync(gen("meta.jpg"))))).toBe(true);
 });
 
-test("Strip metadata with other edits on says everything goes, and can clear them", async ({ page }) => {
+test("Strip metadata with other edits on says everything goes, and can clear them", async ({
+  page,
+}) => {
   const ws = await workspace(page, "/strip-metadata", "meta.jpg");
   await pick(ws, "Watermark");
   await expect(ws.locator(".ws-tool h3")).toHaveText("Watermark");
   await pick(ws, "Strip metadata");
-  await expect(ws.locator(".insp .more:not(.history) summary small")).toHaveText("1 on");
+  await expect(
+    ws.locator(".insp .more:not(.history) summary small"),
+  ).toHaveText("1 on");
   await expect(ws.locator(".meta-resave")).toContainText("saved again");
-  await expect(ws.locator(".meta-count")).toHaveText("Removing 14 of 14 fields");
+  await expect(ws.locator(".meta-count")).toHaveText(
+    "Removing 14 of 14 fields",
+  );
   await ws.getByRole("button", { name: "Clear other edits" }).click();
   await expect(ws.locator(".meta-resave")).toHaveCount(0);
-  await expect(ws.locator(".meta-count")).toHaveText("Removing 13 of 14 fields");
+  await expect(ws.locator(".meta-count")).toHaveText(
+    "Removing 13 of 14 fields",
+  );
 });
 
-test("Advanced opens empty at /editor?t=<tool>; choices wait for the photo; Back returns to Simple", async ({ page }) => {
+test("Advanced opens empty at /editor?t=<tool>; choices wait for the photo; Back returns to Simple", async ({
+  page,
+}) => {
   await page.goto("/convert");
   await page.evaluate(() => window.dispatchEvent(new Event("kmra:advanced")));
   const ws = page.getByRole("dialog", { name: "Advanced workspace" });
   await expect(ws).toBeVisible();
   await expect(page).toHaveURL(/\/editor\?t=convert$/);
   await expect(ws.locator(".ws-hint")).toBeVisible();
-  await expect(ws.getByRole("button", { name: "Download", exact: true })).toBeDisabled();
+  await expect(
+    ws.getByRole("button", { name: "Download", exact: true }),
+  ).toBeDisabled();
   // Pick WebP before there's a photo; it applies when one arrives
-  await ws.getByRole("group", { name: "Convert to" }).getByRole("button", { name: "WebP", exact: true }).click();
-  await page.locator("main input[type=file]").first().setInputFiles(gen("photo.jpg"));
+  await ws
+    .getByRole("group", { name: "Convert to" })
+    .getByRole("button", { name: "WebP", exact: true })
+    .click();
+  await page
+    .locator("main input[type=file]")
+    .first()
+    .setInputFiles(gen("photo.jpg"));
   await expect(ws).toContainText(/1600 × 1200, WebP/);
   // Removing the photo keeps the editor open, with its drop area
   await ws.getByRole("button", { name: "Remove photo.jpg" }).click();
   await expect(ws.locator(".ws-empty")).toBeVisible();
-  await expect(ws.getByRole("group", { name: "Convert to" }).getByRole("button", { name: "WebP", exact: true })).toHaveAttribute("aria-pressed", "true");
+  await expect(
+    ws
+      .getByRole("group", { name: "Convert to" })
+      .getByRole("button", { name: "WebP", exact: true }),
+  ).toHaveAttribute("aria-pressed", "true");
   // Picking another tool updates the address; Back goes to the Simple page
   await pick(ws, "Compress");
   await expect(page).toHaveURL(/\/editor\?t=compress$/);
@@ -102,27 +147,41 @@ test("Advanced opens empty at /editor?t=<tool>; choices wait for the photo; Back
   await expect(ws).toBeHidden();
 });
 
-test("the editor opened for a tool goes back to that tool's page with the files", async ({ page }) => {
+test("the editor opened for a tool goes back to that tool's page with the files", async ({
+  page,
+}) => {
   await page.goto("/bn/editor?t=compress");
   // The workspace's own name is in Bangla here
   const ws = page.locator(".ws");
   await expect(ws.locator(".ws-tool h3")).toContainText(/[ঀ-৿]/);
-  await page.locator("main input[type=file]").first().setInputFiles(gen("photo.jpg"));
-  await expect(ws.locator(".ws-result")).toContainText(/১৬০০ × ১২০০|1600 × 1200/);
+  await page
+    .locator("main input[type=file]")
+    .first()
+    .setInputFiles(gen("photo.jpg"));
+  await expect(ws.locator(".ws-result")).toContainText(
+    /১৬০০ × ১২০০|1600 × 1200/,
+  );
   // The mode switch in the header (Bangla labels here)
   await ws.locator(".mode-seg button").first().click();
   await expect(page).toHaveURL(/\/bn\/compress$/);
   await expect(page.locator(".controls .result")).toContainText(/JPEG/);
-  await expect(page.locator(".filebar .fchip").first()).toContainText("photo.jpg");
+  await expect(page.locator(".filebar .fchip").first()).toContainText(
+    "photo.jpg",
+  );
 });
 
-test("changes can be hidden, removed, undone and redone; history jumps; a refresh keeps them", async ({ page }) => {
+test("changes can be hidden, removed, undone and redone; history jumps; a refresh keeps them", async ({
+  page,
+}) => {
   // Starts from Resize, whose defaults change nothing (Compress would list its quality)
   const ws = await workspace(page, "/resize", "photo.jpg");
   const list = ws.locator(".change-list li");
   await pick(ws, "Watermark");
   await pick(ws, "Crop");
-  await ws.locator(".ws-tool").getByRole("button", { name: "1:1", exact: true }).click();
+  await ws
+    .locator(".ws-tool")
+    .getByRole("button", { name: "1:1", exact: true })
+    .click();
   await expect(list).toHaveText(["Crop 1200 × 1200", "Watermark"]);
   await expect(ws).toContainText(/1200 × 1200, JPEG/);
   // Hide the crop: still listed, left out of the result
@@ -132,8 +191,15 @@ test("changes can be hidden, removed, undone and redone; history jumps; a refres
   // History lists every step, the last one current
   const histBtn = ws.locator(".hist-btn");
   await histBtn.click();
-  await expect(ws.locator(".hist-list button")).toHaveText(["Start", "Watermark added", "Crop added", "Crop hidden"]);
-  await expect(ws.locator(".hist-list [aria-current]")).toHaveText("Crop hidden");
+  await expect(ws.locator(".hist-list button")).toHaveText([
+    "Start",
+    "Watermark added",
+    "Crop added",
+    "Crop hidden",
+  ]);
+  await expect(ws.locator(".hist-list [aria-current]")).toHaveText(
+    "Crop hidden",
+  );
   // Escape closes the list, not the workspace
   await page.keyboard.press("Escape");
   await expect(ws.locator(".hist-pop")).toBeHidden();
@@ -156,7 +222,9 @@ test("changes can be hidden, removed, undone and redone; history jumps; a refres
   await ws.getByRole("button", { name: "Remove Watermark" }).click();
   await expect(list).toHaveText(["Crop 1200 × 1200"]);
   await histBtn.click();
-  await expect(ws.locator(".hist-list [aria-current]")).toHaveText("Watermark removed");
+  await expect(ws.locator(".hist-list [aria-current]")).toHaveText(
+    "Watermark removed",
+  );
   await page.keyboard.press("Escape");
   // A refresh at /editor?t=crop brings the changes back (the photo needs adding again)
   await expect(page).toHaveURL(/\/editor\?t=crop$/);
@@ -168,7 +236,9 @@ test("changes can be hidden, removed, undone and redone; history jumps; a refres
   await expect(page.locator(".ws .change-list li")).toHaveCount(0);
 });
 
-test("batch: a change for one photo only, its own crop, and copying it to all", async ({ page }) => {
+test("batch: a change for one photo only, its own crop, and copying it to all", async ({
+  page,
+}) => {
   await start(page, "/resize", [gen("photo.jpg"), gen("small.jpg")]);
   await page.evaluate(() => window.dispatchEvent(new Event("kmra:advanced")));
   const ws = page.getByRole("dialog", { name: "Advanced workspace" });
@@ -176,7 +246,11 @@ test("batch: a change for one photo only, its own crop, and copying it to all", 
   const list = ws.locator(".change-list li");
   // photo.jpg is on screen: give it a watermark for this photo only
   await pick(ws, "Watermark");
-  await ws.getByRole("button", { name: "Watermark: all photos. Use for this photo only" }).click();
+  await ws
+    .getByRole("button", {
+      name: "Watermark: all photos. Use for this photo only",
+    })
+    .click();
   await expect(list).toHaveText(["WatermarkThis photo"]);
   await expect(ws.locator(".queue .own-dot")).toHaveCount(1);
   // small.jpg doesn't have it, and its panel offers to add it
@@ -184,91 +258,158 @@ test("batch: a change for one photo only, its own crop, and copying it to all", 
   await expect(list).toHaveCount(0);
   await expect(ws.locator(".fx-add")).toContainText("Not on this photo.");
   // The zip: only photo.jpg is watermarked (it differs from a plain copy)
-  const d = await download(page, () => ws.getByRole("button", { name: "Zip of 2" }).click());
+  const d = await download(page, () =>
+    ws.getByRole("button", { name: "Zip of 2" }).click(),
+  );
   const files = unzip(await bytes(d));
-  expect(files.map((f) => f.name).sort()).toEqual(["photo-watermark-kmra.jpg", "small-watermark-kmra.jpg"]);
+  expect(files.map((f) => f.name).sort()).toEqual([
+    "photo-watermark-kmra.jpg",
+    "small-watermark-kmra.jpg",
+  ]);
   // Back on photo.jpg: copy its changes to all photos
   await ws.getByRole("button", { name: /^photo\.jpg/ }).click();
   await expect(list).toHaveText(["WatermarkThis photo"]);
-  await ws.getByRole("button", { name: "Copy this photo's changes to all photos" }).click();
+  await ws
+    .getByRole("button", { name: "Copy this photo's changes to all photos" })
+    .click();
   await expect(ws.locator(".queue .own-dot")).toHaveCount(2);
   await ws.getByRole("button", { name: /^small\.jpg/ }).click();
   await expect(list).toHaveText(["WatermarkThis photo"]);
   // History names the photo for a one-photo change
   await ws.locator(".hist-btn").click();
-  await expect(ws.locator(".hist-list button")).toContainText(["Start", "Watermark added", "Watermark: this photo only", "Copied to all photos"]);
+  await expect(ws.locator(".hist-list button")).toContainText([
+    "Start",
+    "Watermark added",
+    "Watermark: this photo only",
+    "Copied to all photos",
+  ]);
 });
 
-test("removing the last photo clears its crop and history; Simple mode lists changes from Advanced", async ({ page }) => {
+test("removing the last photo clears its crop and history; Simple mode lists changes from Advanced", async ({
+  page,
+}) => {
   const ws = await workspace(page, "/resize", "photo.jpg");
   await pick(ws, "Crop");
-  await ws.locator(".ws-tool").getByRole("button", { name: "1:1", exact: true }).click();
+  await ws
+    .locator(".ws-tool")
+    .getByRole("button", { name: "1:1", exact: true })
+    .click();
   await pick(ws, "Watermark");
   // Simple mode shows them under "Also applied", with undo
   await ws.locator(".mode-seg").getByRole("button", { name: "Simple" }).click();
   const also = page.locator(".controls .also");
   await expect(also).toContainText("Also applied");
-  await expect(also.locator("li")).toHaveText(["Crop 1200 × 1200", "Watermark"]);
+  await expect(also.locator("li")).toHaveText([
+    "Crop 1200 × 1200",
+    "Watermark",
+  ]);
   await also.getByRole("button", { name: "Remove Watermark" }).click();
   await expect(also.locator("li")).toHaveText(["Crop 1200 × 1200"]);
   await also.getByRole("button", { name: "Undo" }).click();
-  await expect(also.locator("li")).toHaveText(["Crop 1200 × 1200", "Watermark"]);
+  await expect(also.locator("li")).toHaveText([
+    "Crop 1200 × 1200",
+    "Watermark",
+  ]);
   // Back to Advanced, remove the photo: crop and history go, the watermark stays
   await page.evaluate(() => window.dispatchEvent(new Event("kmra:advanced")));
   await ws.getByRole("button", { name: "Remove photo.jpg" }).click();
-  await expect(page.locator(".toast")).toContainText("Crop, blur areas and history cleared");
+  await expect(page.locator(".toast")).toContainText(
+    "Crop, blur areas and history cleared",
+  );
   await expect(ws.locator(".change-list li")).toHaveText(["Watermark"]);
   await expect(ws.getByRole("button", { name: "Undo" })).toBeDisabled();
 });
 
-test("batch downloads: zip, save each with progress, a PNG already PNG kept as is", async ({ page }) => {
-  await start(page, "/convert", [gen("photo.jpg"), gen("photo.png"), gen("small.jpg")]);
+test("batch downloads: zip, save each with progress, a PNG already PNG kept as is", async ({
+  page,
+}) => {
+  await start(page, "/convert", [
+    gen("photo.jpg"),
+    gen("photo.png"),
+    gen("small.jpg"),
+  ]);
   const res = page.locator(".controls .result");
-  const z = await download(page, () => res.getByRole("button", { name: "Download all 3 as zip" }).click());
+  const z = await download(page, () =>
+    res.getByRole("button", { name: "Download all 3 as zip" }).click(),
+  );
   const files = unzip(await bytes(z));
-  expect(files.map((f) => f.name)).toEqual(["photo-convert-kmra.png", "photo-convert-2-kmra.png", "small-convert-kmra.png"]);
+  expect(files.map((f) => f.name)).toEqual([
+    "photo-convert-kmra.png",
+    "photo-convert-2-kmra.png",
+    "small-convert-kmra.png",
+  ]);
   expect(files.map((f) => info(f.data))).toEqual([
     { type: "png", w: 1600, h: 1200 },
     { type: "png", w: 800, h: 600 },
     { type: "png", w: 640, h: 480 },
   ]);
   // The PNG in a "convert to PNG" batch is handed back untouched
-  expect(Buffer.compare(files[1]!.data, readFileSync(gen("photo.png")))).toBe(0);
+  expect(Buffer.compare(files[1]!.data, readFileSync(gen("photo.png")))).toBe(
+    0,
+  );
   const names: string[] = [];
   page.on("download", (d) => names.push(d.suggestedFilename()));
   await res.getByRole("button", { name: "Save each separately" }).click();
-  await expect(res.getByRole("button", { name: /^Preparing \d of 3…$/ })).toBeVisible();
+  await expect(
+    res.getByRole("button", { name: /^Preparing \d of 3…$/ }),
+  ).toBeVisible();
   await expect.poll(() => names.length).toBe(3);
-  expect(names).toEqual(["photo-convert-kmra.png", "photo-convert-2-kmra.png", "small-convert-kmra.png"]);
+  expect(names).toEqual([
+    "photo-convert-kmra.png",
+    "photo-convert-2-kmra.png",
+    "small-convert-kmra.png",
+  ]);
 });
 
-test("More edits: every section opens the same way, with Add or Remove", async ({ page }) => {
+test("More edits: every section opens the same way, with Add or Remove", async ({
+  page,
+}) => {
   const ws = await workspace(page, "/compress", "photo.jpg");
   await ws.locator(".insp .more:not(.history) > summary").click();
   const secs = ws.locator(".ed-sec");
   // Only what's on is open (Compress saves as JPEG: Format), with Remove; the rest offer Add
-  await expect(secs.locator(".ed-head[aria-expanded=true]")).toHaveText(["FormatOn"]);
-  await expect(ws.locator("#ws-format").getByRole("button", { name: "Remove" })).toBeVisible();
-  for (const h of await secs.filter({ hasNot: page.locator("#ws-format") }).locator("h3").all())
-    if (!(await h.locator(".ed-on").count())) await expect(h.getByRole("button", { name: "Add", exact: true })).toBeVisible();
+  await expect(secs.locator(".ed-head[aria-expanded=true]")).toHaveText([
+    "FormatOn",
+  ]);
+  await expect(
+    ws.locator("#ws-format").getByRole("button", { name: "Remove" }),
+  ).toBeVisible();
+  for (const h of await secs
+    .filter({ hasNot: page.locator("#ws-format") })
+    .locator("h3")
+    .all())
+    if (!(await h.locator(".ed-on").count()))
+      await expect(
+        h.getByRole("button", { name: "Add", exact: true }),
+      ).toBeVisible();
   // Compress's own quality is a change too
-  await expect(ws.locator(".change-list li .ch-name")).toHaveText(["Quality 80"]);
+  await expect(ws.locator(".change-list li .ch-name")).toHaveText([
+    "Quality 80",
+  ]);
   const mark = ws.locator("#ws-watermark");
   await mark.getByRole("button", { name: "Add" }).click();
   await expect(mark.locator(".ed-on")).toHaveText("On");
-  await expect(mark.locator(".ed-head")).toHaveAttribute("aria-expanded", "true");
+  await expect(mark.locator(".ed-head")).toHaveAttribute(
+    "aria-expanded",
+    "true",
+  );
   const names = ws.locator(".change-list li .ch-name");
   await expect(names).toHaveText(["Watermark", "Quality 80"]);
   // The header folds it without removing it; Remove takes it out
   await mark.locator(".ed-head").click();
-  await expect(mark.locator(".ed-head")).toHaveAttribute("aria-expanded", "false");
+  await expect(mark.locator(".ed-head")).toHaveAttribute(
+    "aria-expanded",
+    "false",
+  );
   await expect(names).toHaveText(["Watermark", "Quality 80"]);
   await mark.getByRole("button", { name: "Remove" }).click();
   await expect(names).toHaveText(["Quality 80"]);
   await expect(mark.getByRole("button", { name: "Add" })).toBeVisible();
 });
 
-test("Compress's quality and a new format are changes; the split view only where the look changes", async ({ page }) => {
+test("Compress's quality and a new format are changes; the split view only where the look changes", async ({
+  page,
+}) => {
   const ws = await workspace(page, "/compress", "photo.jpg");
   const list = ws.locator(".change-list li .ch-name");
   // A JPEG saved as JPEG isn't a format change; quality 80 is
@@ -289,12 +430,17 @@ test("Compress's quality and a new format are changes; the split view only where
   await expect(list).toHaveText(["Quality 70"]);
   // Convert to PNG: listed, and a lossless result shows on its own
   await pick(ws, "Convert");
-  await ws.getByRole("group", { name: "Convert to" }).getByRole("button", { name: "PNG", exact: true }).click();
+  await ws
+    .getByRole("group", { name: "Convert to" })
+    .getByRole("button", { name: "PNG", exact: true })
+    .click();
   await expect(list).toHaveText(["Save as PNG"]);
   await expect(ws.locator(".cmp.solo")).toBeVisible();
 });
 
-test("Resize and Strip metadata show the result on its own", async ({ page }) => {
+test("Resize and Strip metadata show the result on its own", async ({
+  page,
+}) => {
   for (const tool of ["/resize", "/strip-metadata"]) {
     await start(page, tool, gen("photo.jpg"));
     await expect(page.locator(".toolcard .cmp.solo")).toBeVisible();
@@ -304,7 +450,10 @@ test("Resize and Strip metadata show the result on its own", async ({ page }) =>
 
 test("photo info tools can remove one photo", async ({ page }) => {
   await page.goto("/image-info");
-  await page.locator("main input[type=file]").first().setInputFiles([gen("photo.jpg"), gen("small.jpg")]);
+  await page
+    .locator("main input[type=file]")
+    .first()
+    .setInputFiles([gen("photo.jpg"), gen("small.jpg")]);
   const chips = page.locator(".filebar .fchip:not(.add)");
   await expect(chips).toHaveCount(2);
   await page.getByRole("button", { name: "Remove photo.jpg" }).click();

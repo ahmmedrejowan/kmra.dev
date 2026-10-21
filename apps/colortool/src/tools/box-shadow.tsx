@@ -16,7 +16,14 @@ interface Layer {
 }
 
 const ink = (a: number) => withAlpha(col("#0f172a"), a);
-const L = (x: number, y: number, blur: number, spread: number, a: number, inset = false): Layer => ({
+const L = (
+  x: number,
+  y: number,
+  blur: number,
+  spread: number,
+  a: number,
+  inset = false,
+): Layer => ({
   x,
   y,
   blur,
@@ -27,7 +34,11 @@ const L = (x: number, y: number, blur: number, spread: number, a: number, inset 
 
 const PRESETS: Record<string, Layer[]> = {
   Soft: [L(0, 1, 2, 0, 0.06), L(0, 4, 8, -2, 0.08), L(0, 12, 24, -6, 0.1)],
-  Lifted: [L(0, 2, 4, 0, 0.06), L(0, 10, 20, -4, 0.12), L(0, 30, 60, -12, 0.25)],
+  Lifted: [
+    L(0, 2, 4, 0, 0.06),
+    L(0, 10, 20, -4, 0.12),
+    L(0, 30, 60, -12, 0.25),
+  ],
   Sharp: [L(4, 4, 0, 0, 1)],
   Floating: [L(0, 24, 48, -12, 0.25), L(0, 4, 8, -2, 0.05)],
   Inner: [L(0, 2, 6, 0, 0.18, true)],
@@ -102,7 +113,11 @@ export default function BoxShadow(_: ToolProps) {
           <div className="ct-layers" role="group" aria-label={T("Layers")}>
             {layers.map((l, i) => (
               <div key={i} className="ct-layer" aria-current={i === sel}>
-                <button type="button" className="ct-layer-pick" onClick={() => setSel(i)}>
+                <button
+                  type="button"
+                  className="ct-layer-pick"
+                  onClick={() => setSel(i)}
+                >
                   <i style={{ background: toHex(l.color, false) }} />
                   <span>
                     {T("Layer {n}", { n: i + 1 })}
@@ -129,12 +144,52 @@ export default function BoxShadow(_: ToolProps) {
             ))}
           </div>
         </div>
-        <Slider label={T("Horizontal offset")} value={cur.x} min={-100} max={100} unit="px" reset={0} onChange={(x) => set({ x })} />
-        <Slider label={T("Vertical offset")} value={cur.y} min={-100} max={100} unit="px" reset={0} onChange={(y) => set({ y })} />
-        <Slider label={T("Blur")} value={cur.blur} min={0} max={200} unit="px" reset={0} onChange={(blur) => set({ blur })} />
-        <Slider label={T("Spread")} value={cur.spread} min={-60} max={60} unit="px" reset={0} onChange={(spread) => set({ spread })} />
-        <ColorField label={T("Shadow colour")} value={cur.color} onChange={(color) => set({ color })} />
-        <Toggle label={T("Inset (inside the box)")} on={cur.inset} onChange={(inset) => set({ inset })} />
+        <Slider
+          label={T("Horizontal offset")}
+          value={cur.x}
+          min={-100}
+          max={100}
+          unit="px"
+          reset={0}
+          onChange={(x) => set({ x })}
+        />
+        <Slider
+          label={T("Vertical offset")}
+          value={cur.y}
+          min={-100}
+          max={100}
+          unit="px"
+          reset={0}
+          onChange={(y) => set({ y })}
+        />
+        <Slider
+          label={T("Blur")}
+          value={cur.blur}
+          min={0}
+          max={200}
+          unit="px"
+          reset={0}
+          onChange={(blur) => set({ blur })}
+        />
+        <Slider
+          label={T("Spread")}
+          value={cur.spread}
+          min={-60}
+          max={60}
+          unit="px"
+          reset={0}
+          onChange={(spread) => set({ spread })}
+        />
+        <ColorField
+          label={T("Shadow colour")}
+          value={cur.color}
+          onChange={(color) => set({ color })}
+        />
+        <Toggle
+          label={T("Inset (inside the box)")}
+          on={cur.inset}
+          onChange={(inset) => set({ inset })}
+        />
       </div>
 
       <div className="ct-main">
@@ -158,7 +213,15 @@ export default function BoxShadow(_: ToolProps) {
             value={dark}
             onPick={setDark}
           />
-          <Slider label={T("Corner radius")} value={radius} min={0} max={48} unit="px" reset={16} onChange={setRadius} />
+          <Slider
+            label={T("Corner radius")}
+            value={radius}
+            min={0}
+            max={48}
+            unit="px"
+            reset={16}
+            onChange={setRadius}
+          />
         </div>
         <CodeOut code={code} label="CSS" />
         <details className="ct-more">

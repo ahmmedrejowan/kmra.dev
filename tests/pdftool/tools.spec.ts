@@ -53,7 +53,10 @@ test("split by ranges makes one PDF per range", async ({ page }) => {
   const out = await runAndDownload(page, "Split", "Download 2 files (zip)");
   const files = unzip(out.bytes);
   const names = Object.keys(files).sort();
-  expect(names).toEqual(["text6-split-pages-1-2-kmra.pdf", "text6-split-pages-3-6-kmra.pdf"]);
+  expect(names).toEqual([
+    "text6-split-pages-1-2-kmra.pdf",
+    "text6-split-pages-3-6-kmra.pdf",
+  ]);
   expect(await pageCount(files["text6-split-pages-1-2-kmra.pdf"]!)).toBe(2);
   const last = await pageTexts(files["text6-split-pages-3-6-kmra.pdf"]!);
   expect(last.map((t) => t.split(" ")[2])).toEqual(WORDS.slice(2));

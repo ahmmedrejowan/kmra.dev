@@ -1,6 +1,10 @@
 import { useState } from "react";
 import { useT } from "@kmra/ui/lib/i18n-react";
-import { isMediaFile, VIDEO_ACCEPT, type AudioContainer } from "@kmra/media/engine";
+import {
+  isMediaFile,
+  VIDEO_ACCEPT,
+  type AudioContainer,
+} from "@kmra/media/engine";
 import { FormatSeg, isFormat, LOSSLESS, RateSeg } from "./formats";
 import { Workspace, type ToolProps } from "./Workspace";
 
@@ -44,7 +48,9 @@ export default function VideoToAudio({ preset }: ToolProps) {
           )}
           {to === "m4a" && (
             <p className="note">
-              {T("If the video's sound is AAC, it's copied as it is: instant, and no quality lost.")}
+              {T(
+                "If the video's sound is AAC, it's copied as it is: instant, and no quality lost.",
+              )}
             </p>
           )}
         </>

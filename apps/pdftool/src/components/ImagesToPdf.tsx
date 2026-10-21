@@ -202,10 +202,7 @@ function ImagesToPdfView() {
       }
       if (!images.length) return;
       const blob = await save(await imagesToPdf(images, o));
-      downloadBlob(
-        blob,
-        `${toolName(pics[0]!.file.name, "from-image")}.pdf`,
-      );
+      downloadBlob(blob, `${toolName(pics[0]!.file.name, "from-image")}.pdf`);
       toast(
         T("Saved a {n}-page PDF, {size}.", {
           n: images.length,

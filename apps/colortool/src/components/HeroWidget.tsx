@@ -56,7 +56,9 @@ function Strip() {
           {T("New palette")}
         </button>
         <span className="muted ct-strip-hint">
-          {T("or press {key}. Click a colour to copy it.", { key: formatKeys("Space") })}
+          {T("or press {key}. Click a colour to copy it.", {
+            key: formatKeys("Space"),
+          })}
         </span>
         <a className="btn" href={L("/palette-generator")}>
           <Icon name="palette" />

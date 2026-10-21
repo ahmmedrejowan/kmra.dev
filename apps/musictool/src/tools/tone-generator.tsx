@@ -3,14 +3,25 @@ import { useT } from "@kmra/ui/lib/i18n-react";
 import { Icon } from "@kmra/ui/components/Icon";
 import { Toggle } from "@kmra/ui/components/controls";
 import type { ToolProps } from ".";
-import { Card, Choice, Keys, NotePicker, NumInput, Range, busyTarget, pre, useNum } from "../lib/ui";
+import {
+  Card,
+  Choice,
+  Keys,
+  NotePicker,
+  NumInput,
+  Range,
+  busyTarget,
+  pre,
+  useNum,
+} from "../lib/ui";
 import { audio, curve, out, reducedMotion, testHook } from "../lib/audio";
 import { freqOf, midiOf, readNote } from "../lib/theory";
 
 type Wave = OscillatorType;
 const MIN = 1;
 const MAX = 20000;
-const toSlider = (f: number) => Math.round((Math.log(f / MIN) / Math.log(MAX / MIN)) * 1000);
+const toSlider = (f: number) =>
+  Math.round((Math.log(f / MIN) / Math.log(MAX / MIN)) * 1000);
 const fromSlider = (v: number) => MIN * (MAX / MIN) ** (v / 1000);
 const FADE = 0.06;
 
@@ -24,10 +35,14 @@ interface Live {
 }
 
 /** The strongest frequency in the analyser's spectrum (parabolic interpolation between bins) */
-function peakOf(an: AnalyserNode, bins: Float32Array<ArrayBuffer>): number | null {
+function peakOf(
+  an: AnalyserNode,
+  bins: Float32Array<ArrayBuffer>,
+): number | null {
   an.getFloatFrequencyData(bins);
   let best = 1;
-  for (let i = 2; i < bins.length - 1; i++) if (bins[i]! > bins[best]!) best = i;
+  for (let i = 2; i < bins.length - 1; i++)
+    if (bins[i]! > bins[best]!) best = i;
   if (!(bins[best]! > -110)) return null;
   const a = bins[best - 1]!;
   const b = bins[best]!;
@@ -40,12 +55,19 @@ function peakOf(an: AnalyserNode, bins: Float32Array<ArrayBuffer>): number | nul
 export default function ToneGenerator({ preset }: ToolProps) {
   const T = useT();
   const num = useNum();
-  const [freq, setFreq] = useState(() => Math.min(MAX, Math.max(MIN, pre(preset?.freq, 440))));
+  const [freq, setFreq] = useState(() =>
+    Math.min(MAX, Math.max(MIN, pre(preset?.freq, 440))),
+  );
   const [wave, setWave] = useState<Wave>("sine");
   const [vol, setVol] = useState(25);
   const [bal, setBal] = useState(0);
   const [sweepOn, setSweepOn] = useState(false);
-  const [sweep, setSweep] = useState({ from: 20, to: 20000, dur: 10, log: true });
+  const [sweep, setSweep] = useState({
+    from: 20,
+    to: 20000,
+    dur: 10,
+    log: true,
+  });
   const [playing, setPlaying] = useState(false);
   const [shownFreq, setShownFreq] = useState<number | null>(null);
   const [peak, setPeak] = useState<number | null>(null);
@@ -73,7 +95,8 @@ export default function ToneGenerator({ preset }: ToolProps) {
       const from = Math.max(MIN, sweep.from);
       const to = Math.max(MIN, sweep.to);
       osc.frequency.setValueAtTime(from, t);
-      if (sweep.log) osc.frequency.exponentialRampToValueAtTime(to, t + sweep.dur);
+      if (sweep.log)
+        osc.frequency.exponentialRampToValueAtTime(to, t + sweep.dur);
       else osc.frequency.linearRampToValueAtTime(to, t + sweep.dur);
       s = { t0: t, from, to, dur: sweep.dur, log: sweep.log };
     } else osc.frequency.setValueAtTime(freq, t);
@@ -165,7 +188,10 @@ export default function ToneGenerator({ preset }: ToolProps) {
     const draw = (now: number) => {
       const c = audio();
       if (l.sweep) {
-        const p = Math.min(1, Math.max(0, (c.currentTime - l.sweep.t0) / l.sweep.dur));
+        const p = Math.min(
+          1,
+          Math.max(0, (c.currentTime - l.sweep.t0) / l.sweep.dur),
+        );
         const { from, to, log } = l.sweep;
         setShownFreq(log ? from * (to / from) ** p : from + (to - from) * p);
       }
@@ -224,12 +250,17 @@ export default function ToneGenerator({ preset }: ToolProps) {
   const f = shownFreq ?? freq;
   const note = readNote(f);
   const nearest = Math.round(midiOf(freq));
-  const fmtHz = (v: number) => (v >= 1000 ? num(v, v >= 10000 ? 0 : 1) : num(v, v < 100 ? 2 : 1));
+  const fmtHz = (v: number) =>
+    v >= 1000 ? num(v, v >= 10000 ? 0 : 1) : num(v, v < 100 ? 2 : 1);
 
   const stage = (
     <div className={`mt-tone${playing ? " on" : ""}`}>
       <canvas ref={canvas} className="mt-scope" aria-hidden="true" />
-      <div className="mt-tone-read" data-freq={f.toFixed(3)} data-peak={peak ? peak.toFixed(2) : ""}>
+      <div
+        className="mt-tone-read"
+        data-freq={f.toFixed(3)}
+        data-peak={peak ? peak.toFixed(2) : ""}
+      >
         <output className="mt-tone-hz">
           {fmtHz(f)}
           <span>Hz</span>
@@ -248,18 +279,26 @@ export default function ToneGenerator({ preset }: ToolProps) {
           max={1000}
           value={toSlider(freq)}
           aria-label={T("Frequency")}
-          onChange={(e) => setFreq(Number(fromSlider(Number(e.target.value)).toPrecision(4)))}
+          onChange={(e) =>
+            setFreq(Number(fromSlider(Number(e.target.value)).toPrecision(4)))
+          }
         />
       )}
       <div className="mt-actions">
-        <button type="button" className={`btn lg${playing ? "" : " acc"}`} onClick={() => (playing ? stop() : start())}>
+        <button
+          type="button"
+          className={`btn lg${playing ? "" : " acc"}`}
+          onClick={() => (playing ? stop() : start())}
+        >
           <Icon name={playing ? "stop" : "play"} />
           {playing ? T("Stop") : sweepOn ? T("Play the sweep") : T("Play")}
         </button>
       </div>
       <p className="mt-warn">
         <Icon name="volume" />
-        {T("Start quietly. Turn the volume up slowly: high or loud tones can hurt your ears and speakers.")}
+        {T(
+          "Start quietly. Turn the volume up slowly: high or loud tones can hurt your ears and speakers.",
+        )}
       </p>
       <Keys items={[[["Space"], T("play or stop")]]} />
     </div>
@@ -277,10 +316,23 @@ export default function ToneGenerator({ preset }: ToolProps) {
         unit="Hz"
         onChange={setFreq}
       />
-      <NotePicker label={T("Or pick a note (A4 = 440 Hz)")} midi={nearest} onChange={(m) => setFreq(Number(freqOf(m).toFixed(2)))} />
-      <div className="chips mt-pills" role="group" aria-label={T("Common tones")}>
+      <NotePicker
+        label={T("Or pick a note (A4 = 440 Hz)")}
+        midi={nearest}
+        onChange={(m) => setFreq(Number(freqOf(m).toFixed(2)))}
+      />
+      <div
+        className="chips mt-pills"
+        role="group"
+        aria-label={T("Common tones")}
+      >
         {[50, 100, 432, 440, 1000, 10000].map((v) => (
-          <button key={v} type="button" aria-pressed={freq === v} onClick={() => setFreq(v)}>
+          <button
+            key={v}
+            type="button"
+            aria-pressed={freq === v}
+            onClick={() => setFreq(v)}
+          >
             {num(v)} Hz
           </button>
         ))}
@@ -296,25 +348,71 @@ export default function ToneGenerator({ preset }: ToolProps) {
         ]}
         onPick={setWave}
       />
-      <Range label={T("Volume")} value={vol} min={0} max={100} display={`${num(vol)}%`} onChange={setVol} />
+      <Range
+        label={T("Volume")}
+        value={vol}
+        min={0}
+        max={100}
+        display={`${num(vol)}%`}
+        onChange={setVol}
+      />
       <Range
         label={T("Balance")}
         value={bal}
         min={-100}
         max={100}
-        display={bal === 0 ? T("Centre") : bal < 0 ? `${T("Left")} ${num(-bal)}%` : `${T("Right")} ${num(bal)}%`}
+        display={
+          bal === 0
+            ? T("Centre")
+            : bal < 0
+              ? `${T("Left")} ${num(-bal)}%`
+              : `${T("Right")} ${num(bal)}%`
+        }
         onChange={setBal}
       />
       <div className="mt-group">
-        <Toggle label={T("Sweep from one frequency to another")} on={sweepOn} onChange={(v) => { stop(); setSweepOn(v); }} />
+        <Toggle
+          label={T("Sweep from one frequency to another")}
+          on={sweepOn}
+          onChange={(v) => {
+            stop();
+            setSweepOn(v);
+          }}
+        />
         {sweepOn && (
           <>
             <div className="mt-row">
-              <NumInput label={T("From")} name="from" unit="Hz" value={sweep.from} min={MIN} max={MAX} decimals={1} onChange={(from) => setSweep({ ...sweep, from })} />
-              <NumInput label={T("To")} name="to" unit="Hz" value={sweep.to} min={MIN} max={MAX} decimals={1} onChange={(to) => setSweep({ ...sweep, to })} />
+              <NumInput
+                label={T("From")}
+                name="from"
+                unit="Hz"
+                value={sweep.from}
+                min={MIN}
+                max={MAX}
+                decimals={1}
+                onChange={(from) => setSweep({ ...sweep, from })}
+              />
+              <NumInput
+                label={T("To")}
+                name="to"
+                unit="Hz"
+                value={sweep.to}
+                min={MIN}
+                max={MAX}
+                decimals={1}
+                onChange={(to) => setSweep({ ...sweep, to })}
+              />
             </div>
             <div className="mt-row">
-              <NumInput label={T("Length")} name="dur" unit={T("s")} value={sweep.dur} min={1} max={120} onChange={(dur) => setSweep({ ...sweep, dur })} />
+              <NumInput
+                label={T("Length")}
+                name="dur"
+                unit={T("s")}
+                value={sweep.dur}
+                min={1}
+                max={120}
+                onChange={(dur) => setSweep({ ...sweep, dur })}
+              />
               <Choice
                 label={T("Curve")}
                 value={sweep.log}

@@ -80,7 +80,9 @@ test("split-every-page: a zip with one PDF per page", async ({ page }) => {
   const out = await runAndDownload(page, "Split", "Download 6 files (zip)");
   const files = unzip(out.bytes);
   const names = Object.keys(files).sort();
-  expect(names).toEqual([1, 2, 3, 4, 5, 6].map((n) => `text6-split-page-${n}-kmra.pdf`));
+  expect(names).toEqual(
+    [1, 2, 3, 4, 5, 6].map((n) => `text6-split-page-${n}-kmra.pdf`),
+  );
   for (const [i, n] of names.entries()) {
     expect(await pageCount(files[n]!)).toBe(1);
     expect((await pageTexts(files[n]!))[0]).toContain(WORDS[i]!);

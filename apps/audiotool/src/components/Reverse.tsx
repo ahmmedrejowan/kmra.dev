@@ -15,7 +15,9 @@ export default function Reverse(_: ToolProps) {
       }
       idle={T("This file has no sound.")}
       settings={() => (
-        <p className="note">{T("The whole file plays backwards, from the end to the start.")}</p>
+        <p className="note">
+          {T("The whole file plays backwards, from the end to the start.")}
+        </p>
       )}
     />
   );

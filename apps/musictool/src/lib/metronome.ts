@@ -38,7 +38,8 @@ export interface Tick {
 
 export const MIN_BPM = 20;
 export const MAX_BPM = 300;
-export const clampBpm = (v: number) => Math.min(MAX_BPM, Math.max(MIN_BPM, Math.round(v)));
+export const clampBpm = (v: number) =>
+  Math.min(MAX_BPM, Math.max(MIN_BPM, Math.round(v)));
 
 /**
  * Default accents for a meter: the downbeat, plus the start of each group in compound and odd
@@ -47,7 +48,8 @@ export const clampBpm = (v: number) => Math.min(MAX_BPM, Math.max(MIN_BPM, Math.
 export function defaultAccents(beats: number, unit: number): Accent[] {
   const a: Accent[] = Array.from({ length: beats }, () => 1);
   a[0] = 2;
-  if (unit === 8 && beats % 3 === 0 && beats > 3) for (let i = 3; i < beats; i += 3) a[i] = 2;
+  if (unit === 8 && beats % 3 === 0 && beats > 3)
+    for (let i = 3; i < beats; i += 3) a[i] = 2;
   else if (beats === 5) a[3] = 2;
   else if (beats === 7) {
     a[2] = 2;
@@ -80,7 +82,14 @@ export class Planner {
     const acc = accents[beat] ?? 1;
     const level: Tick["level"] =
       acc === 0 ? 0 : this.sub > 0 ? 1 : acc === 2 ? 3 : 2;
-    return { time: this.time, bar: this.bar, beat, sub: this.sub, level, bpm: this.s.bpm };
+    return {
+      time: this.time,
+      bar: this.bar,
+      beat,
+      sub: this.sub,
+      level,
+      bpm: this.s.bpm,
+    };
   }
 
   /** Step to the next click */
@@ -94,7 +103,12 @@ export class Planner {
         this.beat = 0;
         this.bar++;
         const t = this.s.trainer;
-        if (t.on && t.every > 0 && this.bar % t.every === 0 && this.s.bpm < t.max) {
+        if (
+          t.on &&
+          t.every > 0 &&
+          this.bar % t.every === 0 &&
+          this.s.bpm < t.max
+        ) {
           const bpm = clampBpm(Math.min(t.max, this.s.bpm + t.step));
           this.s = { ...this.s, bpm };
           this.onBpm?.(bpm);
@@ -146,7 +160,8 @@ export class Metronome {
     if (this.planner) {
       const beatChanged = this.planner.s.beats !== settings.beats;
       this.planner.s = settings;
-      if (beatChanged && this.planner.beat >= settings.beats) this.planner.beat = 0;
+      if (beatChanged && this.planner.beat >= settings.beats)
+        this.planner.beat = 0;
       if (this.planner.sub >= settings.sub) this.planner.sub = 0;
     }
     if (this.gain) this.gain.gain.value = settings.volume * settings.volume;
@@ -167,7 +182,9 @@ export class Metronome {
     this.log = [];
     this.pump();
     try {
-      this.timer = new Worker(new URL("./clock.worker.ts", import.meta.url), { type: "module" });
+      this.timer = new Worker(new URL("./clock.worker.ts", import.meta.url), {
+        type: "module",
+      });
       this.timer.onmessage = () => this.pump();
       this.timer.postMessage(INTERVAL);
     } catch {
@@ -219,7 +236,8 @@ export class Metronome {
     if (!this.planner) return null;
     const now = audio().currentTime;
     let last: Tick | null = null;
-    while (this.queue.length && this.queue[0]!.time <= now) last = this.queue.shift()!;
+    while (this.queue.length && this.queue[0]!.time <= now)
+      last = this.queue.shift()!;
     return last;
   }
 }

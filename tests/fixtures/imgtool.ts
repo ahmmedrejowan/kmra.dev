@@ -150,7 +150,11 @@ function withExif(jpeg: Buffer): Buffer {
   return Buffer.concat([jpeg.subarray(0, 2), seg, body, jpeg.subarray(2)]);
 }
 
-type Tag = [tag: number, type: "ascii" | "short" | "long" | "rational", value: string | number | number[]];
+type Tag = [
+  tag: number,
+  type: "ascii" | "short" | "long" | "rational",
+  value: string | number | number[],
+];
 
 /** A big-endian TIFF IFD at `at` (its offset in the TIFF), values after it; sub-IFDs follow */
 function ifd(tags: Tag[], at: number): Buffer {
@@ -233,7 +237,12 @@ function withRichMeta(jpeg: Buffer): Buffer {
   base[5] = [0x8769, "long", exifAt];
   base[6] = [0x8825, "long", gpsAt];
   const tiffHead = Buffer.from([0x4d, 0x4d, 0, 42, 0, 0, 0, 8]);
-  const tiff = Buffer.concat([tiffHead, ifd(base, 8), exif, ifd(gpsTags, gpsAt)]);
+  const tiff = Buffer.concat([
+    tiffHead,
+    ifd(base, 8),
+    exif,
+    ifd(gpsTags, gpsAt),
+  ]);
   const segment = (marker: number, body: Buffer) => {
     const h = Buffer.alloc(4);
     h.writeUInt16BE(marker, 0);

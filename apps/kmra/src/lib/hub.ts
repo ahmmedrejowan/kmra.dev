@@ -57,8 +57,7 @@ export function toolsOf(app: App, locale: Locale = "en"): Entry[] {
 export function mixed(n: number, locale: Locale = "en"): Entry[] {
   const lists = appsIn(locale).map((a) => toolsOf(a, locale));
   const out: Entry[] = [];
-  for (let i = 0; i < n; i++)
-    for (const l of lists) if (l[i]) out.push(l[i]!);
+  for (let i = 0; i < n; i++) for (const l of lists) if (l[i]) out.push(l[i]!);
   return out;
 }
 
@@ -117,7 +116,6 @@ export const totalTasks = live.reduce((s, a) => s + a.tasks.length, 0);
 export const hueStyle = (a: Accent) =>
   `--acc-l:${a.light};--acc-d:${a.dark};--acc-soft-l:${a.softLight};--acc-soft-d:${a.softDark}`;
 
-
 /** Kinds of file the hub's drop box recognises, and the tools (app, slugs) that open each */
 export const KINDS: {
   key: string;
@@ -133,7 +131,23 @@ export const KINDS: {
     mime: ["application/pdf"],
     ext: ["pdf"],
     tools: [
-      ["pdftool", ["compress", "merge", "split", "sign", "organize", "remove-pages", "rotate", "page-numbers", "watermark", "grayscale", "to-image", "metadata"]],
+      [
+        "pdftool",
+        [
+          "compress",
+          "merge",
+          "split",
+          "sign",
+          "organize",
+          "remove-pages",
+          "rotate",
+          "page-numbers",
+          "watermark",
+          "grayscale",
+          "to-image",
+          "metadata",
+        ],
+      ],
       ["ocrtool", ["pdf-to-text", "searchable-pdf"]],
     ],
   },
@@ -153,7 +167,37 @@ export const KINDS: {
     mime: ["image/"],
     ext: ["jpg", "jpeg", "png", "webp", "heic", "heif", "avif", "bmp"],
     tools: [
-      ["imgtool", ["compress", "resize", "convert", "remove-bg", "crop", "passport-photo", "strip-metadata", "rotate", "adjust", "filters", "watermark", "add-text", "border", "extend-canvas", "beautify", "blur", "face-blur", "change-bg", "signature", "form-size", "image-info", "exif", "palette", "color-picker", "favicon", "base64"]],
+      [
+        "imgtool",
+        [
+          "compress",
+          "resize",
+          "convert",
+          "remove-bg",
+          "crop",
+          "passport-photo",
+          "strip-metadata",
+          "rotate",
+          "adjust",
+          "filters",
+          "watermark",
+          "add-text",
+          "border",
+          "extend-canvas",
+          "beautify",
+          "blur",
+          "face-blur",
+          "change-bg",
+          "signature",
+          "form-size",
+          "image-info",
+          "exif",
+          "palette",
+          "color-picker",
+          "favicon",
+          "base64",
+        ],
+      ],
       ["pdftool", ["from-image"]],
       ["ocrtool", ["image-to-text"]],
       ["qrtool", ["scanner", "checker", "fix-qr"]],
@@ -165,7 +209,23 @@ export const KINDS: {
     mime: ["video/"],
     ext: ["mp4", "mov", "webm", "mkv", "avi", "m4v"],
     tools: [
-      ["vidtool", ["compress", "convert", "trim", "resize", "video-to-gif", "video-to-mp3", "mute", "rotate", "speed", "extract-frames", "video-info", "merge"]],
+      [
+        "vidtool",
+        [
+          "compress",
+          "convert",
+          "trim",
+          "resize",
+          "video-to-gif",
+          "video-to-mp3",
+          "mute",
+          "rotate",
+          "speed",
+          "extract-frames",
+          "video-info",
+          "merge",
+        ],
+      ],
       ["audiotool", ["video-to-audio"]],
     ],
   },
@@ -173,19 +233,115 @@ export const KINDS: {
     key: "audio",
     label: "Audio",
     mime: ["audio/"],
-    ext: ["mp3", "m4a", "m4r", "aac", "wav", "flac", "ogg", "oga", "opus", "aif", "aiff", "wma", "amr"],
+    ext: [
+      "mp3",
+      "m4a",
+      "m4r",
+      "aac",
+      "wav",
+      "flac",
+      "ogg",
+      "oga",
+      "opus",
+      "aif",
+      "aiff",
+      "wma",
+      "amr",
+    ],
     tools: [
-      ["audiotool", ["convert", "trim", "compress", "volume", "normalize", "merge", "fade", "speed", "pitch", "remove-silence", "reverse", "mono", "audio-info"]],
+      [
+        "audiotool",
+        [
+          "convert",
+          "trim",
+          "compress",
+          "volume",
+          "normalize",
+          "merge",
+          "fade",
+          "speed",
+          "pitch",
+          "remove-silence",
+          "reverse",
+          "mono",
+          "audio-info",
+        ],
+      ],
     ],
   },
-  { key: "json", label: "JSON", mime: ["application/json"], ext: ["json"], tools: [["devtool", ["json-formatter", "json-to-typescript", "yaml-json", "csv-json"]]] },
-  { key: "csv", label: "Spreadsheet", mime: ["text/csv"], ext: ["csv", "tsv", "xlsx", "xls"], tools: [["devtool", ["csv-json"]]] },
-  { key: "yaml", label: "YAML", mime: [], ext: ["yaml", "yml"], tools: [["devtool", ["yaml-json"]]] },
-  { key: "xml", label: "XML", mime: ["application/xml", "text/xml"], ext: ["xml"], tools: [["devtool", ["xml-formatter"]]] },
-  { key: "sql", label: "SQL", mime: [], ext: ["sql"], tools: [["devtool", ["sql-formatter"]]] },
-  { key: "md", label: "Markdown", mime: ["text/markdown"], ext: ["md", "markdown"], tools: [["devtool", ["markdown-preview"]]] },
-  { key: "html", label: "HTML", mime: ["text/html"], ext: ["html", "htm"], tools: [["devtool", ["html-formatter"]]] },
-  { key: "css", label: "CSS", mime: ["text/css"], ext: ["css", "scss"], tools: [["devtool", ["css-formatter"]]] },
-  { key: "js", label: "JavaScript", mime: ["text/javascript"], ext: ["js", "mjs", "cjs", "ts", "jsx", "tsx"], tools: [["devtool", ["js-formatter"]]] },
-  { key: "txt", label: "Text", mime: ["text/plain"], ext: ["txt", "log"], tools: [["devtool", ["line-tools", "case-converter", "text-hex"]]] },
+  {
+    key: "json",
+    label: "JSON",
+    mime: ["application/json"],
+    ext: ["json"],
+    tools: [
+      [
+        "devtool",
+        ["json-formatter", "json-to-typescript", "yaml-json", "csv-json"],
+      ],
+    ],
+  },
+  {
+    key: "csv",
+    label: "Spreadsheet",
+    mime: ["text/csv"],
+    ext: ["csv", "tsv", "xlsx", "xls"],
+    tools: [["devtool", ["csv-json"]]],
+  },
+  {
+    key: "yaml",
+    label: "YAML",
+    mime: [],
+    ext: ["yaml", "yml"],
+    tools: [["devtool", ["yaml-json"]]],
+  },
+  {
+    key: "xml",
+    label: "XML",
+    mime: ["application/xml", "text/xml"],
+    ext: ["xml"],
+    tools: [["devtool", ["xml-formatter"]]],
+  },
+  {
+    key: "sql",
+    label: "SQL",
+    mime: [],
+    ext: ["sql"],
+    tools: [["devtool", ["sql-formatter"]]],
+  },
+  {
+    key: "md",
+    label: "Markdown",
+    mime: ["text/markdown"],
+    ext: ["md", "markdown"],
+    tools: [["devtool", ["markdown-preview"]]],
+  },
+  {
+    key: "html",
+    label: "HTML",
+    mime: ["text/html"],
+    ext: ["html", "htm"],
+    tools: [["devtool", ["html-formatter"]]],
+  },
+  {
+    key: "css",
+    label: "CSS",
+    mime: ["text/css"],
+    ext: ["css", "scss"],
+    tools: [["devtool", ["css-formatter"]]],
+  },
+  {
+    key: "js",
+    label: "JavaScript",
+    mime: ["text/javascript"],
+    ext: ["js", "mjs", "cjs", "ts", "jsx", "tsx"],
+    tools: [["devtool", ["js-formatter"]]],
+  },
+  {
+    key: "txt",
+    label: "Text",
+    mime: ["text/plain"],
+    ext: ["txt", "log"],
+    tools: [["devtool", ["line-tools", "case-converter", "text-hex"]]],
+  },
 ];

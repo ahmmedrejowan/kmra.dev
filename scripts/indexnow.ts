@@ -10,7 +10,9 @@ import { apps, HUB, INDEXNOW_KEY } from "../packages/registry/src/index.ts";
 
 const only = process.argv[2];
 const hosts = [
-  ...apps.filter((a) => a.live).map((a) => ({ id: a.id, host: `${a.id}.kmra.dev` })),
+  ...apps
+    .filter((a) => a.live)
+    .map((a) => ({ id: a.id, host: `${a.id}.kmra.dev` })),
   ...(HUB.live ? [{ id: HUB.id, host: "kmra.dev" }] : []),
 ];
 for (const { host } of hosts.filter((h) => !only || h.id === only)) {

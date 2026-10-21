@@ -19,12 +19,26 @@ export const CVD_TYPES: { id: Cvd; name: string; about: string }[] = [
   { id: "deuteranopia", name: "Deuteranopia", about: "No green cones" },
   { id: "tritanopia", name: "Tritanopia", about: "No blue cones" },
   { id: "protanomaly", name: "Protanomaly", about: "Weak red" },
-  { id: "deuteranomaly", name: "Deuteranomaly", about: "Weak green, the most common" },
+  {
+    id: "deuteranomaly",
+    name: "Deuteranomaly",
+    about: "Weak green, the most common",
+  },
   { id: "tritanomaly", name: "Tritanomaly", about: "Weak blue" },
   { id: "achromatopsia", name: "Achromatopsia", about: "No colour" },
 ];
 
-type M = readonly [number, number, number, number, number, number, number, number, number];
+type M = readonly [
+  number,
+  number,
+  number,
+  number,
+  number,
+  number,
+  number,
+  number,
+  number,
+];
 
 export const MATRICES: Record<Cvd, M> = {
   protanopia: [
@@ -83,7 +97,8 @@ for (let i = 0; i <= N; i++) TO_SRGB[i] = Math.round(fromLinear(i / N) * 255);
 /** Simulates `type` on RGBA pixels in place */
 export function simulatePixels(px: Uint8ClampedArray, type: Cvd): void {
   const m = MATRICES[type];
-  const enc = (v: number) => TO_SRGB[v <= 0 ? 0 : v >= 1 ? N : (v * N + 0.5) | 0]!;
+  const enc = (v: number) =>
+    TO_SRGB[v <= 0 ? 0 : v >= 1 ? N : (v * N + 0.5) | 0]!;
   for (let i = 0; i < px.length; i += 4) {
     const r = TO_LIN[px[i]!]!;
     const g = TO_LIN[px[i + 1]!]!;

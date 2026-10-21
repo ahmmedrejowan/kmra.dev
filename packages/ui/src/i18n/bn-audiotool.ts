@@ -3,7 +3,8 @@ export const BN_AUDIOTOOL: Record<string, string> = {
   "Drop audio files to compress them": "কম্প্রেস করতে অডিও ফাইল ছেড়ে দিন",
   "This file has no sound.": "এই ফাইলে কোনো শব্দ নেই।",
   "This file is already under {size}.": "এই ফাইল আগে থেকেই {size}-এর নিচে।",
-  "Saved as MP3, which plays everywhere.": "MP3 হিসেবে সেভ হয়, যা সব জায়গায় চলে।",
+  "Saved as MP3, which plays everywhere.":
+    "MP3 হিসেবে সেভ হয়, যা সব জায়গায় চলে।",
   "Compress by": "যেভাবে কম্প্রেস",
   "Quality (kbps)": "মান (kbps)",
   "Speech (mono)": "কথা (মোনো)",
@@ -18,7 +19,8 @@ export const BN_AUDIOTOOL: Record<string, string> = {
   "Big boosts can distort loud parts. Normalize evens the loudness without that.":
     "অনেক বেশি বাড়ালে জোরালো অংশ ফেটে যেতে পারে। নরমালাইজ তা না করেই আওয়াজ সমান করে।",
   "Remove silence": "নীরবতা সরান",
-  "Drop recordings to remove the silent gaps": "নীরব ফাঁক সরাতে রেকর্ডিং ছেড়ে দিন",
+  "Drop recordings to remove the silent gaps":
+    "নীরব ফাঁক সরাতে রেকর্ডিং ছেড়ে দিন",
   "Counts as silence": "যতটা আস্তে হলে নীরবতা",
   "Very quiet": "খুব আস্তে",
   Quiet: "আস্তে",
@@ -27,23 +29,27 @@ export const BN_AUDIOTOOL: Record<string, string> = {
   "A short pause stays where each gap was, so speech doesn't run together. Pick Background noise for recordings with a hum.":
     "প্রতিটি ফাঁকের জায়গায় একটু বিরতি থাকে, যাতে কথাগুলো জড়িয়ে না যায়। গুনগুন আওয়াজ থাকা রেকর্ডিংয়ের জন্য পেছনের আওয়াজ বেছে নিন।",
   "Add the fades": "ফেড দিন",
-  "Drop audio files to fade them in and out": "ফেড ইন ও আউট দিতে অডিও ফাইল ছেড়ে দিন",
+  "Drop audio files to fade them in and out":
+    "ফেড ইন ও আউট দিতে অডিও ফাইল ছেড়ে দিন",
   "Set a fade longer than 0 s.": "০ সেকেন্ডের বেশি একটি ফেড দিন।",
   "Fade in": "ফেড ইন",
   "Fade out": "ফেড আউট",
   "Length {len}: fades longer than half of it are shortened.":
     "দৈর্ঘ্য {len}: এর অর্ধেকের চেয়ে লম্বা ফেড ছোট করা হয়।",
-  "Drop audio files to see their details": "বিস্তারিত দেখতে অডিও ফাইল ছেড়ে দিন",
+  "Drop audio files to see their details":
+    "বিস্তারিত দেখতে অডিও ফাইল ছেড়ে দিন",
   "Choose audio files": "অডিও ফাইল বেছে নিন",
   "This file couldn't be read. It may be damaged or not an audio file.":
     "এই ফাইলটি পড়া যায়নি। এটি নষ্ট হতে পারে, বা অডিও ফাইল না-ও হতে পারে।",
   "Add a file to compare": "তুলনার জন্য ফাইল যোগ করুন",
   "Reading the file": "ফাইল পড়া হচ্ছে",
-  "Rows in bold differ between the files.": "মোটা অক্ষরের সারিগুলো ফাইলভেদে আলাদা।",
+  "Rows in bold differ between the files.":
+    "মোটা অক্ষরের সারিগুলো ফাইলভেদে আলাদা।",
   "Make the ringtone": "রিংটোন বানান",
   "Drop a song to make a ringtone": "রিংটোন বানাতে একটি গান ছেড়ে দিন",
   "Drop an audio file to cut it": "কাটতে একটি অডিও ফাইল ছেড়ে দিন",
-  "Move a handle to choose the part to keep.": "কোন অংশ রাখবেন বাছতে একটি হ্যান্ডেল সরান।",
+  "Move a handle to choose the part to keep.":
+    "কোন অংশ রাখবেন বাছতে একটি হ্যান্ডেল সরান।",
   "Saved as an M4R ringtone, up to {n} seconds.":
     "M4R রিংটোন হিসেবে সেভ হয়, {n} সেকেন্ড পর্যন্ত।",
   "Keeping {len} of {total}": "{total}-এর মধ্যে {len} রাখা হচ্ছে",
@@ -64,7 +70,8 @@ export const BN_AUDIOTOOL: Record<string, string> = {
   "Audio details": "অডিওর বিস্তারিত",
   "Change file": "ফাইল বদলান",
   Normalize: "নরমালাইজ",
-  "Drop audio files to even out their loudness": "আওয়াজ সমান করতে অডিও ফাইল ছেড়ে দিন",
+  "Drop audio files to even out their loudness":
+    "আওয়াজ সমান করতে অডিও ফাইল ছেড়ে দিন",
   Loudness: "লাউডনেস",
   "Peak limit": "সর্বোচ্চ সীমা",
   "Every file comes out equally loud: the level podcast apps and streaming services aim for.":
@@ -73,7 +80,8 @@ export const BN_AUDIOTOOL: Record<string, string> = {
     "মাইক্রোফোনের অনুমতি নেই। ঠিকানা বার থেকে অনুমতি দিয়ে আবার রেকর্ড চাপুন।",
   "No microphone was found. Connect one and try again.":
     "কোনো মাইক্রোফোন পাওয়া যায়নি। একটি লাগিয়ে আবার চেষ্টা করুন।",
-  "This browser couldn't start the microphone.": "এই ব্রাউজার মাইক্রোফোন চালু করতে পারেনি।",
+  "This browser couldn't start the microphone.":
+    "এই ব্রাউজার মাইক্রোফোন চালু করতে পারেনি।",
   "This recording couldn't be saved in that format.":
     "এই রেকর্ডিং ওই ফরম্যাটে সেভ করা যায়নি।",
   "Clean up the sound": "শব্দ পরিষ্কার করুন",
@@ -96,17 +104,20 @@ export const BN_AUDIOTOOL: Record<string, string> = {
   "This file is already mono.": "এই ফাইল আগে থেকেই মোনো।",
   "Left and right are mixed into one channel. Voices sound the same; the file gets smaller.":
     "বাম আর ডান মিশিয়ে একটি চ্যানেল করা হয়। কণ্ঠ একই শোনায়; ফাইল ছোট হয়।",
-  "Drop two or more audio files to join them": "জুড়তে দুই বা তার বেশি অডিও ফাইল ছেড়ে দিন",
+  "Drop two or more audio files to join them":
+    "জুড়তে দুই বা তার বেশি অডিও ফাইল ছেড়ে দিন",
   "Files without sound, or that can't be read, are left out.":
     "শব্দহীন বা পড়া যায় না এমন ফাইল বাদ দেওয়া হয়।",
   "File {n}: {name}": "ফাইল {n}: {name}",
   "Drag the files to change the order, or press Alt and an arrow key.":
     "ক্রম বদলাতে ফাইলগুলো টানুন, অথবা Alt আর একটি তীর চিহ্ন চাপুন।",
-  "Add at least two audio files to join them.": "জুড়তে অন্তত দুটি অডিও ফাইল যোগ করুন।",
+  "Add at least two audio files to join them.":
+    "জুড়তে অন্তত দুটি অডিও ফাইল যোগ করুন।",
   "Join {n} files": "{n}টি ফাইল জুড়ুন",
   "These files couldn't be joined.": "এই ফাইলগুলো জোড়া যায়নি।",
   "Drop audio files to convert them": "কনভার্ট করতে অডিও ফাইল ছেড়ে দিন",
-  "WAV keeps every detail and makes big files.": "WAV সব খুঁটিনাটি রাখে আর বড় ফাইল বানায়।",
+  "WAV keeps every detail and makes big files.":
+    "WAV সব খুঁটিনাটি রাখে আর বড় ফাইল বানায়।",
   "FLAC keeps every detail at about half the size of WAV.":
     "FLAC সব খুঁটিনাটি রাখে, WAV-এর প্রায় অর্ধেক সাইজে।",
   "Raise the pitch": "পিচ বাড়ান",

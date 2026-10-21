@@ -571,9 +571,12 @@ export const BN_CALCTOOL: Record<string, string> = {
   "Add to memory": "মেমরিতে যোগ করুন",
   "Subtract from memory": "মেমরি থেকে বিয়োগ করুন",
   "Last answer": "শেষ উত্তর",
-  "nCr and nPr work on whole numbers from 0 up.": "nCr আর nPr শুধু ০ বা তার বেশি পূর্ণসংখ্যায় চলে।",
-  "A root needs a degree other than 0.": "মূলের মাত্রা ০ ছাড়া অন্য কিছু হতে হবে।",
-  "Even roots of negative numbers have no real answer.": "ঋণাত্মক সংখ্যার জোড় মূলের কোনো বাস্তব উত্তর নেই।",
+  "nCr and nPr work on whole numbers from 0 up.":
+    "nCr আর nPr শুধু ০ বা তার বেশি পূর্ণসংখ্যায় চলে।",
+  "A root needs a degree other than 0.":
+    "মূলের মাত্রা ০ ছাড়া অন্য কিছু হতে হবে।",
+  "Even roots of negative numbers have no real answer.":
+    "ঋণাত্মক সংখ্যার জোড় মূলের কোনো বাস্তব উত্তর নেই।",
   "acosh takes values from 1 up.": "acosh ১ বা তার বেশি মান নেয়।",
   "atanh takes values between −1 and 1.": "atanh −১ আর ১-এর মাঝের মান নেয়।",
 };

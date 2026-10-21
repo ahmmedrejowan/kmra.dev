@@ -729,7 +729,11 @@
   inset: 0;
   border-radius: 999px;
   border: 2px solid color-mix(in srgb, var(--acc) 35%, var(--line));
-  background: radial-gradient(circle, color-mix(in srgb, var(--acc) 12%, transparent), transparent 70%);
+  background: radial-gradient(
+    circle,
+    color-mix(in srgb, var(--acc) 12%, transparent),
+    transparent 70%
+  );
 }
 .mt-drone-orb span + span {
   inset: 28px;

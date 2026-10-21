@@ -258,10 +258,7 @@ function CollageView() {
       const c = new OffscreenCanvas(W, H);
       draw(c.getContext("2d")!, W, H, pics, current.cells, { gap, radius, bg });
       const blob = await canvasBlob(c, type, 0.92);
-      downloadBlob(
-        blob,
-        `collage.${type === "image/png" ? "png" : "jpg"}`,
-      );
+      downloadBlob(blob, `collage.${type === "image/png" ? "png" : "jpg"}`);
     } finally {
       setSaving(false);
     }

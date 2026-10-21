@@ -55,26 +55,56 @@ export async function makeAudiotoolFixtures(dir: string) {
   const make = async (name: string, args: string[]) => {
     const out = join(dir, name);
     if (existsSync(out)) return;
-    await run("ffmpeg", ["-hide_banner", "-loglevel", "error", "-y", ...args, out]);
+    await run("ffmpeg", [
+      "-hide_banner",
+      "-loglevel",
+      "error",
+      "-y",
+      ...args,
+      out,
+    ]);
   };
   await make(AUD.mp3, [...stereo(6), "-c:a", "libmp3lame", "-b:a", "192k"]);
   await make(AUD.wav, [...stereo(4, 48000), "-c:a", "pcm_s16le"]);
   await make(AUD.m4a, [
-    "-f", "lavfi", "-i", "sine=frequency=220:sample_rate=44100:duration=5",
-    "-af", "volume=0.3", "-ac", "1", "-c:a", "aac", "-b:a", "64k",
+    "-f",
+    "lavfi",
+    "-i",
+    "sine=frequency=220:sample_rate=44100:duration=5",
+    "-af",
+    "volume=0.3",
+    "-ac",
+    "1",
+    "-c:a",
+    "aac",
+    "-b:a",
+    "64k",
   ]);
   await make(AUD.flac, [...stereo(3), "-c:a", "flac"]);
   await make(AUD.ogg, [...stereo(3, 48000), "-c:a", "libopus", "-b:a", "96k"]);
   await make(AUD.gaps, [
-    "-f", "lavfi", "-i",
+    "-f",
+    "lavfi",
+    "-i",
     "sine=frequency=500:sample_rate=44100:duration=7",
     "-af",
     "volume='if(between(t,1,3)+between(t,4,6),0,0.5)':eval=frame",
-    "-ac", "1", "-c:a", "pcm_s16le",
+    "-ac",
+    "1",
+    "-c:a",
+    "pcm_s16le",
   ]);
   await make(AUD.quiet, [
-    "-f", "lavfi", "-i", "sine=frequency=440:sample_rate=44100:duration=3",
-    "-af", "volume=-30dB", "-ac", "1", "-c:a", "pcm_s16le",
+    "-f",
+    "lavfi",
+    "-i",
+    "sine=frequency=440:sample_rate=44100:duration=3",
+    "-af",
+    "volume=-30dB",
+    "-ac",
+    "1",
+    "-c:a",
+    "pcm_s16le",
   ]);
   for (const [name, sec] of [
     [AUD.part1, 2],

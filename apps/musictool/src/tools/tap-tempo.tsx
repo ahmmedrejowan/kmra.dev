@@ -28,7 +28,8 @@ export default function TapTempo(_: ToolProps) {
     setTaps((list) => {
       const last = list[list.length - 1];
       const bpm = tapTempo(list)?.bpm ?? null;
-      const next = last !== undefined && tapResets(at - last, bpm) ? [at] : [...list, at];
+      const next =
+        last !== undefined && tapResets(at - last, bpm) ? [at] : [...list, at];
       return next.slice(-17);
     });
   }
@@ -51,7 +52,14 @@ export default function TapTempo(_: ToolProps) {
     return () => window.removeEventListener("keydown", onKey);
   }, []);
 
-  const steady = r && r.intervals >= 3 ? (r.spread < 0.03 ? "steady" : r.spread < 0.08 ? "settling" : "uneven") : null;
+  const steady =
+    r && r.intervals >= 3
+      ? r.spread < 0.03
+        ? "steady"
+        : r.spread < 0.08
+          ? "settling"
+          : "uneven"
+      : null;
   const whole = r ? Math.round(r.bpm) : null;
 
   const stage = (
@@ -69,7 +77,10 @@ export default function TapTempo(_: ToolProps) {
         }}
         aria-label={T("Tap")}
       >
-        <span className={`mt-tap-bpm${r ? "" : " empty"}`} data-value={r ? r.bpm.toFixed(2) : ""}>
+        <span
+          className={`mt-tap-bpm${r ? "" : " empty"}`}
+          data-value={r ? r.bpm.toFixed(2) : ""}
+        >
           {r ? num(r.bpm, 1) : "–"}
         </span>
         <span className="mt-tap-unit">BPM</span>
@@ -111,7 +122,9 @@ export default function TapTempo(_: ToolProps) {
                 : steady === "uneven"
                   ? T("Uneven")
                   : "–"}
-            {r && r.intervals >= 3 && <small> ±{num(r.spread * 100, 1)}%</small>}
+            {r && r.intervals >= 3 && (
+              <small> ±{num(r.spread * 100, 1)}%</small>
+            )}
           </dd>
         </div>
         <div data-id="ms">
@@ -120,10 +133,16 @@ export default function TapTempo(_: ToolProps) {
         </div>
       </dl>
       <p className="mt-hint">
-        {T("The BPM is the median of your last eight taps, so one early or late tap barely moves it. Pause for two seconds to start over.")}
+        {T(
+          "The BPM is the median of your last eight taps, so one early or late tap barely moves it. Pause for two seconds to start over.",
+        )}
       </p>
       <label className="toggle">
-        <input type="checkbox" checked={click} onChange={(e) => setClick(e.target.checked)} />
+        <input
+          type="checkbox"
+          checked={click}
+          onChange={(e) => setClick(e.target.checked)}
+        />
         <span>{T("Click on each tap")}</span>
       </label>
       <div className="mt-side-actions">
@@ -135,7 +154,12 @@ export default function TapTempo(_: ToolProps) {
           <Icon name="metronome" />
           {T("Use in metronome")}
         </a>
-        <button type="button" className="btn" onClick={() => setTaps([])} disabled={!taps.length}>
+        <button
+          type="button"
+          className="btn"
+          onClick={() => setTaps([])}
+          disabled={!taps.length}
+        >
           <Icon name="rotate" />
           {T("Start over")}
         </button>

@@ -3,7 +3,18 @@ import { useT } from "@kmra/ui/lib/i18n-react";
 import { Icon } from "@kmra/ui/components/Icon";
 import { Toggle } from "@kmra/ui/components/controls";
 import type { ToolProps } from ".";
-import { Card, Choice, Keys, NumInput, Pills, Range, busyTarget, load, save, useNum } from "../lib/ui";
+import {
+  Card,
+  Choice,
+  Keys,
+  NumInput,
+  Pills,
+  Range,
+  busyTarget,
+  load,
+  save,
+  useNum,
+} from "../lib/ui";
 import { audio, curve, out, testHook } from "../lib/audio";
 import { SHARPS, freqOf, mod } from "../lib/theory";
 
@@ -30,7 +41,14 @@ function organWave(c: AudioContext) {
 export default function Drone(_: ToolProps) {
   const T = useT();
   const num = useNum();
-  const saved = load(PREFS, { midi: 50, fifth: false, octave: false, timbre: "warm" as Timbre, vol: 40, a4: 440 });
+  const saved = load(PREFS, {
+    midi: 50,
+    fifth: false,
+    octave: false,
+    timbre: "warm" as Timbre,
+    vol: 40,
+    a4: 440,
+  });
   const [midi, setMidi] = useState(saved.midi);
   const [fifth, setFifth] = useState(saved.fifth);
   const [octave, setOctave] = useState(saved.octave);
@@ -40,7 +58,10 @@ export default function Drone(_: ToolProps) {
   const [playing, setPlaying] = useState(false);
   const live = useRef<Live | null>(null);
 
-  useEffect(() => save(PREFS, { midi, fifth, octave, timbre, vol, a4 }), [midi, fifth, octave, timbre, vol, a4]);
+  useEffect(
+    () => save(PREFS, { midi, fifth, octave, timbre, vol, a4 }),
+    [midi, fifth, octave, timbre, vol, a4],
+  );
 
   const level = (v: number) => curve(v / 100) * 0.5;
   const parts = () => [0, ...(fifth ? [7] : []), ...(octave ? [12] : [])];
@@ -72,7 +93,10 @@ export default function Drone(_: ToolProps) {
     const filter = c.createBiquadFilter();
     filter.type = "lowpass";
     filter.Q.value = 0.6;
-    filter.frequency.value = Math.min(12000, freqOf(midi, a4) * (timbre === "warm" ? 5 : 12));
+    filter.frequency.value = Math.min(
+      12000,
+      freqOf(midi, a4) * (timbre === "warm" ? 5 : 12),
+    );
     // A slow sweep of the filter keeps the drone alive without changing its pitch
     const lfo = c.createOscillator();
     lfo.frequency.value = 0.09;
@@ -107,8 +131,17 @@ export default function Drone(_: ToolProps) {
     if (!l) return;
     const c = audio();
     for (const v of l.voices)
-      for (const o of v.oscs) o.frequency.setTargetAtTime(freqOf(midi + v.semis, a4), c.currentTime, 0.06);
-    l.filter.frequency.setTargetAtTime(Math.min(12000, freqOf(midi, a4) * (timbre === "warm" ? 5 : 12)), c.currentTime, 0.1);
+      for (const o of v.oscs)
+        o.frequency.setTargetAtTime(
+          freqOf(midi + v.semis, a4),
+          c.currentTime,
+          0.06,
+        );
+    l.filter.frequency.setTargetAtTime(
+      Math.min(12000, freqOf(midi, a4) * (timbre === "warm" ? 5 : 12)),
+      c.currentTime,
+      0.1,
+    );
   }, [midi, a4]);
   useEffect(() => {
     if (!live.current) return;
@@ -140,7 +173,11 @@ export default function Drone(_: ToolProps) {
   const f = freqOf(midi, a4);
 
   const stage = (
-    <div className={`mt-drone${playing ? " on" : ""}`} data-freq={f.toFixed(3)} data-note={`${name}${oct}`}>
+    <div
+      className={`mt-drone${playing ? " on" : ""}`}
+      data-freq={f.toFixed(3)}
+      data-note={`${name}${oct}`}
+    >
       <div className="mt-drone-orb" aria-hidden="true">
         <span />
         <span />
@@ -155,7 +192,11 @@ export default function Drone(_: ToolProps) {
         {octave && <> · {T("with the octave")}</>}
       </p>
       <div className="mt-actions">
-        <button type="button" className={`btn lg${playing ? "" : " acc"}`} onClick={() => (playing ? stop() : start())}>
+        <button
+          type="button"
+          className={`btn lg${playing ? "" : " acc"}`}
+          onClick={() => (playing ? stop() : start())}
+        >
           <Icon name={playing ? "stop" : "play"} />
           {playing ? T("Stop") : T("Play")}
         </button>
@@ -192,10 +233,27 @@ export default function Drone(_: ToolProps) {
         ]}
         onPick={setTimbre}
       />
-      <Range label={T("Volume")} value={vol} min={0} max={100} display={`${num(vol)}%`} onChange={setVol} />
-      <NumInput label={T("Reference pitch A4")} name="a4" unit="Hz" value={a4} min={430} max={450} onChange={setA4} />
+      <Range
+        label={T("Volume")}
+        value={vol}
+        min={0}
+        max={100}
+        display={`${num(vol)}%`}
+        onChange={setVol}
+      />
+      <NumInput
+        label={T("Reference pitch A4")}
+        name="a4"
+        unit="Hz"
+        value={a4}
+        min={430}
+        max={450}
+        onChange={setA4}
+      />
       <p className="mt-hint">
-        {T("Play or sing against the drone. When a note is slightly out, you hear a slow wobble (beating); it stops when you're in tune.")}
+        {T(
+          "Play or sing against the drone. When a note is slightly out, you hear a slow wobble (beating); it stops when you're in tune.",
+        )}
       </p>
     </>
   );

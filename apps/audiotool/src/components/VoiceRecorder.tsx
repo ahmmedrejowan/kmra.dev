@@ -23,9 +23,12 @@ type Phase = "idle" | "asking" | "recording" | "done";
 function bestType(): string | null {
   if (typeof MediaRecorder === "undefined") return null;
   return (
-    ["audio/webm;codecs=opus", "audio/webm", "audio/mp4", "audio/ogg;codecs=opus"].find(
-      (t) => MediaRecorder.isTypeSupported(t),
-    ) ?? ""
+    [
+      "audio/webm;codecs=opus",
+      "audio/webm",
+      "audio/mp4",
+      "audio/ogg;codecs=opus",
+    ].find((t) => MediaRecorder.isTypeSupported(t)) ?? ""
   );
 }
 
@@ -70,7 +73,9 @@ export default function VoiceRecorder({ preset }: ToolProps) {
   const [supported, setSupported] = useState(true);
   useEffect(
     () =>
-      setSupported(!!navigator.mediaDevices?.getUserMedia && bestType() !== null),
+      setSupported(
+        !!navigator.mediaDevices?.getUserMedia && bestType() !== null,
+      ),
     [],
   );
 
@@ -88,9 +93,7 @@ export default function VoiceRecorder({ preset }: ToolProps) {
     const tick = () => {
       const cur = rec.current;
       if (cur) {
-        setElapsed(
-          cur.before + (paused ? 0 : performance.now() - cur.since),
-        );
+        setElapsed(cur.before + (paused ? 0 : performance.now() - cur.since));
         if (an) {
           an.getFloatTimeDomainData(buf);
           let peak = 0;
@@ -131,7 +134,9 @@ export default function VoiceRecorder({ preset }: ToolProps) {
       const name = e instanceof DOMException ? e.name : "";
       setProblem(
         name === "NotAllowedError" || name === "SecurityError"
-          ? T("The microphone isn't allowed. Allow it in the address bar, then press Record again.")
+          ? T(
+              "The microphone isn't allowed. Allow it in the address bar, then press Record again.",
+            )
           : name === "NotFoundError"
             ? T("No microphone was found. Connect one and try again.")
             : T("This browser couldn't start the microphone."),
@@ -179,7 +184,8 @@ export default function VoiceRecorder({ preset }: ToolProps) {
   function stop() {
     const r = rec.current;
     if (!r || r.recorder.state === "inactive") return;
-    if (r.recorder.state === "recording") r.before += performance.now() - r.since;
+    if (r.recorder.state === "recording")
+      r.before += performance.now() - r.since;
     setElapsed(r.before);
     r.recorder.stop();
   }
@@ -188,7 +194,11 @@ export default function VoiceRecorder({ preset }: ToolProps) {
     if (!r) return;
     release();
     rec.current = null;
-    const ext = r.type.includes("mp4") ? "m4a" : r.type.includes("ogg") ? "ogg" : "webm";
+    const ext = r.type.includes("mp4")
+      ? "m4a"
+      : r.type.includes("ogg")
+        ? "ogg"
+        : "webm";
     const file = new File(r.chunks, `recording-${stamp()}.${ext}`, {
       type: r.type.split(";")[0],
     });
@@ -240,15 +250,25 @@ export default function VoiceRecorder({ preset }: ToolProps) {
           />
           <p className="note">
             {clean
-              ? T("Echo and background noise are reduced and the level is kept steady. Best for voices.")
+              ? T(
+                  "Echo and background noise are reduced and the level is kept steady. Best for voices.",
+                )
               : T("The sound is recorded as it is. Best for music.")}
           </p>
         </div>
         {phase === "done" && take && (
           <>
-            <FormatSeg value={to} onPick={(v) => v !== "same" && setTo(v)} only={["mp3", "m4a", "wav"]} />
+            <FormatSeg
+              value={to}
+              onPick={(v) => v !== "same" && setTo(v)}
+              only={["mp3", "m4a", "wav"]}
+            />
             {!LOSSLESS.has(to) && (
-              <RateSeg value={kbps} onPick={setKbps} rates={[64, 96, 128, 192]} />
+              <RateSeg
+                value={kbps}
+                onPick={setKbps}
+                rates={[64, 96, 128, 192]}
+              />
             )}
           </>
         )}
@@ -257,37 +277,61 @@ export default function VoiceRecorder({ preset }: ToolProps) {
       <div className="stage vt-stage">
         <div className="vt-stage-head">
           <span className="vt-name">
-            {take ? take.name : recording ? T("Recording") : T("Voice recorder")}
+            {take
+              ? take.name
+              : recording
+                ? T("Recording")
+                : T("Voice recorder")}
           </span>
         </div>
         {phase === "done" && take ? (
           <WavePlayer file={take} label={T("Recording")} />
         ) : (
-          <div className={`at-rec${recording ? " on" : ""}${paused ? " paused" : ""}`}>
+          <div
+            className={`at-rec${recording ? " on" : ""}${paused ? " paused" : ""}`}
+          >
             <div className="at-meter" aria-hidden="true">
-              <i style={{ transform: `scaleY(${Math.min(1, 0.06 + level * 1.6)})` }} />
+              <i
+                style={{
+                  transform: `scaleY(${Math.min(1, 0.06 + level * 1.6)})`,
+                }}
+              />
             </div>
             <span className="at-clock" role="timer" aria-live="off">
               {fmtTime(elapsed / 1000, 0)}
             </span>
             {!supported ? (
               <p className="note warn">
-                {T("This browser can't record sound. Try a recent Chrome, Edge, Firefox or Safari.")}
+                {T(
+                  "This browser can't record sound. Try a recent Chrome, Edge, Firefox or Safari.",
+                )}
               </p>
             ) : recording ? (
               <div className="at-rec-ctl">
                 {paused ? (
-                  <button type="button" className="btn lg vt-resume" onClick={resume}>
+                  <button
+                    type="button"
+                    className="btn lg vt-resume"
+                    onClick={resume}
+                  >
                     <Icon name="play" />
                     {T("Resume")}
                   </button>
                 ) : (
-                  <button type="button" className="btn lg vt-pause" onClick={pause}>
+                  <button
+                    type="button"
+                    className="btn lg vt-pause"
+                    onClick={pause}
+                  >
                     <Icon name="pause" />
                     {T("Pause")}
                   </button>
                 )}
-                <button type="button" className="btn acc lg vt-stop" onClick={stop}>
+                <button
+                  type="button"
+                  className="btn acc lg vt-stop"
+                  onClick={stop}
+                >
                   <Icon name="record" />
                   {T("Stop")}
                 </button>
@@ -300,7 +344,9 @@ export default function VoiceRecorder({ preset }: ToolProps) {
                 disabled={phase === "asking"}
               >
                 <Icon name="mic" />
-                {phase === "asking" ? T("Waiting for the microphone") : T("Record")}
+                {phase === "asking"
+                  ? T("Waiting for the microphone")
+                  : T("Record")}
               </button>
             )}
             {problem && (
@@ -310,7 +356,9 @@ export default function VoiceRecorder({ preset }: ToolProps) {
             )}
             {phase === "idle" && !problem && (
               <p className="muted vt-hint">
-                {T("Your browser asks to use the microphone the first time. The recording stays on this page until you save it.")}
+                {T(
+                  "Your browser asks to use the microphone the first time. The recording stays on this page until you save it.",
+                )}
               </p>
             )}
           </div>
@@ -350,34 +398,64 @@ export default function VoiceRecorder({ preset }: ToolProps) {
                   <b>{Math.round((progress?.ratio ?? 0) * 100)}%</b>
                 </div>
                 <span className="mp-bar">
-                  <i style={{ width: `${Math.round((progress?.ratio ?? 0) * 100)}%` }} />
+                  <i
+                    style={{
+                      width: `${Math.round((progress?.ratio ?? 0) * 100)}%`,
+                    }}
+                  />
                 </span>
-                <button type="button" className="btn vt-cancel" onClick={() => ctrl.current?.abort()}>
+                <button
+                  type="button"
+                  className="btn vt-cancel"
+                  onClick={() => ctrl.current?.abort()}
+                >
                   <Icon name="x" />
                   {T("Cancel")}
                 </button>
               </div>
             ) : (
-              <button type="button" className="btn primary lg vt-run" onClick={() => void save()}>
+              <button
+                type="button"
+                className="btn primary lg vt-run"
+                onClick={() => void save()}
+              >
                 <Icon name="download" />
                 {T("Save as {ext}", { ext: to.toUpperCase() })}
               </button>
             )}
             {result && (
-              <div className="vt-result" data-engine={result.engine} data-bytes={result.blob.size}>
+              <div
+                className="vt-result"
+                data-engine={result.engine}
+                data-bytes={result.blob.size}
+              >
                 <p className="muted vt-outinfo">
                   {[result.name, formatBytes(result.blob.size)].join(" · ")}
                 </p>
-                <button type="button" className="btn vt-download" onClick={() => downloadBlob(result.blob, result.name)}>
+                <button
+                  type="button"
+                  className="btn vt-download"
+                  onClick={() => downloadBlob(result.blob, result.name)}
+                >
                   <Icon name="download" />
                   {T("Download again")}
                 </button>
               </div>
             )}
-            <button type="button" className="btn sm" onClick={() => downloadBlob(take, take.name)}>
-              {T("Download as recorded ({ext})", { ext: take.name.split(".").pop()!.toUpperCase() })}
+            <button
+              type="button"
+              className="btn sm"
+              onClick={() => downloadBlob(take, take.name)}
+            >
+              {T("Download as recorded ({ext})", {
+                ext: take.name.split(".").pop()!.toUpperCase(),
+              })}
             </button>
-            <button type="button" className="btn vt-again" onClick={() => void start()}>
+            <button
+              type="button"
+              className="btn vt-again"
+              onClick={() => void start()}
+            >
               <Icon name="mic" />
               {T("Record again")}
             </button>

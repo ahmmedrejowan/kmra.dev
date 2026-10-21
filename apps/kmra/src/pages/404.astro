@@ -16,7 +16,9 @@ import { mixed } from "../lib/hub";
       <h2>Popular tools</h2>
     </div>
     <div class="hub-grid">
-      {mixed(1).map((e) => <ToolCard {...e} />)}
+      {mixed(1).map((e) => (
+        <ToolCard {...e} />
+      ))}
     </div>
   </div>
 </Hub>

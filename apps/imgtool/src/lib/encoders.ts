@@ -23,7 +23,9 @@ export async function ico(canvas: OffscreenCanvas): Promise<Blob> {
 }
 
 function pixels(canvas: OffscreenCanvas): ImageData {
-  return canvas.getContext("2d")!.getImageData(0, 0, canvas.width, canvas.height);
+  return canvas
+    .getContext("2d")!
+    .getImageData(0, 0, canvas.width, canvas.height);
 }
 
 /** 24-bit BMP, bottom-up rows padded to 4 bytes (the render flattens transparency first) */
@@ -64,7 +66,8 @@ export function bmp(canvas: OffscreenCanvas): Blob {
 export function tiff(canvas: OffscreenCanvas): Blob {
   const { width: w, height: h, data } = pixels(canvas);
   const pixelBytes = w * h * 4;
-  const entries: [tag: number, type: number, count: number, value: number][] = [];
+  const entries: [tag: number, type: number, count: number, value: number][] =
+    [];
   // Layout: header (8) | IFD | bits-per-sample (4 shorts) | resolution (2 rationals) | pixels
   const n = 13;
   const ifd = 8;
@@ -116,7 +119,10 @@ export function tiff(canvas: OffscreenCanvas): Blob {
 export async function gif(canvas: OffscreenCanvas): Promise<Blob> {
   const { GIFEncoder, quantize, applyPalette } = await import("gifenc");
   const { width: w, height: h, data } = pixels(canvas);
-  const palette = quantize(data, 256, { format: "rgba4444", oneBitAlpha: true });
+  const palette = quantize(data, 256, {
+    format: "rgba4444",
+    oneBitAlpha: true,
+  });
   const index = applyPalette(data, palette, "rgba4444");
   const transparentIndex = palette.findIndex((c) => c[3] === 0);
   const enc = GIFEncoder();
@@ -126,11 +132,16 @@ export async function gif(canvas: OffscreenCanvas): Promise<Blob> {
     transparentIndex: Math.max(0, transparentIndex),
   });
   enc.finish();
-  return new Blob([enc.bytes() as Uint8Array<ArrayBuffer>], { type: "image/gif" });
+  return new Blob([enc.bytes() as Uint8Array<ArrayBuffer>], {
+    type: "image/gif",
+  });
 }
 
 /** AVIF via libavif (WebAssembly, loaded on first use); quality 0–100 */
-export async function avif(canvas: OffscreenCanvas, quality: number): Promise<Blob> {
+export async function avif(
+  canvas: OffscreenCanvas,
+  quality: number,
+): Promise<Blob> {
   const { default: encode } = await import("@jsquash/avif/encode.js");
   const out = await encode(pixels(canvas), { quality });
   return new Blob([out], { type: "image/avif" });
