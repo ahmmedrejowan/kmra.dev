@@ -11,6 +11,8 @@ test("editor: two files, PNG output, one zip", async ({ page }) => {
     .first()
     .setInputFiles([gen("photo.jpg"), gen("small.jpg")]);
   await expect(ws).toContainText("2 photos");
+  // Sections start closed until opened or switched on
+  await ws.locator("#ws-format .ed-head").click();
   await ws
     .getByRole("group", { name: "Output format" })
     .getByRole("button", { name: "PNG" })
@@ -38,6 +40,7 @@ test("editor: per-file download from the queue", async ({ page }) => {
     .locator("main input[type=file]")
     .first()
     .setInputFiles([gen("photo.jpg"), gen("small.jpg")]);
+  await ws.locator("#ws-resize").getByRole("button", { name: "Add" }).click();
   await ws.getByRole("button", { name: "50%" }).click();
   await expect(ws).toContainText(/800 × 600, JPEG/);
   const d = await download(page, () =>

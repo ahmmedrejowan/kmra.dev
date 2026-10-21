@@ -219,3 +219,47 @@ test("removing the last photo clears its crop and history; Simple mode lists cha
   await expect(ws.locator(".change-list li")).toHaveText(["Watermark"]);
   await expect(ws.getByRole("button", { name: "Undo" })).toBeDisabled();
 });
+
+test("batch downloads: zip, save each with progress, a PNG already PNG kept as is", async ({ page }) => {
+  await start(page, "/convert", [gen("photo.jpg"), gen("photo.png"), gen("small.jpg")]);
+  const res = page.locator(".controls .result");
+  const z = await download(page, () => res.getByRole("button", { name: "Download all 3 as zip" }).click());
+  const files = unzip(await bytes(z));
+  expect(files.map((f) => f.name)).toEqual(["photo-convert-kmra.png", "photo-convert-2-kmra.png", "small-convert-kmra.png"]);
+  expect(files.map((f) => info(f.data))).toEqual([
+    { type: "png", w: 1600, h: 1200 },
+    { type: "png", w: 800, h: 600 },
+    { type: "png", w: 640, h: 480 },
+  ]);
+  // The PNG in a "convert to PNG" batch is handed back untouched
+  expect(Buffer.compare(files[1]!.data, readFileSync(gen("photo.png")))).toBe(0);
+  const names: string[] = [];
+  page.on("download", (d) => names.push(d.suggestedFilename()));
+  await res.getByRole("button", { name: "Save each separately" }).click();
+  await expect(res.getByRole("button", { name: /^Preparing \d of 3…$/ })).toBeVisible();
+  await expect.poll(() => names.length).toBe(3);
+  expect(names).toEqual(["photo-convert-kmra.png", "photo-convert-2-kmra.png", "small-convert-kmra.png"]);
+});
+
+test("More edits: every section opens the same way, with Add or Remove", async ({ page }) => {
+  const ws = await workspace(page, "/compress", "photo.jpg");
+  await ws.locator(".insp .more:not(.history) > summary").click();
+  const secs = ws.locator(".ed-sec");
+  // Only what's on is open (Compress saves as JPEG: Format), with Remove; the rest offer Add
+  await expect(secs.locator(".ed-head[aria-expanded=true]")).toHaveText(["FormatOn"]);
+  await expect(ws.locator("#ws-format").getByRole("button", { name: "Remove" })).toBeVisible();
+  for (const h of await secs.filter({ hasNot: page.locator("#ws-format") }).locator("h3").all())
+    if (!(await h.locator(".ed-on").count())) await expect(h.getByRole("button", { name: "Add", exact: true })).toBeVisible();
+  const mark = ws.locator("#ws-watermark");
+  await mark.getByRole("button", { name: "Add" }).click();
+  await expect(mark.locator(".ed-on")).toHaveText("On");
+  await expect(mark.locator(".ed-head")).toHaveAttribute("aria-expanded", "true");
+  await expect(ws.locator(".change-list li")).toHaveText(["Watermark"]);
+  // The header folds it without removing it; Remove takes it out
+  await mark.locator(".ed-head").click();
+  await expect(mark.locator(".ed-head")).toHaveAttribute("aria-expanded", "false");
+  await expect(ws.locator(".change-list li")).toHaveText(["Watermark"]);
+  await mark.getByRole("button", { name: "Remove" }).click();
+  await expect(ws.locator(".change-list li")).toHaveCount(0);
+  await expect(mark.getByRole("button", { name: "Add" })).toBeVisible();
+});

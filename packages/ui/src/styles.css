@@ -11661,3 +11661,50 @@ select.bar-input {
     padding-inline: 8px;
   }
 }
+/* "More edits": every section is the same row: open/close, "On" when applied, Add or Remove */
+.insp .ed-sec {
+  padding-block: 4px;
+  gap: 0;
+}
+.insp .ed-sec.open {
+  padding-bottom: 14px;
+  gap: 10px;
+}
+.insp .ed-sec h3 {
+  min-height: 40px;
+}
+.ed-head {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.ed-head .caret {
+  width: 14px;
+  height: 14px;
+  margin-left: 2px;
+  color: var(--muted);
+  transition: transform 0.15s;
+}
+.ed-sec.open .ed-head .caret {
+  transform: rotate(180deg);
+}
+.ed-on {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: var(--acc-soft);
+  color: var(--acc);
+}
+.insp .ed-sec .fx-on {
+  margin-left: 8px;
+}

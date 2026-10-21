@@ -870,4 +870,8 @@ export const BN: Record<string, string> = {
   "Changes marked All apply to every photo.": "“সব” চিহ্নিত পরিবর্তন সব ছবিতে প্রয়োগ হয়।",
   "Not on this photo.": "এই ছবিতে নেই।",
   "Add {name}": "{name} যোগ করুন",
+  "On": "চালু",
+  "Preparing {i} of {n}…": "{n}টির মধ্যে {i}টি তৈরি হচ্ছে…",
+  "{i} of {n}…": "{n}টির {i}টি…",
+  "Skipped {list}: it couldn't be processed, perhaps too large for this device.": "{list} বাদ গেছে: প্রসেস করা যায়নি, সম্ভবত এই ডিভাইসের জন্য খুব বড়।",
 };

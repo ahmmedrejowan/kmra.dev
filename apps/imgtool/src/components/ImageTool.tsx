@@ -386,6 +386,8 @@ function ImageToolView({ tool, preset, tools, brand, lang = "en" }: Props) {
   const [focus, setFocus] = useState(tool);
   /** The workspace's "More edits" list is open (always at first in the editor) */
   const [moreOpen, setMoreOpen] = useState(editor);
+  /** "More edits" sections opened or closed by hand (otherwise: open when their edit is on) */
+  const [openSecs, setOpenSecs] = useState<Record<string, boolean>>({});
   /** The tool whose rules apply: the page's tool, or the one picked in the workspace */
   const act = advanced ? focus : tool;
   /** The tool picked in the workspace (none in the plain editor) */
@@ -1311,27 +1313,68 @@ function ImageToolView({ tool, preset, tools, brand, lang = "en" }: Props) {
         };
       }
     }
+    // Converting a batch: a photo that's already in the chosen lossless format (a PNG in "to PNG")
+    // and has no other edits is handed back as it is, not saved again
+    if (
+      act === "convert" &&
+      !st.keepFormat &&
+      !isLossy(st.type) &&
+      formatOf(it.file) === st.type &&
+      onlyEncodes(st)
+    )
+      return {
+        blob: it.file,
+        w: it.w,
+        h: it.h,
+        type: st.type,
+        q: 100,
+        over: false,
+        kept: true,
+      };
     return noBigger(await engine.encode(it.key, it.file.type, st), it, st);
   }
 
-  /** Process every file with the current settings; file names are made unique. */
-  async function encodeAll(): Promise<{ name: string; blob: Blob }[]> {
+  /**
+   * Process every file with its settings, one at a time, handing each to `use` as it's done
+   * (names made unique). A photo that fails is skipped and named afterwards; progress shows on
+   * the download buttons.
+   */
+  async function eachFile(
+    use: (f: { name: string; blob: Blob }) => Promise<void> | void,
+  ): Promise<number> {
     const used = new Set<string>();
-    const outFiles: { name: string; blob: Blob }[] = [];
-    for (const it of items) {
-      const st = settingsFor(it);
-      const r = await produce(it, st);
-      let name = outName(it.file, r.type, act);
-      for (let n = 2; used.has(name); n++)
-        name = outName(it.file, r.type, act).replace(
-          /-kmra(\.\w+)$/,
-          `-${n}-kmra$1`,
-        );
-      used.add(name);
-      outFiles.push({ name, blob: r.blob });
+    const failed: string[] = [];
+    let ok = 0;
+    setProgress([0, items.length]);
+    for (const [i, it] of items.entries()) {
+      try {
+        const r = await produce(it, settingsFor(it));
+        let name = outName(it.file, r.type, act);
+        for (let n = 2; used.has(name); n++)
+          name = outName(it.file, r.type, act).replace(
+            /-kmra(\.\w+)$/,
+            `-${n}-kmra$1`,
+          );
+        used.add(name);
+        await use({ name, blob: r.blob });
+        ok++;
+      } catch {
+        failed.push(it.file.name);
+      }
+      setProgress([i + 1, items.length]);
     }
-    return outFiles;
+    if (failed.length)
+      toast(
+        T(
+          "Skipped {list}: it couldn't be processed, perhaps too large for this device.",
+          {
+            list: failed.join(", "),
+          },
+        ),
+      );
+    return ok;
   }
+  const [progress, setProgress] = useState<[number, number] | null>(null);
 
   /** One file: reuse the preview result when it's current, otherwise process it now. */
   async function downloadOne(i = cur) {
@@ -1357,16 +1400,12 @@ function ImageToolView({ tool, preset, tools, brand, lang = "en" }: Props) {
   async function downloadZip() {
     setZipping(true);
     try {
-      const files = await encodeAll();
-      // Images are already compressed, so store them without deflating again.
-      const entries = Object.fromEntries(
-        await Promise.all(
-          files.map(
-            async (f) =>
-              [f.name, new Uint8Array(await f.blob.arrayBuffer())] as const,
-          ),
-        ),
-      );
+      // Images are already compressed, so they're stored without deflating again
+      const entries: Record<string, Uint8Array> = {};
+      const ok = await eachFile(async (f) => {
+        entries[f.name] = new Uint8Array(await f.blob.arrayBuffer());
+      });
+      if (!ok) throw new Error("nothing to zip");
       downloadBlob(
         new Blob([zipSync(entries, { level: 0 })], { type: "application/zip" }),
         `images-${act === "editor" ? "edit" : act}.zip`,
@@ -1375,29 +1414,30 @@ function ImageToolView({ tool, preset, tools, brand, lang = "en" }: Props) {
       toast(T("Couldn't build the zip. Try fewer or smaller images."));
     } finally {
       setZipping(false);
+      setProgress(null);
     }
   }
 
   async function downloadEach() {
     setZipping(true);
     try {
-      const files = await encodeAll();
-      for (const f of files) {
+      // Each file is saved as soon as it's ready, spaced out so browsers don't drop any
+      const ok = await eachFile(async (f) => {
         downloadBlob(f.blob, f.name);
-        // Browsers drop rapid back-to-back downloads; space them out a little.
         await new Promise((r) => setTimeout(r, 300));
-      }
-      if (files.length > 1)
+      });
+      if (ok > 1)
         toast(
           T(
             "Saved {n} files. If some are missing, allow multiple downloads for this site.",
-            { n: files.length },
+            { n: ok },
           ),
         );
     } catch {
       toast(T("Couldn't save the files. Try fewer or smaller images."));
     } finally {
       setZipping(false);
+      setProgress(null);
     }
   }
 
@@ -2465,6 +2505,7 @@ function ImageToolView({ tool, preset, tools, brand, lang = "en" }: Props) {
       return;
     }
     setMoreOpen(true);
+    setOpenSecs((o) => ({ ...o, [sec]: true }));
     setTimeout(
       () =>
         document
@@ -2656,7 +2697,12 @@ function ImageToolView({ tool, preset, tools, brand, lang = "en" }: Props) {
             >
               <Icon name="download" />
               {zipping
-                ? T("Working…")
+                ? progress
+                  ? T("Preparing {i} of {n}…", {
+                      i: progress[0] + (progress[0] < progress[1] ? 1 : 0),
+                      n: progress[1],
+                    })
+                  : T("Working…")
                 : many
                   ? T("Download all {n} as zip", { n: items.length })
                   : T("Download")}
@@ -2695,43 +2741,65 @@ function ImageToolView({ tool, preset, tools, brand, lang = "en" }: Props) {
   if (!advanced) return simple;
 
   /* ---------- Advanced workspace ---------- */
+  /**
+   * One section under "More edits". Every section works the same way: the header opens and
+   * closes it, says "On" when its edit is applied, and offers Add (switch it on and open it)
+   * or Remove (take it out). Sections with an edit on start open.
+   */
   const section = (
     key: string,
     title: string,
     icon: IconKey,
-    body: ReactNode,
-  ) =>
-    focusMeta && SECTION[focus] === key ? null : (
-      <section id={`ws-${key}`}>
-        <h3>
-          <Icon name={icon} />
-          {title}
-        </h3>
-        {body}
-      </section>
-    );
-
-  /** An effect section in the workspace that can be switched on and off. */
-  const fxSection = (
-    key: string,
-    title: string,
-    icon: IconKey,
     on: boolean,
-    toggle: (on: boolean) => void,
+    add: (() => void) | null,
+    remove: (() => void) | null,
     body: ReactNode,
-  ) =>
-    focusMeta && SECTION[focus] === key ? null : (
-      <section id={`ws-${key}`}>
+  ) => {
+    if (focusMeta && SECTION[focus] === key) return null;
+    const open = openSecs[key] ?? on;
+    const setOpen = (v: boolean) => setOpenSecs((o) => ({ ...o, [key]: v }));
+    return (
+      <section id={`ws-${key}`} className={`ed-sec${open ? " open" : ""}`}>
         <h3>
-          <Icon name={icon} />
-          {title}
-          <button type="button" className="fx-on" onClick={() => toggle(!on)}>
-            {on ? T("Remove") : T("Add")}
+          <button
+            type="button"
+            className="ed-head"
+            aria-expanded={open}
+            onClick={() => setOpen(!open)}
+          >
+            <Icon name={icon} />
+            {title}
+            {on && <small className="ed-on">{T("On")}</small>}
+            <Icon name="down" className="ico caret" />
           </button>
+          {on && remove ? (
+            <button
+              type="button"
+              className="fx-on"
+              onClick={() => {
+                remove();
+                setOpen(false);
+              }}
+            >
+              {T("Remove")}
+            </button>
+          ) : !on ? (
+            <button
+              type="button"
+              className="fx-on"
+              onClick={() => {
+                add?.();
+                setOpen(true);
+              }}
+            >
+              {T("Add")}
+            </button>
+          ) : null}
         </h3>
-        {on && body}
+        {open && body}
       </section>
     );
+  };
   const fromTool = (slug: string) => defaults(slug);
 
   /**
@@ -2790,112 +2858,141 @@ function ImageToolView({ tool, preset, tools, brand, lang = "en" }: Props) {
   /** The workspace's other sections; the picked tool's own one is its panel above */
   const moreSections = () => (
     <>
-      {section("crop", T("Crop"), "crop", cropCtl)}
-      {section("rotate", T("Rotate & flip"), "rotate", rotateCtl)}
+      {section(
+        "crop",
+        T("Crop"),
+        "crop",
+        !!s.crop,
+        null,
+        () => set({ crop: null, ratio: null }),
+        cropCtl,
+      )}
+      {section(
+        "rotate",
+        T("Rotate & flip"),
+        "rotate",
+        !!(s.rotate || s.flipH || s.flipV),
+        null,
+        () => set({ rotate: 0, flipH: false, flipV: false }),
+        rotateCtl,
+      )}
       {section(
         "resize",
         T("Resize"),
         "resize",
+        !!(s.w || s.h || s.size || s.form || s.sheet),
+        null,
+        () => set({ w: null, h: null, size: null, form: null, sheet: null }),
         <>
           {dimsCtl}
           {formCtl}
           <SheetCtl s={s} setS={setS} />
         </>,
       )}
-      {fxSection(
+      {section(
         "look",
         T("Adjust & looks"),
         "sun",
         !!(s.adjust || s.filter),
-        (on) =>
-          set(
-            on ? { adjust: { ...NO_ADJUST } } : { adjust: null, filter: null },
-          ),
+        () => set({ adjust: { ...NO_ADJUST } }),
+        () => set({ adjust: null, filter: null }),
         <>
           <AdjustCtl s={s} setS={setS} />
           <FilterCtl s={s} setS={setS} />
         </>,
       )}
-      {fxSection(
+      {section(
         "redact",
         T("Blur areas"),
         "eyeOff",
         !!s.redact,
-        (on) => set({ redact: on ? fromTool("blur").redact : null }),
+        () => set({ redact: fromTool("blur").redact }),
+        () => set({ redact: null }),
         s.redact && <RedactCtl s={s} setS={setS} />,
       )}
-      {fxSection(
+      {section(
         "text",
         T("Text"),
         "type",
         !!s.text,
-        (on) => set({ text: on ? fromTool("add-text").text : null }),
+        () => set({ text: fromTool("add-text").text }),
+        () => set({ text: null }),
         s.text && <TextCtl s={s} setS={setS} />,
       )}
-      {fxSection(
+      {section(
         "watermark",
         T("Watermark"),
         "stamp",
         !!s.mark,
-        (on) => set({ mark: on ? fromTool("watermark").mark : null }),
+        () => set({ mark: fromTool("watermark").mark }),
+        () => set({ mark: null }),
         s.mark && <MarkCtl s={s} setS={setS} />,
       )}
-      {fxSection(
+      {section(
         "frame",
         T("Border & padding"),
         "frame",
         !!s.frame,
-        (on) => set({ frame: on ? { ...NO_FRAME, border: 3 } : null }),
+        () => set({ frame: { ...NO_FRAME, border: 3 } }),
+        () => set({ frame: null }),
         s.frame && <FrameCtl s={s} setS={setS} mode="all" />,
       )}
-      {fxSection(
+      {section(
         "background",
         T("Background"),
         "eraser",
         !!s.bg,
-        (on) => set({ bg: on ? fromTool("change-bg").bg : null }),
+        () => set({ bg: fromTool("change-bg").bg }),
+        () => set({ bg: null }),
         s.bg && <BgCtl s={s} setS={setS} />,
       )}
-      {fxSection(
+      {section(
         "passport",
-        "ID photo",
+        T("ID photo"),
         "idCard",
         !!s.passport,
-        (on) =>
-          setS((p) =>
-            on
-              ? {
-                  ...p,
-                  passport: fromTool("passport-photo").passport,
-                  bg: p.bg ?? fromTool("passport-photo").bg,
-                }
-              : { ...p, passport: null },
-          ),
+        () =>
+          setS((p) => ({
+            ...p,
+            passport: fromTool("passport-photo").passport,
+            bg: p.bg ?? fromTool("passport-photo").bg,
+          })),
+        () => set({ passport: null }),
         s.passport && <PassportCtl s={s} setS={setS} />,
       )}
-      {fxSection(
+      {section(
         "signature",
         T("Signature cleanup"),
         "signature",
         !!s.ink,
-        (on) => set({ ink: on ? fromTool("signature").ink : null }),
+        () => set({ ink: fromTool("signature").ink }),
+        () => set({ ink: null }),
         s.ink && <InkCtl s={s} setS={setS} />,
       )}
       {section(
         "format",
         T("Format"),
         "convert",
-        chipGroup<string>(
-          formatOpts(true),
-          formatValue,
-          pickFormat,
-          T("Output format"),
-        ),
+        !s.keepFormat,
+        null,
+        () => set({ keepFormat: true }),
+        <>
+          {chipGroup<string>(
+            formatOpts(true),
+            formatValue,
+            pickFormat,
+            T("Output format"),
+          )}
+          {!s.keepFormat && formatHint(s.type)}
+        </>,
       )}
       {section(
         "compress",
         T("Compression"),
         "compress",
+        !!s.target,
+        null,
+        () => set({ target: null }),
         <>
           {qualityCtl("wq")}
           {isLossy(type) && targetCtl(true)}
@@ -3069,12 +3166,19 @@ function ImageToolView({ tool, preset, tools, brand, lang = "en" }: Props) {
               onClick={() => void download()}
               disabled={dlDisabled}
               title={many ? T("Download every file in one zip") : T("Download")}
-              aria-label={many ? T("Zip of {n}", { n: items.length }) : T("Download")}
+              aria-label={
+                many ? T("Zip of {n}", { n: items.length }) : T("Download")
+              }
             >
               <Icon name="download" />
               <span className="hide-sm">
                 {zipping
-                  ? T("Preparing…")
+                  ? progress
+                    ? T("{i} of {n}…", {
+                        i: progress[0] + (progress[0] < progress[1] ? 1 : 0),
+                        n: progress[1],
+                      })
+                    : T("Preparing…")
                   : many
                     ? T("Zip of {n}", { n: items.length })
                     : T("Download")}
