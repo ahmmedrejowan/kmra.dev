@@ -77,3 +77,40 @@ test("Strip metadata with other edits on says everything goes, and can clear the
   await expect(ws.locator(".meta-resave")).toHaveCount(0);
   await expect(ws.locator(".meta-count")).toHaveText("Removing 13 of 14 fields");
 });
+
+test("Advanced opens empty at /editor?t=<tool>; choices wait for the photo; Back returns to Simple", async ({ page }) => {
+  await page.goto("/convert");
+  await page.evaluate(() => window.dispatchEvent(new Event("kmra:advanced")));
+  const ws = page.getByRole("dialog", { name: "Advanced workspace" });
+  await expect(ws).toBeVisible();
+  await expect(page).toHaveURL(/\/editor\?t=convert$/);
+  await expect(ws.locator(".ws-hint")).toBeVisible();
+  await expect(ws.getByRole("button", { name: "Download", exact: true })).toBeDisabled();
+  // Pick WebP before there's a photo; it applies when one arrives
+  await ws.getByRole("group", { name: "Convert to" }).getByRole("button", { name: "WebP", exact: true }).click();
+  await page.locator("main input[type=file]").first().setInputFiles(gen("photo.jpg"));
+  await expect(ws).toContainText(/1600 × 1200, WebP/);
+  // Removing the photo keeps the editor open, with its drop area
+  await ws.getByRole("button", { name: "Remove photo.jpg" }).click();
+  await expect(ws.locator(".ws-empty")).toBeVisible();
+  await expect(ws.getByRole("group", { name: "Convert to" }).getByRole("button", { name: "WebP", exact: true })).toHaveAttribute("aria-pressed", "true");
+  // Picking another tool updates the address; Back goes to the Simple page
+  await pick(ws, "Compress");
+  await expect(page).toHaveURL(/\/editor\?t=compress$/);
+  await page.goBack();
+  await expect(page).toHaveURL(/\/convert$/);
+  await expect(ws).toBeHidden();
+});
+
+test("the editor opened for a tool goes back to that tool's page with the files", async ({ page }) => {
+  await page.goto("/bn/editor?t=compress");
+  // The workspace's own name is in Bangla here
+  const ws = page.locator(".ws");
+  await expect(ws.locator(".ws-tool h3")).toContainText(/[ঀ-৿]/);
+  await page.locator("main input[type=file]").first().setInputFiles(gen("photo.jpg"));
+  await expect(ws.locator(".ws-result")).toContainText(/১৬০০ × ১২০০|1600 × 1200/);
+  await ws.locator(".ws-top .btn").first().click();
+  await expect(page).toHaveURL(/\/bn\/compress$/);
+  await expect(page.locator(".controls .result")).toContainText(/JPEG/);
+  await expect(page.locator(".filebar .fchip").first()).toContainText("photo.jpg");
+});

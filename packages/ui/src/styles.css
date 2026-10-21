@@ -11367,3 +11367,15 @@ select.bar-input {
 .mp3-credit a:hover {
   color: var(--acc);
 }
+/* Workspace before a photo: the tool's settings are there, the result comes with the photo */
+.insp .ws-hint {
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: var(--acc-soft);
+  color: var(--acc);
+  font-size: 13px;
+}
+.stage:has(> .ws-empty) {
+  background-image: none;
+}

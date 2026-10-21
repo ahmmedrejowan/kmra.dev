@@ -819,4 +819,8 @@ export const BN: Record<string, string> = {
   "Another format or other edits are on, so the picture is saved again and all of its hidden data goes.": "অন্য ফরম্যাট বা অন্য এডিট চালু আছে, তাই ছবিটি আবার সেভ হবে আর এর সব লুকানো তথ্য চলে যাবে।",
   "{format} has no quality setting. Pick JPEG, WebP or AVIF for smaller files.": "{format}-এ কোয়ালিটি সেটিং নেই। ছোট ফাইলের জন্য JPEG, WebP বা AVIF বেছে নিন।",
   "This format": "এই ফরম্যাট",
+  "Width": "প্রস্থ",
+  "Height": "উচ্চতা",
+  "Add a photo to see the result. What you choose now applies to it.": "ফলাফল দেখতে একটি ছবি যোগ করুন। এখন যা বেছে নেবেন, তা ছবিটিতে প্রয়োগ হবে।",
+  "Add a photo to see the hidden data in it.": "এর লুকানো তথ্য দেখতে একটি ছবি যোগ করুন।",
 };

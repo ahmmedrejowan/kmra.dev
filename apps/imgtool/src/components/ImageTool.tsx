@@ -1,5 +1,5 @@
 import { LangProvider, useT } from "@kmra/ui/lib/i18n-react";
-import { num, type Locale } from "@kmra/ui/lib/i18n";
+import { lp, num, type Locale } from "@kmra/ui/lib/i18n";
 import {
   useCallback,
   useEffect,
@@ -23,7 +23,7 @@ import {
   tagged,
   toolName,
 } from "@kmra/ui/lib/files";
-import { takeFiles } from "@kmra/ui/lib/handoff";
+import { stashFiles, takeFiles } from "@kmra/ui/lib/handoff";
 import { toast } from "@kmra/ui/lib/toast";
 import {
   formatKeys,
@@ -195,6 +195,8 @@ function ImageToolView({ tool, preset, tools, lang = "en" }: Props) {
   const [moreOpen, setMoreOpen] = useState(editor);
   /** The tool whose rules apply: the page's tool, or the one picked in the workspace */
   const act = advanced ? focus : tool;
+  /** The tool picked in the workspace (none in the plain editor) */
+  const focusMeta = tools.find((t) => t.slug === focus);
   const [cut, setCut] = useState(50);
   /** Zoom factor (1 = 100%, one image pixel per screen pixel), or null to fit the view */
   const [zoom, setZoom] = useState<number | null>(null);
@@ -288,6 +290,15 @@ function ImageToolView({ tool, preset, tools, lang = "en" }: Props) {
         openOnFiles.current = matchMedia("(min-width: 981px)").matches;
       }
     } catch {}
+    // The editor opened for one tool: /editor?t=compress
+    if (editor) {
+      const t = new URLSearchParams(location.search).get("t");
+      if (t && SECTION[t] && tools.some((x) => x.slug === t && x.ready)) {
+        setFocus(t);
+        setS(defaults(t));
+        setMoreOpen(false);
+      }
+    }
     void (async () => {
       const handed = await takeFiles();
       if (handed.length) await addFiles(handed);
@@ -301,7 +312,7 @@ function ImageToolView({ tool, preset, tools, lang = "en" }: Props) {
   useEffect(() => {
     if (items.length && openOnFiles.current) {
       openOnFiles.current = false;
-      setAdvanced(true);
+      enterWorkspace();
     }
   }, [items.length]);
 
@@ -499,19 +510,39 @@ function ImageToolView({ tool, preset, tools, lang = "en" }: Props) {
   }, [item, s, metaMode, metaKeep, act]);
 
   /* ---------- Mode ---------- */
+  /** The workspace's address: /editor?t=<tool> (in the reader's language) */
+  const editorPath = (slug: string) =>
+    lp(lang, SECTION[slug] ? `/editor?t=${slug}` : "/editor");
+  const onEditorPath = () => /\/editor$/.test(location.pathname);
+
+  /** Show the workspace; on a tool page the address becomes /editor?t=<tool> without a reload */
+  function enterWorkspace() {
+    setAdvanced(true);
+    if (!editor && !onEditorPath())
+      history.pushState({ kmraWs: true }, "", editorPath(focus));
+  }
   function openAdvanced() {
     setWantAdvanced(true);
     try {
       localStorage.setItem(MODE_KEY, "advanced");
     } catch {}
-    // With files, switch now; without, the choice is remembered and applied when files arrive.
-    if (items.length) setAdvanced(true);
-    else openOnFiles.current = true;
+    // Opens right away, with or without files: the workspace has its own drop area
+    openOnFiles.current = false;
+    enterWorkspace();
   }
   function closeAdvanced() {
-    // The editor page is the workspace itself; leaving it goes home.
     if (editor) {
-      window.location.href = "/";
+      // The editor page is the workspace itself: go to the picked tool's page in Simple mode,
+      // taking the files along, or home when no tool is picked
+      try {
+        localStorage.setItem(MODE_KEY, "simple");
+      } catch {}
+      const to = focusMeta ? lp(lang, `/${focus}`) : lp(lang, "/");
+      void (
+        focusMeta && items.length
+          ? stashFiles(items.map((it) => it.file))
+          : Promise.resolve()
+      ).finally(() => (window.location.href = to));
       return;
     }
     setAdvanced(false);
@@ -520,7 +551,27 @@ function ImageToolView({ tool, preset, tools, lang = "en" }: Props) {
     try {
       localStorage.setItem(MODE_KEY, "simple");
     } catch {}
+    // Back to the tool's own address: undo our history entry, or replace it after a refresh
+    if (onEditorPath()) {
+      if ((history.state as { kmraWs?: boolean } | null)?.kmraWs)
+        history.back();
+      else history.replaceState(null, "", lp(lang, `/${tool}`));
+    }
   }
+  // Browser Back and Forward move between Simple (the tool's address) and the workspace
+  useEffect(() => {
+    if (editor) return;
+    const onPop = () => {
+      const inWs = onEditorPath();
+      setAdvanced(inWs);
+      setWantAdvanced(inWs);
+      try {
+        localStorage.setItem(MODE_KEY, inWs ? "advanced" : "simple");
+      } catch {}
+    };
+    window.addEventListener("popstate", onPop);
+    return () => window.removeEventListener("popstate", onPop);
+  }, []);
   useEffect(() => {
     document.body.style.overflow = advanced ? "hidden" : "";
     return () => {
@@ -960,7 +1011,7 @@ function ImageToolView({ tool, preset, tools, lang = "en" }: Props) {
     set(patch);
   }
 
-  const dimsCtl = item && (
+  const dimsCtl = (
     <>
       <div className="ctl">
         <span className="lbl">{T("Size in pixels")}</span>
@@ -969,7 +1020,7 @@ function ImageToolView({ tool, preset, tools, lang = "en" }: Props) {
             className="num"
             type="number"
             min={1}
-            placeholder={String(item.w)}
+            placeholder={item ? String(item.w) : T("Width")}
             value={s.w ?? ""}
             onChange={(e) => setDim("w", e.target.value)}
             aria-label={T("Width in pixels")}
@@ -988,7 +1039,7 @@ function ImageToolView({ tool, preset, tools, lang = "en" }: Props) {
             className="num"
             type="number"
             min={1}
-            placeholder={String(item.h)}
+            placeholder={item ? String(item.h) : T("Height")}
             value={s.h ?? ""}
             onChange={(e) => setDim("h", e.target.value)}
             aria-label={T("Height in pixels")}
@@ -1231,6 +1282,12 @@ function ImageToolView({ tool, preset, tools, lang = "en" }: Props) {
   function metaReport(): ReactNode {
     const read = metaIn && item && metaIn.key === item.key ? metaIn : null;
     const fields = read?.fields ?? null;
+    if (!item)
+      return (
+        <small className="muted">
+          {T("Add a photo to see the hidden data in it.")}
+        </small>
+      );
     if (!read) return <small className="muted">{T("Reading…")}</small>;
     // Formats that are saved again from the pixels: everything goes, listed for information
     if (!fields) {
@@ -1867,7 +1924,7 @@ function ImageToolView({ tool, preset, tools, lang = "en" }: Props) {
     icon: IconKey,
     body: ReactNode,
   ) =>
-    !editor && SECTION[focus] === key ? null : (
+    focusMeta && SECTION[focus] === key ? null : (
       <section id={`ws-${key}`}>
         <h3>
           <Icon name={icon} />
@@ -1933,7 +1990,7 @@ function ImageToolView({ tool, preset, tools, lang = "en" }: Props) {
     toggle: (on: boolean) => void,
     body: ReactNode,
   ) =>
-    !editor && SECTION[focus] === key ? null : (
+    focusMeta && SECTION[focus] === key ? null : (
       <section id={`ws-${key}`}>
         <h3>
           <Icon name={icon} />
@@ -1954,6 +2011,8 @@ function ImageToolView({ tool, preset, tools, lang = "en" }: Props) {
    */
   function pickTool(slug: string) {
     setFocus(slug);
+    if (onEditorPath())
+      history.replaceState(history.state, "", editorPath(slug));
     const d = defaults(slug);
     setS((p) => {
       switch (slug) {
@@ -2114,7 +2173,6 @@ function ImageToolView({ tool, preset, tools, lang = "en" }: Props) {
       )}
     </>
   );
-  const focusMeta = tools.find((t) => t.slug === focus);
   /** Edits outside the picked tool's own panel, for the "More edits" count */
   const extra = (
     [
@@ -2153,11 +2211,11 @@ function ImageToolView({ tool, preset, tools, lang = "en" }: Props) {
           <button className="btn sm" type="button" onClick={closeAdvanced}>
             <Icon name="back" />
             <span className="hide-sm">
-              {editor ? T("Home") : T("Simple mode")}
+              {editor && !focusMeta ? T("Home") : T("Simple mode")}
             </span>
           </button>
           <span className="title">
-            {editor ? T("Image editor") : T("Workspace")}{" "}
+            {focusMeta?.name ?? T("Image editor")}{" "}
             <small>
               {items.length
                 ? `${items.length} file${items.length > 1 ? "s" : ""}`
@@ -2309,19 +2367,20 @@ function ImageToolView({ tool, preset, tools, lang = "en" }: Props) {
           </div>
 
           <div className="insp">
-            {focusMeta && !editor && (
+            {focusMeta && (
               <section className="ws-tool">
                 <h3>
                   <Icon name={focusMeta.icon} />
                   {focusMeta.name}
                 </h3>
-                {item ? (
-                  simpleControls(focus)
-                ) : (
-                  <small className="muted">
-                    {T("Add an image to see the result.")}
-                  </small>
+                {!item && (
+                  <p className="ws-hint">
+                    {T(
+                      "Add a photo to see the result. What you choose now applies to it.",
+                    )}
+                  </p>
                 )}
+                {simpleControls(focus)}
               </section>
             )}
             <details
@@ -2339,27 +2398,29 @@ function ImageToolView({ tool, preset, tools, lang = "en" }: Props) {
               </summary>
               {moreSections()}
             </details>
-            <section className="ws-result">
-              <div
-                className={`result${busy ? " working" : ""}`}
-                aria-live="polite"
-              >
-                {resultSummary()}
-              </div>
-              {recipe.length > 1 && (
-                <div className="recipe" aria-label={T("Recipe")}>
-                  {recipe.map((step, i) => (
-                    <span key={step} style={{ display: "contents" }}>
-                      {i > 0 && <i>{T("then")}</i>}
-                      <span>{step}</span>
-                    </span>
-                  ))}
+            {item && (
+              <section className="ws-result">
+                <div
+                  className={`result${busy ? " working" : ""}`}
+                  aria-live="polite"
+                >
+                  {resultSummary()}
                 </div>
-              )}
-              {many && (
-                <small className="muted">{T("Applied to every file.")}</small>
-              )}
-            </section>
+                {recipe.length > 1 && (
+                  <div className="recipe" aria-label={T("Recipe")}>
+                    {recipe.map((step, i) => (
+                      <span key={step} style={{ display: "contents" }}>
+                        {i > 0 && <i>{T("then")}</i>}
+                        <span>{step}</span>
+                      </span>
+                    ))}
+                  </div>
+                )}
+                {many && (
+                  <small className="muted">{T("Applied to every file.")}</small>
+                )}
+              </section>
+            )}
           </div>
         </div>
 
