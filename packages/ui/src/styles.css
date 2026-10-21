@@ -2706,6 +2706,58 @@ input[type="range"] {
   color: var(--acc);
   border-color: var(--acc);
 }
+/* Strip metadata: what the photo carries (private details first), and the check of the result */
+.meta-rows {
+  display: grid;
+  gap: 2px;
+  margin: 2px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.meta-rows li {
+  display: grid;
+  grid-template-columns: 110px minmax(0, 1fr);
+  gap: 10px;
+  padding: 6px 8px;
+  border-radius: 8px;
+  font-size: 13.5px;
+}
+.meta-rows li span {
+  color: var(--muted);
+}
+.meta-rows li b {
+  font-weight: 500;
+  overflow-wrap: anywhere;
+  text-decoration: line-through;
+  text-decoration-color: color-mix(in srgb, var(--fg) 45%, transparent);
+}
+.meta-rows li.priv {
+  background: color-mix(in srgb, #e5484d 8%, transparent);
+}
+.meta-done small {
+  display: block;
+  margin-top: 4px;
+}
+.meta-ok {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  font-weight: 600;
+  color: #18794e;
+}
+.meta-ok svg {
+  width: 16px;
+  height: 16px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .meta-ok {
+    color: #3dd68c;
+  }
+}
+:root[data-theme="dark"] .meta-ok {
+  color: #3dd68c;
+}
 /* One line under a format picker saying what the chosen format is good for */
 .fmt-hint {
   display: block;

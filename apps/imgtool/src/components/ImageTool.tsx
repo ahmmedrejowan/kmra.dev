@@ -8,6 +8,8 @@ import {
   type CSSProperties,
   type ReactNode,
 } from "react";
+import { stripMetadata, type Removed } from "../lib/strip";
+import { readSummary, type MetaSummary } from "../lib/meta";
 import { zipSync } from "fflate";
 import type { Preset } from "@kmra/registry";
 import { Icon } from "@kmra/ui/components/Icon";
@@ -99,6 +101,10 @@ interface Out extends EncodeResult {
   url: string;
   /** Compress kept the original file because re-encoding made it bigger */
   kept?: boolean;
+  /** Strip metadata cut the metadata out without re-encoding the image */
+  lossless?: boolean;
+  /** What that removed */
+  removed?: Removed[];
 }
 
 const MODE_KEY = "kmra-mode";
@@ -412,7 +418,7 @@ function ImageToolView({ tool, preset, tools, lang = "en" }: Props) {
     setBusy(true);
     const t = setTimeout(async () => {
       try {
-        const r = noBigger(await engine.encode(item.key, item.file.type, s), item, s);
+        const r = await produce(item, s);
         if (id !== reqRef.current) return;
         const next = { ...r, key: item.key, url: URL.createObjectURL(r.preview ?? r.blob) };
         const old = outRef.current;
@@ -551,13 +557,38 @@ function ImageToolView({ tool, preset, tools, lang = "en" }: Props) {
     return { ...r, blob: it.file, w: it.w, h: it.h, type: it.file.type, over: false, kept: true };
   }
 
+  /**
+   * One file with the given settings. Strip metadata on a JPEG, PNG or WebP that keeps its format
+   * cuts the metadata out of the file itself (no re-encoding, no quality lost); everything else
+   * renders in the worker.
+   */
+  async function produce(it: Item, st: Settings): Promise<EncodeResult & Pick<Out, "kept" | "lossless" | "removed">> {
+    if (tool === "strip-metadata" && st.keepFormat && onlyEncodes(st)) {
+      const r = stripMetadata(new Uint8Array(await it.file.arrayBuffer()));
+      if (r) {
+        const type = formatOf(it.file) ?? it.file.type;
+        return {
+          blob: new Blob([r.bytes], { type }),
+          w: it.w,
+          h: it.h,
+          type,
+          q: 100,
+          over: false,
+          lossless: true,
+          removed: r.removed,
+        };
+      }
+    }
+    return noBigger(await engine.encode(it.key, it.file.type, st), it, st);
+  }
+
   /** Process every file with the current settings; file names are made unique. */
   async function encodeAll(): Promise<{ name: string; blob: Blob }[]> {
     const used = new Set<string>();
     const outFiles: { name: string; blob: Blob }[] = [];
     for (const it of items) {
       const st = settingsFor(it);
-      const r = noBigger(await engine.encode(it.key, it.file.type, st), it, st);
+      const r = await produce(it, st);
       let name = outName(it.file, r.type, tool);
       for (let n = 2; used.has(name); n++)
         name = outName(it.file, r.type, tool).replace(/-kmra(\.\w+)$/, `-${n}-kmra$1`);
@@ -577,7 +608,7 @@ function ImageToolView({ tool, preset, tools, lang = "en" }: Props) {
     }
     try {
       const st = settingsFor(it);
-      const r = noBigger(await engine.encode(it.key, it.file.type, st), it, st);
+      const r = await produce(it, st);
       downloadBlob(r.blob, outName(it.file, r.type, tool));
     } catch {
       toast(
@@ -653,6 +684,27 @@ function ImageToolView({ tool, preset, tools, lang = "en" }: Props) {
   );
 
   const outForItem = out && item && out.key === item.key ? out : null;
+
+  /* ---------- Strip metadata: what's in the photo, and a check of the result ---------- */
+  const [metaIn, setMetaIn] = useState<{ key: string; sum: MetaSummary | null } | null>(null);
+  const [left, setLeft] = useState<{ blob: Blob; sum: MetaSummary | null } | null>(null);
+  useEffect(() => {
+    if (tool !== "strip-metadata" || !item) return;
+    let live = true;
+    void readSummary(item.file).then((sum) => live && setMetaIn({ key: item.key, sum }));
+    return () => {
+      live = false;
+    };
+  }, [item?.key]);
+  useEffect(() => {
+    if (tool !== "strip-metadata" || !outForItem) return;
+    let live = true;
+    const blob = outForItem.blob;
+    void readSummary(blob).then((sum) => live && setLeft({ blob, sum }));
+    return () => {
+      live = false;
+    };
+  }, [outForItem?.blob]);
   const type = item ? outType(item.file.type, s) : s.type;
 
   function compare(it: Item) {
@@ -1076,6 +1128,94 @@ function ImageToolView({ tool, preset, tools, lang = "en" }: Props) {
     </>
   );
 
+  /** Names for the blocks the stripper cut out */
+  const REMOVED: Record<Removed, string> = {
+    exif: "Camera data (EXIF)",
+    xmp: "Editing history (XMP)",
+    iptc: "Caption and copyright (IPTC)",
+    comment: "Comment",
+    thumbnail: "Preview copy",
+    extra: "Extra data from the camera or app",
+    text: "Text notes",
+    time: "Last-edited time",
+  };
+
+  function metaReport(): ReactNode {
+    const read = metaIn && item && metaIn.key === item.key ? metaIn : null;
+    const sum = read?.sum ?? null;
+    const done = outForItem && left && left.blob === outForItem.blob ? left : null;
+    const checked = done?.sum ?? null;
+    return (
+      <>
+        <div className="ctl meta-report">
+          <span className="lbl">{T("Hidden data in this photo")}</span>
+          {!read ? (
+            <small className="muted">{T("Reading…")}</small>
+          ) : !sum ? (
+            <small className="muted">
+              {T("This browser couldn't read the photo's hidden data to list it. The download is still saved without any of it.")}
+            </small>
+          ) : sum.rows.length || sum.more ? (
+            <>
+              <ul className="meta-rows">
+                {sum.rows.map((r) => (
+                  <li key={r.label} className={r.private ? "priv" : undefined}>
+                    <span>{T(r.label)}</span>
+                    <b>{r.value}</b>
+                  </li>
+                ))}
+              </ul>
+              {sum.more > 0 && (
+                <small className="muted">
+                  {sum.rows.length
+                    ? T("And {n} more camera details, such as exposure and ISO.", { n: sum.more })
+                    : T("{n} camera details, such as exposure and ISO.", { n: sum.more })}
+                </small>
+              )}
+            </>
+          ) : (
+            <small className="muted">
+              {T("No location, camera or date found. The download is still saved without any hidden data.")}
+            </small>
+          )}
+        </div>
+        {outForItem && (
+          <div className="ctl meta-done">
+            <span className="lbl">{T("In the download")}</span>
+            {checked && !checked.rows.length && !checked.more ? (
+              <p className="meta-ok">
+                <Icon name="check" />
+                {T("Checked: none of it is left.")}
+              </p>
+            ) : done && !checked ? (
+              <small className="muted">{T("The download couldn't be read back to check it.")}</small>
+            ) : checked ? (
+              <p className="warn">
+                {T("Still in the file: {list}", { list: checked.rows.map((r) => T(r.label)).join(", ") })}
+              </p>
+            ) : (
+              <small className="muted">{T("Checking…")}</small>
+            )}
+            {outForItem.lossless ? (
+              <small className="muted">
+                {T("Cut out without re-compressing, so the picture is exactly as it was. Its colours and rotation stay.")}
+              </small>
+            ) : (
+              <small className="muted">
+                {T("Saved again from the pixels, so none of the hidden data comes along.")}
+              </small>
+            )}
+            {!!outForItem.removed?.length && (
+              <small className="muted">
+                {T("Removed: {list}", { list: outForItem.removed.map((k) => T(REMOVED[k])).join(", ") })}
+              </small>
+            )}
+          </div>
+        )}
+      </>
+    );
+  }
+
   function simpleControls(): ReactNode {
     switch (tool) {
       case "compress":
@@ -1130,23 +1270,7 @@ function ImageToolView({ tool, preset, tools, lang = "en" }: Props) {
           </>
         );
       case "strip-metadata":
-        return (
-          <>
-            <p className="muted" style={{ margin: 0 }}>
-              kmra rebuilds the image from its pixels. Location, camera model,
-              date and other hidden data are left out.
-            </p>
-            <div className="ctl">
-              <span className="lbl">{T("Save as")}</span>
-              {chipGroup<string>(
-                formatOpts(true),
-                formatValue,
-                pickFormat,
-                T("Save as"),
-              )}
-            </div>
-          </>
-        );
+        return metaReport();
       case "form-size":
         return (
           <>

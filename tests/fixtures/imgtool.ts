@@ -101,6 +101,7 @@ export async function makeImgtoolFixtures(dir: string) {
       await draw("signature", 900, 300, "image/jpeg", 0.9),
     );
     await writeFile(join(dir, "exif.jpg"), withExif(photo));
+    await writeFile(join(dir, "meta.jpg"), withRichMeta(photo));
     await writeFile(
       join(dir, "logo.svg"),
       `<svg xmlns="http://www.w3.org/2000/svg" width="240" height="160" viewBox="0 0 240 160">` +
@@ -147,6 +148,110 @@ function withExif(jpeg: Buffer): Buffer {
   seg.writeUInt16BE(0xffe1, 0);
   seg.writeUInt16BE(body.length + 2, 2);
   return Buffer.concat([jpeg.subarray(0, 2), seg, body, jpeg.subarray(2)]);
+}
+
+type Tag = [tag: number, type: "ascii" | "short" | "long" | "rational", value: string | number | number[]];
+
+/** A big-endian TIFF IFD at `at` (its offset in the TIFF), values after it; sub-IFDs follow */
+function ifd(tags: Tag[], at: number): Buffer {
+  const size = 2 + tags.length * 12 + 4;
+  const head = Buffer.alloc(size);
+  head.writeUInt16BE(tags.length, 0);
+  const data: Buffer[] = [];
+  let off = at + size;
+  tags.forEach(([tag, type, value], i) => {
+    const e = 2 + i * 12;
+    head.writeUInt16BE(tag, e);
+    let bytes: Buffer;
+    let code: number;
+    let count: number;
+    if (type === "ascii") {
+      bytes = Buffer.from(`${value}\0`, "latin1");
+      code = 2;
+      count = bytes.length;
+    } else if (type === "short") {
+      bytes = Buffer.alloc(2);
+      bytes.writeUInt16BE(value as number);
+      code = 3;
+      count = 1;
+    } else if (type === "long") {
+      bytes = Buffer.alloc(4);
+      bytes.writeUInt32BE(value as number);
+      code = 4;
+      count = 1;
+    } else {
+      const v = value as number[];
+      bytes = Buffer.alloc(v.length * 8);
+      v.forEach((x, j) => {
+        bytes.writeUInt32BE(Math.round(x * 10000), j * 8);
+        bytes.writeUInt32BE(10000, j * 8 + 4);
+      });
+      code = 5;
+      count = v.length;
+    }
+    head.writeUInt16BE(code, e + 2);
+    head.writeUInt32BE(count, e + 4);
+    if (bytes.length <= 4) bytes.copy(head, e + 8);
+    else {
+      head.writeUInt32BE(off, e + 8);
+      data.push(bytes);
+      off += bytes.length;
+    }
+  });
+  return Buffer.concat([head, ...data]);
+}
+
+/**
+ * A JPEG with the metadata a phone photo carries: GPS position, camera, date taken, software,
+ * author, copyright and serial number (EXIF), editing data (XMP) and a comment. For Strip metadata.
+ */
+function withRichMeta(jpeg: Buffer): Buffer {
+  // Lay out IFD0, then the Exif IFD, then the GPS IFD, each with its own values
+  const exifTags: Tag[] = [
+    [0x9003, "ascii", "2024:05:17 14:32:10"],
+    [0xa431, "ascii", "SN-48213377"],
+  ];
+  const gpsTags: Tag[] = [
+    [0x0001, "ascii", "N"],
+    [0x0002, "rational", [23, 48, 37.08]],
+    [0x0003, "ascii", "E"],
+    [0x0004, "rational", [90, 24, 45]],
+  ];
+  const base: Tag[] = [
+    [0x010f, "ascii", "KmraPhone"],
+    [0x0110, "ascii", "Model X"],
+    [0x0131, "ascii", "PhotoApp 2.1"],
+    [0x013b, "ascii", "Jane Example"],
+    [0x8298, "ascii", "(c) Jane Example"],
+    [0x8769, "long", 0],
+    [0x8825, "long", 0],
+  ];
+  const first = ifd(base, 8).length;
+  const exifAt = 8 + first;
+  const exif = ifd(exifTags, exifAt);
+  const gpsAt = exifAt + exif.length;
+  base[5] = [0x8769, "long", exifAt];
+  base[6] = [0x8825, "long", gpsAt];
+  const tiffHead = Buffer.from([0x4d, 0x4d, 0, 42, 0, 0, 0, 8]);
+  const tiff = Buffer.concat([tiffHead, ifd(base, 8), exif, ifd(gpsTags, gpsAt)]);
+  const segment = (marker: number, body: Buffer) => {
+    const h = Buffer.alloc(4);
+    h.writeUInt16BE(marker, 0);
+    h.writeUInt16BE(body.length + 2, 2);
+    return Buffer.concat([h, body]);
+  };
+  const xmp = Buffer.from(
+    'http://ns.adobe.com/xap/1.0/\0<x:xmpmeta xmlns:x="adobe:ns:meta/"><rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">' +
+      '<rdf:Description xmlns:xmp="http://ns.adobe.com/xap/1.0/" xmp:CreatorTool="Secret Editor 9"/></rdf:RDF></x:xmpmeta>',
+    "latin1",
+  );
+  return Buffer.concat([
+    jpeg.subarray(0, 2),
+    segment(0xffe1, Buffer.concat([Buffer.from("Exif\0\0", "latin1"), tiff])),
+    segment(0xffe1, xmp),
+    segment(0xfffe, Buffer.from("taken at home", "latin1")),
+    jpeg.subarray(2),
+  ]);
 }
 
 /**

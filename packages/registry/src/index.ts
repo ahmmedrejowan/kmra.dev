@@ -270,9 +270,9 @@ export const apps = [
         group: "Optimize",
         ready: true,
         steps: [
-          "Drop a photo.",
-          "kmra re-saves the pixels only, leaving location, camera and date info behind.",
-          "Download the clean copy.",
+          "Drop a photo and see what it says about you: location, camera, dates.",
+          "kmra cuts that data out without re-compressing the picture.",
+          "Download the clean copy, checked to have none of it left.",
         ],
       },
       {
