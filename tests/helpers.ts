@@ -25,14 +25,29 @@ export const hasLocal = (name: string) => existsSync(local(name));
  */
 export const test = base.extend<{ allowConsole: RegExp[] }>({
   allowConsole: [[], { option: true }],
-  page: async ({ page, allowConsole, browserName }, use) => {
-    // Firefox on Linux (CI) now and then never reports "load" for a page that has fully
-    // loaded and rendered, and page.goto waits out the test's timeout. There, navigations wait
-    // for the DOM instead; tests wait for the elements they use anyway.
+  page: async ({ page, allowConsole, browserName, baseURL }, use) => {
+    // Firefox on Linux (CI) now and then loses track of a navigation: the page loads and renders,
+    // but Playwright hears nothing back and page.goto waits out the test's timeout (traces show
+    // the finished page). There, a navigation that hasn't answered in 20 s asks the page where
+    // it is, and goes on if it's already there; otherwise it navigates once more.
     if (browserName === "firefox") {
       const goto = page.goto.bind(page);
-      page.goto = (url, opts) =>
-        goto(url, { waitUntil: "domcontentloaded", ...opts });
+      page.goto = async (url, opts) => {
+        const options = { waitUntil: "domcontentloaded" as const, ...opts };
+        try {
+          return await goto(url, { timeout: 20_000, ...options });
+        } catch (e) {
+          if (!(e instanceof Error) || !/Timeout/i.test(e.message)) throw e;
+          const want = new URL(url, baseURL);
+          const here = await Promise.race([
+            page.evaluate(() => [location.href, document.readyState]),
+            new Promise<null>((r) => setTimeout(() => r(null), 5_000)),
+          ]).catch(() => null);
+          if (here && here[0] === want.href && here[1] !== "loading")
+            return null;
+          return goto(url, options);
+        }
+      };
     }
     const errors: string[] = [];
     page.on("pageerror", (e) => errors.push(`pageerror: ${e.message}`));

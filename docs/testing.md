@@ -18,9 +18,10 @@ the browser's own image encoders: Safari can't write WebP and its JPEGs are far 
 JPEGs stay big at low quality. Install those browsers once with
 `pnpm exec playwright install firefox webkit`.
 
-Firefox on Linux (the CI machines) sometimes never reports a page's "load" event although the
-page has loaded, so in Firefox `page.goto` waits for the DOM instead (see the `page` fixture in
-`tests/helpers.ts`). `openTool` waits until every island has hydrated (`hydrated()`), since a
+Firefox on Linux (the CI machines) now and then loses track of a navigation: the page loads,
+but Playwright hears nothing back. In Firefox, `page.goto` waits for the DOM rather than
+"load", and one that hasn't answered in 20 s checks whether the page is already there before
+navigating again (see the `page` fixture in `tests/helpers.ts`). `openTool` waits until every island has hydrated (`hydrated()`), since a
 click or event sent to an island before that is lost.
 
 When a test fails on CI, even one that passes on retry, its trace and screenshots are uploaded
