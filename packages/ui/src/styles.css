@@ -2282,28 +2282,19 @@ footer.site {
   color: var(--acc);
   font-weight: 500;
 }
-.fapps {
-  gap: 10px !important;
-}
+/* Other apps: one line each (small logo and name), spaced like the other footer columns */
 .fapps a {
   display: flex;
-  gap: 10px;
+  gap: 8px;
   align-items: center;
-  padding: 8px 10px;
-  margin-inline: -10px;
-  border-radius: 10px;
-  border: 1px solid transparent;
 }
-.fapps a:hover {
-  background: var(--raise);
-}
-.fapps a[aria-current="true"] {
-  border-color: color-mix(in srgb, var(--app) 25%, var(--line));
-  background: color-mix(in srgb, var(--app) 5%, var(--card));
+.fapps a[aria-current="true"] .fapp-name {
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 .fapp-mark {
-  width: 28px;
-  height: 28px;
+  width: 18px;
+  height: 18px;
   flex: none;
 }
 .fapp-mark svg {
@@ -2312,15 +2303,9 @@ footer.site {
   height: 100%;
 }
 .fapp-name {
-  display: block;
-  font-weight: 700;
-  letter-spacing: -0.03em;
+  font-weight: 600;
+  letter-spacing: -0.02em;
   color: var(--fg);
-}
-.fapps small {
-  display: block;
-  font-size: 12px;
-  color: var(--muted);
 }
 .fbottom a {
   color: var(--fg);
@@ -11782,5 +11767,27 @@ select.bar-input {
 @media (max-width: 760px) {
   .oss-ways {
     grid-template-columns: 1fr;
+  }
+}
+/* Header links stay on one line; on mid-size screens GitHub and search shrink to icons */
+.menu > button,
+.navlink {
+  white-space: nowrap;
+}
+@media (min-width: 981px) and (max-width: 1180px) {
+  .hd .navlink .nl-text,
+  .kbtn span,
+  .kbtn kbd,
+  .hd .wm-dom {
+    display: none;
+  }
+  .menu > button,
+  .navlink {
+    padding-inline: 9px;
+  }
+  .hd .kbtn {
+    width: auto;
+    min-width: 0;
+    flex: none;
   }
 }

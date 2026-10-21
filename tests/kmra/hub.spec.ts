@@ -325,9 +325,9 @@ test("each app shows 2 other apps above the footer and 3 more in it: 5 different
       .locator(".fapps a:not(.fmore)")
       .evaluateAll((els) => els.map((e) => (e as HTMLAnchorElement).href));
     expect(cta, host).toHaveLength(2);
-    expect(foot, host).toHaveLength(3);
+    expect(foot, host).toHaveLength(5);
     const all = [...cta, ...foot].map(host_);
-    expect(new Set(all).size, host).toBe(5);
+    expect(new Set(all).size, host).toBe(7);
     expect(all, host).not.toContain(host);
   }
 });

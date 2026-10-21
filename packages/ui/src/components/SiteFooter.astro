@@ -138,13 +138,10 @@ const taskList = app.tasks
                   set:html={markSvg(a.id, a.accent.light)}
                   aria-hidden="true"
                 />
-                <span>
-                  <span
-                    class="fapp-name"
-                    set:html={`<span style="color:var(--app)">${a.brand[0]}</span>${a.brand[1]}`}
-                  />
-                  <small>{a.id}.kmra.dev</small>
-                </span>
+                <span
+                  class="fapp-name"
+                  set:html={`<span style="color:var(--app)">${a.brand[0]}</span>${a.brand[1]}`}
+                />
               </a>
             </li>
           ))}

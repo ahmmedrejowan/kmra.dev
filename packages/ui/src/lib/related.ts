@@ -2,7 +2,7 @@ import { apps, type App } from "@kmra/registry";
 
 /**
  * The other live apps, starting after `appId` and wrapping around, so each app shows a different
- * set first. The card above the footer takes the first two and the footer the next three: five
+ * set first. The card above the footer takes the first two and the footer the next five: seven
  * different apps, never the current one, none in both places.
  */
 export function otherApps(appId: string): App[] {
@@ -14,4 +14,4 @@ export function otherApps(appId: string): App[] {
 }
 
 export const ctaApps = (appId: string) => otherApps(appId).slice(0, 2);
-export const footerApps = (appId: string) => otherApps(appId).slice(2, 5);
+export const footerApps = (appId: string) => otherApps(appId).slice(2, 7);
