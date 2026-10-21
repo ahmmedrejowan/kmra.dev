@@ -1,7 +1,7 @@
 ---
 import "@kmra/ui/styles.css";
 import "../hub.css";
-import { allPages, CONTACT, HUB } from "@kmra/registry";
+import { allPages, CONTACT, HUB, issueUrl } from "@kmra/registry";
 import Icon from "@kmra/ui/components/Icon.astro";
 import CommandPalette, {
   type PaletteItem,
@@ -292,6 +292,16 @@ const cols = Array.from({ length: Math.ceil(apps.length / 2) }, (_, i) => [
             <a class="navlink" href={L("/about")}>
               {T("About")}
             </a>
+            <a
+              class="navlink"
+              href={CONTACT.source}
+              rel="noopener"
+              target="_blank"
+              title={T("kmra.dev is open source")}
+            >
+              <Icon name="github" />
+              GitHub
+            </a>
           </nav>
           <div class="right">
             <button
@@ -383,6 +393,12 @@ const cols = Array.from({ length: Math.ceil(apps.length / 2) }, (_, i) => [
           </a>
           <a href={L("/privacy")}>{T("Privacy")}</a>
           <a href={L("/about")}>{T("About")}</a>
+          <a href={CONTACT.source} rel="noopener" target="_blank">
+            {T("Source code on GitHub")}
+          </a>
+          <a href={issueUrl("bug")} rel="noopener" target="_blank">
+            {T("Report a problem")}
+          </a>
         </nav>
       </div>
     </header>
@@ -455,6 +471,14 @@ const cols = Array.from({ length: Math.ceil(apps.length / 2) }, (_, i) => [
             © {year} kmra.dev ·{" "}
             <a href={CONTACT.source} rel="noopener" target="_blank">
               {T("Open source")}
+            </a>
+            {" · "}
+            <a href={issueUrl("bug")} rel="noopener" target="_blank">
+              {T("Report a problem")}
+            </a>
+            {" · "}
+            <a href={issueUrl("idea")} rel="noopener" target="_blank">
+              {T("Suggest a tool")}
             </a>
           </span>
           <span class="flangs">

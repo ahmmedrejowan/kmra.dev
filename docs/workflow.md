@@ -25,9 +25,9 @@ branches with them (see below), so pushing a branch costs nothing.
 
 [`.github/workflows/pr.yml`](../.github/workflows/pr.yml) runs on every pull request:
 
-| Check | What it does |
-| --- | --- |
-| Types and format | `pnpm check` (astro check + tsc in every package) and `pnpm format:check` (Prettier) |
+| Check                               | What it does                                                                                      |
+| ----------------------------------- | ------------------------------------------------------------------------------------------------- |
+| Types and format                    | `pnpm check` (astro check + tsc in every package) and `pnpm format:check` (Prettier)              |
 | End to end (1 of 3, 2 of 3, 3 of 3) | Builds every site, then runs the Playwright tests against the builds, split across three machines |
 
 The end-to-end jobs install `ffmpeg` (the video and audio test files are generated with it) and

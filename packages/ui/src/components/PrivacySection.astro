@@ -1,4 +1,5 @@
 ---
+import { CONTACT } from "@kmra/registry";
 import Icon from "./Icon.astro";
 import { pageLocale } from "../lib/locale";
 import { t as tr } from "../lib/i18n";
@@ -48,4 +49,13 @@ const T = (s: string) => tr(locale, s);
       {T("No watermark")}
     </li>
   </ul>
+  <p class="safe-oss">
+    <Icon name="github" />
+    <span>
+      {T("Open source, so anyone can check how it works.")}{" "}
+      <a href={CONTACT.source} rel="noopener" target="_blank">
+        {T("See the code on GitHub")}
+      </a>
+    </span>
+  </p>
 </div>

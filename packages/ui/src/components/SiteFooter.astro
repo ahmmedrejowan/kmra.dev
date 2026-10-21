@@ -1,5 +1,12 @@
 ---
-import { CONTACT, getApp, HUB, localizeApp, type AppId } from "@kmra/registry";
+import {
+  CONTACT,
+  getApp,
+  HUB,
+  issueUrl,
+  localizeApp,
+  type AppId,
+} from "@kmra/registry";
 import Wordmark from "./Wordmark.astro";
 import Icon from "./Icon.astro";
 import { markSvg } from "../lib/brand";
@@ -189,6 +196,14 @@ const taskList = app.tasks
         {" · "}
         <a href={CONTACT.source} rel="noopener" target="_blank">
           {T("Open source")}
+        </a>
+        {" · "}
+        <a href={issueUrl("bug")} rel="noopener" target="_blank">
+          {T("Report a problem")}
+        </a>
+        {" · "}
+        <a href={issueUrl("idea")} rel="noopener" target="_blank">
+          {T("Suggest a tool")}
         </a>
       </span>
       {langs.length > 1 && (

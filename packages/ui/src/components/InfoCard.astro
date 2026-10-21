@@ -1,4 +1,6 @@
 ---
+import { CONTACT, issueUrl } from "@kmra/registry";
+import Icon from "./Icon.astro";
 import { pageLocale } from "../lib/locale";
 import { num, t as tr } from "../lib/i18n";
 
@@ -9,6 +11,10 @@ interface Props {
 
 const { steps, items } = Astro.props;
 const locale = pageLocale(Astro);
+// The bug form opens with this page's address filled in
+// (the build writes /compress.html; the live address is /compress)
+const path = Astro.url.pathname.replace(/\.html$/, "").replace(/\/index$/, "/");
+const page = new URL(path, Astro.site ?? Astro.url).href;
 ---
 
 <section
@@ -31,4 +37,21 @@ const locale = pageLocale(Astro);
       </div>
     ))}
   </dl>
+  <p class="info-report">
+    <Icon name="github" />
+    <span>
+      {tr(locale, "Something not working, or a tool you'd like?")}{" "}
+      <a href={issueUrl("bug", page)} rel="noopener" target="_blank">
+        {tr(locale, "Report a problem")}
+      </a>
+      {" · "}
+      <a href={issueUrl("idea")} rel="noopener" target="_blank">
+        {tr(locale, "Suggest a tool")}
+      </a>
+      {" · "}
+      <a href={CONTACT.source} rel="noopener" target="_blank">
+        {tr(locale, "Open source on GitHub")}
+      </a>
+    </span>
+  </p>
 </section>

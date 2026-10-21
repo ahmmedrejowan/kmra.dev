@@ -18,7 +18,21 @@ export const CONTACT = {
   linkedin: "https://www.linkedin.com/in/ahmmedrejowan",
   /** The open-source code (AGPL-3.0) */
   source: "https://github.com/ahmmedrejowan/kmra.dev",
+  /** Questions and ideas */
+  discussions: "https://github.com/ahmmedrejowan/kmra.dev/discussions",
 } as const;
+
+/**
+ * A new GitHub issue from one of the repo's forms: a bug report (with the page it's about filled
+ * in) or a tool idea.
+ */
+export function issueUrl(kind: "bug" | "idea", page?: string): string {
+  const q = new URLSearchParams({
+    template: kind === "bug" ? "bug_report.yml" : "feature_request.yml",
+  });
+  if (page) q.set("page", page);
+  return `${CONTACT.source}/issues/new?${q}`;
+}
 
 /** Icon names available in @kmra/ui (see packages/ui/src/lib/icons.ts) */
 export type IconName =

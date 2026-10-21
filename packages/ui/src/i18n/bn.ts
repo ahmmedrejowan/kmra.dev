@@ -1002,4 +1002,31 @@ export const BN: Record<string, string> = {
     "kmra.dev ওপেন সোর্স, তাই প্রতিটি টুল ফাইল কীভাবে সামলায় তা যে কেউ পড়ে দেখতে পারেন:",
   "the code on GitHub": "GitHub-এ কোড",
   "21 October 2026": "২১ অক্টোবর ২০২৬",
+  "kmra.dev is open source": "kmra.dev ওপেন সোর্স",
+  "Report a problem": "সমস্যা জানান",
+  "Suggest a tool": "টুলের প্রস্তাব দিন",
+  "Something not working, or a tool you'd like?":
+    "কিছু কাজ করছে না, নাকি কোনো টুল চান?",
+  "Open source on GitHub": "GitHub-এ ওপেন সোর্স",
+  "Open source, so anyone can check how it works.":
+    "ওপেন সোর্স, তাই এটি কীভাবে কাজ করে তা যে কেউ যাচাই করতে পারেন।",
+  "See the code on GitHub": "GitHub-এ কোড দেখুন",
+  "Every kmra.dev site is open source under the AGPL-3.0 licence. Anyone can read how a tool handles files, check that nothing leaves the device, and run their own copy. If you run a changed copy for others, you share its source the same way.":
+    "kmra.dev-এর প্রতিটি সাইট AGPL-3.0 লাইসেন্সে ওপেন সোর্স। যে কেউ পড়ে দেখতে পারেন একটি টুল ফাইল কীভাবে সামলায়, যাচাই করতে পারেন যে কিছুই ডিভাইস ছেড়ে যায় না, আর নিজের কপি চালাতে পারেন। অন্যদের জন্য বদলানো কপি চালালে তার সোর্সও একইভাবে শেয়ার করতে হয়।",
+  "A tool that doesn't work as it should, on any site.":
+    "যেকোনো সাইটে কোনো টুল ঠিকমতো কাজ না করলে।",
+  "A job you'd like a tool for. Ideas people ask for twice get built.":
+    "যে কাজের জন্য টুল চান। যেসব আইডিয়া বারবার চাওয়া হয়, সেগুলো তৈরি হয়।",
+  "Ask a question": "প্রশ্ন করুন",
+  "How to do something, or whether a tool can do it.":
+    "কোনো কাজ কীভাবে করবেন, বা কোনো টুল তা পারে কি না।",
+  "Help translate": "অনুবাদে সাহায্য করুন",
+  "Fix a translation, or bring the sites to a new language.":
+    "কোনো অনুবাদ ঠিক করুন, বা সাইটগুলো নতুন ভাষায় আনুন।",
+  "Contribute code": "কোড দিয়ে অবদান রাখুন",
+  "Fix a bug or build a tool: pull requests are welcome.":
+    "বাগ ঠিক করুন বা টুল বানান: পুল রিকোয়েস্ট স্বাগত।",
+  "Report a security issue": "নিরাপত্তা সমস্যা জানান",
+  "Privately, so it can be fixed before anyone else knows.":
+    "গোপনে, যাতে অন্য কেউ জানার আগেই ঠিক করা যায়।",
 };

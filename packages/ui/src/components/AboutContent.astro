@@ -1,5 +1,5 @@
 ---
-import { CONTACT } from "@kmra/registry";
+import { CONTACT, issueUrl } from "@kmra/registry";
 import Icon from "./Icon.astro";
 import { pageLocale } from "../lib/locale";
 import { t as tr } from "../lib/i18n";
@@ -51,23 +51,70 @@ const T = (s: string, v?: Record<string, string>) => tr(locale, s, v);
   </div>
 </div>
 
-<section class="block">
-  <div class="maker">
+<section class="block oss">
+  <div class="oss-head">
+    <span class="tile">
+      <Icon name="github" />
+    </span>
     <div>
       <h2>{T("Open source")}</h2>
       <p>
         {T(
-          "The code for every kmra.dev site is open source under the AGPL-3.0 licence. Read how a tool handles your files, report a problem or suggest a tool on GitHub.",
+          "Every kmra.dev site is open source under the AGPL-3.0 licence. Anyone can read how a tool handles files, check that nothing leaves the device, and run their own copy. If you run a changed copy for others, you share its source the same way.",
         )}
       </p>
     </div>
-    <div class="maker-links">
-      <a class="btn" href={CONTACT.source} rel="noopener" target="_blank">
-        <Icon name="github" />
-        {T("Source code on GitHub")}
-      </a>
-    </div>
   </div>
+  <div class="oss-ways">
+    <a href={issueUrl("bug")} rel="noopener" target="_blank">
+      <strong>{T("Report a problem")}</strong>
+      <span>{T("A tool that doesn't work as it should, on any site.")}</span>
+    </a>
+    <a href={issueUrl("idea")} rel="noopener" target="_blank">
+      <strong>{T("Suggest a tool")}</strong>
+      <span>
+        {T(
+          "A job you'd like a tool for. Ideas people ask for twice get built.",
+        )}
+      </span>
+    </a>
+    <a href={CONTACT.discussions} rel="noopener" target="_blank">
+      <strong>{T("Ask a question")}</strong>
+      <span>{T("How to do something, or whether a tool can do it.")}</span>
+    </a>
+    <a
+      href={`${CONTACT.source}/blob/main/docs/translations.md`}
+      rel="noopener"
+      target="_blank"
+    >
+      <strong>{T("Help translate")}</strong>
+      <span>
+        {T("Fix a translation, or bring the sites to a new language.")}
+      </span>
+    </a>
+    <a
+      href={`${CONTACT.source}/blob/main/CONTRIBUTING.md`}
+      rel="noopener"
+      target="_blank"
+    >
+      <strong>{T("Contribute code")}</strong>
+      <span>{T("Fix a bug or build a tool: pull requests are welcome.")}</span>
+    </a>
+    <a
+      href={`${CONTACT.source}/security/advisories/new`}
+      rel="noopener"
+      target="_blank"
+    >
+      <strong>{T("Report a security issue")}</strong>
+      <span>
+        {T("Privately, so it can be fixed before anyone else knows.")}
+      </span>
+    </a>
+  </div>
+  <a class="btn acc" href={CONTACT.source} rel="noopener" target="_blank">
+    <Icon name="github" />
+    {T("Source code on GitHub")}
+  </a>
 </section>
 
 <section class="block">

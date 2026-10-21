@@ -1,8 +1,10 @@
 ---
 import {
   apps,
+  CONTACT,
   getApp,
   HUB,
+  issueUrl,
   localizeApp,
   type App,
   type AppId,
@@ -217,6 +219,16 @@ const appHref = (a: App) =>
         <a class="navlink" href={L("/how-it-works")}>
           {T("How it works")}
         </a>
+        <a
+          class="navlink"
+          href={CONTACT.source}
+          rel="noopener"
+          target="_blank"
+          title={T("kmra.dev is open source")}
+        >
+          <Icon name="github" />
+          GitHub
+        </a>
       </nav>
 
       <div class="right">
@@ -336,6 +348,12 @@ const appHref = (a: App) =>
       <a href={L("/how-it-works")}>{T("How it works")}</a>
       <a href={L("/privacy")}>{T("Privacy")}</a>
       <a href={L("/about")}>{T("About")}</a>
+      <a href={CONTACT.source} rel="noopener" target="_blank">
+        {T("Source code on GitHub")}
+      </a>
+      <a href={issueUrl("bug")} rel="noopener" target="_blank">
+        {T("Report a problem")}
+      </a>
     </nav>
   </div>
 </header>

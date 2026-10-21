@@ -5,11 +5,11 @@ under a prefix (`/bn/compress`).
 
 ## Where the words are
 
-| What | File |
-| --- | --- |
-| Interface text shared by every site | `packages/ui/src/i18n/bn.ts` |
-| Site-specific interface text | `packages/ui/src/i18n/bn-<site>.ts` (where a site has one) |
-| Tool and task names, steps, intros, group names | `packages/registry/src/locales/bn.ts` and `bn-<site>.ts` |
+| What                                            | File                                                       |
+| ----------------------------------------------- | ---------------------------------------------------------- |
+| Interface text shared by every site             | `packages/ui/src/i18n/bn.ts`                               |
+| Site-specific interface text                    | `packages/ui/src/i18n/bn-<site>.ts` (where a site has one) |
+| Tool and task names, steps, intros, group names | `packages/registry/src/locales/bn.ts` and `bn-<site>.ts`   |
 
 Interface files are keyed by the English text itself, with `{name}` placeholders:
 

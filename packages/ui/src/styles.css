@@ -11708,3 +11708,79 @@ select.bar-input {
 .insp .ed-sec .fx-on {
   margin-left: 8px;
 }
+/* Open source: the line on tool pages, the home privacy card, and the About section */
+.info-report {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  padding: 14px 24px;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 14px;
+}
+.info-report .ico,
+.safe-oss .ico {
+  width: 16px;
+  height: 16px;
+  flex: none;
+}
+.info-report a,
+.safe-oss a {
+  color: var(--acc);
+  font-weight: 500;
+}
+.safe-oss {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 14px 0 0;
+  color: var(--muted);
+  font-size: 14px;
+}
+.oss {
+  display: grid;
+  gap: 20px;
+  justify-items: start;
+}
+.oss-head {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+}
+.oss-head h2 {
+  margin: 0 0 6px;
+}
+.oss-head p {
+  margin: 0;
+  max-width: 70ch;
+  color: var(--muted);
+}
+.oss-ways {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+.oss-ways a {
+  display: grid;
+  gap: 4px;
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--card);
+  color: var(--fg);
+}
+.oss-ways a:hover {
+  border-color: color-mix(in srgb, var(--acc) 45%, var(--line));
+}
+.oss-ways span {
+  color: var(--muted);
+  font-size: 14px;
+}
+@media (max-width: 760px) {
+  .oss-ways {
+    grid-template-columns: 1fr;
+  }
+}
