@@ -74,12 +74,14 @@ const others = app.tools
   .slice(0, 5)
   .map((x) => x.t);
 const icons = Object.fromEntries(app.tools.map((t) => [t.slug, t.icon]));
-const railTools = app.tools.map(({ slug, name, icon, ready }) => ({
-  slug,
-  name,
-  icon,
-  ready,
-}));
+// In the order of the app's groups, so the workspace rail lists them group by group
+const groupAt = (g: string) => {
+  const i = app.toolGroups?.indexOf(g) ?? -1;
+  return i < 0 ? 99 : i;
+};
+const railTools = app.tools
+  .map(({ slug, name, icon, ready, group }) => ({ slug, name, icon, ready, group }))
+  .sort((a, b) => groupAt(a.group) - groupAt(b.group));
 
 const baseFaq = [
   {

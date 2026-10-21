@@ -811,4 +811,12 @@ export const BN: Record<string, string> = {
   Octave: "অক্টেভ",
   "MP3s are made with the": "MP3 তৈরি হয়",
   "LAME encoder": "LAME এনকোডার দিয়ে",
+  // Image workspace
+  "More edits": "আরও এডিট",
+  "Edits": "এডিট",
+  "{n} on": "{n}টি চালু",
+  "Clear other edits": "অন্য এডিট মুছুন",
+  "Another format or other edits are on, so the picture is saved again and all of its hidden data goes.": "অন্য ফরম্যাট বা অন্য এডিট চালু আছে, তাই ছবিটি আবার সেভ হবে আর এর সব লুকানো তথ্য চলে যাবে।",
+  "{format} has no quality setting. Pick JPEG, WebP or AVIF for smaller files.": "{format}-এ কোয়ালিটি সেটিং নেই। ছোট ফাইলের জন্য JPEG, WebP বা AVIF বেছে নিন।",
+  "This format": "এই ফরম্যাট",
 };

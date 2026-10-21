@@ -110,12 +110,14 @@ const PAGES = {
   },
 } as const;
 const p = PAGES[page];
-const railTools = app.tools.map(({ slug, name, icon, ready }) => ({
-  slug,
-  name,
-  icon,
-  ready,
-}));
+// In the order of the app's groups, so the workspace rail lists them group by group
+const groupAt = (g: string) => {
+  const i = app.toolGroups?.indexOf(g) ?? -1;
+  return i < 0 ? 99 : i;
+};
+const railTools = app.tools
+  .map(({ slug, name, icon, ready, group }) => ({ slug, name, icon, ready, group }))
+  .sort((a, b) => groupAt(a.group) - groupAt(b.group));
 ---
 
 <BaseLayout

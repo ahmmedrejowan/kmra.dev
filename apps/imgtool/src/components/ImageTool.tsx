@@ -77,6 +77,8 @@ export interface ToolMeta {
   name: string;
   icon: IconKey;
   ready: boolean;
+  /** The tool's group (English name), for the workspace rail */
+  group?: string;
 }
 
 interface Props {
@@ -171,7 +173,9 @@ const KEEPABLE = new Set(["image/jpeg", "image/png", "image/webp"]);
 
 /** "photo.jpg" from Compress → "photo-compress-kmra.jpg" */
 function outName(file: File, type: string, tool: string): string {
-  return tagged(`${toolName(file.name, tool === "editor" ? "edit" : tool)}.${EXT[type as Format] ?? "img"}`);
+  return tagged(
+    `${toolName(file.name, tool === "editor" ? "edit" : tool)}.${EXT[type as Format] ?? "img"}`,
+  );
 }
 
 function ImageToolView({ tool, preset, tools, lang = "en" }: Props) {
@@ -187,6 +191,10 @@ function ImageToolView({ tool, preset, tools, lang = "en" }: Props) {
   const [error, setError] = useState<string | null>(null);
   const [advanced, setAdvanced] = useState(editor);
   const [focus, setFocus] = useState(tool);
+  /** The workspace's "More edits" list is open (always at first in the editor) */
+  const [moreOpen, setMoreOpen] = useState(editor);
+  /** The tool whose rules apply: the page's tool, or the one picked in the workspace */
+  const act = advanced ? focus : tool;
   const [cut, setCut] = useState(50);
   /** Zoom factor (1 = 100%, one image pixel per screen pixel), or null to fit the view */
   const [zoom, setZoom] = useState<number | null>(null);
@@ -355,11 +363,16 @@ function ImageToolView({ tool, preset, tools, lang = "en" }: Props) {
   // Convert never offers the image's own format: when the chosen one matches it, pick another
   // (a JPG goes to PNG, anything else to JPEG)
   useEffect(() => {
-    if (tool !== "convert" || !item) return;
+    if (act !== "convert" || !item) return;
     const src = formatOf(item.file);
     if (src && src === s.type)
-      setS((p) => ({ ...p, keepFormat: false, type: src === "image/jpeg" ? "image/png" : "image/jpeg" }));
-  }, [item?.key, s.type]);
+      setS((p) => ({
+        ...p,
+        keepFormat: false,
+        type: src === "image/jpeg" ? "image/png" : "image/jpeg",
+      }));
+    else if (s.keepFormat) set({ keepFormat: false });
+  }, [item?.key, s.type, s.keepFormat, act]);
 
   /** Width in image pixels of what's on screen: the result when it's shown alone, else the original */
   function shownWidth(): number {
@@ -375,13 +388,15 @@ function ImageToolView({ tool, preset, tools, lang = "en" }: Props) {
    * Zoom is in screen pixels: 100% shows one image pixel per screen pixel, so on a Retina screen
    * (two screen pixels per CSS pixel) a 2000-pixel image is 1000 CSS pixels wide at 100%.
    */
-  const dpr = () => (typeof window === "undefined" ? 1 : window.devicePixelRatio || 1);
+  const dpr = () =>
+    typeof window === "undefined" ? 1 : window.devicePixelRatio || 1;
   function zoomBy(dir: 1 | -1) {
     const el =
       shownRef.current ??
       document.querySelector<HTMLImageElement>(".cropper img");
     const current =
-      zoom ?? (el ? (el.getBoundingClientRect().width * dpr()) / shownWidth() : 1);
+      zoom ??
+      (el ? (el.getBoundingClientRect().width * dpr()) / shownWidth() : 1);
     const next =
       dir > 0
         ? (ZOOMS.find((z) => z > current + 0.001) ?? ZOOMS[ZOOMS.length - 1]!)
@@ -430,7 +445,11 @@ function ImageToolView({ tool, preset, tools, lang = "en" }: Props) {
     return f;
   };
   /** Whether a field goes, for a file with these fields */
-  function removes(fields: Field[] | null, mode: MetaMode, keep: Set<string>): (id: string) => boolean {
+  function removes(
+    fields: Field[] | null,
+    mode: MetaMode,
+    keep: Set<string>,
+  ): (id: string) => boolean {
     const by = new Map((fields ?? []).map((f) => [f.id, f]));
     switch (mode) {
       case "all":
@@ -455,7 +474,11 @@ function ImageToolView({ tool, preset, tools, lang = "en" }: Props) {
       try {
         const r = await produce(item, s);
         if (id !== reqRef.current) return;
-        const next = { ...r, key: item.key, url: URL.createObjectURL(r.preview ?? r.blob) };
+        const next = {
+          ...r,
+          key: item.key,
+          url: URL.createObjectURL(r.preview ?? r.blob),
+        };
         const old = outRef.current;
         outRef.current = next;
         setOut(next);
@@ -473,7 +496,7 @@ function ImageToolView({ tool, preset, tools, lang = "en" }: Props) {
       }
     }, 120);
     return () => clearTimeout(t);
-  }, [item, s, metaMode, metaKeep]);
+  }, [item, s, metaMode, metaKeep, act]);
 
   /* ---------- Mode ---------- */
   function openAdvanced() {
@@ -581,15 +604,27 @@ function ImageToolView({ tool, preset, tools, lang = "en" }: Props) {
    * Compressing never makes a file bigger: the original is 100%, and when the re-encoded file
    * isn't smaller, the original file is the result.
    */
-  function noBigger<T extends EncodeResult>(r: T, it: Item, st: Settings): T & { kept?: boolean } {
+  function noBigger<T extends EncodeResult>(
+    r: T,
+    it: Item,
+    st: Settings,
+  ): T & { kept?: boolean } {
     if (
-      tool !== "compress" ||
+      act !== "compress" ||
       !KEEPABLE.has(it.file.type) ||
       !onlyEncodes(st) ||
       r.blob.size < it.file.size
     )
       return r;
-    return { ...r, blob: it.file, w: it.w, h: it.h, type: it.file.type, over: false, kept: true };
+    return {
+      ...r,
+      blob: it.file,
+      w: it.w,
+      h: it.h,
+      type: it.file.type,
+      over: false,
+      kept: true,
+    };
   }
 
   /**
@@ -597,10 +632,16 @@ function ImageToolView({ tool, preset, tools, lang = "en" }: Props) {
    * cuts the metadata out of the file itself (no re-encoding, no quality lost); everything else
    * renders in the worker.
    */
-  async function produce(it: Item, st: Settings): Promise<EncodeResult & Pick<Out, "kept" | "lossless" | "removed">> {
-    if (tool === "strip-metadata" && st.keepFormat && onlyEncodes(st)) {
+  async function produce(
+    it: Item,
+    st: Settings,
+  ): Promise<EncodeResult & Pick<Out, "kept" | "lossless" | "removed">> {
+    if (act === "strip-metadata" && st.keepFormat && onlyEncodes(st)) {
       const { mode, keep } = metaRef.current;
-      const r = stripMetadata(new Uint8Array(await it.file.arrayBuffer()), removes(await fieldsOf(it), mode, keep));
+      const r = stripMetadata(
+        new Uint8Array(await it.file.arrayBuffer()),
+        removes(await fieldsOf(it), mode, keep),
+      );
       if (r) {
         const type = formatOf(it.file) ?? it.file.type;
         return {
@@ -625,9 +666,12 @@ function ImageToolView({ tool, preset, tools, lang = "en" }: Props) {
     for (const it of items) {
       const st = settingsFor(it);
       const r = await produce(it, st);
-      let name = outName(it.file, r.type, tool);
+      let name = outName(it.file, r.type, act);
       for (let n = 2; used.has(name); n++)
-        name = outName(it.file, r.type, tool).replace(/-kmra(\.\w+)$/, `-${n}-kmra$1`);
+        name = outName(it.file, r.type, act).replace(
+          /-kmra(\.\w+)$/,
+          `-${n}-kmra$1`,
+        );
       used.add(name);
       outFiles.push({ name, blob: r.blob });
     }
@@ -639,13 +683,13 @@ function ImageToolView({ tool, preset, tools, lang = "en" }: Props) {
     const it = items[i];
     if (!it) return;
     if (out && out.key === it.key && i === cur) {
-      downloadBlob(out.blob, outName(it.file, out.type, tool));
+      downloadBlob(out.blob, outName(it.file, out.type, act));
       return;
     }
     try {
       const st = settingsFor(it);
       const r = await produce(it, st);
-      downloadBlob(r.blob, outName(it.file, r.type, tool));
+      downloadBlob(r.blob, outName(it.file, r.type, act));
     } catch {
       toast(
         T(
@@ -670,7 +714,7 @@ function ImageToolView({ tool, preset, tools, lang = "en" }: Props) {
       );
       downloadBlob(
         new Blob([zipSync(entries, { level: 0 })], { type: "application/zip" }),
-        `images-${tool === "editor" ? "edit" : tool}.zip`,
+        `images-${act === "editor" ? "edit" : act}.zip`,
       );
     } catch {
       toast(T("Couldn't build the zip. Try fewer or smaller images."));
@@ -722,9 +766,13 @@ function ImageToolView({ tool, preset, tools, lang = "en" }: Props) {
   const outForItem = out && item && out.key === item.key ? out : null;
 
   /* ---------- Strip metadata: what's in the photo ---------- */
-  const [metaIn, setMetaIn] = useState<{ key: string; fields: Field[] | null; sum: MetaSummary | null } | null>(null);
+  const [metaIn, setMetaIn] = useState<{
+    key: string;
+    fields: Field[] | null;
+    sum: MetaSummary | null;
+  } | null>(null);
   useEffect(() => {
-    if (tool !== "strip-metadata" || !item) return;
+    if (act !== "strip-metadata" || !item) return;
     let live = true;
     void fieldsOf(item).then(async (fields) => {
       // Formats read field by field get the checklist; the others a plain summary
@@ -734,7 +782,7 @@ function ImageToolView({ tool, preset, tools, lang = "en" }: Props) {
     return () => {
       live = false;
     };
-  }, [item?.key]);
+  }, [item?.key, act]);
   const type = item ? outType(item.file.type, s) : s.type;
 
   function compare(it: Item) {
@@ -793,7 +841,12 @@ function ImageToolView({ tool, preset, tools, lang = "en" }: Props) {
     return (
       <div className="chips" role="group" aria-label={label}>
         {options.map(([v, l]) => (
-          <button key={v} type="button" aria-pressed={v === value} onClick={() => onPick(v)}>
+          <button
+            key={v}
+            type="button"
+            aria-pressed={v === value}
+            onClick={() => onPick(v)}
+          >
             {l}
           </button>
         ))}
@@ -841,14 +894,23 @@ function ImageToolView({ tool, preset, tools, lang = "en" }: Props) {
       </div>
     ) : (
       <p className="muted" style={{ margin: 0, fontSize: 14 }}>
-        {T(
-          "PNG is lossless, so there's no quality setting. Pick JPEG or WebP for smaller files.",
-        )}
+        {type === "image/png"
+          ? T(
+              "PNG is lossless, so there's no quality setting. Pick JPEG or WebP for smaller files.",
+            )
+          : T(
+              "{format} has no quality setting. Pick JPEG, WebP or AVIF for smaller files.",
+              {
+                format: T(FORMATS[type as Format] ?? "This format"),
+              },
+            )}
       </p>
     );
 
   /** The biggest file loaded, in KB: size targets above it would change nothing */
-  const biggestKB = items.length ? Math.max(...items.map((it) => it.file.size)) / 1024 : Infinity;
+  const biggestKB = items.length
+    ? Math.max(...items.map((it) => it.file.size)) / 1024
+    : Infinity;
   const targets = TARGETS.filter((v) => v < biggestKB);
   const targetCtl = (short = false) => (
     <div className="ctl">
@@ -961,7 +1023,10 @@ function ImageToolView({ tool, preset, tools, lang = "en" }: Props) {
 
   /** The format of the file on screen; Convert doesn't offer it as a destination */
   const srcFormat = item ? formatOf(item.file) : null;
-  const formatOpts = (withOriginal: boolean, exclude: Format | null = null): [string, string][] => [
+  const formatOpts = (
+    withOriginal: boolean,
+    exclude: Format | null = null,
+  ): [string, string][] => [
     ...(withOriginal ? ([["keep", T("Original")]] as [string, string][]) : []),
     ...(Object.keys(FORMATS) as Format[])
       .filter((f) => f !== exclude)
@@ -1075,7 +1140,12 @@ function ImageToolView({ tool, preset, tools, lang = "en" }: Props) {
   const saveAsCtl = (
     <div className="ctl">
       <span className="lbl">{T("Save as")}</span>
-      {chipGroup<string>(formatOpts(true), formatValue, pickFormat, T("Save as"))}
+      {chipGroup<string>(
+        formatOpts(true),
+        formatValue,
+        pickFormat,
+        T("Save as"),
+      )}
     </div>
   );
 
@@ -1101,7 +1171,7 @@ function ImageToolView({ tool, preset, tools, lang = "en" }: Props) {
   // How many faces the last render found (face blur, passport framing, auto background)
   const found = outForItem?.faces;
   const facesNote =
-    found === undefined ? null : tool === "passport-photo" ? (
+    found === undefined ? null : act === "passport-photo" ? (
       found ? null : (
         <small className="warn">
           No face found, so the photo is centred instead. Use a clear,
@@ -1158,8 +1228,6 @@ function ImageToolView({ tool, preset, tools, lang = "en" }: Props) {
     </>
   );
 
-
-
   function metaReport(): ReactNode {
     const read = metaIn && item && metaIn.key === item.key ? metaIn : null;
     const fields = read?.fields ?? null;
@@ -1181,16 +1249,22 @@ function ImageToolView({ tool, preset, tools, lang = "en" }: Props) {
             </ul>
           ) : null}
           <small className="muted">
-            {T("This kind of file is saved again from its pixels, so all of its hidden data goes.")}
+            {T(
+              "This kind of file is saved again from its pixels, so all of its hidden data goes.",
+            )}
           </small>
         </div>
       );
     }
-    const remove = removes(fields, metaMode, metaKeep);
+    // Other edits or another format mean the picture is saved again, and then nothing comes along
+    const resaved = !(s.keepFormat && onlyEncodes(s));
+    const remove = resaved ? () => true : removes(fields, metaMode, metaKeep);
     const going = fields.filter((f) => remove(f.id));
     const toggle = (ids: string[], on: boolean) => {
       // Start from what's chosen now, then change these fields
-      const keep = new Set(fields.filter((f) => !remove(f.id)).map((f) => f.id));
+      const keep = new Set(
+        fields.filter((f) => !remove(f.id)).map((f) => f.id),
+      );
       for (const id of ids) {
         if (on) keep.delete(id);
         else keep.add(id);
@@ -1206,23 +1280,57 @@ function ImageToolView({ tool, preset, tools, lang = "en" }: Props) {
     ];
     return (
       <>
+        {resaved && (
+          <div className="ctl meta-resave">
+            <p className="warn">
+              {T(
+                "Another format or other edits are on, so the picture is saved again and all of its hidden data goes.",
+              )}
+            </p>
+            <button
+              type="button"
+              className="btn sm"
+              onClick={() =>
+                setS((p) => ({ ...defaults("strip-metadata"), lock: p.lock }))
+              }
+            >
+              {T("Clear other edits")}
+            </button>
+          </div>
+        )}
         <div className="ctl meta-report">
           <span className="lbl meta-head">
             {T("Hidden data in this photo")}
-            <small className="muted">{T("{n} fields", { n: fields.length })}</small>
+            <small className="muted">
+              {T("{n} fields", { n: fields.length })}
+            </small>
           </span>
           {fields.length ? (
-            <>
-              {chipGroup<MetaMode>(presets, metaMode, setMetaMode, T("Choose fields to remove"))}
+            <fieldset className="meta-choose" disabled={resaved}>
+              {chipGroup<MetaMode>(
+                presets,
+                metaMode,
+                setMetaMode,
+                T("Choose fields to remove"),
+              )}
               <small className="muted">
                 {metaMode === "all"
-                  ? T("Everything goes except the orientation and colour profile, which keep the picture looking the same.")
+                  ? T(
+                      "Everything goes except the orientation and colour profile, which keep the picture looking the same.",
+                    )
                   : metaMode === "sensitive"
-                    ? T("Removes what says where, when and who: location, dates, names, serial numbers and the like.")
-                    : T("Tick what to remove; unticked fields stay in the file.")}
+                    ? T(
+                        "Removes what says where, when and who: location, dates, names, serial numbers and the like.",
+                      )
+                    : T(
+                        "Tick what to remove; unticked fields stay in the file.",
+                      )}
               </small>
               <p className="meta-count">
-                {T("Removing {n} of {t} fields", { n: going.length, t: fields.length })}
+                {T("Removing {n} of {t} fields", {
+                  n: going.length,
+                  t: fields.length,
+                })}
               </p>
               <div className="meta-groups">
                 {GROUPS.map((g) => {
@@ -1237,16 +1345,27 @@ function ImageToolView({ tool, preset, tools, lang = "en" }: Props) {
                             type="checkbox"
                             checked={n === list.length}
                             ref={(el) => {
-                              if (el) el.indeterminate = n > 0 && n < list.length;
+                              if (el)
+                                el.indeterminate = n > 0 && n < list.length;
                             }}
-                            onChange={(e) => toggle(list.map((f) => f.id), e.target.checked)}
+                            onChange={(e) =>
+                              toggle(
+                                list.map((f) => f.id),
+                                e.target.checked,
+                              )
+                            }
                           />
                           <span>{T(g)}</span>
-                          <small>{T("{n} of {t}", { n, t: list.length })}</small>
+                          <small>
+                            {T("{n} of {t}", { n, t: list.length })}
+                          </small>
                         </label>
                       </legend>
                       {list.map((f) => (
-                        <label key={f.id} className={`meta-field${remove(f.id) ? " off" : ""}`}>
+                        <label
+                          key={f.id}
+                          className={`meta-field${remove(f.id) ? " off" : ""}`}
+                        >
                           <input
                             type="checkbox"
                             checked={remove(f.id)}
@@ -1255,7 +1374,10 @@ function ImageToolView({ tool, preset, tools, lang = "en" }: Props) {
                           <span className="meta-name">
                             {T(f.label)}
                             {f.sensitive && (
-                              <i className="meta-tag" title={T("Says where, when or who")}>
+                              <i
+                                className="meta-tag"
+                                title={T("Says where, when or who")}
+                              >
                                 {T("Sensitive")}
                               </i>
                             )}
@@ -1269,17 +1391,21 @@ function ImageToolView({ tool, preset, tools, lang = "en" }: Props) {
                   );
                 })}
               </div>
-            </>
+            </fieldset>
           ) : (
-            <small className="muted">{T("No hidden data in this photo. The download is the same file.")}</small>
+            <small className="muted">
+              {T(
+                "No hidden data in this photo. The download is the same file.",
+              )}
+            </small>
           )}
         </div>
       </>
     );
   }
 
-  function simpleControls(): ReactNode {
-    switch (tool) {
+  function simpleControls(slug = tool): ReactNode {
+    switch (slug) {
       case "compress":
         return (
           <>
@@ -1388,7 +1514,7 @@ function ImageToolView({ tool, preset, tools, lang = "en" }: Props) {
       case "beautify":
         return (
           <>
-            <FrameCtl s={s} setS={setS} mode={FRAME_MODE[tool]!} />
+            <FrameCtl s={s} setS={setS} mode={FRAME_MODE[slug]!} />
             {saveAsCtl}
           </>
         );
@@ -1547,7 +1673,8 @@ function ImageToolView({ tool, preset, tools, lang = "en" }: Props) {
             <b>{formatBytes(item.file.size)}</b>
           </div>
           <small>
-            {outForItem.w} × {outForItem.h}, {FORMATS[outForItem.type as Format]}
+            {outForItem.w} × {outForItem.h},{" "}
+            {FORMATS[outForItem.type as Format]}
           </small>
           <small className="kept">
             {T(
@@ -1570,10 +1697,12 @@ function ImageToolView({ tool, preset, tools, lang = "en" }: Props) {
           ) : (
             // Only a warning when the job is making files smaller
             <span
-              className={`delta up${tool === "compress" || s.target ? "" : " neutral"}`}
+              className={`delta up${act === "compress" || s.target ? "" : " neutral"}`}
             >
               {-pct >= 200
-                ? T("{n}× larger", { n: Math.round(outForItem.blob.size / item.file.size) })
+                ? T("{n}× larger", {
+                    n: Math.round(outForItem.blob.size / item.file.size),
+                  })
                 : `${-pct}% ${T("larger")}`}
             </span>
           )}
@@ -1737,21 +1866,21 @@ function ImageToolView({ tool, preset, tools, lang = "en" }: Props) {
     title: string,
     icon: IconKey,
     body: ReactNode,
-  ) => (
-    <section
-      id={`ws-${key}`}
-      className={SECTION[focus] === key ? "focus" : undefined}
-    >
-      <h3>
-        <Icon name={icon} />
-        {title}
-      </h3>
-      {body}
-    </section>
-  );
+  ) =>
+    !editor && SECTION[focus] === key ? null : (
+      <section id={`ws-${key}`}>
+        <h3>
+          <Icon name={icon} />
+          {title}
+        </h3>
+        {body}
+      </section>
+    );
 
   const [ow, oh] = item ? outDims(item.w, item.h, s) : [0, 0];
   const [bw, bh] = item ? baseDims(item.w, item.h, s) : [0, 0];
+  /** Strip metadata cutting fields out of the file: nothing is encoded, so no quality or format step */
+  const untouched = act === "strip-metadata" && s.keepFormat && onlyEncodes(s);
   const recipe = [
     s.crop
       ? T("Crop {w} × {h}", {
@@ -1764,7 +1893,7 @@ function ImageToolView({ tool, preset, tools, lang = "en" }: Props) {
     item && (ow !== bw || oh !== bh)
       ? T("Resize {w} × {h}", { w: ow, h: oh })
       : null,
-    isLossy(type)
+    isLossy(type) && !untouched
       ? s.target
         ? T("Fit ≤ {n} KB", { n: s.target })
         : T("Quality {n}", { n: s.quality })
@@ -1792,8 +1921,7 @@ function ImageToolView({ tool, preset, tools, lang = "en" }: Props) {
           name: T(SHEETS.find((x) => x.id === s.sheet)?.label ?? ""),
         })
       : null,
-    FORMATS[type],
-    T("Strip metadata"),
+    untouched ? null : FORMATS[type],
   ].filter(Boolean) as string[];
 
   /** An effect section in the workspace that can be switched on and off. */
@@ -1804,22 +1932,213 @@ function ImageToolView({ tool, preset, tools, lang = "en" }: Props) {
     on: boolean,
     toggle: (on: boolean) => void,
     body: ReactNode,
-  ) => (
-    <section
-      id={`ws-${key}`}
-      className={SECTION[focus] === key ? "focus" : undefined}
-    >
-      <h3>
-        <Icon name={icon} />
-        {title}
-        <button type="button" className="fx-on" onClick={() => toggle(!on)}>
-          {on ? T("Remove") : T("Add")}
-        </button>
-      </h3>
-      {on && body}
-    </section>
-  );
+  ) =>
+    !editor && SECTION[focus] === key ? null : (
+      <section id={`ws-${key}`}>
+        <h3>
+          <Icon name={icon} />
+          {title}
+          <button type="button" className="fx-on" onClick={() => toggle(!on)}>
+            {on ? T("Remove") : T("Add")}
+          </button>
+        </h3>
+        {on && body}
+      </section>
+    );
   const fromTool = (slug: string) => defaults(slug);
+
+  /**
+   * Pick a tool in the workspace: its panel opens on the right and its rules apply (Compress never
+   * makes a file bigger, Strip metadata cuts fields out without re-encoding). Effects the tool is
+   * about are switched on, so its controls have something to change; other edits stay as they are.
+   */
+  function pickTool(slug: string) {
+    setFocus(slug);
+    const d = defaults(slug);
+    setS((p) => {
+      switch (slug) {
+        case "compress": {
+          if (!p.keepFormat && isLossy(p.type)) return p;
+          const src =
+            srcFormat && isLossy(srcFormat) && srcFormat !== "image/avif"
+              ? srcFormat
+              : "image/jpeg";
+          return { ...p, keepFormat: false, type: src };
+        }
+        case "strip-metadata":
+          // A format or quality chosen elsewhere isn't an edit: keep the file as it is
+          return onlyEncodes(p) ? { ...p, keepFormat: true, target: null } : p;
+        case "adjust":
+          return p.adjust ? p : { ...p, adjust: { ...NO_ADJUST } };
+        case "filters":
+          return p.filter ? p : { ...p, filter: d.filter };
+        case "add-text":
+          return p.text ? p : { ...p, text: d.text };
+        case "watermark":
+          return p.mark ? p : { ...p, mark: d.mark };
+        case "border":
+        case "extend-canvas":
+        case "beautify":
+          return p.frame ? p : { ...p, frame: d.frame };
+        case "blur":
+        case "face-blur":
+          return p.redact ? p : { ...p, redact: d.redact };
+        case "remove-bg":
+        case "change-bg":
+          return p.bg ? p : { ...p, bg: d.bg };
+        case "passport-photo":
+          return p.passport
+            ? p
+            : { ...p, passport: d.passport, bg: p.bg ?? d.bg };
+        case "signature":
+          return p.ink ? p : { ...p, ink: d.ink };
+        default:
+          return p;
+      }
+    });
+    document.querySelector(".insp")?.scrollTo({ top: 0 });
+  }
+  /** The workspace's other sections; the picked tool's own one is its panel above */
+  const moreSections = () => (
+    <>
+      {section("crop", T("Crop"), "crop", cropCtl)}
+      {section("rotate", T("Rotate & flip"), "rotate", rotateCtl)}
+      {section(
+        "resize",
+        T("Resize"),
+        "resize",
+        <>
+          {dimsCtl}
+          {formCtl}
+          <SheetCtl s={s} setS={setS} />
+        </>,
+      )}
+      {fxSection(
+        "look",
+        T("Adjust & looks"),
+        "sun",
+        !!(s.adjust || s.filter),
+        (on) =>
+          set(
+            on ? { adjust: { ...NO_ADJUST } } : { adjust: null, filter: null },
+          ),
+        <>
+          <AdjustCtl s={s} setS={setS} />
+          <FilterCtl s={s} setS={setS} />
+        </>,
+      )}
+      {fxSection(
+        "redact",
+        T("Blur areas"),
+        "eyeOff",
+        !!s.redact,
+        (on) => set({ redact: on ? fromTool("blur").redact : null }),
+        s.redact && <RedactCtl s={s} setS={setS} />,
+      )}
+      {fxSection(
+        "text",
+        T("Text"),
+        "type",
+        !!s.text,
+        (on) => set({ text: on ? fromTool("add-text").text : null }),
+        s.text && <TextCtl s={s} setS={setS} />,
+      )}
+      {fxSection(
+        "watermark",
+        T("Watermark"),
+        "stamp",
+        !!s.mark,
+        (on) => set({ mark: on ? fromTool("watermark").mark : null }),
+        s.mark && <MarkCtl s={s} setS={setS} />,
+      )}
+      {fxSection(
+        "frame",
+        T("Border & padding"),
+        "frame",
+        !!s.frame,
+        (on) => set({ frame: on ? { ...NO_FRAME, border: 3 } : null }),
+        s.frame && <FrameCtl s={s} setS={setS} mode="all" />,
+      )}
+      {fxSection(
+        "background",
+        T("Background"),
+        "eraser",
+        !!s.bg,
+        (on) => set({ bg: on ? fromTool("change-bg").bg : null }),
+        s.bg && <BgCtl s={s} setS={setS} />,
+      )}
+      {fxSection(
+        "passport",
+        "ID photo",
+        "idCard",
+        !!s.passport,
+        (on) =>
+          setS((p) =>
+            on
+              ? {
+                  ...p,
+                  passport: fromTool("passport-photo").passport,
+                  bg: p.bg ?? fromTool("passport-photo").bg,
+                }
+              : { ...p, passport: null },
+          ),
+        s.passport && <PassportCtl s={s} setS={setS} />,
+      )}
+      {fxSection(
+        "signature",
+        T("Signature cleanup"),
+        "signature",
+        !!s.ink,
+        (on) => set({ ink: on ? fromTool("signature").ink : null }),
+        s.ink && <InkCtl s={s} setS={setS} />,
+      )}
+      {section(
+        "format",
+        T("Format"),
+        "convert",
+        chipGroup<string>(
+          formatOpts(true),
+          formatValue,
+          pickFormat,
+          T("Output format"),
+        ),
+      )}
+      {section(
+        "compress",
+        T("Compression"),
+        "compress",
+        <>
+          {qualityCtl("wq")}
+          {isLossy(type) && targetCtl(true)}
+        </>,
+      )}
+    </>
+  );
+  const focusMeta = tools.find((t) => t.slug === focus);
+  /** Edits outside the picked tool's own panel, for the "More edits" count */
+  const extra = (
+    [
+      ["crop", !!s.crop],
+      ["rotate", !!(s.rotate || s.flipH || s.flipV)],
+      ["resize", !!(s.w || s.h || s.size || s.form || s.sheet)],
+      ["look", !!(s.adjust || s.filter)],
+      ["redact", !!s.redact],
+      ["text", !!s.text],
+      ["watermark", !!s.mark],
+      ["frame", !!s.frame],
+      ["background", !!s.bg],
+      ["passport", !!s.passport],
+      ["signature", !!s.ink],
+    ] as [string, boolean][]
+  ).filter(([k, on]) => on && k !== SECTION[focus]).length;
+  /** Rail tools in their groups, in the order the groups first appear */
+  const railGroups: [string, ToolMeta[]][] = [];
+  for (const t of tools.filter((t) => SECTION[t.slug] && t.ready)) {
+    const g = t.group ?? "";
+    const row = railGroups.find(([k]) => k === g);
+    if (row) row[1].push(t);
+    else railGroups.push([g, [t]]);
+  }
 
   return (
     <>
@@ -1883,31 +2202,26 @@ function ImageToolView({ tool, preset, tools, lang = "en" }: Props) {
         </div>
 
         <div className="ws-body">
-          <div className="rail" aria-label={T("Tools")}>
-            {tools
-              .filter((t) => SECTION[t.slug])
-              .map((t) => (
-                <button
-                  key={t.slug}
-                  type="button"
-                  title={t.ready ? t.name : `${t.name} (coming soon)`}
-                  aria-label={t.name}
-                  aria-pressed={focus === t.slug}
-                  disabled={!t.ready}
-                  onClick={() => {
-                    setFocus(t.slug);
-                    document
-                      .getElementById(`ws-${SECTION[t.slug]}`)
-                      ?.scrollIntoView({
-                        block: "nearest",
-                        behavior: "smooth",
-                      });
-                  }}
-                >
-                  <Icon name={t.icon} />
-                </button>
-              ))}
-          </div>
+          <nav className="rail" aria-label={T("Tools")}>
+            {railGroups.map(([g, list]) => (
+              <div key={g} className="rail-group">
+                {g && <span className="rail-head">{g}</span>}
+                {list.map((t) => (
+                  <button
+                    key={t.slug}
+                    type="button"
+                    title={t.name}
+                    aria-label={t.name}
+                    aria-pressed={focus === t.slug}
+                    onClick={() => pickTool(t.slug)}
+                  >
+                    <Icon name={t.icon} />
+                    <span className="nm">{t.name}</span>
+                  </button>
+                ))}
+              </div>
+            ))}
+          </nav>
 
           <div className="ws-center">
             <div className={`stage${dragging ? " over" : ""}`}>
@@ -1952,7 +2266,12 @@ function ImageToolView({ tool, preset, tools, lang = "en" }: Props) {
                     <span>
                       {it.file.name}
                       <small>
-                        {formatBytes(it.file.size)}, {it.w} × {it.h}
+                        {formatBytes(it.file.size)}
+                        {/* The file on screen also shows what it becomes */}
+                        {i === cur && outForItem
+                          ? ` → ${formatBytes(outForItem.blob.size)}`
+                          : ""}
+                        , {it.w} × {it.h}
                       </small>
                     </span>
                   </button>
@@ -1990,150 +2309,56 @@ function ImageToolView({ tool, preset, tools, lang = "en" }: Props) {
           </div>
 
           <div className="insp">
-            {section("crop", T("Crop"), "crop", cropCtl)}
-            {section("rotate", T("Rotate & flip"), "rotate", rotateCtl)}
-            {section(
-              "resize",
-              T("Resize"),
-              "resize",
-              <>
-                {dimsCtl}
-                {formCtl}
-                <SheetCtl s={s} setS={setS} />
-              </>,
-            )}
-            {fxSection(
-              "look",
-              T("Adjust & looks"),
-              "sun",
-              !!(s.adjust || s.filter),
-              (on) =>
-                set(
-                  on
-                    ? { adjust: { ...NO_ADJUST } }
-                    : { adjust: null, filter: null },
-                ),
-              <>
-                <AdjustCtl s={s} setS={setS} />
-                <FilterCtl s={s} setS={setS} />
-              </>,
-            )}
-            {fxSection(
-              "redact",
-              T("Blur areas"),
-              "eyeOff",
-              !!s.redact,
-              (on) => set({ redact: on ? fromTool("blur").redact : null }),
-              s.redact && <RedactCtl s={s} setS={setS} />,
-            )}
-            {fxSection(
-              "text",
-              T("Text"),
-              "type",
-              !!s.text,
-              (on) => set({ text: on ? fromTool("add-text").text : null }),
-              s.text && <TextCtl s={s} setS={setS} />,
-            )}
-            {fxSection(
-              "watermark",
-              T("Watermark"),
-              "stamp",
-              !!s.mark,
-              (on) => set({ mark: on ? fromTool("watermark").mark : null }),
-              s.mark && <MarkCtl s={s} setS={setS} />,
-            )}
-            {fxSection(
-              "frame",
-              T("Border & padding"),
-              "frame",
-              !!s.frame,
-              (on) => set({ frame: on ? { ...NO_FRAME, border: 3 } : null }),
-              s.frame && <FrameCtl s={s} setS={setS} mode="all" />,
-            )}
-            {fxSection(
-              "background",
-              T("Background"),
-              "eraser",
-              !!s.bg,
-              (on) => set({ bg: on ? fromTool("change-bg").bg : null }),
-              s.bg && <BgCtl s={s} setS={setS} />,
-            )}
-            {fxSection(
-              "passport",
-              "ID photo",
-              "idCard",
-              !!s.passport,
-              (on) =>
-                setS((p) =>
-                  on
-                    ? {
-                        ...p,
-                        passport: fromTool("passport-photo").passport,
-                        bg: p.bg ?? fromTool("passport-photo").bg,
-                      }
-                    : { ...p, passport: null },
-                ),
-              s.passport && <PassportCtl s={s} setS={setS} />,
-            )}
-            {fxSection(
-              "signature",
-              T("Signature cleanup"),
-              "signature",
-              !!s.ink,
-              (on) => set({ ink: on ? fromTool("signature").ink : null }),
-              s.ink && <InkCtl s={s} setS={setS} />,
-            )}
-            {section(
-              "format",
-              T("Format"),
-              "convert",
-              chipGroup<string>(
-                formatOpts(true),
-                formatValue,
-                pickFormat,
-                T("Output format"),
-              ),
-            )}
-            {section(
-              "compress",
-              T("Compression"),
-              "compress",
-              <>
-                {qualityCtl("wq")}
-                {isLossy(type) && targetCtl(true)}
-              </>,
-            )}
-            {section(
-              "privacy",
-              T("Privacy"),
-              "shield",
-              <small className="muted">
-                {T(
-                  "Location, camera and date data are always removed from the output.",
+            {focusMeta && !editor && (
+              <section className="ws-tool">
+                <h3>
+                  <Icon name={focusMeta.icon} />
+                  {focusMeta.name}
+                </h3>
+                {item ? (
+                  simpleControls(focus)
+                ) : (
+                  <small className="muted">
+                    {T("Add an image to see the result.")}
+                  </small>
                 )}
-              </small>,
+              </section>
             )}
-            <section>
-              <h3>{T("Result")}</h3>
+            <details
+              className="more"
+              open={moreOpen}
+              onToggle={(e) =>
+                setMoreOpen((e.currentTarget as HTMLDetailsElement).open)
+              }
+            >
+              <summary>
+                <Icon name="sliders" />
+                {editor ? T("Edits") : T("More edits")}
+                {extra > 0 && <small>{T("{n} on", { n: extra })}</small>}
+                <Icon name="down" className="ico caret" />
+              </summary>
+              {moreSections()}
+            </details>
+            <section className="ws-result">
               <div
                 className={`result${busy ? " working" : ""}`}
-                style={{ marginTop: 0, borderTop: 0, paddingTop: 0 }}
                 aria-live="polite"
               >
                 {resultSummary()}
               </div>
-            </section>
-            <section>
-              <h3>{T("Recipe")}</h3>
-              <div className="recipe">
-                {recipe.map((step, i) => (
-                  <span key={step} style={{ display: "contents" }}>
-                    {i > 0 && <i>{T("then")}</i>}
-                    <span>{step}</span>
-                  </span>
-                ))}
-              </div>
-              <small className="muted">{T("Applied to every file.")}</small>
+              {recipe.length > 1 && (
+                <div className="recipe" aria-label={T("Recipe")}>
+                  {recipe.map((step, i) => (
+                    <span key={step} style={{ display: "contents" }}>
+                      {i > 0 && <i>{T("then")}</i>}
+                      <span>{step}</span>
+                    </span>
+                  ))}
+                </div>
+              )}
+              {many && (
+                <small className="muted">{T("Applied to every file.")}</small>
+              )}
             </section>
           </div>
         </div>

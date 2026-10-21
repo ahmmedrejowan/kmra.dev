@@ -3275,32 +3275,85 @@ textarea.num {
 }
 .ws-body {
   display: grid;
-  grid-template-columns: 60px 1fr 300px;
+  grid-template-columns: 208px 1fr 340px;
   min-height: 0;
 }
+/* Tools by group, each an icon and its name */
 .rail {
   border-right: 1px solid var(--line);
   background: var(--card);
-  padding: 10px 8px;
+  padding: 8px 8px 16px;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 10px;
   overflow: auto;
+}
+.rail-group {
+  display: grid;
+  gap: 1px;
+}
+.rail-head {
+  padding: 6px 10px 4px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--muted);
 }
 .rail button {
   border: 0;
   background: transparent;
-  height: 40px;
-  border-radius: 9px;
-  display: grid;
-  place-items: center;
-  color: var(--muted);
+  min-height: 34px;
+  padding: 0 10px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--ink);
+  font: inherit;
+  font-size: 13.5px;
+  text-align: left;
   cursor: pointer;
   flex: none;
+}
+.rail button .ico {
+  width: 17px;
+  height: 17px;
+  flex: none;
+  color: var(--muted);
+}
+.rail button:hover {
+  background: var(--raise);
 }
 .rail button[aria-pressed="true"] {
   background: var(--acc-soft);
   color: var(--acc);
+  font-weight: 600;
+}
+.rail button[aria-pressed="true"] .ico {
+  color: var(--acc);
+}
+.rail .nm {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+/* Middle-sized windows: icons only, names on hover */
+@media (min-width: 981px) and (max-width: 1239px) {
+  .ws-body {
+    grid-template-columns: 60px 1fr 320px;
+  }
+  .rail .nm,
+  .rail-head {
+    display: none;
+  }
+  .rail-group + .rail-group {
+    border-top: 1px solid var(--line);
+    padding-top: 8px;
+  }
+  .rail button {
+    justify-content: center;
+    padding: 0;
+    height: 40px;
+  }
 }
 .rail button:disabled {
   opacity: 0.35;
@@ -3389,8 +3442,77 @@ textarea.num {
 .insp section:last-child {
   border-bottom: 0;
 }
-.insp section.focus h3 {
+/* The picked tool's own panel, first */
+.insp .ws-tool {
+  gap: 16px;
+}
+.insp .ws-tool > h3 {
+  font-size: 15px;
+}
+/* Everything else, folded away */
+.insp .more {
+  border-bottom: 1px solid var(--line);
+}
+.insp .more > summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-block: 14px;
+  font-size: 13px;
+  font-weight: 600;
+}
+.insp .more > summary small {
   color: var(--acc);
+  font-weight: 500;
+}
+.insp .more > summary .caret {
+  margin-left: auto;
+  transition: transform 0.15s;
+}
+.insp .more[open] > summary {
+  margin-bottom: 0;
+}
+.insp .more[open] > summary .caret {
+  transform: rotate(180deg);
+}
+.insp .more section:last-child {
+  border-bottom: 0;
+}
+/* Result and recipe stay in view at the bottom of the panel */
+.insp .ws-result {
+  position: sticky;
+  bottom: -16px;
+  margin-top: auto;
+  margin-inline: -16px;
+  padding: 14px 16px 16px;
+  background: var(--card);
+  border-top: 1px solid var(--line);
+  border-bottom: 0;
+  z-index: 1;
+}
+.insp .ws-result .result {
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+.meta-resave {
+  display: grid;
+  gap: 8px;
+  justify-items: start;
+}
+.meta-resave p {
+  margin: 0;
+}
+.meta-choose {
+  border: 0;
+  margin: 0;
+  padding: 0;
+  min-width: 0;
+  display: grid;
+  gap: 10px;
+}
+.meta-choose:disabled {
+  opacity: 0.55;
 }
 .insp h3 {
   margin: 0;
@@ -3579,10 +3701,14 @@ textarea.num {
     border-left: 0;
     border-top: 1px solid var(--line);
   }
+  /* One column that scrolls: rail, picture, queue, then the panel */
   .ws-body {
-    grid-template-columns: 1fr;
-    grid-template-rows: auto auto auto;
+    display: flex;
+    flex-direction: column;
     overflow: auto;
+  }
+  .ws-body > * {
+    flex: none;
   }
   .ws-center {
     grid-template-rows: auto auto;
@@ -3597,9 +3723,24 @@ textarea.num {
     flex-direction: row;
     border-right: 0;
     border-bottom: 1px solid var(--line);
+    padding: 6px 8px;
+  }
+  .rail-group {
+    display: flex;
+    gap: 2px;
+  }
+  .rail .nm,
+  .rail-head {
+    display: none;
   }
   .rail button {
     width: 44px;
+    height: 40px;
+    justify-content: center;
+    padding: 0;
+  }
+  .insp .ws-result {
+    position: static;
   }
   .insp {
     border-left: 0;
