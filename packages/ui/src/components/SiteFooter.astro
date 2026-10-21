@@ -177,8 +177,8 @@ const taskList = app.tasks
             </a>
           </li>
           <li>
-            <a href={CONTACT.linkedin} rel="noopener" target="_blank">
-              LinkedIn
+            <a href={CONTACT.source} rel="noopener" target="_blank">
+              {T("Source code")}
             </a>
           </li>
         </ul>
@@ -192,6 +192,10 @@ const taskList = app.tasks
         ) : (
           "kmra.dev"
         )}
+        {" · "}
+        <a href={CONTACT.source} rel="noopener" target="_blank">
+          {T("Open source")}
+        </a>
       </span>
       {langs.length > 1 && (
         <nav class="flangs" aria-label={T("Language")}>

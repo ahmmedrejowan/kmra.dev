@@ -54,6 +54,25 @@ const T = (s: string, v?: Record<string, string>) => tr(locale, s, v);
 <section class="block">
   <div class="maker">
     <div>
+      <h2>{T("Open source")}</h2>
+      <p>
+        {T(
+          "The code for every kmra.dev site is open source under the AGPL-3.0 licence. Read how a tool handles your files, report a problem or suggest a tool on GitHub.",
+        )}
+      </p>
+    </div>
+    <div class="maker-links">
+      <a class="btn" href={CONTACT.source} rel="noopener" target="_blank">
+        <Icon name="github" />
+        {T("Source code on GitHub")}
+      </a>
+    </div>
+  </div>
+</section>
+
+<section class="block">
+  <div class="maker">
+    <div>
       <h2>{T("Who makes it")}</h2>
       <p>
         {T(

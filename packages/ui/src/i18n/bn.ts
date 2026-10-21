@@ -936,4 +936,11 @@ export const BN: Record<string, string> = {
   "1 field": "১টি তথ্য",
   "{n} fields": "{n}টি তথ্য",
   "Removing {n} of 1 field": "১টির মধ্যে {n}টি তথ্য সরানো হচ্ছে",
+  "Source code": "সোর্স কোড",
+  "Open source": "ওপেন সোর্স",
+  "Source code on GitHub": "GitHub-এ সোর্স কোড",
+  "The code for every kmra.dev site is open source under the AGPL-3.0 licence. Read how a tool handles your files, report a problem or suggest a tool on GitHub.": "kmra.dev-এর প্রতিটি সাইটের কোড AGPL-3.0 লাইসেন্সে ওপেন সোর্স। কোনো টুল আপনার ফাইল কীভাবে সামলায় তা পড়ে দেখুন, সমস্যা জানান বা নতুন টুলের প্রস্তাব দিন GitHub-এ।",
+  "kmra.dev is open source, so anyone can read how each tool handles files:": "kmra.dev ওপেন সোর্স, তাই প্রতিটি টুল ফাইল কীভাবে সামলায় তা যে কেউ পড়ে দেখতে পারেন:",
+  "the code on GitHub": "GitHub-এ কোড",
+  "21 October 2026": "২১ অক্টোবর ২০২৬",
 };

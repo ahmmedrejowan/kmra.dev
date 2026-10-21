@@ -13,7 +13,7 @@ interface Props {
 const { brand, ai = false } = Astro.props;
 const locale = pageLocale(Astro);
 const T = (s: string, v?: Record<string, string>) => tr(locale, s, v);
-const updated = T("9 October 2026");
+const updated = T("21 October 2026");
 ---
 
 <div class="psum">
@@ -96,6 +96,14 @@ const updated = T("9 October 2026");
       {T(
         "We use Vercel Web Analytics to count visits: which pages are viewed, the referring site, and the country, browser and device type. It sets no cookies, doesn't identify you, and never sees your files or their names.",
       )}
+    </p>
+  </section>
+  <section>
+    <h2>{T("Check it yourself")}</h2>
+    <p>
+      {T("kmra.dev is open source, so anyone can read how each tool handles files:")}{" "}
+      <a href={CONTACT.source} rel="noopener" target="_blank">{T("the code on GitHub")}</a>
+      {locale === "bn" ? "।" : "."}
     </p>
   </section>
   <section>

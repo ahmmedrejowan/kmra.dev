@@ -57,8 +57,8 @@ export function markInner(appId: string): string {
         )
         .join("");
     case "vidtool":
-      // A screen with a play button
-      return `<rect x="11" y="16" width="42" height="32" rx="7" fill="#fff"/><path d="M28 24.5v15l13-7.5z" fill="#12a594"/>`;
+      // A clapperboard: the slate with its striped clapper raised
+      return `<path d="M11 27h42v19a5 5 0 0 1-5 5H16a5 5 0 0 1-5-5z" fill="#fff"/><path d="M11.5 22.5 50 14l1.3 5.9-38.5 8.5z" fill="#fff"/><path d="M20 20.4l4.6 5.4M30 18.2l4.6 5.4M40 16l4.6 5.4" stroke="#12a594" stroke-width="2.4" stroke-linecap="round"/>`;
     case "devtool":
       // A terminal prompt and cursor: "> _"
       return `<path d="M17 22 27 32 17 42" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/><rect x="31" y="39" width="17" height="5" rx="2.5" fill="#fff"/>`;

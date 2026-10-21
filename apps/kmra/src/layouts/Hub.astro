@@ -272,6 +272,7 @@ const cols = Array.from({ length: Math.ceil(apps.length / 2) }, (_, i) => [
             </a>
             <p>{T("Small tools for everyday files. Everything runs in your browser, so your files stay on your device.")}</p>
             <a class="fmail" href={`mailto:${CONTACT.email}`}>{CONTACT.email}</a>
+            <a class="fmail" href={CONTACT.source} rel="noopener" target="_blank">{T("Source code on GitHub")}</a>
           </div>
           {cols.map((pair) => (
             <div class="hub-fcol">
@@ -297,7 +298,10 @@ const cols = Array.from({ length: Math.ceil(apps.length / 2) }, (_, i) => [
           ))}
         </div>
         <div class="fbottom">
-          <span>© {year} kmra.dev</span>
+          <span>
+            © {year} kmra.dev ·{" "}
+            <a href={CONTACT.source} rel="noopener" target="_blank">{T("Open source")}</a>
+          </span>
           <span class="flangs">
             <Icon name="languages" />
             {alternates.map((l) => (

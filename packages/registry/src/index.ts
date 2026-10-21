@@ -16,6 +16,8 @@ export const CONTACT = {
   maker: "K M Rejowan Ahmmed",
   portfolio: "https://rejowan.com",
   linkedin: "https://www.linkedin.com/in/ahmmedrejowan",
+  /** The open-source code (AGPL-3.0) */
+  source: "https://github.com/ahmmedrejowan/kmra.dev",
 } as const;
 
 /** Icon names available in @kmra/ui (see packages/ui/src/lib/icons.ts) */
