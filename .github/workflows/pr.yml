@@ -32,6 +32,22 @@ jobs:
       - run: pnpm check
       - run: pnpm format:check
 
+  # A pull request that adds or upgrades a package with a known vulnerability fails here, with
+  # a summary on the pull request. (Licences aren't restricted: everything the sites use is
+  # compatible with the AGPL.)
+  dependencies:
+    name: Dependency review
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/dependency-review-action@v4
+        with:
+          fail-on-severity: moderate
+          comment-summary-in-pr: on-failure
+
   e2e:
     name: End to end (${{ matrix.shard }} of 3)
     runs-on: ubuntu-latest
