@@ -721,9 +721,8 @@ function ImageToolView({ tool, preset, tools, lang = "en" }: Props) {
 
   const outForItem = out && item && out.key === item.key ? out : null;
 
-  /* ---------- Strip metadata: what's in the photo, and a check of the result ---------- */
+  /* ---------- Strip metadata: what's in the photo ---------- */
   const [metaIn, setMetaIn] = useState<{ key: string; fields: Field[] | null; sum: MetaSummary | null } | null>(null);
-  const [left, setLeft] = useState<{ blob: Blob; fields: Field[] | null } | null>(null);
   useEffect(() => {
     if (tool !== "strip-metadata" || !item) return;
     let live = true;
@@ -736,15 +735,6 @@ function ImageToolView({ tool, preset, tools, lang = "en" }: Props) {
       live = false;
     };
   }, [item?.key]);
-  useEffect(() => {
-    if (tool !== "strip-metadata" || !outForItem) return;
-    let live = true;
-    const blob = outForItem.blob;
-    void listFields(blob).then((fields) => live && setLeft({ blob, fields }));
-    return () => {
-      live = false;
-    };
-  }, [outForItem?.blob]);
   const type = item ? outType(item.file.type, s) : s.type;
 
   function compare(it: Item) {
@@ -1173,7 +1163,6 @@ function ImageToolView({ tool, preset, tools, lang = "en" }: Props) {
   function metaReport(): ReactNode {
     const read = metaIn && item && metaIn.key === item.key ? metaIn : null;
     const fields = read?.fields ?? null;
-    const done = outForItem && left && left.blob === outForItem.blob ? left : null;
     if (!read) return <small className="muted">{T("Reading…")}</small>;
     // Formats that are saved again from the pixels: everything goes, listed for information
     if (!fields) {
@@ -1215,8 +1204,6 @@ function ImageToolView({ tool, preset, tools, lang = "en" }: Props) {
       ["everything", T("Select all")],
       ["nothing", T("Unselect all")],
     ];
-    const keptAfter = done?.fields ?? null;
-    const unexpected = keptAfter ? keptAfter.filter((f) => remove(f.id)) : [];
     return (
       <>
         <div className="ctl meta-report">
@@ -1287,34 +1274,6 @@ function ImageToolView({ tool, preset, tools, lang = "en" }: Props) {
             <small className="muted">{T("No hidden data in this photo. The download is the same file.")}</small>
           )}
         </div>
-        {outForItem && fields.length > 0 && (
-          <div className="ctl meta-done">
-            <span className="lbl">{T("In the download")}</span>
-            {!done ? (
-              <small className="muted">{T("Checking…")}</small>
-            ) : !keptAfter ? (
-              <small className="muted">{T("The download couldn't be read back to check it.")}</small>
-            ) : unexpected.length ? (
-              <p className="warn">
-                {T("Still in the file: {list}", { list: unexpected.map((f) => T(f.label)).join(", ") })}
-              </p>
-            ) : (
-              <p className="meta-ok">
-                <Icon name="check" />
-                {keptAfter.length > 1
-                  ? T("Checked: only the {n} fields you kept are left.", { n: keptAfter.length })
-                  : keptAfter.length === 1
-                    ? T("Checked: only the field you kept is left.")
-                    : T("Checked: none of it is left.")}
-              </p>
-            )}
-            {outForItem.lossless && (
-              <small className="muted">
-                {T("Changed without re-compressing, so the picture is exactly as it was.")}
-              </small>
-            )}
-          </div>
-        )}
       </>
     );
   }

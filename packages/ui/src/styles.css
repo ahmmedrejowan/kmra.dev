@@ -2829,30 +2829,6 @@ input[type="range"] {
   color: #c4363b;
   background: color-mix(in srgb, #e5484d 12%, transparent);
 }
-.meta-done small {
-  display: block;
-  margin-top: 4px;
-}
-.meta-ok {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  margin: 0;
-  font-weight: 600;
-  color: #18794e;
-}
-.meta-ok svg {
-  width: 16px;
-  height: 16px;
-}
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) .meta-ok {
-    color: #3dd68c;
-  }
-}
-:root[data-theme="dark"] .meta-ok {
-  color: #3dd68c;
-}
 /* One line under a format picker saying what the chosen format is good for */
 .fmt-hint {
   display: block;

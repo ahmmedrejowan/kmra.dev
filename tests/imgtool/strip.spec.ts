@@ -40,9 +40,8 @@ test("lists every field, grouped, with the sensitive ones marked", async ({ page
   await expect(field(page, "Camera model").locator(".meta-tag")).toHaveCount(0);
   await expect(field(page, "xmp:CreatorTool").locator(".meta-val")).toHaveText("Secret Editor 9");
   await expect(field(page, "Comment").locator(".meta-val")).toHaveText("taken at home");
-  // Remove all: everything but the colour profile; the download is checked
+  // Remove all: everything but the colour profile
   await expect(page.locator(".meta-count")).toHaveText("Removing 13 of 14 fields");
-  await expect(page.locator(".meta-ok")).toHaveText("Checked: only the field you kept is left.");
   await expect(page.locator(".controls [aria-label='Save as']")).toHaveCount(0);
   const { d, b } = await save(page);
   expect(d.suggestedFilename()).toBe("meta-strip-metadata-kmra.jpg");
@@ -62,14 +61,12 @@ test("presets, a group and a single field decide what stays", async ({ page }) =
   await expect(count).toHaveText("Removing 0 of 14 fields");
   await preset(page, "Select all").click();
   await expect(count).toHaveText("Removing 14 of 14 fields");
-  await expect(page.locator(".meta-ok")).toHaveText("Checked: none of it is left.");
   // Keep the camera model, and the whole location group
   await field(page, "Camera model").locator("input").uncheck();
   const location = page.locator(".meta-group").filter({ has: page.locator("legend", { hasText: "Location" }) });
   await location.locator("legend input").uncheck();
   await expect(location.locator("legend small")).toHaveText("0 of 4");
   await expect(count).toHaveText("Removing 9 of 14 fields");
-  await expect(page.locator(".meta-ok")).toHaveText("Checked: only the 5 fields you kept are left.");
   const { b } = await save(page);
   expect(has(b, "Model X")).toBe(true);
   expect(has(b, "KmraPhone")).toBe(false);

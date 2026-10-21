@@ -261,7 +261,6 @@ export const BN: Record<string, string> = {
   "PNG is lossless, so there's no quality setting. Pick JPEG or WebP for smaller files.":
     "PNG লসলেস, তাই মানের সেটিং নেই। ছোট ফাইলের জন্য JPEG বা WebP বেছে নিন।",
   "Exact size": "নির্দিষ্ট সাইজ",
-  "Checked: only the field you kept is left.": "যাচাই করা হয়েছে: আপনি যে তথ্যটি রেখেছেন শুধু সেটিই আছে।",
   "This kind of file is saved again from its pixels, so all of its hidden data goes.": "এই ধরনের ফাইল পিক্সেল থেকে আবার সেভ হয়, তাই এর সব লুকানো তথ্য চলে যায়।",
   "Remove all": "সব সরান",
   "Sensitive only": "শুধু স্পর্শকাতর",
@@ -280,8 +279,6 @@ export const BN: Record<string, string> = {
   "Says where, when or who": "কোথায়, কখন বা কে তা জানায়",
   "Sensitive": "স্পর্শকাতর",
   "No hidden data in this photo. The download is the same file.": "এই ছবিতে কোনো লুকানো তথ্য নেই। ডাউনলোড একই ফাইল।",
-  "Checked: only the {n} fields you kept are left.": "যাচাই করা হয়েছে: আপনি যে {n}টি তথ্য রেখেছেন শুধু সেগুলোই আছে।",
-  "Changed without re-compressing, so the picture is exactly as it was.": "আবার কম্প্রেস না করেই বদলানো হয়েছে, তাই ছবি হুবহু আগের মতোই।",
   "Camera maker": "ক্যামেরার নির্মাতা",
   "Lens maker": "লেন্সের নির্মাতা",
   "Computer": "কম্পিউটার",
@@ -307,11 +304,6 @@ export const BN: Record<string, string> = {
   "Hidden data in this photo": "এই ছবির লুকানো তথ্য",
   "This browser couldn't read the photo's hidden data to list it. The download is still saved without any of it.":
     "এই ব্রাউজার ছবির লুকানো তথ্য পড়ে তালিকা দেখাতে পারেনি। তবুও ডাউনলোড সেগুলোর কিছুই ছাড়াই সেভ হয়।",
-  "The download couldn't be read back to check it.": "যাচাই করতে ডাউনলোডটি আবার পড়া গেল না।",
-  "Checking…": "যাচাই হচ্ছে…",
-  "In the download": "ডাউনলোডে",
-  "Checked: none of it is left.": "যাচাই করা হয়েছে: কিছুই রয়ে যায়নি।",
-  "Still in the file: {list}": "ফাইলে এখনও আছে: {list}",
   "Cut out without re-compressing, so the picture is exactly as it was. Its colours and rotation stay.":
     "আবার কম্প্রেস না করেই কেটে বাদ দেওয়া হয়েছে, তাই ছবি হুবহু আগের মতোই। রং আর ঘোরানো দিক ঠিক থাকে।",
   "Saved again from the pixels, so none of the hidden data comes along.":
