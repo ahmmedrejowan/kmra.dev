@@ -7,9 +7,15 @@ that serves files. The official sites run on Vercel, one project per site.
 
 - One project per site, all connected to this repository, with **Root Directory** `apps/<site>`
   and "Include source files outside of the Root Directory" turned on.
-- Settings come from `apps/<site>/vercel.ts`, which calls `appConfig()` from `@kmra/config`:
-  security headers, the Content Security Policy, caching and clean URLs. It also sets an ignore
-  command, so a site only rebuilds when its folder, `packages/` or the lockfile changed.
+- Settings are in `apps/<site>/vercel.json`, written by `pnpm vercel:json` from `appConfig()`
+  in `packages/config/src/vercel.ts` (per-site extras in `APP_OPTIONS`): security headers, the
+  Content Security Policy, caching and clean URLs, the branches that never deploy and an
+  ignore command, so a site only rebuilds when its folder, `packages/` or the lockfile
+  changed. Change the config there, run `pnpm vercel:json` and commit both; the pull request
+  checks fail when a `vercel.json` is out of date.
+- It's a static `vercel.json`, not a `vercel.ts`, on purpose: Vercel compiles a `vercel.ts`
+  only inside the build, too late for the branch rules and the ignore command, so every push
+  built every site.
 - Only `main` is deployed. Pull request branches aren't (see [workflow.md](workflow.md)).
 - Node 24.
 

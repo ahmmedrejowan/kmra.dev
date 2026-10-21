@@ -33,9 +33,10 @@ reviews:
         packages/ui/src/i18n/bn.ts (or the registry's locale files). Copy style: sentence case,
         plain verbs, no ALL-CAPS labels, no arrows in buttons, say what happens, and phrase things
         positively ("Your files stay on your device", not "Nothing is uploaded").
-    - path: "packages/config/src/vercel.ts"
+    - path: "{packages/config/src/vercel.ts,apps/*/vercel.json}"
       instructions: |
-        Security headers live here. Any loosening of the Content Security Policy (connect-src,
+        Security headers live here (vercel.json is generated from vercel.ts by pnpm vercel:json;
+        the two must match). Any loosening of the Content Security Policy (connect-src,
         frame-ancestors, script-src) or of Permissions-Policy needs a clear reason.
     - path: "tests/**"
       instructions: |

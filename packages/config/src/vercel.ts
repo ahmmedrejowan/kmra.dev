@@ -57,16 +57,28 @@ export function permissionsPolicy(
   ].join(", ");
 }
 
+export interface AppOptions {
+  camera?: boolean;
+  screen?: boolean;
+  mic?: boolean;
+  /** The hub: frames the apps' /handoff pages (HUB_FRAMES) */
+  hub?: boolean;
+}
+
+/**
+ * What each site may use beyond the defaults. apps/<id>/vercel.json is written from this by
+ * `pnpm vercel:json`; tests/serve.ts reads it too.
+ */
+export const APP_OPTIONS: Record<string, AppOptions> = {
+  qrtool: { camera: true },
+  vidtool: { screen: true },
+  audiotool: { mic: true },
+  musictool: { mic: true },
+  kmra: { hub: true },
+};
+
 /** Vercel project config for a static Astro app in apps/<id>. */
-export function appConfig(
-  opts: {
-    camera?: boolean;
-    screen?: boolean;
-    mic?: boolean;
-    /** The hub: frames the apps' /handoff pages (HUB_FRAMES) */
-    hub?: boolean;
-  } = {},
-): VercelConfig {
+export function appConfig(opts: AppOptions = {}): VercelConfig {
   const common = [
     { key: "X-Content-Type-Options", value: "nosniff" },
     { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
