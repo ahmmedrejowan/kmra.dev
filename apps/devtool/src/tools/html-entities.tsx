@@ -4,13 +4,8 @@ import { Icon } from "@kmra/ui/components/Icon";
 import type { ToolProps } from ".";
 import { BarSeg, Pane, Workspace } from "../lib/kit";
 import { takeText } from "../lib/handoff";
-import {
-  htmlEscape,
-  htmlUnescape,
-  type EntityScope,
-  type EntityStyle,
-} from "../lib/encode";
-import { entityNames } from "../lib/entities";
+import { htmlEscape, type EntityScope, type EntityStyle } from "../lib/encode";
+import { entityNames, htmlUnescape } from "../lib/entities";
 
 type Mode = "escape" | "unescape";
 

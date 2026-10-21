@@ -2,6 +2,11 @@
  * Encoders for the formats browsers can't save on their own. Canvas encodes JPEG, PNG and WebP;
  * these add AVIF (jSquash's libavif build, WebAssembly, loaded only when AVIF is picked), GIF
  * (gifenc, 256 colours), BMP, TIFF and ICO (written here). All run in the image worker.
+ *
+ * Browsers differ: Safari's canvas can't write WebP (it hands back a PNG) and its JPEGs come out
+ * far bigger at the same quality, and Firefox's JPEGs stay big at the lowest quality.
+ * `canvasEncodes` checks once what this browser really does, and jSquash's WebP and MozJPEG
+ * builds (WebAssembly, loaded only when needed) take over where it falls short.
  */
 import { icoFromPngs } from "./ico";
 
@@ -145,4 +150,77 @@ export async function avif(
   const { default: encode } = await import("@jsquash/avif/encode.js");
   const out = await encode(pixels(canvas), { quality });
   return new Blob([out], { type: "image/avif" });
+}
+
+/** WebP via libwebp (WebAssembly, loaded on first use); quality 0–100 */
+export async function webp(
+  canvas: OffscreenCanvas,
+  quality: number,
+): Promise<Blob> {
+  const { default: encode } = await import("@jsquash/webp/encode.js");
+  const out = await encode(pixels(canvas), { quality });
+  return new Blob([out], { type: "image/webp" });
+}
+
+/** JPEG via MozJPEG (WebAssembly, loaded on first use): smaller files than most browsers' own */
+export async function mozjpeg(
+  canvas: OffscreenCanvas,
+  quality: number,
+): Promise<Blob> {
+  const { default: encode } = await import("@jsquash/jpeg/encode.js");
+  const out = await encode(pixels(canvas), { quality });
+  return new Blob([out], { type: "image/jpeg" });
+}
+
+/** A small photo-like test image: smooth gradients, some detail, a little grain */
+function probe(): OffscreenCanvas {
+  const n = 128;
+  const t = new OffscreenCanvas(n, n);
+  const g = t.getContext("2d")!;
+  const img = g.createImageData(n, n);
+  for (let y = 0; y < n; y++)
+    for (let x = 0; x < n; x++) {
+      const i = (y * n + x) * 4;
+      const grain = ((x * 7919 + y * 104729) % 23) - 11;
+      img.data[i] = 120 + 80 * Math.sin(x / 9) + grain;
+      img.data[i + 1] = 90 + y + 30 * Math.cos((x + y) / 13) + grain;
+      img.data[i + 2] = 200 - x + 20 * Math.sin(y / 5) + grain;
+      img.data[i + 3] = 255;
+    }
+  g.putImageData(img, 0, 0);
+  return t;
+}
+
+export type CanvasCheck = { writes: boolean; good: boolean };
+const checks = new Map<string, Promise<CanvasCheck>>();
+/**
+ * Whether this browser's canvas is good enough for `type`, checked once per format on a small
+ * test image: it must really write that format, the quality must change the result, and a
+ * JPEG must be within reach of MozJPEG's size at the same quality (Safari's are far bigger).
+ */
+export function canvasEncodes(
+  type: "image/jpeg" | "image/webp",
+): Promise<CanvasCheck> {
+  let c = checks.get(type);
+  if (!c) {
+    c = (async () => {
+      const t = probe();
+      try {
+        const lo = await t.convertToBlob({ type, quality: 0.2 });
+        const hi = await t.convertToBlob({ type, quality: 0.9 });
+        const writes = lo.type === type && hi.type === type;
+        if (!writes || lo.size >= hi.size * 0.8) return { writes, good: false };
+        if (type !== "image/jpeg") return { writes, good: true };
+        const own = await t.convertToBlob({ type, quality: 0.75 });
+        const moz = await mozjpeg(t, 75);
+        // MozJPEG's quality scale is lossier, so a good encoder is about 2× its size here
+        // (Chrome 1.9×, Firefox 2×); Safari's is 4–5×
+        return { writes, good: own.size <= moz.size * 3 };
+      } catch {
+        return { writes: false, good: false };
+      }
+    })();
+    checks.set(type, c);
+  }
+  return c;
 }

@@ -130,13 +130,13 @@ test("a target size that can't be reached is explained, in Bangla too", async ({
   page,
 }) => {
   await openTool(page, "/compress-to-20kb");
-  await addFiles(page, hard("noise-2000x1500.jpg"));
+  await addFiles(page, hard("noise-3000x2250.jpg"));
   await expect(page.locator(".tool-area .result .warn")).toContainText(
     "Can't get under 20 KB",
     { timeout: 60_000 },
   );
   await openTool(page, "/bn/compress-to-20kb");
-  await addFiles(page, hard("noise-2000x1500.jpg"));
+  await addFiles(page, hard("noise-3000x2250.jpg"));
   await expect(page.locator(".tool-area .result .warn")).toHaveText(BANGLA, {
     timeout: 60_000,
   });

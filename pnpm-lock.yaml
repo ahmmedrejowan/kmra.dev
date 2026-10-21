@@ -361,6 +361,9 @@ importers:
       dompurify:
         specifier: ^3.4.16
         version: 3.4.16
+      entities:
+        specifier: ^7.0.1
+        version: 7.0.1
       fflate:
         specifier: ^0.8.3
         version: 0.8.3
@@ -422,6 +425,12 @@ importers:
       '@jsquash/avif':
         specifier: 2.1.1
         version: 2.1.1
+      '@jsquash/jpeg':
+        specifier: 1.6.0
+        version: 1.6.0
+      '@jsquash/webp':
+        specifier: 1.5.0
+        version: 1.5.0
       '@kmra/registry':
         specifier: workspace:*
         version: link:../../packages/registry
@@ -1605,6 +1614,12 @@ packages:
   '@jsquash/avif@2.1.1':
     resolution: {integrity: sha512-LMRxd0fMgfCLtobDh0/sFYJMMiRJTNYSEEWvRDKXlAeZ08t3gI5V+1thIT0XjXJ+SVG7Zug9B0XPyx0Ti5VRNA==}
 
+  '@jsquash/jpeg@1.6.0':
+    resolution: {integrity: sha512-zwN46Awh1VM6gXlIcALwb5WzqK5H2e6+Awcs1QP8AvS8ohsK/sbE4esvmH4jhlhW7+CgiUUww66vg0aTnlSIMA==}
+
+  '@jsquash/webp@1.5.0':
+    resolution: {integrity: sha512-KggLoj2MnRSfIqTeKe1EmbljTX2vuV7mh79k89PCL1pyqiDULcPM1L47twxXt0hkb68F70bXiL31MxsuoZtKFw==}
+
   '@mediabunny/mp3-encoder@1.61.3':
     resolution: {integrity: sha512-Qmegig3hXp8dhbJnze1fumsC7GXkMp6NH5mGgvl5o4zzp2cYgmjjbWps5mPyRq3VHcxLbDdiXDNVcl4Mv7c1tQ==}
     peerDependencies:
@@ -2495,6 +2510,10 @@ packages:
 
   entities@4.5.0:
     resolution: {integrity: sha512-V0hjH4dGPh9Ao5p0MoRY6BVqtwCjhz6vI5LT8AJ55H+4g9/4vbHx1I54fS0XuclLhDHArPQCiMjDxjaL8fPxhw==}
+    engines: {node: '>=0.12'}
+
+  entities@7.0.1:
+    resolution: {integrity: sha512-TWrgLOFUQTH994YUyl1yT4uyavY5nNB5muff+RtWaqNVCAK408b5ZnnbNAUEWLTCpum9w6arT70i1XdQ4UeOPA==}
     engines: {node: '>=0.12'}
 
   es-module-lexer@3.0.3:
@@ -4340,6 +4359,12 @@ snapshots:
     dependencies:
       wasm-feature-detect: 1.9.0
 
+  '@jsquash/jpeg@1.6.0': {}
+
+  '@jsquash/webp@1.5.0':
+    dependencies:
+      wasm-feature-detect: 1.9.0
+
   '@mediabunny/mp3-encoder@1.61.3(mediabunny@1.61.3)':
     dependencies:
       mediabunny: 1.61.3
@@ -5214,6 +5239,8 @@ snapshots:
       tapable: 2.3.3
 
   entities@4.5.0: {}
+
+  entities@7.0.1: {}
 
   es-module-lexer@3.0.3: {}
 

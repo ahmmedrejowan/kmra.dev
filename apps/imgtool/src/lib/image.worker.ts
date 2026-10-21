@@ -1,14 +1,35 @@
 /// <reference lib="webworker" />
 import { isLossy, outType, type Format, type Settings } from "./settings";
-import { avif, bmp as toBmp, gif, ico, ICO_MAX, tiff } from "./encoders";
+import {
+  avif,
+  bmp as toBmp,
+  canvasEncodes,
+  gif,
+  ico,
+  ICO_MAX,
+  mozjpeg,
+  tiff,
+  webp,
+} from "./encoders";
 
 /** Encode a rendered canvas: the browser for JPEG, PNG and WebP, our encoders for the rest */
 async function encodeAs(
   canvas: OffscreenCanvas,
   type: Format,
   q: number,
+  /** Use the WebAssembly encoder even where the browser's own one works */
+  wasm = false,
 ): Promise<Blob> {
   switch (type) {
+    // The browser's own encoder where it does the job (fast), WebAssembly where it doesn't
+    case "image/webp":
+      if (wasm || !(await canvasEncodes("image/webp")).good)
+        return webp(canvas, q);
+      break;
+    case "image/jpeg":
+      if (wasm || !(await canvasEncodes("image/jpeg")).good)
+        return mozjpeg(canvas, q);
+      break;
     case "image/avif":
       return avif(canvas, q);
     case "image/gif":
@@ -19,9 +40,8 @@ async function encodeAs(
       return tiff(canvas);
     case "image/x-icon":
       return ico(canvas);
-    default:
-      return canvas.convertToBlob({ type, quality: q / 100 });
   }
+  return canvas.convertToBlob({ type, quality: q / 100 });
 }
 import { render, type Extras } from "./render";
 import { faces, mask, type Box, type MaskModel } from "./ml";
@@ -117,8 +137,8 @@ async function encode(
 ): Promise<EncodeResult> {
   const canvas = render(bmp, s, srcType, extras);
   const type = outType(srcType, s);
-  const at = async (q: number) => ({
-    blob: await encodeAs(canvas, type, q),
+  const at = async (q: number, wasm = false) => ({
+    blob: await encodeAs(canvas, type, q, wasm),
     // An icon is one square of at most 256 px
     w:
       type === "image/x-icon"
@@ -138,18 +158,28 @@ async function encode(
       : r;
   }
   const limit = s.target * 1024;
-  let lo = 5;
-  let hi = 95;
-  let best: EncodeResult | null = null;
-  for (let i = 0; i < 7 && lo <= hi; i++) {
-    const mid = Math.round((lo + hi) / 2);
-    const r = await at(mid);
-    if (r.blob.size <= limit) {
-      best = { ...r, q: mid, over: false };
-      lo = mid + 1;
-    } else hi = mid - 1;
-  }
-  return best ?? { ...(await at(5)), q: 5, over: true };
+  const search = async (wasm: boolean): Promise<EncodeResult | null> => {
+    let lo = 5;
+    let hi = 95;
+    let best: EncodeResult | null = null;
+    for (let i = 0; i < 7 && lo <= hi; i++) {
+      const mid = Math.round((lo + hi) / 2);
+      const r = await at(mid, wasm);
+      if (r.blob.size <= limit) {
+        best = { ...r, q: mid, over: false };
+        lo = mid + 1;
+      } else hi = mid - 1;
+    }
+    return best;
+  };
+  // The browser's encoder first; if even its lowest quality is too big (Firefox's JPEGs often
+  // are), MozJPEG or libwebp usually fit
+  const best =
+    (await search(false)) ??
+    (type === "image/jpeg" || type === "image/webp"
+      ? await search(true)
+      : null);
+  return best ?? { ...(await at(5, true)), q: 5, over: true };
 }
 
 /** Watermark logos, decoded once per file */

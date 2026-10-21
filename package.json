@@ -16,7 +16,8 @@
     "format:check": "git ls-files -z | xargs -0 prettier --check --ignore-unknown --log-level warn",
     "test:e2e": "pnpm build && playwright test -c tests/playwright.config.ts",
     "test:e2e:only": "playwright test -c tests/playwright.config.ts",
-    "indexnow": "node scripts/indexnow.ts"
+    "indexnow": "node scripts/indexnow.ts",
+    "vercel:json": "node scripts/vercel-json.ts"
   },
   "devDependencies": {
     "@playwright/test": "^1.63.0",

@@ -161,18 +161,26 @@ async function images(sharp: Sharp) {
   <style>@import url("https://tracker.example.com/x.css"); rect { fill: url(https://tracker.example.com/f.svg#p) #30a46c; }</style>
 </svg>`,
   );
-  // Pure noise: no JPEG quality gets this under 20 KB
-  await put("noise-2000x1500.jpg", () =>
+  // Pure noise: no JPEG quality gets this under 20 KB, not even MozJPEG's
+  await put("noise-3000x2250.jpg", () =>
     sharp({
       create: {
-        width: 2000,
-        height: 1500,
+        width: 3000,
+        height: 2250,
         channels: 3,
         background: "#808080",
         noise: { type: "gaussian", mean: 128, sigma: 60 },
       },
     })
       .jpeg({ quality: 90 })
+      .toBuffer(),
+  );
+  // A small JPEG made with MozJPEG: no browser's encoder makes it smaller
+  await put("tiny-mozjpeg-400x300.jpg", () =>
+    sharp({
+      create: { width: 400, height: 300, channels: 3, background: "#33aa77" },
+    })
+      .jpeg({ quality: 30, mozjpeg: true })
       .toBuffer(),
   );
   await put("1x1.png", () =>

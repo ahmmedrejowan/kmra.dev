@@ -9,6 +9,7 @@ import { createServer } from "node:http";
 import { readFile, stat } from "node:fs/promises";
 import { extname, join, normalize } from "node:path";
 import {
+  APP_OPTIONS,
   CSP,
   CSP_HANDOFF,
   HANDOFF_PATH,
@@ -20,10 +21,8 @@ import {
 const [appId, portArg] = process.argv.slice(2);
 if (!appId || !portArg) throw new Error("usage: serve.ts <appId> <port>");
 const root = join(import.meta.dirname, "..", "apps", appId, "dist");
-// Same per-app permissions as each app's vercel.ts
-const camera = appId === "qrtool";
-const screen = appId === "vidtool";
-const mic = appId === "audiotool" || appId === "musictool";
+// Same per-app permissions as each app's vercel.json
+const { camera, screen, mic } = APP_OPTIONS[appId] ?? {};
 
 const TYPES: Record<string, string> = {
   ".html": "text/html; charset=utf-8",

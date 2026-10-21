@@ -78,7 +78,7 @@ export function detect(input: string): Guess | null {
       if (printable(s)) return { slug: "base64", label: "Base64" };
     } catch {}
   }
-  if (/^[\w"-]+(,[^\n]*)+\n[^\n]*,/.test(t))
+  if (/^[\w"-]+,[^\n]*\n[^\n]*,/.test(t))
     return { slug: "csv-json", label: "CSV" };
   if (/^[\w-]+:\s.+$/m.test(t) && /\n/.test(t) && !/[{};]/.test(t))
     return { slug: "yaml-json", label: "YAML" };

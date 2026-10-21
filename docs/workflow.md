@@ -62,9 +62,9 @@ Each site is its own Vercel project, connected to this repository with its Root 
 `apps/<site>`. Pushing to `main` starts a deployment for every project, and each one decides
 whether to build:
 
-- **Only `main` builds.** `git.deploymentEnabled` in `packages/config/src/vercel.ts` turns off
-  deployments for the branch prefixes above, and the ignore command skips the build on any
-  branch that isn't `main`.
+- **Only `main` builds.** `git.deploymentEnabled` in each site's `vercel.json` (written from
+  `packages/config/src/vercel.ts`) turns off deployments for the branch prefixes above, and the
+  ignore command skips the build on any branch that isn't `main`.
 - **Only changed sites build.** On `main`, a site builds only when its own folder,
   `packages/` or the lockfile changed since its last deployment. A change to `apps/pdftool`
   rebuilds PDFTool and nothing else; a change to `packages/ui` rebuilds all eleven.

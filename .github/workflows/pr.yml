@@ -5,7 +5,7 @@ name: Pull request
 # builds with their real headers. The end-to-end tests are split across three machines so the
 # whole thing takes minutes, not half an hour.
 #
-# Pull requests are never deployed: Vercel builds only main (see packages/config/src/vercel.ts),
+# Pull requests are never deployed: Vercel builds only main (see apps/<site>/vercel.json),
 # so this is where a change is proved, not on a preview site.
 on:
   pull_request:
@@ -31,6 +31,7 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm check
       - run: pnpm format:check
+      - run: pnpm vercel:json --check
 
   # A pull request that adds or upgrades a package with a known vulnerability fails here, with
   # a summary on the pull request. (Licences aren't restricted: everything the sites use is
@@ -67,8 +68,8 @@ jobs:
       # The video and audio test files are generated with ffmpeg on each run
       - name: ffmpeg
         run: sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg
-      - name: Browser
-        run: pnpm exec playwright install --with-deps chromium
+      - name: Browsers (Chromium for every site; Firefox and WebKit for the image tools)
+        run: pnpm exec playwright install --with-deps chromium firefox webkit
       - run: pnpm build
       - name: End to end
         run: pnpm test:e2e:only --shard=${{ matrix.shard }}/3

@@ -11,6 +11,7 @@ import {
   useInput,
   type PaneError,
 } from "../lib/kit";
+import { looksLikeSvg } from "../lib/encode";
 import { formatXml, minifyXml, parseXml, xmlStats } from "../lib/xml";
 
 type Mode = "format" | "minify" | "validate";
@@ -53,11 +54,7 @@ export default function XmlFormatter({ preset }: ToolProps) {
       ? { ...result.error, message: T(result.error.message, result.error.vars) }
       : null;
   const output = result?.ok ? result.text : "";
-  const ext = /^\s*(<\?xml[^>]*>\s*)?(<!--[\s\S]*?-->\s*)*<svg[\s>]/i.test(
-    input,
-  )
-    ? "svg"
-    : "xml";
+  const ext = looksLikeSvg(input) ? "svg" : "xml";
 
   return (
     <Workspace

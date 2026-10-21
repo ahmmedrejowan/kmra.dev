@@ -207,9 +207,20 @@ test("changes can be hidden, removed, undone and redone; history jumps; a refres
   // Undo twice (button, then keyboard), redo once. The test browser reports Windows, so Ctrl
   await ws.getByRole("button", { name: "Undo" }).click();
   await expect(ws).toContainText(/1200 × 1200, JPEG/);
-  await page.locator("body").press("Control+z");
+  // ⌘ where the page thinks it's on an Apple device (Firefox reports the real Mac platform even
+  // with a Windows user agent), Ctrl elsewhere: the same rule as @kmra/ui's isApple()
+  const mod = (await page.evaluate(
+    () =>
+      /mac|iphone|ipad|ipod/i.test(
+        (navigator as { userAgentData?: { platform?: string } }).userAgentData
+          ?.platform ?? navigator.platform,
+      ) || /Mac OS X|iPhone|iPad/.test(navigator.userAgent),
+  ))
+    ? "Meta"
+    : "Control";
+  await page.locator("body").press(`${mod}+z`);
   await expect(list).toHaveText(["Watermark"]);
-  await page.locator("body").press("Control+Shift+z");
+  await page.locator("body").press(`${mod}+Shift+z`);
   await expect(list).toHaveText(["Crop 1200 × 1200", "Watermark"]);
   // Jump to the start, then back to the end
   await histBtn.click();

@@ -214,7 +214,7 @@ const BLOCK_RE = new RegExp(`^</?(${BLOCK})\\b`, "i");
 export function minifyHtml(src: string): string {
   const parts: string[] = [];
   const re =
-    /(<(pre|textarea|script|style)\b[^>]*>[\s\S]*?<\/\2\s*>)|(<!--[\s\S]*?-->)|(<[^>]+>)|([^<]+)/gi;
+    /(<(pre|textarea|script|style)\b[^>]*>[\s\S]*?<\/\2\s*>)|(<!--[\s\S]*?--!?>)|(<[^>]+>)|([^<]+)/gi;
   let m: RegExpExecArray | null;
   const tokens: { kind: "raw" | "tag" | "text" | "comment"; s: string }[] = [];
   while ((m = re.exec(src))) {

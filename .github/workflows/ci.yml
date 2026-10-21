@@ -29,6 +29,7 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm check
       - run: pnpm format:check
+      - run: pnpm vercel:json --check
 
   e2e:
     name: End to end (${{ matrix.shard }} of 3)
@@ -48,8 +49,8 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - name: ffmpeg
         run: sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg
-      - name: Browser
-        run: pnpm exec playwright install --with-deps chromium
+      - name: Browsers (Chromium for every site; Firefox and WebKit for the image tools)
+        run: pnpm exec playwright install --with-deps chromium firefox webkit
       - run: pnpm build
       - name: End to end
         run: pnpm test:e2e:only --shard=${{ matrix.shard }}/3
