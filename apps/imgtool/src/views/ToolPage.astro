@@ -8,6 +8,7 @@ import Icon from "@kmra/ui/components/Icon.astro";
 import { appOrigin, brandName, getApp, localizeApp } from "@kmra/registry";
 import { pageLocale } from "@kmra/ui/lib/locale";
 import { lp, t as tr } from "@kmra/ui/lib/i18n";
+import { markSvg } from "@kmra/ui/lib/brand";
 import ImageTool from "../components/ImageTool";
 import Inspect from "../components/Inspect";
 import Colors from "../components/Colors";
@@ -74,6 +75,13 @@ const others = app.tools
   .slice(0, 5)
   .map((x) => x.t);
 const icons = Object.fromEntries(app.tools.map((t) => [t.slug, t.icon]));
+// The logo in the workspace header
+const wsBrand = {
+  mark: markSvg("imgtool", app.accent.light),
+  a: app.brand[0],
+  b: app.brand[1],
+  home: lp(locale, "/"),
+};
 // In the order of the app's groups, so the workspace rail lists them group by group
 const groupAt = (g: string) => {
   const i = app.toolGroups?.indexOf(g) ?? -1;
@@ -213,6 +221,7 @@ const schema = [
         tool={tool.slug}
         preset={task?.preset}
         tools={railTools}
+        brand={wsBrand}
       />
     )}
 

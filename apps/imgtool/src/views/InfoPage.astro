@@ -10,6 +10,7 @@ import MoreTools from "@kmra/ui/components/MoreTools.astro";
 import { brandName, getApp, localizeApp } from "@kmra/registry";
 import { pageLocale } from "@kmra/ui/lib/locale";
 import { lp, t as tr } from "@kmra/ui/lib/i18n";
+import { markSvg } from "@kmra/ui/lib/brand";
 import ImageTool from "../components/ImageTool";
 
 /** The non-tool pages, in any language. */
@@ -110,6 +111,13 @@ const PAGES = {
   },
 } as const;
 const p = PAGES[page];
+// The logo in the workspace header
+const wsBrand = {
+  mark: markSvg("imgtool", app.accent.light),
+  a: app.brand[0],
+  b: app.brand[1],
+  home: lp(locale, "/"),
+};
 // In the order of the app's groups, so the workspace rail lists them group by group
 const groupAt = (g: string) => {
   const i = app.toolGroups?.indexOf(g) ?? -1;
@@ -134,7 +142,7 @@ const railTools = app.tools
   />
   {page === "editor" ? (
     <div class="wrap tool-area">
-      <ImageTool client:load lang={locale} tool="editor" tools={railTools} />
+      <ImageTool client:load lang={locale} tool="editor" tools={railTools} brand={wsBrand} />
     </div>
   ) : (
     <div class="wrap page-body">

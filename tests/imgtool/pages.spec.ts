@@ -10,7 +10,7 @@ test("editor: two files, PNG output, one zip", async ({ page }) => {
     .locator("main input[type=file]")
     .first()
     .setInputFiles([gen("photo.jpg"), gen("small.jpg")]);
-  await expect(ws).toContainText("2 files");
+  await expect(ws).toContainText("2 photos");
   await ws
     .getByRole("group", { name: "Output format" })
     .getByRole("button", { name: "PNG" })
@@ -55,7 +55,7 @@ test("homepage drop box hands the file to the editor", async ({ page }) => {
     .setInputFiles(gen("photo.jpg"));
   await page.waitForURL(/\/editor$/);
   const ws = page.getByRole("dialog", { name: "Advanced workspace" });
-  await expect(ws).toContainText("1 file");
+  await expect(ws).toContainText("1 photo");
   await expect(ws.getByRole("button", { name: /^photo\.jpg/ })).toBeVisible();
   await expect(ws).toContainText(/1600 × 1200, JPEG/);
   const d = await download(page, () =>

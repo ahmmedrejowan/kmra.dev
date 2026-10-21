@@ -90,6 +90,8 @@ interface Props {
   preset?: Preset;
   /** All tools of this app, for the workspace rail */
   tools: ToolMeta[];
+  /** The site's logo for the workspace header: mark SVG, the two wordmark parts, home link */
+  brand?: { mark: string; a: string; b: string; home: string };
 }
 
 interface Item {
@@ -289,6 +291,75 @@ function clearOf(id: ChangeId, s: Settings): Partial<Settings> | null {
       return s.sheet ? { sheet: null } : null;
   }
 }
+/** The settings fields each change is made of (faces and blur areas share one) */
+const CHANGE_FIELDS: Record<ChangeId, (keyof Settings)[]> = {
+  crop: ["crop", "ratio"],
+  rotate: ["rotate"],
+  flip: ["flipH", "flipV"],
+  resize: ["w", "h", "size", "form", "lock"],
+  target: ["target"],
+  passport: ["passport"],
+  bg: ["bg"],
+  faces: ["redact"],
+  ink: ["ink"],
+  regions: ["redact"],
+  adjust: ["adjust"],
+  filter: ["filter", "filterAmount"],
+  text: ["text"],
+  mark: ["mark"],
+  frame: ["frame"],
+  sheet: ["sheet"],
+};
+/** Those fields with nothing on: what a photo has when it doesn't have the change */
+const NO_CHANGE: Partial<Settings> = {
+  crop: null,
+  ratio: null,
+  rotate: 0,
+  flipH: false,
+  flipV: false,
+  w: null,
+  h: null,
+  size: null,
+  form: null,
+  lock: true,
+  target: null,
+  passport: null,
+  bg: null,
+  redact: null,
+  ink: null,
+  adjust: null,
+  filter: null,
+  filterAmount: 100,
+  text: null,
+  mark: null,
+  frame: null,
+  sheet: null,
+};
+/** Faces and blur areas are one setting, so they go to "this photo" together */
+const linked = (id: ChangeId): ChangeId[] =>
+  id === "faces" || id === "regions" ? ["faces", "regions"] : [id];
+/** The fields kept per photo, for the changes set to "This photo" */
+function photoFieldsOf(scope: Set<ChangeId>): (keyof Settings)[] {
+  return [...new Set([...scope].flatMap((id) => CHANGE_FIELDS[id]))];
+}
+/** One photo's settings: the shared ones, with its own values for the per-photo fields */
+function forPhoto(
+  shared: Settings,
+  fields: (keyof Settings)[],
+  own: Partial<Settings> | undefined,
+): Settings {
+  if (!fields.length) return shared;
+  const out = { ...shared } as Record<string, unknown>;
+  for (const f of fields) out[f] = own && f in own ? own[f] : NO_CHANGE[f];
+  return out as unknown as Settings;
+}
+function pickFields(
+  s: Settings,
+  fields: (keyof Settings)[],
+): Partial<Settings> {
+  return Object.fromEntries(fields.map((f) => [f, s[f]])) as Partial<Settings>;
+}
+
 /** The settings with hidden changes left out: what's rendered and downloaded */
 function withoutHidden(s: Settings, hidden: Set<ChangeId>): Settings {
   let out = s;
@@ -300,7 +371,7 @@ function withoutHidden(s: Settings, hidden: Set<ChangeId>): Settings {
   return out;
 }
 
-function ImageToolView({ tool, preset, tools, lang = "en" }: Props) {
+function ImageToolView({ tool, preset, tools, brand, lang = "en" }: Props) {
   const T = useT();
   const editor = tool === "editor";
   const [items, setItems] = useState<Item[]>([]);
@@ -411,8 +482,51 @@ function ImageToolView({ tool, preset, tools, lang = "en" }: Props) {
     if (!it) return;
     URL.revokeObjectURL(it.url);
     void engine.drop(it.key);
+    const { [it.key]: _gone, ...rest } = own.current;
+    own.current = rest;
     setItems((prev) => prev.filter((_, j) => j !== i));
     setCur((c) => Math.max(0, c >= i ? c - 1 : c));
+    if (items.length === 1) resetForNoPhoto();
+  }
+  /**
+   * The last photo went: what belonged to it (crop frame, blur areas, covered faces, the
+   * history) is cleared; the rest of the recipe stays for the next photo.
+   */
+  function resetForNoPhoto() {
+    own.current = {};
+    shownKey.current = undefined;
+    const had = !!(s.crop || s.redact || hist.current.length > 1);
+    const next = { ...s, crop: null, redact: null };
+    const keepHidden = new Set(
+      [...hidden].filter(
+        (x) => x !== "crop" && x !== "faces" && x !== "regions",
+      ),
+    );
+    // A fresh history starting here (the reset itself isn't a step)
+    hist.current = [
+      {
+        snap: {
+          ...snap(),
+          s: next,
+          hidden: keepHidden,
+          own: {},
+          key: undefined,
+        },
+        label: T("Start"),
+      },
+    ];
+    at.current = 0;
+    if (s.crop || s.redact || keepHidden.size !== hidden.size)
+      replaying.current = true;
+    setS(next);
+    setHidden(keepHidden);
+    bump((n) => n + 1);
+    if (had)
+      toast(
+        T(
+          "Crop, blur areas and history cleared. Your other settings are kept.",
+        ),
+      );
   }
 
   async function addSample() {
@@ -495,7 +609,8 @@ function ImageToolView({ tool, preset, tools, lang = "en" }: Props) {
     const first = lastKey.current === undefined;
     lastKey.current = item.key;
     const r = RATIOS.find((x) => x.id === s.ratio);
-    if (r && !first) {
+    // (Not when crops are per photo: each photo keeps its own frame)
+    if (r && !first && !photoFields.includes("crop")) {
       quiet.current = true;
       setS((p) => ({ ...p, crop: centeredCrop(item.w, item.h, r.r) }));
     }
@@ -594,6 +709,81 @@ function ImageToolView({ tool, preset, tools, lang = "en" }: Props) {
   const [metaKeep, setMetaKeep] = useState<Set<string>>(new Set());
   const metaRef = useRef({ mode: metaMode, keep: metaKeep });
 
+  /* ---------- Batches: changes for all photos, or for one ---------- */
+  // Changes apply to every photo unless set to "This photo" (blur areas start that way: they're
+  // drawn on one picture). Per-photo values live in `own`, by photo; `s` is always what the photo
+  // on screen gets, so every control keeps editing `s`.
+  const [scope, setScope] = useState<Set<ChangeId>>(
+    () => new Set(["faces", "regions"]),
+  );
+  const photoFields = useMemo(() => photoFieldsOf(scope), [scope]);
+  const own = useRef<Record<string, Partial<Settings>>>({});
+  // The photo on screen keeps its own values in step with what's edited
+  useEffect(() => {
+    if (!item || !photoFields.length) return;
+    own.current = { ...own.current, [item.key]: pickFields(s, photoFields) };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [s, photoFields]);
+  // Another photo on screen: its own values come in (a photo without any gets none of the
+  // per-photo changes; the first photo keeps what was chosen before it arrived)
+  const shownKey = useRef<string | undefined>(undefined);
+  useEffect(() => {
+    const prev = shownKey.current;
+    shownKey.current = item?.key;
+    if (!item || !prev || prev === item.key || !photoFields.length) return;
+    quiet.current = true;
+    setS((p) => forPhoto(p, photoFields, own.current[item.key]));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [item?.key]);
+  /** Whether a photo has per-photo changes of its own */
+  const hasOwn = (key: string) => {
+    const o = own.current[key];
+    return (
+      !!o &&
+      Object.entries(o).some(
+        ([f, v]) =>
+          JSON.stringify(v) !== JSON.stringify(NO_CHANGE[f as keyof Settings]),
+      )
+    );
+  };
+  function setChangeScope(id: ChangeId, photo: boolean) {
+    const ids = linked(id);
+    setScope((sc) => {
+      const n = new Set(sc);
+      for (const x of ids) {
+        if (photo) n.add(x);
+        else n.delete(x);
+      }
+      return n;
+    });
+    // Back to all photos: the photo on screen's values become everyone's
+    if (!photo) {
+      const fields = ids.flatMap((x) => CHANGE_FIELDS[x]);
+      own.current = Object.fromEntries(
+        Object.entries(own.current).map(([k, o]) => [
+          k,
+          Object.fromEntries(
+            Object.entries(o).filter(
+              ([f]) => !fields.includes(f as keyof Settings),
+            ),
+          ),
+        ]),
+      );
+    }
+  }
+  /** The photo on screen's own changes go to every photo */
+  function copyToAll() {
+    if (!item) return;
+    const mine = pickFields(s, photoFields);
+    own.current = Object.fromEntries(items.map((it) => [it.key, { ...mine }]));
+    bump((n) => n + 1);
+    toast(T("Copied to all {n} photos.", { n: items.length }));
+    // A step of its own in the history
+    hist.current = hist.current.slice(0, at.current + 1);
+    hist.current.push({ snap: snap(), label: T("Copied to all photos") });
+    at.current = hist.current.length - 1;
+  }
+
   /* ---------- Edit history: undo / redo, and a list to jump back to ---------- */
   /** Everything an undo brings back: the settings, hidden changes and the metadata choice */
   type Snap = {
@@ -601,8 +791,20 @@ function ImageToolView({ tool, preset, tools, lang = "en" }: Props) {
     hidden: Set<ChangeId>;
     metaMode: MetaMode;
     metaKeep: Set<string>;
+    /** Per-photo values and which changes are per photo, and the photo on screen then */
+    own: Record<string, Partial<Settings>>;
+    scope: Set<ChangeId>;
+    key: string | undefined;
   };
-  const snap = (): Snap => ({ s, hidden, metaMode, metaKeep });
+  const snap = (): Snap => ({
+    s,
+    hidden,
+    metaMode,
+    metaKeep,
+    own: { ...own.current },
+    scope,
+    key: item?.key,
+  });
   /** Steps so far (the first is how the page started) and the one on screen */
   const hist = useRef<{ snap: Snap; label: string }[]>([]);
   const at = useRef(0);
@@ -614,6 +816,26 @@ function ImageToolView({ tool, preset, tools, lang = "en" }: Props) {
   /** Set when the page sets its own starting point (saved edits, ?t=): that becomes step one */
   const baseline = useRef(false);
   const [, bump] = useState(0);
+  const [histOpen, setHistOpen] = useState(false);
+  // The history list closes on a click outside it or Escape
+  useEffect(() => {
+    if (!histOpen) return;
+    const close = (e: Event) => {
+      if (e instanceof KeyboardEvent) {
+        if (e.key !== "Escape") return;
+        // Only the list closes, not the workspace
+        e.stopPropagation();
+        setHistOpen(false);
+      } else if (!(e.target as Element).closest?.(".hist-pop-wrap"))
+        setHistOpen(false);
+    };
+    window.addEventListener("pointerdown", close);
+    window.addEventListener("keydown", close, true);
+    return () => {
+      window.removeEventListener("pointerdown", close);
+      window.removeEventListener("keydown", close, true);
+    };
+  }, [histOpen]);
   useEffect(() => {
     const now = snap();
     if (!hist.current.length || baseline.current) {
@@ -636,7 +858,11 @@ function ImageToolView({ tool, preset, tools, lang = "en" }: Props) {
     }
     const prev = hist.current[at.current]!;
     const label = describe(prev.snap, now);
-    if (!label) return;
+    // Nothing visible changed (say, an empty text box): part of the current step
+    if (!label) {
+      prev.snap = now;
+      return;
+    }
     // A slider drag or quick typing on the same thing is one step
     const t = Date.now();
     const top = at.current === hist.current.length - 1 && at.current > 0;
@@ -650,14 +876,25 @@ function ImageToolView({ tool, preset, tools, lang = "en" }: Props) {
     }
     lastAt.current = t;
     bump((n) => n + 1);
-  }, [s, hidden, metaMode, metaKeep]);
+  }, [s, hidden, metaMode, metaKeep, scope]);
   function goTo(i: number) {
     const to = hist.current[i];
     if (!to || i === at.current) return;
     at.current = i;
     replaying.current = true;
     lastAt.current = 0;
-    setS(to.snap.s);
+    own.current = { ...to.snap.own };
+    setScope(to.snap.scope);
+    // Another photo on screen now: it gets its own values from that step
+    setS(
+      item && to.snap.key && to.snap.key !== item.key
+        ? forPhoto(
+            to.snap.s,
+            photoFieldsOf(to.snap.scope),
+            to.snap.own[item.key],
+          )
+        : to.snap.s,
+    );
     setHidden(to.snap.hidden);
     setMetaMode(to.snap.metaMode);
     setMetaKeep(to.snap.metaKeep);
@@ -670,9 +907,28 @@ function ImageToolView({ tool, preset, tools, lang = "en" }: Props) {
 
   /** What changed between two steps, in a few words ("Watermark added", "Crop hidden") */
   function describe(a: Snap, b: Snap): string {
-    const name = (id: ChangeId) => T(CHANGE_NAME[id]);
     const out: string[] = [];
+    // A change made for one photo of several says which
+    const photo =
+      items.length > 1
+        ? items.find((x) => x.key === b.key)?.file.name
+        : undefined;
+    const name = (id: ChangeId) =>
+      photo && b.scope.has(id)
+        ? T("{name} ({photo})", { name: T(CHANGE_NAME[id]), photo })
+        : T(CHANGE_NAME[id]);
     for (const id of CHANGES) {
+      if (a.scope.has(id) !== b.scope.has(id) && id !== "faces") {
+        out.push(
+          T(
+            b.scope.has(id) ? "{name}: this photo only" : "{name}: all photos",
+            {
+              name: T(CHANGE_NAME[id]),
+            },
+          ),
+        );
+        continue;
+      }
       if (a.hidden.has(id) !== b.hidden.has(id)) {
         out.push(
           T(b.hidden.has(id) ? "{name} hidden" : "{name} shown", {
@@ -701,8 +957,6 @@ function ImageToolView({ tool, preset, tools, lang = "en" }: Props) {
       out.push(T("Quality {n}", { n: b.s.quality }));
     if (a.metaMode !== b.metaMode || a.metaKeep !== b.metaKeep)
       out.push(T("Metadata choice"));
-    if (!out.length && JSON.stringify(a.s) !== JSON.stringify(b.s))
-      out.push(T("Settings changed"));
     if (!out.length) return "";
     return out.length > 1 ? `${out[0]} +${out.length - 1}` : out[0]!;
   }
@@ -990,9 +1244,15 @@ function ImageToolView({ tool, preset, tools, lang = "en" }: Props) {
    * get their own centred crop at that ratio, so different shapes all come out right.
    */
   function settingsFor(it: Item): Settings {
-    const r = RATIOS.find((x) => x.id === eff.ratio);
-    if (!r || it.key === item?.key) return eff;
-    return { ...eff, crop: centeredCrop(it.w, it.h, r.r) };
+    if (it.key === item?.key) return eff;
+    // The shared changes, this photo's own ones, without the hidden ones
+    const st = withoutHidden(
+      forPhoto(s, photoFields, own.current[it.key]),
+      hidden,
+    );
+    const r = RATIOS.find((x) => x.id === st.ratio);
+    if (!r || photoFields.includes("crop")) return st;
+    return { ...st, crop: centeredCrop(it.w, it.h, r.r) };
   }
 
   /**
@@ -1804,6 +2064,22 @@ function ImageToolView({ tool, preset, tools, lang = "en" }: Props) {
   }
 
   function simpleControls(slug = tool): ReactNode {
+    // An effect tool whose effect is off (removed, or not on this photo): offer to add it
+    const off = effectOff(slug);
+    if (off)
+      return (
+        <div className="ctl fx-add">
+          <small className="muted">{T("Not on this photo.")}</small>
+          <button
+            type="button"
+            className="btn sm acc"
+            onClick={() => pickTool(slug)}
+          >
+            <Icon name="plus" />
+            {T("Add {name}", { name: off })}
+          </button>
+        </div>
+      );
     switch (slug) {
       case "compress":
         return (
@@ -2128,6 +2404,164 @@ function ImageToolView({ tool, preset, tools, lang = "en" }: Props) {
   const many = items.length > 1;
   const dlDisabled = busy || zipping || !outForItem;
 
+  const [ow, oh] = item ? outDims(item.w, item.h, s) : [0, 0];
+  const [bw, bh] = item ? baseDims(item.w, item.h, s) : [0, 0];
+  /** The changes on this image, in the order they're applied */
+  const changeLabel = (id: ChangeId): string => {
+    switch (id) {
+      case "crop":
+        // Without a photo there's no size to show yet
+        if (!item) return T("Crop");
+        return T("Crop {w} × {h}", {
+          w: Math.round((s.crop?.w ?? 0) * (item?.w ?? 0)),
+          h: Math.round((s.crop?.h ?? 0) * (item?.h ?? 0)),
+        });
+      case "rotate":
+        return T("Rotate {n}°", { n: s.rotate });
+      case "resize":
+        return item && (ow !== bw || oh !== bh)
+          ? T("Resize {w} × {h}", { w: ow, h: oh })
+          : T("Resize");
+      case "target":
+        return T("Fit ≤ {n} KB", { n: s.target ?? 0 });
+      case "bg":
+        return s.bg?.mode === "remove"
+          ? T("Remove background")
+          : s.bg?.mode === "blur"
+            ? T("Blur background")
+            : T("New background");
+      case "regions":
+        return T("Blur {n} areas", { n: s.redact?.regions.length ?? 0 });
+      case "filter":
+        return T(FILTERS.find((f) => f.id === s.filter)?.label ?? "Filter");
+      case "sheet":
+        return T("Print sheet {name}", {
+          name: T(SHEETS.find((x) => x.id === s.sheet)?.label ?? ""),
+        });
+      default:
+        return T(CHANGE_NAME[id]);
+    }
+  };
+  const changes = CHANGES.filter((id) => clearOf(id, s));
+  function removeChange(id: ChangeId) {
+    const c = clearOf(id, s);
+    if (c) set(c);
+    if (hidden.has(id))
+      setHidden((h) => new Set([...h].filter((x) => x !== id)));
+  }
+  function toggleChange(id: ChangeId) {
+    setHidden((h) => {
+      const n = new Set(h);
+      if (n.has(id)) n.delete(id);
+      else n.add(id);
+      return n;
+    });
+  }
+  /** Show a change's controls: the tool's own panel, or its section under "More edits" */
+  function openChange(id: ChangeId) {
+    const sec = CHANGE_SEC[id];
+    if (focusMeta && SECTION[focus] === sec) {
+      document.querySelector(".insp")?.scrollTo({ top: 0, behavior: "smooth" });
+      return;
+    }
+    setMoreOpen(true);
+    setTimeout(
+      () =>
+        document
+          .getElementById(`ws-${sec}`)
+          ?.scrollIntoView({ block: "start", behavior: "smooth" }),
+      60,
+    );
+  }
+  /** Back to how this tool starts: every change off (Undo brings them back) */
+  function startOver() {
+    setS(defaults(focusMeta ? focus : tool));
+    setHidden(new Set());
+    setMetaMode("all");
+    setMetaKeep(new Set());
+  }
+
+  /**
+   * Simple mode shows only this tool's controls, so changes made elsewhere (in Advanced) are
+   * listed here: nothing changes the file without being on screen. Undo and redo too.
+   */
+  function alsoApplied(): ReactNode {
+    const others = changes.filter((id) => CHANGE_SEC[id] !== SECTION[tool]);
+    if (!others.length && !canUndo && !canRedo) return null;
+    return (
+      <div className="ctl also">
+        {others.length > 0 && (
+          <>
+            <span className="lbl">{T("Also applied")}</span>
+            <ul className="also-list">
+              {others.map((id) => (
+                <li key={id} className={hidden.has(id) ? "off" : undefined}>
+                  {changeLabel(id)}
+                  <button
+                    type="button"
+                    className="ch-x"
+                    aria-label={T("Remove {name}", { name: changeLabel(id) })}
+                    title={T("Remove")}
+                    onClick={() => removeChange(id)}
+                  >
+                    <Icon name="x" />
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </>
+        )}
+        <div className="also-acts">
+          <button
+            type="button"
+            className="iconbtn"
+            onClick={undo}
+            disabled={!canUndo}
+            aria-label={T("Undo")}
+            title={T("Undo ({keys})", { keys: formatKeys("mod+Z") })}
+          >
+            <Icon name="undo" />
+          </button>
+          <button
+            type="button"
+            className="iconbtn"
+            onClick={redo}
+            disabled={!canRedo}
+            aria-label={T("Redo")}
+            title={T("Redo ({keys})", { keys: formatKeys("mod+shift+Z") })}
+          >
+            <Icon name="redo" />
+          </button>
+          {others.length > 0 && (
+            <button type="button" className="linkbtn" onClick={openAdvanced}>
+              {T("Edit in Advanced")}
+            </button>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  /** For tools that are one effect: its name when it's off, else null */
+  function effectOff(slug: string): string | null {
+    const on: Record<string, unknown> = {
+      watermark: s.mark,
+      "add-text": s.text,
+      adjust: s.adjust,
+      border: s.frame,
+      "extend-canvas": s.frame,
+      beautify: s.frame,
+      blur: s.redact,
+      "face-blur": s.redact,
+      "remove-bg": s.bg,
+      "change-bg": s.bg,
+      "passport-photo": s.passport,
+      signature: s.ink,
+    };
+    if (!(slug in on) || on[slug]) return null;
+    return tools.find((t) => t.slug === slug)?.name ?? slug;
+  }
+
   /* ---------- Empty state ---------- */
   const emptyState = (
     <div className="dropcard lg">
@@ -2210,6 +2644,7 @@ function ImageToolView({ tool, preset, tools, lang = "en" }: Props) {
       </div>
       <div className="controls">
         {simpleControls()}
+        {alsoApplied()}
         <div className={`result${busy ? " working" : ""}`} aria-live="polite">
           {resultSummary()}
           <div className="acts">
@@ -2275,83 +2710,6 @@ function ImageToolView({ tool, preset, tools, lang = "en" }: Props) {
         {body}
       </section>
     );
-
-  const [ow, oh] = item ? outDims(item.w, item.h, s) : [0, 0];
-  const [bw, bh] = item ? baseDims(item.w, item.h, s) : [0, 0];
-  /** The changes on this image, in the order they're applied */
-  const changeLabel = (id: ChangeId): string => {
-    switch (id) {
-      case "crop":
-        // Without a photo there's no size to show yet
-        if (!item) return T("Crop");
-        return T("Crop {w} × {h}", {
-          w: Math.round((s.crop?.w ?? 0) * (item?.w ?? 0)),
-          h: Math.round((s.crop?.h ?? 0) * (item?.h ?? 0)),
-        });
-      case "rotate":
-        return T("Rotate {n}°", { n: s.rotate });
-      case "resize":
-        return item && (ow !== bw || oh !== bh)
-          ? T("Resize {w} × {h}", { w: ow, h: oh })
-          : T("Resize");
-      case "target":
-        return T("Fit ≤ {n} KB", { n: s.target ?? 0 });
-      case "bg":
-        return s.bg?.mode === "remove"
-          ? T("Remove background")
-          : s.bg?.mode === "blur"
-            ? T("Blur background")
-            : T("New background");
-      case "regions":
-        return T("Blur {n} areas", { n: s.redact?.regions.length ?? 0 });
-      case "filter":
-        return T(FILTERS.find((f) => f.id === s.filter)?.label ?? "Filter");
-      case "sheet":
-        return T("Print sheet {name}", {
-          name: T(SHEETS.find((x) => x.id === s.sheet)?.label ?? ""),
-        });
-      default:
-        return T(CHANGE_NAME[id]);
-    }
-  };
-  const changes = CHANGES.filter((id) => clearOf(id, s));
-  function removeChange(id: ChangeId) {
-    const c = clearOf(id, s);
-    if (c) set(c);
-    if (hidden.has(id))
-      setHidden((h) => new Set([...h].filter((x) => x !== id)));
-  }
-  function toggleChange(id: ChangeId) {
-    setHidden((h) => {
-      const n = new Set(h);
-      if (n.has(id)) n.delete(id);
-      else n.add(id);
-      return n;
-    });
-  }
-  /** Show a change's controls: the tool's own panel, or its section under "More edits" */
-  function openChange(id: ChangeId) {
-    const sec = CHANGE_SEC[id];
-    if (focusMeta && SECTION[focus] === sec) {
-      document.querySelector(".insp")?.scrollTo({ top: 0, behavior: "smooth" });
-      return;
-    }
-    setMoreOpen(true);
-    setTimeout(
-      () =>
-        document
-          .getElementById(`ws-${sec}`)
-          ?.scrollIntoView({ block: "start", behavior: "smooth" }),
-      60,
-    );
-  }
-  /** Back to how this tool starts: every change off (Undo brings them back) */
-  function startOver() {
-    setS(defaults(focusMeta ? focus : tool));
-    setHidden(new Set());
-    setMetaMode("all");
-    setMetaKeep(new Set());
-  }
 
   /** An effect section in the workspace that can be switched on and off. */
   const fxSection = (
@@ -2580,22 +2938,35 @@ function ImageToolView({ tool, preset, tools, lang = "en" }: Props) {
         aria-label={T("Advanced workspace")}
       >
         <div className="ws-top">
-          <button className="btn sm" type="button" onClick={closeAdvanced}>
-            <Icon name="back" />
-            <span className="hide-sm">
-              {editor && !focusMeta ? T("Home") : T("Simple mode")}
-            </span>
-          </button>
+          {brand ? (
+            <a className="ws-brand" href={brand.home} title={T("Home")}>
+              <span
+                className="wm-mark"
+                aria-hidden="true"
+                dangerouslySetInnerHTML={{ __html: brand.mark }}
+              />
+              <span className="wm-text hide-sm">
+                <span className="wm-a">{brand.a}</span>
+                <span className="wm-b">{brand.b}</span>
+              </span>
+            </a>
+          ) : (
+            <a className="btn sm" href={lp(lang, "/")}>
+              {T("Home")}
+            </a>
+          )}
           <span className="title">
             {focusMeta?.name ?? T("Image editor")}{" "}
             <small>
               {items.length
-                ? `${items.length} file${items.length > 1 ? "s" : ""}`
-                : T("No files yet")}
+                ? T(items.length > 1 ? "{n} photos" : "{n} photo", {
+                    n: items.length,
+                  })
+                : T("No photos yet")}
             </small>
           </span>
           <span className="right">
-            <span className="undo-redo" role="group" aria-label={T("History")}>
+            <span className="ws-hist" role="group" aria-label={T("History")}>
               <button
                 type="button"
                 className="iconbtn"
@@ -2616,7 +2987,63 @@ function ImageToolView({ tool, preset, tools, lang = "en" }: Props) {
               >
                 <Icon name="redo" />
               </button>
+              <span className="hist-pop-wrap">
+                <button
+                  type="button"
+                  className="btn sm hist-btn"
+                  aria-expanded={histOpen}
+                  aria-haspopup="true"
+                  disabled={hist.current.length < 2}
+                  onClick={() => setHistOpen((o) => !o)}
+                >
+                  <Icon name="clock" />
+                  <span className="hide-sm">{T("History")}</span>
+                  <Icon name="down" className="ico caret" />
+                </button>
+                {histOpen && (
+                  <div
+                    className="hist-pop"
+                    role="dialog"
+                    aria-label={T("History")}
+                  >
+                    <ol className="hist-list">
+                      {hist.current.map((h, i) => (
+                        <li
+                          key={i}
+                          className={i > at.current ? "ahead" : undefined}
+                        >
+                          <button
+                            type="button"
+                            aria-current={i === at.current ? "step" : undefined}
+                            onClick={() => goTo(i)}
+                          >
+                            {h.label}
+                          </button>
+                        </li>
+                      ))}
+                    </ol>
+                  </div>
+                )}
+              </span>
             </span>
+            {focusMeta && (
+              <span
+                className="seg mode-seg"
+                role="group"
+                aria-label={T("Mode")}
+              >
+                <button
+                  type="button"
+                  aria-pressed="false"
+                  onClick={closeAdvanced}
+                >
+                  {T("Simple")}
+                </button>
+                <button type="button" aria-pressed="true">
+                  {T("Advanced")}
+                </button>
+              </span>
+            )}
             <button
               className="btn sm hide-sm"
               type="button"
@@ -2642,13 +3069,16 @@ function ImageToolView({ tool, preset, tools, lang = "en" }: Props) {
               onClick={() => void download()}
               disabled={dlDisabled}
               title={many ? T("Download every file in one zip") : T("Download")}
+              aria-label={many ? T("Zip of {n}", { n: items.length }) : T("Download")}
             >
               <Icon name="download" />
-              {zipping
-                ? T("Preparing…")
-                : many
-                  ? T("Zip of {n}", { n: items.length })
-                  : T("Download")}
+              <span className="hide-sm">
+                {zipping
+                  ? T("Preparing…")
+                  : many
+                    ? T("Zip of {n}", { n: items.length })
+                    : T("Download")}
+              </span>
             </button>
           </span>
         </div>
@@ -2715,6 +3145,13 @@ function ImageToolView({ tool, preset, tools, lang = "en" }: Props) {
                     onClick={() => setCur(i)}
                   >
                     <img src={it.url} alt="" />
+                    {many && hasOwn(it.key) && (
+                      <i
+                        className="own-dot"
+                        aria-hidden="true"
+                        title={T("Has changes of its own")}
+                      />
+                    )}
                     <span>
                       {it.file.name}
                       <small>
@@ -2819,6 +3256,35 @@ function ImageToolView({ tool, preset, tools, lang = "en" }: Props) {
                         >
                           {name}
                         </button>
+                        {many && (
+                          <button
+                            type="button"
+                            className={`ch-scope${scope.has(id) ? " one" : ""}`}
+                            aria-label={
+                              scope.has(id)
+                                ? T(
+                                    "{name}: this photo only. Use for all photos",
+                                    { name },
+                                  )
+                                : T(
+                                    "{name}: all photos. Use for this photo only",
+                                    { name },
+                                  )
+                            }
+                            title={
+                              scope.has(id)
+                                ? T(
+                                    "Only this photo. Click to use it for all photos",
+                                  )
+                                : T(
+                                    "All photos. Click to use it for this photo only",
+                                  )
+                            }
+                            onClick={() => setChangeScope(id, !scope.has(id))}
+                          >
+                            {scope.has(id) ? T("This photo") : T("All")}
+                          </button>
+                        )}
                         <button
                           type="button"
                           className="ch-x"
@@ -2837,35 +3303,13 @@ function ImageToolView({ tool, preset, tools, lang = "en" }: Props) {
                   {T("No changes yet. What you add shows up here.")}
                 </small>
               )}
+              {many && item && hasOwn(item.key) && (
+                <button type="button" className="btn sm" onClick={copyToAll}>
+                  <Icon name="copy" />
+                  {T("Copy this photo's changes to all photos")}
+                </button>
+              )}
             </section>
-            {hist.current.length > 1 && (
-              <details className="more history">
-                <summary>
-                  <Icon name="clock" className="ico" />
-                  {T("History")}
-                  <small>
-                    {T("{n} steps", { n: hist.current.length - 1 })}
-                  </small>
-                  <Icon name="down" className="ico caret" />
-                </summary>
-                <ol className="hist-list">
-                  {hist.current.map((h, i) => (
-                    <li
-                      key={i}
-                      className={i > at.current ? "ahead" : undefined}
-                    >
-                      <button
-                        type="button"
-                        aria-current={i === at.current ? "step" : undefined}
-                        onClick={() => goTo(i)}
-                      >
-                        {h.label}
-                      </button>
-                    </li>
-                  ))}
-                </ol>
-              </details>
-            )}
             <details
               className="more"
               open={moreOpen}
@@ -2890,7 +3334,11 @@ function ImageToolView({ tool, preset, tools, lang = "en" }: Props) {
                   {resultSummary()}
                 </div>
                 {many && (
-                  <small className="muted">{T("Applied to every file.")}</small>
+                  <small className="muted">
+                    {scope.size && changes.some((id) => scope.has(id))
+                      ? T("Changes marked All apply to every photo.")
+                      : T("Applied to every file.")}
+                  </small>
                 )}
               </section>
             )}
