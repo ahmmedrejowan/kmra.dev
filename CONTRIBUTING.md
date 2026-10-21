@@ -20,14 +20,16 @@ the browser: if an idea needs a server, say so in the issue so we can talk it th
 
 ## Pull requests
 
-1. Fork the repository and create a branch from `main`.
+1. Fork the repository and create a branch from `main`, named by kind: `feat/…`, `fix/…`,
+   `docs/…`, `chore/…`, `ci/…`, `test/…` or `refactor/…`.
 2. Set up as described in [docs/development.md](docs/development.md).
 3. Make your change, keeping to the rules in that guide: everything runs in the browser, no
    requests to other hosts, interface text through `T()` with a Bangla translation, heavy work in
    workers.
 4. Add or update an end-to-end test that checks the real output (see
    [docs/testing.md](docs/testing.md)).
-5. Run these locally (there's no CI on this repository):
+5. Sign your commits (`main` accepts only signed commits).
+6. Check locally if you can:
 
    ```bash
    pnpm check
@@ -35,9 +37,13 @@ the browser: if an idea needs a server, say so in the issue so we can talk it th
    pnpm test:e2e
    ```
 
-6. Open a pull request saying what changed and why, with a screenshot for visual changes.
+7. Open a pull request into `main` saying what changed and why, with a screenshot for visual
+   changes. GitHub Actions runs the same checks; a pull request is merged (squashed) once they
+   pass and it has been reviewed.
 
-Keep pull requests focused: one fix or feature each is easier to review.
+Keep pull requests focused: one fix or feature each is easier to review. Pull requests aren't
+deployed anywhere; the checks are what prove them. The whole flow is in
+[docs/workflow.md](docs/workflow.md).
 
 ## Licence
 

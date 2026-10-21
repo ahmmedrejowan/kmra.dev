@@ -75,11 +75,24 @@ export function appConfig(
   return {
     framework: "astro",
     buildCommand: "turbo run build",
-    // Skip the build (exit 0) when a push doesn't touch this app or the shared packages, so one
-    // push doesn't spend a deployment on every app (the free plan allows 100 a day). Runs in
-    // apps/<id>; exit 1 means "build".
+    // Only main is deployed. Pull request branches are checked by GitHub Actions instead, so they
+    // don't spend deployments (the free plan allows 100 a day, and every push starts one per app).
+    git: {
+      deploymentEnabled: {
+        "feat/**": false,
+        "fix/**": false,
+        "docs/**": false,
+        "chore/**": false,
+        "ci/**": false,
+        "test/**": false,
+        "refactor/**": false,
+        "dependabot/**": false,
+      },
+    },
+    // Skip the build (exit 0) on any branch but main, and on main when a push doesn't touch this
+    // app or the shared packages. Runs in apps/<id>; a non-zero exit means "build".
     ignoreCommand:
-      'git diff --quiet "${VERCEL_GIT_PREVIOUS_SHA:-HEAD^}" HEAD -- . ../../packages ../../pnpm-lock.yaml',
+      '[ "$VERCEL_GIT_COMMIT_REF" != "main" ] || git diff --quiet "${VERCEL_GIT_PREVIOUS_SHA:-HEAD^}" HEAD -- . ../../packages ../../pnpm-lock.yaml',
     outputDirectory: "dist",
     cleanUrls: true,
     trailingSlash: false,

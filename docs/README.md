@@ -5,6 +5,11 @@
 - [Testing](testing.md): the Playwright end-to-end tests and how to write one
 - [Deployment](deployment.md): building the static sites and hosting them
 - [Privacy](privacy.md): how the "your files stay on your device" promise is kept
+- [Workflow](workflow.md): branches, pull requests, CI, deployment and signed commits
+- [Design](design.md): the look, pages, tools and writing style
+- [Translations](translations.md): where the words are, fixing one, adding a language
+
+What changed and when is in [CHANGELOG.md](../CHANGELOG.md).
 
 The [wiki](https://github.com/ahmmedrejowan/kmra.dev/wiki) has user guides: what each site does,
 Simple and Advanced modes, and common questions.

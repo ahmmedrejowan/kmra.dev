@@ -16,7 +16,11 @@ const CHROME = [
 
 test.use({ channel: "chrome" });
 test.describe.configure({ timeout: 120_000 });
-test.beforeEach(() => test.skip(!CHROME, "needs Google Chrome"));
+test.beforeEach(() => {
+  test.skip(!CHROME, "needs Google Chrome");
+  // CI machines have Chrome but no GPU, so there's no hardware encoder to test
+  test.skip(!!process.env.CI, "needs a machine with hardware video encoders");
+});
 
 // 6 s at 1280×720: 0.5 MB asked for 64 kbps sound, 1.5 MB 96 kbps; 0.3 MB is below the
 // smallest target, so it aims for 0.5 MB and says so

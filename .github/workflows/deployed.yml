@@ -1,0 +1,34 @@
+name: Deployed
+
+# After Vercel finishes a production deployment of a site, tell the IndexNow search engines
+# (Bing, Yandex and others) about its pages, read from the live sitemap. Vercel reports each
+# deployment to GitHub with the environment "Production – <project>", and the projects are
+# named after the sites (imgtool, pdftool… and kmra for the hub).
+on:
+  deployment_status:
+
+permissions:
+  contents: read
+
+jobs:
+  indexnow:
+    name: Tell search engines
+    if: >-
+      github.event.deployment_status.state == 'success' &&
+      startsWith(github.event.deployment.environment, 'Production')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: IndexNow
+        env:
+          ENVIRONMENT: ${{ github.event.deployment.environment }}
+        run: |
+          site="${ENVIRONMENT##* }"
+          case "$site" in
+            imgtool|pdftool|qrtool|devtool|ocrtool|vidtool|audiotool|calctool|colortool|musictool|kmra)
+              node scripts/indexnow.ts "$site" ;;
+            *) echo "Not a kmra.dev site: $ENVIRONMENT" ;;
+          esac

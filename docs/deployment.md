@@ -10,7 +10,7 @@ that serves files. The official sites run on Vercel, one project per site.
 - Settings come from `apps/<site>/vercel.ts`, which calls `appConfig()` from `@kmra/config`:
   security headers, the Content Security Policy, caching and clean URLs. It also sets an ignore
   command, so a site only rebuilds when its folder, `packages/` or the lockfile changed.
-- Pushing to `main` deploys to production; other branches get preview deployments.
+- Only `main` is deployed. Pull request branches aren't (see [workflow.md](workflow.md)).
 - Node 24.
 
 ## Hosting elsewhere

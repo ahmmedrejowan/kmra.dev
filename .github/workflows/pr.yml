@@ -1,0 +1,65 @@
+name: Pull request
+
+# The gate. Nothing reaches main without this passing, so it's the thorough one: type checks,
+# formatting, every site built, and every tool tested in a real browser against the production
+# builds with their real headers. The end-to-end tests are split across three machines so the
+# whole thing takes minutes, not half an hour.
+#
+# Pull requests are never deployed: Vercel builds only main (see packages/config/src/vercel.ts),
+# so this is where a change is proved, not on a preview site.
+on:
+  pull_request:
+
+concurrency:
+  group: pr-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  types:
+    name: Types and format
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm check
+      - run: pnpm format:check
+
+  e2e:
+    name: End to end (${{ matrix.shard }} of 3)
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      # The video and audio test files are generated with ffmpeg on each run
+      - name: ffmpeg
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg
+      - name: Browser
+        run: pnpm exec playwright install --with-deps chromium
+      - run: pnpm build
+      - name: End to end
+        run: pnpm test:e2e:only --shard=${{ matrix.shard }}/3
+      - name: Report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report-${{ matrix.shard }}
+          path: test-results/
+          retention-days: 7

@@ -10,6 +10,7 @@
   </p>
 
 [![License](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](LICENSE)
+[![CI](https://github.com/ahmmedrejowan/kmra.dev/actions/workflows/ci.yml/badge.svg)](https://github.com/ahmmedrejowan/kmra.dev/actions/workflows/ci.yml)
 [![Sites](https://img.shields.io/badge/Sites-10-18181b.svg)](https://kmra.dev)
 [![Tools](https://img.shields.io/badge/Tools-154-18181b.svg)](https://kmra.dev/tools)
 [![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178c6.svg)](https://www.typescriptlang.org/)
@@ -203,6 +204,11 @@ would fail. They check real output rather than that a page loaded: file types an
 pixel sizes, page counts, zip contents, QR codes read back, and how damaged or unusual files are
 handled.
 
+Every pull request runs the type checks, the formatting check and the whole end-to-end suite
+(split across three machines) on GitHub Actions, and nothing reaches `main` without all of them
+passing. The same checks run again on `main` after each merge, which is what the CI badge
+reports.
+
 What they don't cover yet, honestly: they run in Chromium only, they use generated sample files
 rather than real photos and recordings, and the depth varies from tool to tool.
 [docs/testing.md](docs/testing.md) explains how they work and how to add one.
@@ -229,9 +235,13 @@ Contributions are welcome. [CONTRIBUTING.md](CONTRIBUTING.md) explains what a ch
 like; open an issue first if it's more than a small fix.
 
 1. Fork the repository
-2. Branch off `main`
+2. Branch off `main` (`git checkout -b fix/the-thing`)
 3. `pnpm check && pnpm test:e2e`
-4. Commit, push, and open a pull request
+4. Commit (signed), push, and open a pull request **against `main`**
+
+`main` is what's live: every site deploys from it. Nobody pushes to it directly; pull requests
+are squashed in once the checks pass. [docs/workflow.md](docs/workflow.md) has the whole flow,
+from branch names to how deployment works.
 
 Every tool runs in the browser and never contacts another host; a change that needs a server
 should start as an issue.
