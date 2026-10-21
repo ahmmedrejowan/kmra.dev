@@ -1,0 +1,17 @@
+name: Docs or wiki
+description: Something in the README, docs or wiki is wrong, missing or unclear
+labels: [documentation]
+body:
+  - type: input
+    id: where
+    attributes:
+      label: Where
+      placeholder: docs/development.md, the wiki's FAQ…
+    validations:
+      required: true
+  - type: textarea
+    id: what
+    attributes:
+      label: What should change
+    validations:
+      required: true

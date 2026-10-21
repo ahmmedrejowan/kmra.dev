@@ -265,7 +265,9 @@ the license: please use your own for a copy you run.
 
 ## Community
 
+- [Discussions](https://github.com/ahmmedrejowan/kmra.dev/discussions) - ask anything, share ideas
 - [Issues](https://github.com/ahmmedrejowan/kmra.dev/issues) - something wrong, or an idea
+- [Support](SUPPORT.md) - where to go for what
 - [Wiki](https://github.com/ahmmedrejowan/kmra.dev/wiki) - how to use the sites
 - [Security](SECURITY.md) - please report privately rather than opening an issue
 - [Privacy](docs/privacy.md) - how files stay on your device

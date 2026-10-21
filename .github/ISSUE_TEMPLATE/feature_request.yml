@@ -1,12 +1,26 @@
 name: Tool or feature idea
-description: Suggest a new tool or a change to one
+description: Suggest a new tool, or a change to one
 labels: [idea]
 body:
-  - type: input
+  - type: dropdown
     id: site
     attributes:
       label: Site
-      placeholder: ImgTool, PDFTool, a new site…
+      options:
+        - ImgTool (images)
+        - PDFTool (PDFs)
+        - VidTool (video)
+        - AudioTool (audio)
+        - QRTool (QR codes and barcodes)
+        - OCRTool (text from images)
+        - DevTool (developer tools)
+        - CalcTool (calculators)
+        - ColorTool (colours)
+        - MusicTool (music)
+        - kmra.dev (the hub)
+        - A new site
+    validations:
+      required: true
   - type: textarea
     id: job
     attributes:
@@ -15,7 +29,14 @@ body:
     validations:
       required: true
   - type: textarea
-    id: notes
+    id: today
     attributes:
-      label: Anything else
-      description: Similar tools you've used, formats, examples
+      label: How you do it today
+      description: Other tools you've used, and what's missing in them
+  - type: checkboxes
+    id: local
+    attributes:
+      label: Runs in the browser
+      description: Every kmra.dev tool works on the device, with no server.
+      options:
+        - label: As far as I know, this can work without uploading files anywhere

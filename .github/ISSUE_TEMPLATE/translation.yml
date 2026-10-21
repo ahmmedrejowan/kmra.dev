@@ -1,0 +1,28 @@
+name: Translation
+description: A new language, or a fix to a translation
+labels: [translation]
+body:
+  - type: input
+    id: language
+    attributes:
+      label: Language
+      placeholder: Bangla, Hindi, Spanish…
+    validations:
+      required: true
+  - type: dropdown
+    id: kind
+    attributes:
+      label: What kind
+      options:
+        - A wrong or awkward translation
+        - Text that isn't translated
+        - A new language I can help with
+    validations:
+      required: true
+  - type: textarea
+    id: where
+    attributes:
+      label: Where, and what it should say
+      description: The page address, the text as it is, and what it should be
+    validations:
+      required: true

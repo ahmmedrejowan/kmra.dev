@@ -2,6 +2,30 @@ name: Bug report
 description: A tool doesn't work as expected
 labels: [bug]
 body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting. Please don't attach private files: describe them instead, or share a
+        sample that's fine to make public. Security problems go to the
+        [private report form](https://github.com/ahmmedrejowan/kmra.dev/security/advisories/new).
+  - type: dropdown
+    id: site
+    attributes:
+      label: Site
+      options:
+        - ImgTool (images)
+        - PDFTool (PDFs)
+        - VidTool (video)
+        - AudioTool (audio)
+        - QRTool (QR codes and barcodes)
+        - OCRTool (text from images)
+        - DevTool (developer tools)
+        - CalcTool (calculators)
+        - ColorTool (colours)
+        - MusicTool (music)
+        - kmra.dev (the hub)
+    validations:
+      required: true
   - type: input
     id: page
     attributes:
@@ -15,8 +39,21 @@ body:
     attributes:
       label: What happened
       description: What you did, what you expected, and what happened instead
+      placeholder: |
+        1. Added a 4 MB HEIC photo
+        2. Chose "Under 200 KB"
+        3. The result stayed at "Working…"
     validations:
       required: true
+  - type: dropdown
+    id: mode
+    attributes:
+      label: Mode
+      description: Image tools only
+      options:
+        - Simple
+        - Advanced
+        - Not an image tool
   - type: input
     id: browser
     attributes:
@@ -27,5 +64,11 @@ body:
   - type: textarea
     id: file
     attributes:
-      label: Sample file
-      description: If it depends on a file, describe it (type, size). Attach one only if it's fine to share publicly.
+      label: The file
+      description: Type, size, where it came from (a phone camera, a scanner, an app). Attach one only if it's fine to share publicly.
+  - type: textarea
+    id: console
+    attributes:
+      label: Errors in the browser console
+      description: Optional. Open the developer tools (F12), then the Console tab, and paste any red lines.
+      render: text
