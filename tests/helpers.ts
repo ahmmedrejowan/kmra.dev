@@ -23,31 +23,34 @@ export const hasLocal = (name: string) => existsSync(local(name));
  * `page` that fails the test on uncaught page errors and console errors, so a broken island or a
  * blocked request (CSP) can't pass silently. Known harmless messages can be allowed per test.
  */
+/** A quick navigation and locator wait, to tell a working page from a stuck one */
+async function responds(page: Page): Promise<boolean> {
+  try {
+    await page.goto("/robots.txt", {
+      timeout: 10_000,
+      waitUntil: "domcontentloaded",
+    });
+    await page.locator("body").waitFor({ timeout: 5_000 });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 export const test = base.extend<{ allowConsole: RegExp[] }>({
   allowConsole: [[], { option: true }],
-  page: async ({ page, allowConsole, browserName, baseURL }, use) => {
-    // Firefox on Linux (CI) now and then loses track of a navigation: the page loads and renders,
-    // but Playwright hears nothing back and page.goto waits out the test's timeout (traces show
-    // the finished page). There, a navigation that hasn't answered in 20 s asks the page where
-    // it is, and goes on if it's already there; otherwise it navigates once more.
+  page: async ({ page: first, allowConsole, browserName }, use) => {
+    // Firefox on Linux (CI) now and then gives a new page whose first navigation Playwright
+    // never hears back from: the page loads and renders, but page.goto and every locator wait
+    // until the test times out (the traces show the finished page). The retry, on a fresh page,
+    // always works. So in Firefox each page is tried first, and swapped for a new one if stuck.
+    let page = first;
     if (browserName === "firefox") {
-      const goto = page.goto.bind(page);
-      page.goto = async (url, opts) => {
-        const options = { waitUntil: "domcontentloaded" as const, ...opts };
-        try {
-          return await goto(url, { timeout: 20_000, ...options });
-        } catch (e) {
-          if (!(e instanceof Error) || !/Timeout/i.test(e.message)) throw e;
-          const want = new URL(url, baseURL);
-          const here = await Promise.race([
-            page.evaluate(() => [location.href, document.readyState]),
-            new Promise<null>((r) => setTimeout(() => r(null), 5_000)),
-          ]).catch(() => null);
-          if (here && here[0] === want.href && here[1] !== "loading")
-            return null;
-          return goto(url, options);
-        }
-      };
+      for (let i = 0; i < 3 && !(await responds(page)); i++) {
+        const fresh = await page.context().newPage();
+        await page.close().catch(() => {});
+        page = fresh;
+      }
     }
     const errors: string[] = [];
     page.on("pageerror", (e) => errors.push(`pageerror: ${e.message}`));
