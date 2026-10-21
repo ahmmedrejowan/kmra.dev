@@ -34,8 +34,8 @@ test("rail names every tool, and the page's tool opens with its own panel", asyn
   await expect(ws.locator(".ws-tool h3")).toHaveText("Compress");
   await expect(ws.locator(".ws-tool")).toContainText("Exact size");
   // Other edits are folded away, with nothing on yet
-  await expect(ws.locator(".insp .more")).not.toHaveAttribute("open", "");
-  await expect(ws.locator(".insp .more summary small")).toHaveCount(0);
+  await expect(ws.locator(".insp .more:not(.history)")).not.toHaveAttribute("open", "");
+  await expect(ws.locator(".insp .more:not(.history) summary small")).toHaveCount(0);
 });
 
 test("Convert from the Compress workspace gives the chosen format, even when bigger", async ({ page }) => {
@@ -70,7 +70,7 @@ test("Strip metadata with other edits on says everything goes, and can clear the
   await pick(ws, "Watermark");
   await expect(ws.locator(".ws-tool h3")).toHaveText("Watermark");
   await pick(ws, "Strip metadata");
-  await expect(ws.locator(".insp .more summary small")).toHaveText("1 on");
+  await expect(ws.locator(".insp .more:not(.history) summary small")).toHaveText("1 on");
   await expect(ws.locator(".meta-resave")).toContainText("saved again");
   await expect(ws.locator(".meta-count")).toHaveText("Removing 14 of 14 fields");
   await ws.getByRole("button", { name: "Clear other edits" }).click();
@@ -113,4 +113,46 @@ test("the editor opened for a tool goes back to that tool's page with the files"
   await expect(page).toHaveURL(/\/bn\/compress$/);
   await expect(page.locator(".controls .result")).toContainText(/JPEG/);
   await expect(page.locator(".filebar .fchip").first()).toContainText("photo.jpg");
+});
+
+test("changes can be hidden, removed, undone and redone; history jumps; a refresh keeps them", async ({ page }) => {
+  const ws = await workspace(page, "/compress", "photo.jpg");
+  const list = ws.locator(".change-list li");
+  await pick(ws, "Watermark");
+  await pick(ws, "Crop");
+  await ws.locator(".ws-tool").getByRole("button", { name: "1:1", exact: true }).click();
+  await expect(list).toHaveText(["Crop 1200 × 1200", "Watermark"]);
+  await expect(ws).toContainText(/1200 × 1200, JPEG/);
+  // Hide the crop: still listed, left out of the result
+  await ws.getByRole("button", { name: "Hide Crop 1200 × 1200" }).click();
+  await expect(list.first()).toHaveClass("off");
+  await expect(ws).toContainText(/1600 × 1200, JPEG/);
+  // History lists every step, the last one current
+  await ws.locator(".history summary").click();
+  await expect(ws.locator(".hist-list button")).toHaveText(["Start", "Watermark added", "Crop added", "Crop hidden"]);
+  await expect(ws.locator(".hist-list [aria-current]")).toHaveText("Crop hidden");
+  // Undo twice (button, then keyboard), redo once. The test browser reports Windows, so Ctrl
+  await ws.getByRole("button", { name: "Undo" }).click();
+  await expect(ws).toContainText(/1200 × 1200, JPEG/);
+  await page.locator("body").press("Control+z");
+  await expect(list).toHaveText(["Watermark"]);
+  await page.locator("body").press("Control+Shift+z");
+  await expect(list).toHaveText(["Crop 1200 × 1200", "Watermark"]);
+  // Jump to the start, then back to the end
+  await ws.locator(".hist-list button").first().click();
+  await expect(list).toHaveCount(0);
+  await ws.locator(".hist-list button").last().click();
+  await expect(list.first()).toHaveClass("off");
+  // Remove the watermark: a new step, and it's gone from the list
+  await ws.getByRole("button", { name: "Remove Watermark" }).click();
+  await expect(list).toHaveText(["Crop 1200 × 1200"]);
+  await expect(ws.locator(".hist-list [aria-current]")).toHaveText("Watermark removed");
+  // A refresh at /editor?t=crop brings the changes back (the photo needs adding again)
+  await expect(page).toHaveURL(/\/editor\?t=crop$/);
+  await page.reload();
+  await expect(page.locator(".ws .change-list li")).toHaveText(["Crop"]);
+  await expect(page.locator(".ws .change-list li").first()).toHaveClass("off");
+  // Start over clears them
+  await page.locator(".ws").getByRole("button", { name: "Start over" }).click();
+  await expect(page.locator(".ws .change-list li")).toHaveCount(0);
 });

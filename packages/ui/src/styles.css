@@ -11379,3 +11379,105 @@ select.bar-input {
 .stage:has(> .ws-empty) {
   background-image: none;
 }
+/* Workspace: undo / redo in the header */
+.undo-redo {
+  display: inline-flex;
+  gap: 2px;
+  margin-right: 4px;
+}
+.undo-redo .iconbtn:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+/* The changes on the image: show/hide, open, remove */
+.insp .ws-changes h3 small {
+  color: var(--muted);
+  font-weight: 500;
+}
+.change-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 2px;
+}
+.change-list li {
+  display: grid;
+  grid-template-columns: 30px 1fr 30px;
+  align-items: center;
+  border-radius: 8px;
+}
+.change-list li:hover {
+  background: var(--raise);
+}
+.change-list button {
+  border: 0;
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  cursor: pointer;
+}
+.change-list .ch-eye,
+.change-list .ch-x {
+  height: 30px;
+  display: grid;
+  place-items: center;
+  color: var(--muted);
+  border-radius: 7px;
+}
+.change-list .ch-eye:hover,
+.change-list .ch-x:hover {
+  color: var(--ink);
+}
+.change-list .ico {
+  width: 15px;
+  height: 15px;
+}
+.change-list .ch-name {
+  text-align: left;
+  font-size: 13.5px;
+  padding: 6px 4px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.change-list li.off .ch-name {
+  color: var(--muted);
+  text-decoration: line-through;
+}
+/* History: every step, the current one marked, later ones (redo) faded */
+.insp .history > summary small {
+  color: var(--muted);
+}
+.hist-list {
+  list-style: none;
+  margin: 0 0 12px;
+  padding: 0;
+  display: grid;
+  gap: 1px;
+  max-height: 240px;
+  overflow: auto;
+}
+.hist-list button {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  text-align: left;
+  font: inherit;
+  font-size: 13px;
+  color: var(--ink);
+  padding: 5px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.hist-list button:hover {
+  background: var(--raise);
+}
+.hist-list button[aria-current] {
+  background: var(--acc-soft);
+  color: var(--acc);
+  font-weight: 600;
+}
+.hist-list li.ahead button {
+  color: var(--muted);
+}

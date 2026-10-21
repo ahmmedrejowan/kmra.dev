@@ -110,6 +110,8 @@ export const SHORTCUTS: ShortcutGroup[] = [
       { keys: ["+", "-"], label: "Zoom in / out" },
       { keys: ["0"], label: "Fit to view" },
       { keys: ["1"], label: "Actual size (100%)" },
+      { keys: ["mod+Z"], label: "Undo" },
+      { keys: ["mod+shift+Z"], label: "Redo" },
       { keys: ["A"], label: "Switch Simple / Advanced" },
       { keys: ["Escape"], label: "Close the Advanced workspace" },
     ],

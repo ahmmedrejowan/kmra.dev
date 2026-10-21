@@ -3,6 +3,7 @@ import { lp, num, type Locale } from "@kmra/ui/lib/i18n";
 import {
   useCallback,
   useEffect,
+  useMemo,
   useRef,
   useState,
   type CSSProperties,
@@ -178,6 +179,127 @@ function outName(file: File, type: string, tool: string): string {
   );
 }
 
+/**
+ * The changes an image can have, in pipeline order. Each one can be hidden (left out of the
+ * result for now) or removed; `clearOf` says how to take it out of the settings, or null when
+ * it isn't on.
+ */
+const CHANGES = [
+  "crop",
+  "rotate",
+  "flip",
+  "resize",
+  "target",
+  "passport",
+  "bg",
+  "faces",
+  "ink",
+  "regions",
+  "adjust",
+  "filter",
+  "text",
+  "mark",
+  "frame",
+  "sheet",
+] as const;
+type ChangeId = (typeof CHANGES)[number];
+/** Each change's name in lists and the history */
+const CHANGE_NAME: Record<ChangeId, string> = {
+  crop: "Crop",
+  rotate: "Rotate",
+  flip: "Flip",
+  resize: "Resize",
+  target: "Size target",
+  passport: "ID photo",
+  bg: "Background",
+  faces: "Cover faces",
+  ink: "Signature cleanup",
+  regions: "Blur areas",
+  adjust: "Adjust",
+  filter: "Filter",
+  text: "Text",
+  mark: "Watermark",
+  frame: "Border",
+  sheet: "Print sheet",
+};
+/** The workspace section that sets each change */
+const CHANGE_SEC: Record<ChangeId, string> = {
+  crop: "crop",
+  rotate: "rotate",
+  flip: "rotate",
+  resize: "resize",
+  target: "compress",
+  passport: "passport",
+  bg: "background",
+  faces: "redact",
+  ink: "signature",
+  regions: "redact",
+  adjust: "look",
+  filter: "look",
+  text: "text",
+  mark: "watermark",
+  frame: "frame",
+  sheet: "resize",
+};
+function clearOf(id: ChangeId, s: Settings): Partial<Settings> | null {
+  switch (id) {
+    case "crop":
+      return s.crop ? { crop: null, ratio: null } : null;
+    case "rotate":
+      return s.rotate ? { rotate: 0 } : null;
+    case "flip":
+      return s.flipH || s.flipV ? { flipH: false, flipV: false } : null;
+    case "resize":
+      return s.w || s.h || s.size || s.form
+        ? { w: null, h: null, size: null, form: null }
+        : null;
+    case "target":
+      return s.target ? { target: null } : null;
+    case "passport":
+      return s.passport ? { passport: null } : null;
+    case "bg":
+      return s.bg ? { bg: null } : null;
+    case "faces":
+      return s.redact?.faces
+        ? {
+            redact: s.redact.regions.length
+              ? { ...s.redact, faces: false }
+              : null,
+          }
+        : null;
+    case "ink":
+      return s.ink ? { ink: null } : null;
+    case "regions":
+      return s.redact?.regions.length
+        ? { redact: s.redact.faces ? { ...s.redact, regions: [] } : null }
+        : null;
+    case "adjust":
+      return s.adjust && Object.values(s.adjust).some(Boolean)
+        ? { adjust: null }
+        : null;
+    case "filter":
+      return s.filter ? { filter: null } : null;
+    case "text":
+      return s.text && (s.text.top || s.text.bottom) ? { text: null } : null;
+    case "mark":
+      return s.mark ? { mark: null } : null;
+    case "frame":
+      return s.frame ? { frame: null } : null;
+    case "sheet":
+      return s.sheet ? { sheet: null } : null;
+  }
+}
+/** The settings with hidden changes left out: what's rendered and downloaded */
+function withoutHidden(s: Settings, hidden: Set<ChangeId>): Settings {
+  let out = s;
+  for (const id of CHANGES) {
+    if (!hidden.has(id)) continue;
+    const c = clearOf(id, out);
+    if (c) out = { ...out, ...c };
+  }
+  return out;
+}
+
 function ImageToolView({ tool, preset, tools, lang = "en" }: Props) {
   const T = useT();
   const editor = tool === "editor";
@@ -242,6 +364,13 @@ function ImageToolView({ tool, preset, tools, lang = "en" }: Props) {
 
   const item = items[cur];
   const set = (patch: Partial<Settings>) => setS((p) => ({ ...p, ...patch }));
+  /** Changes shown in the list but left out of the result for now */
+  const [hidden, setHidden] = useState<Set<ChangeId>>(new Set());
+  /** What's actually rendered: the settings without the hidden changes */
+  const eff = useMemo(
+    () => (hidden.size ? withoutHidden(s, hidden) : s),
+    [s, hidden],
+  );
 
   /* ---------- Files ---------- */
   const addFiles = useCallback(async (list: FileList | File[]) => {
@@ -304,10 +433,12 @@ function ImageToolView({ tool, preset, tools, lang = "en" }: Props) {
       const t = new URLSearchParams(location.search).get("t");
       if (t && SECTION[t] && tools.some((x) => x.slug === t && x.ready)) {
         setFocus(t);
+        baseline.current = true;
         setS(defaults(t));
         setMoreOpen(false);
       }
     }
+    restoreEdits();
     void (async () => {
       const handed = await takeFiles();
       if (handed.length) await addFiles(handed);
@@ -364,8 +495,10 @@ function ImageToolView({ tool, preset, tools, lang = "en" }: Props) {
     const first = lastKey.current === undefined;
     lastKey.current = item.key;
     const r = RATIOS.find((x) => x.id === s.ratio);
-    if (r && !first)
+    if (r && !first) {
+      quiet.current = true;
       setS((p) => ({ ...p, crop: centeredCrop(item.w, item.h, r.r) }));
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [item?.key]);
 
@@ -373,7 +506,10 @@ function ImageToolView({ tool, preset, tools, lang = "en" }: Props) {
   useEffect(() => {
     if (!item || !s.ratio || s.crop) return;
     const r = RATIOS.find((x) => x.id === s.ratio);
-    if (r) setS((p) => ({ ...p, crop: centeredCrop(item.w, item.h, r.r) }));
+    if (r) {
+      quiet.current = true;
+      setS((p) => ({ ...p, crop: centeredCrop(item.w, item.h, r.r) }));
+    }
   }, [item, s.ratio, s.crop]);
 
   /* ---------- Zoom ---------- */
@@ -385,13 +521,17 @@ function ImageToolView({ tool, preset, tools, lang = "en" }: Props) {
   useEffect(() => {
     if (act !== "convert" || !item) return;
     const src = formatOf(item.file);
-    if (src && src === s.type)
+    if (src && src === s.type) {
+      quiet.current = true;
       setS((p) => ({
         ...p,
         keepFormat: false,
         type: src === "image/jpeg" ? "image/png" : "image/jpeg",
       }));
-    else if (s.keepFormat) set({ keepFormat: false });
+    } else if (s.keepFormat) {
+      quiet.current = true;
+      set({ keepFormat: false });
+    }
   }, [item?.key, s.type, s.keepFormat, act]);
 
   /** Width in image pixels of what's on screen: the result when it's shown alone, else the original */
@@ -453,6 +593,181 @@ function ImageToolView({ tool, preset, tools, lang = "en" }: Props) {
   /** Custom choice: the field ids to keep (anything else goes) */
   const [metaKeep, setMetaKeep] = useState<Set<string>>(new Set());
   const metaRef = useRef({ mode: metaMode, keep: metaKeep });
+
+  /* ---------- Edit history: undo / redo, and a list to jump back to ---------- */
+  /** Everything an undo brings back: the settings, hidden changes and the metadata choice */
+  type Snap = {
+    s: Settings;
+    hidden: Set<ChangeId>;
+    metaMode: MetaMode;
+    metaKeep: Set<string>;
+  };
+  const snap = (): Snap => ({ s, hidden, metaMode, metaKeep });
+  /** Steps so far (the first is how the page started) and the one on screen */
+  const hist = useRef<{ snap: Snap; label: string }[]>([]);
+  const at = useRef(0);
+  const lastAt = useRef(0);
+  /** Set while a step is applied (undo, redo, a jump) so it isn't recorded again */
+  const replaying = useRef(false);
+  /** Set before the page adjusts settings by itself, so that isn't a step of its own */
+  const quiet = useRef(false);
+  /** Set when the page sets its own starting point (saved edits, ?t=): that becomes step one */
+  const baseline = useRef(false);
+  const [, bump] = useState(0);
+  useEffect(() => {
+    const now = snap();
+    if (!hist.current.length || baseline.current) {
+      // The first run only sets step one; a pending baseline (saved edits) replaces it next run
+      if (hist.current.length) baseline.current = false;
+      hist.current = [{ snap: now, label: T("Start") }];
+      at.current = 0;
+      bump((n) => n + 1);
+      return;
+    }
+    if (replaying.current) {
+      replaying.current = false;
+      return;
+    }
+    if (quiet.current) {
+      // The page adjusting itself (a crop centred for a new photo): part of the current step
+      quiet.current = false;
+      hist.current[at.current]!.snap = now;
+      return;
+    }
+    const prev = hist.current[at.current]!;
+    const label = describe(prev.snap, now);
+    if (!label) return;
+    // A slider drag or quick typing on the same thing is one step
+    const t = Date.now();
+    const top = at.current === hist.current.length - 1 && at.current > 0;
+    if (top && t - lastAt.current < 700 && prev.label === label) {
+      prev.snap = now;
+    } else {
+      hist.current = hist.current.slice(0, at.current + 1);
+      hist.current.push({ snap: now, label });
+      if (hist.current.length > 80) hist.current.splice(1, 1);
+      at.current = hist.current.length - 1;
+    }
+    lastAt.current = t;
+    bump((n) => n + 1);
+  }, [s, hidden, metaMode, metaKeep]);
+  function goTo(i: number) {
+    const to = hist.current[i];
+    if (!to || i === at.current) return;
+    at.current = i;
+    replaying.current = true;
+    lastAt.current = 0;
+    setS(to.snap.s);
+    setHidden(to.snap.hidden);
+    setMetaMode(to.snap.metaMode);
+    setMetaKeep(to.snap.metaKeep);
+    bump((n) => n + 1);
+  }
+  const undo = () => goTo(at.current - 1);
+  const redo = () => goTo(at.current + 1);
+  const canUndo = at.current > 0;
+  const canRedo = at.current < hist.current.length - 1;
+
+  /** What changed between two steps, in a few words ("Watermark added", "Crop hidden") */
+  function describe(a: Snap, b: Snap): string {
+    const name = (id: ChangeId) => T(CHANGE_NAME[id]);
+    const out: string[] = [];
+    for (const id of CHANGES) {
+      if (a.hidden.has(id) !== b.hidden.has(id)) {
+        out.push(
+          T(b.hidden.has(id) ? "{name} hidden" : "{name} shown", {
+            name: name(id),
+          }),
+        );
+        continue;
+      }
+      const was = clearOf(id, a.s);
+      const is = clearOf(id, b.s);
+      if (!was && is) out.push(T("{name} added", { name: name(id) }));
+      else if (was && !is) out.push(T("{name} removed", { name: name(id) }));
+      else if (
+        is &&
+        JSON.stringify(pick(a.s, id)) !== JSON.stringify(pick(b.s, id))
+      )
+        out.push(T("{name} changed", { name: name(id) }));
+    }
+    if (a.s.type !== b.s.type || a.s.keepFormat !== b.s.keepFormat)
+      out.push(
+        T("Format: {f}", {
+          f: b.s.keepFormat ? T("Original") : T(FORMATS[b.s.type]),
+        }),
+      );
+    if (a.s.quality !== b.s.quality)
+      out.push(T("Quality {n}", { n: b.s.quality }));
+    if (a.metaMode !== b.metaMode || a.metaKeep !== b.metaKeep)
+      out.push(T("Metadata choice"));
+    if (!out.length && JSON.stringify(a.s) !== JSON.stringify(b.s))
+      out.push(T("Settings changed"));
+    if (!out.length) return "";
+    return out.length > 1 ? `${out[0]} +${out.length - 1}` : out[0]!;
+  }
+  /** The settings one change is made of, to tell whether it changed */
+  function pick(x: Settings, id: ChangeId): unknown {
+    const c = clearOf(id, x);
+    return c ? Object.keys(c).map((k) => x[k as keyof Settings]) : null;
+  }
+
+  /* ---------- Edits kept for this tab ---------- */
+  // Saved per browser tab (sessionStorage), with the address they belong to: a refresh brings
+  // them back, and so does the switch between a tool page and /editor?t=<tool>. A watermark
+  // logo is a file, so it isn't kept.
+  const EDITS_KEY = "kmra-img-edits";
+  const here = () => location.pathname + location.search;
+  /** The latest edits, for handlers registered once (popstate) */
+  const editsRef = useRef<Snap>(snap());
+  editsRef.current = snap();
+  function saveEdits(path = here()) {
+    try {
+      const e = editsRef.current;
+      const keep = {
+        ...e.s,
+        mark: e.s.mark ? { ...e.s.mark, logo: null } : null,
+      };
+      sessionStorage.setItem(
+        EDITS_KEY,
+        JSON.stringify({
+          path,
+          s: keep,
+          hidden: [...e.hidden],
+          metaMode: e.metaMode,
+          metaKeep: [...e.metaKeep],
+        }),
+      );
+    } catch {}
+  }
+  function restoreEdits() {
+    try {
+      const raw = sessionStorage.getItem(EDITS_KEY);
+      if (!raw) return;
+      const saved = JSON.parse(raw) as {
+        path: string;
+        s: Settings;
+        hidden?: ChangeId[];
+        metaMode: MetaMode;
+        metaKeep: string[];
+      };
+      if (saved.path !== here()) return;
+      baseline.current = true;
+      if (saved.hidden) setHidden(new Set(saved.hidden));
+      setS({ ...defaults(tool), ...saved.s });
+      setMetaMode(saved.metaMode);
+      setMetaKeep(new Set(saved.metaKeep));
+    } catch {}
+  }
+  const restored = useRef(false);
+  useEffect(() => {
+    // The first render has the page's defaults; save from the first real change on
+    if (!restored.current) {
+      restored.current = true;
+      return;
+    }
+    saveEdits();
+  }, [s, hidden, metaMode, metaKeep, focus]);
   metaRef.current = { mode: metaMode, keep: metaKeep };
   /** Each file's fields, read once */
   const fieldCache = useRef(new Map<string, Promise<Field[] | null>>());
@@ -492,7 +807,7 @@ function ImageToolView({ tool, preset, tools, lang = "en" }: Props) {
     setBusy(true);
     const t = setTimeout(async () => {
       try {
-        const r = await produce(item, s);
+        const r = await produce(item, eff);
         if (id !== reqRef.current) return;
         const next = {
           ...r,
@@ -518,7 +833,7 @@ function ImageToolView({ tool, preset, tools, lang = "en" }: Props) {
       }
     }, 120);
     return () => clearTimeout(t);
-  }, [item, s, metaMode, metaKeep, act]);
+  }, [item, eff, metaMode, metaKeep, act]);
 
   /* ---------- Mode ---------- */
   /** The workspace's address: /editor?t=<tool> (in the reader's language) */
@@ -529,8 +844,10 @@ function ImageToolView({ tool, preset, tools, lang = "en" }: Props) {
   /** Show the workspace; on a tool page the address becomes /editor?t=<tool> without a reload */
   function enterWorkspace() {
     setAdvanced(true);
-    if (!editor && !onEditorPath())
+    if (!editor && !onEditorPath()) {
       history.pushState({ kmraWs: true }, "", editorPath(focus));
+      saveEdits();
+    }
   }
   function openAdvanced() {
     setWantAdvanced(true);
@@ -549,6 +866,8 @@ function ImageToolView({ tool, preset, tools, lang = "en" }: Props) {
         localStorage.setItem(MODE_KEY, "simple");
       } catch {}
       const to = focusMeta ? lp(lang, `/${focus}`) : lp(lang, "/");
+      // The edits go along to the tool's page
+      if (focusMeta) saveEdits(to);
       void (
         focusMeta && items.length
           ? stashFiles(items.map((it) => it.file))
@@ -567,6 +886,7 @@ function ImageToolView({ tool, preset, tools, lang = "en" }: Props) {
       if ((history.state as { kmraWs?: boolean } | null)?.kmraWs)
         history.back();
       else history.replaceState(null, "", lp(lang, `/${tool}`));
+      saveEdits();
     }
   }
   // Browser Back and Forward move between Simple (the tool's address) and the workspace
@@ -574,6 +894,7 @@ function ImageToolView({ tool, preset, tools, lang = "en" }: Props) {
     if (editor) return;
     const onPop = () => {
       const inWs = onEditorPath();
+      saveEdits();
       setAdvanced(inWs);
       setWantAdvanced(inWs);
       try {
@@ -615,6 +936,18 @@ function ImageToolView({ tool, preset, tools, lang = "en" }: Props) {
     const onKey = (e: KeyboardEvent) => {
       // Leave keys alone while a dialog (search, shortcuts) is open
       if (document.querySelector(".scrim")) return;
+      // Undo / redo the edits (text fields keep their own undo)
+      if (
+        !typing(e) &&
+        (matches(e, "mod+z") ||
+          matches(e, "mod+shift+z") ||
+          matches(e, "mod+y"))
+      ) {
+        e.preventDefault();
+        if (matches(e, "mod+z")) undo();
+        else redo();
+        return;
+      }
       if (matches(e, "mod+o")) {
         e.preventDefault();
         pickRef.current?.click();
@@ -657,9 +990,9 @@ function ImageToolView({ tool, preset, tools, lang = "en" }: Props) {
    * get their own centred crop at that ratio, so different shapes all come out right.
    */
   function settingsFor(it: Item): Settings {
-    const r = RATIOS.find((x) => x.id === s.ratio);
-    if (!r || it.key === item?.key) return s;
-    return { ...s, crop: centeredCrop(it.w, it.h, r.r) };
+    const r = RATIOS.find((x) => x.id === eff.ratio);
+    if (!r || it.key === item?.key) return eff;
+    return { ...eff, crop: centeredCrop(it.w, it.h, r.r) };
   }
 
   /**
@@ -1323,7 +1656,7 @@ function ImageToolView({ tool, preset, tools, lang = "en" }: Props) {
       );
     }
     // Other edits or another format mean the picture is saved again, and then nothing comes along
-    const resaved = !(s.keepFormat && onlyEncodes(s));
+    const resaved = !(eff.keepFormat && onlyEncodes(eff));
     const remove = resaved ? () => true : removes(fields, metaMode, metaKeep);
     const going = fields.filter((f) => remove(f.id));
     const toggle = (ids: string[], on: boolean) => {
@@ -1945,50 +2278,80 @@ function ImageToolView({ tool, preset, tools, lang = "en" }: Props) {
 
   const [ow, oh] = item ? outDims(item.w, item.h, s) : [0, 0];
   const [bw, bh] = item ? baseDims(item.w, item.h, s) : [0, 0];
-  /** Strip metadata cutting fields out of the file: nothing is encoded, so no quality or format step */
-  const untouched = act === "strip-metadata" && s.keepFormat && onlyEncodes(s);
-  const recipe = [
-    s.crop
-      ? T("Crop {w} × {h}", {
-          w: Math.round(s.crop.w * (item?.w ?? 0)),
-          h: Math.round(s.crop.h * (item?.h ?? 0)),
-        })
-      : null,
-    s.rotate ? T("Rotate {n}°", { n: s.rotate }) : null,
-    s.flipH || s.flipV ? T("Flip") : null,
-    item && (ow !== bw || oh !== bh)
-      ? T("Resize {w} × {h}", { w: ow, h: oh })
-      : null,
-    isLossy(type) && !untouched
-      ? s.target
-        ? T("Fit ≤ {n} KB", { n: s.target })
-        : T("Quality {n}", { n: s.quality })
-      : null,
-    s.passport ? "ID photo framing" : null,
-    s.bg
-      ? s.bg.mode === "remove"
-        ? T("Remove background")
-        : s.bg.mode === "blur"
-          ? T("Blur background")
-          : T("New background")
-      : null,
-    s.redact?.faces ? T("Cover faces") : null,
-    s.ink ? T("Clean signature") : null,
-    s.redact?.regions.length
-      ? `Blur ${s.redact.regions.length} area${s.redact.regions.length > 1 ? "s" : ""}`
-      : null,
-    s.adjust && Object.values(s.adjust).some(Boolean) ? T("Adjust") : null,
-    s.filter ? (FILTERS.find((f) => f.id === s.filter)?.label ?? null) : null,
-    s.text && (s.text.top || s.text.bottom) ? T("Text") : null,
-    s.mark ? T("Watermark") : null,
-    s.frame ? T("Frame") : null,
-    s.sheet
-      ? T("Print sheet {name}", {
+  /** The changes on this image, in the order they're applied */
+  const changeLabel = (id: ChangeId): string => {
+    switch (id) {
+      case "crop":
+        // Without a photo there's no size to show yet
+        if (!item) return T("Crop");
+        return T("Crop {w} × {h}", {
+          w: Math.round((s.crop?.w ?? 0) * (item?.w ?? 0)),
+          h: Math.round((s.crop?.h ?? 0) * (item?.h ?? 0)),
+        });
+      case "rotate":
+        return T("Rotate {n}°", { n: s.rotate });
+      case "resize":
+        return item && (ow !== bw || oh !== bh)
+          ? T("Resize {w} × {h}", { w: ow, h: oh })
+          : T("Resize");
+      case "target":
+        return T("Fit ≤ {n} KB", { n: s.target ?? 0 });
+      case "bg":
+        return s.bg?.mode === "remove"
+          ? T("Remove background")
+          : s.bg?.mode === "blur"
+            ? T("Blur background")
+            : T("New background");
+      case "regions":
+        return T("Blur {n} areas", { n: s.redact?.regions.length ?? 0 });
+      case "filter":
+        return T(FILTERS.find((f) => f.id === s.filter)?.label ?? "Filter");
+      case "sheet":
+        return T("Print sheet {name}", {
           name: T(SHEETS.find((x) => x.id === s.sheet)?.label ?? ""),
-        })
-      : null,
-    untouched ? null : FORMATS[type],
-  ].filter(Boolean) as string[];
+        });
+      default:
+        return T(CHANGE_NAME[id]);
+    }
+  };
+  const changes = CHANGES.filter((id) => clearOf(id, s));
+  function removeChange(id: ChangeId) {
+    const c = clearOf(id, s);
+    if (c) set(c);
+    if (hidden.has(id))
+      setHidden((h) => new Set([...h].filter((x) => x !== id)));
+  }
+  function toggleChange(id: ChangeId) {
+    setHidden((h) => {
+      const n = new Set(h);
+      if (n.has(id)) n.delete(id);
+      else n.add(id);
+      return n;
+    });
+  }
+  /** Show a change's controls: the tool's own panel, or its section under "More edits" */
+  function openChange(id: ChangeId) {
+    const sec = CHANGE_SEC[id];
+    if (focusMeta && SECTION[focus] === sec) {
+      document.querySelector(".insp")?.scrollTo({ top: 0, behavior: "smooth" });
+      return;
+    }
+    setMoreOpen(true);
+    setTimeout(
+      () =>
+        document
+          .getElementById(`ws-${sec}`)
+          ?.scrollIntoView({ block: "start", behavior: "smooth" }),
+      60,
+    );
+  }
+  /** Back to how this tool starts: every change off (Undo brings them back) */
+  function startOver() {
+    setS(defaults(focusMeta ? focus : tool));
+    setHidden(new Set());
+    setMetaMode("all");
+    setMetaKeep(new Set());
+  }
 
   /** An effect section in the workspace that can be switched on and off. */
   const fxSection = (
@@ -2232,6 +2595,28 @@ function ImageToolView({ tool, preset, tools, lang = "en" }: Props) {
             </small>
           </span>
           <span className="right">
+            <span className="undo-redo" role="group" aria-label={T("History")}>
+              <button
+                type="button"
+                className="iconbtn"
+                onClick={undo}
+                disabled={!canUndo}
+                aria-label={T("Undo")}
+                title={T("Undo ({keys})", { keys: formatKeys("mod+Z") })}
+              >
+                <Icon name="undo" />
+              </button>
+              <button
+                type="button"
+                className="iconbtn"
+                onClick={redo}
+                disabled={!canRedo}
+                aria-label={T("Redo")}
+                title={T("Redo ({keys})", { keys: formatKeys("mod+shift+Z") })}
+              >
+                <Icon name="redo" />
+              </button>
+            </span>
             <button
               className="btn sm hide-sm"
               type="button"
@@ -2392,6 +2777,95 @@ function ImageToolView({ tool, preset, tools, lang = "en" }: Props) {
                 {simpleControls(focus)}
               </section>
             )}
+            <section className="ws-changes">
+              <h3>
+                <Icon name="layers" />
+                {T("Changes")}
+                {changes.length > 0 && (
+                  <small>{num(lang, changes.length)}</small>
+                )}
+                {(changes.length > 0 || canUndo) && (
+                  <button type="button" className="fx-on" onClick={startOver}>
+                    {T("Start over")}
+                  </button>
+                )}
+              </h3>
+              {changes.length ? (
+                <ul className="change-list">
+                  {changes.map((id) => {
+                    const off = hidden.has(id);
+                    const name = changeLabel(id);
+                    return (
+                      <li key={id} className={off ? "off" : undefined}>
+                        <button
+                          type="button"
+                          className="ch-eye"
+                          aria-pressed={!off}
+                          aria-label={
+                            off
+                              ? T("Show {name}", { name })
+                              : T("Hide {name}", { name })
+                          }
+                          title={off ? T("Show") : T("Hide")}
+                          onClick={() => toggleChange(id)}
+                        >
+                          <Icon name={off ? "eyeOff" : "eye"} />
+                        </button>
+                        <button
+                          type="button"
+                          className="ch-name"
+                          title={T("Show its settings")}
+                          onClick={() => openChange(id)}
+                        >
+                          {name}
+                        </button>
+                        <button
+                          type="button"
+                          className="ch-x"
+                          aria-label={T("Remove {name}", { name })}
+                          title={T("Remove")}
+                          onClick={() => removeChange(id)}
+                        >
+                          <Icon name="x" />
+                        </button>
+                      </li>
+                    );
+                  })}
+                </ul>
+              ) : (
+                <small className="muted">
+                  {T("No changes yet. What you add shows up here.")}
+                </small>
+              )}
+            </section>
+            {hist.current.length > 1 && (
+              <details className="more history">
+                <summary>
+                  <Icon name="clock" className="ico" />
+                  {T("History")}
+                  <small>
+                    {T("{n} steps", { n: hist.current.length - 1 })}
+                  </small>
+                  <Icon name="down" className="ico caret" />
+                </summary>
+                <ol className="hist-list">
+                  {hist.current.map((h, i) => (
+                    <li
+                      key={i}
+                      className={i > at.current ? "ahead" : undefined}
+                    >
+                      <button
+                        type="button"
+                        aria-current={i === at.current ? "step" : undefined}
+                        onClick={() => goTo(i)}
+                      >
+                        {h.label}
+                      </button>
+                    </li>
+                  ))}
+                </ol>
+              </details>
+            )}
             <details
               className="more"
               open={moreOpen}
@@ -2415,16 +2889,6 @@ function ImageToolView({ tool, preset, tools, lang = "en" }: Props) {
                 >
                   {resultSummary()}
                 </div>
-                {recipe.length > 1 && (
-                  <div className="recipe" aria-label={T("Recipe")}>
-                    {recipe.map((step, i) => (
-                      <span key={step} style={{ display: "contents" }}>
-                        {i > 0 && <i>{T("then")}</i>}
-                        <span>{step}</span>
-                      </span>
-                    ))}
-                  </div>
-                )}
                 {many && (
                   <small className="muted">{T("Applied to every file.")}</small>
                 )}
