@@ -7,7 +7,16 @@ browser.
 pnpm test:e2e        # build every site, then run all tests
 pnpm test:e2e:only   # run on the existing builds
 npx playwright test -c tests/playwright.config.ts --project=imgtool   # one site
+npx playwright test -c tests/playwright.config.ts --project=imgtool-firefox --project=imgtool-webkit
 ```
+
+## Browsers
+
+Every site is tested in Chromium. The image tools also run in Firefox and WebKit (Safari's
+engine) as the `imgtool-firefox` and `imgtool-webkit` projects, because their results depend on
+the browser's own image encoders: Safari can't write WebP and its JPEGs are far bigger, Firefox's
+JPEGs stay big at low quality. Install those browsers once with
+`pnpm exec playwright install firefox webkit`.
 
 ## How they run
 
@@ -20,8 +29,10 @@ calctool 4609, colortool 4610, musictool 4611).
 The `test` fixture in `tests/helpers.ts` fails a test on any console error or page error. Pass
 `allowConsole` for messages a test expects.
 
-Note: the test browser reports itself as Windows, so keyboard shortcuts in tests use `Control`,
-not `Meta`.
+Keyboard shortcuts use ⌘ where the page thinks it's on an Apple device and Ctrl elsewhere
+(`isApple()` in `@kmra/ui/lib/keys`). Chromium's test browser reports Windows, WebKit's a Mac,
+and Firefox the real machine, so a test that presses shortcuts in several browsers asks the
+page which one it expects (see the undo test in `tests/imgtool/workspace.spec.ts`).
 
 ## Inputs
 
