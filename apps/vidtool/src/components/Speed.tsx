@@ -10,8 +10,7 @@ const MIN = 0.25;
 const MAX = 4;
 
 /** 1.5 → "1.5×" */
-export const times = (s: number) =>
-  `${Math.round(s * 100) / 100}×`.replace(/^0\./, "0.");
+export const times = (s: number) => `${Math.round(s * 100) / 100}×`;
 
 /** Slider position (log2 of the speed) → speed rounded to a step people can read */
 const fromPos = (p: number) => {

@@ -245,7 +245,7 @@ export function sniff(b: Uint8Array): Sniffed {
     if (at(b, off, sig)) return { mime, ext, label };
   if (isText(b)) {
     const t = fromUtf8(b.subarray(0, 4096)).text.trimStart();
-    if (/^(<\?xml[^>]*>\s*)?(<!--[\s\S]*?-->\s*)*<svg[\s>]/i.test(t))
+    if (looksLikeSvg(t))
       return { mime: "image/svg+xml", ext: "svg", label: "SVG image" };
     if (/^<!doctype html|^<html[\s>]/i.test(t))
       return { mime: "text/html", ext: "html", label: "HTML" };
@@ -390,28 +390,23 @@ export function htmlEscape(
   return { text: out, count };
 }
 
-const REF = /&(?:#\d+|#x[0-9a-f]+|[a-z][a-z0-9]*);?/gi;
-
 /**
- * Turn every character reference back into text, using the browser's own HTML parser (a
- * detached <textarea> is parsed as plain text, so markup in the input never runs).
+ * Whether text is an SVG document: an optional XML declaration and comments, then <svg.
+ * Skips the leading parts by hand (a single regex for this backtracks badly on long inputs).
  */
-export function htmlUnescape(s: string): { text: string; count: number } {
-  const ta = document.createElement("textarea");
-  ta.innerHTML = s;
-  let count = 0;
-  const seen = new Map<string, boolean>();
-  const one = document.createElement("textarea");
-  for (const [ref] of s.matchAll(REF)) {
-    let known = seen.get(ref);
-    if (known === undefined) {
-      one.innerHTML = ref;
-      known = one.value !== ref;
-      seen.set(ref, known);
-    }
-    if (known) count++;
+export function looksLikeSvg(text: string): boolean {
+  let t = text.trimStart();
+  if (t.startsWith("<?xml")) {
+    const end = t.indexOf(">");
+    if (end < 0) return false;
+    t = t.slice(end + 1).trimStart();
   }
-  return { text: ta.value, count };
+  while (t.startsWith("<!--")) {
+    const end = t.indexOf("-->", 4);
+    if (end < 0) return false;
+    t = t.slice(end + 3).trimStart();
+  }
+  return /^<svg[\s>]/i.test(t);
 }
 
 /* ---------- Unicode escapes ---------- */
