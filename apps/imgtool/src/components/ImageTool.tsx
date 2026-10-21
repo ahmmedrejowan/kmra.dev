@@ -197,6 +197,15 @@ function ImageToolView({ tool, preset, tools, lang = "en" }: Props) {
   const act = advanced ? focus : tool;
   /** The tool picked in the workspace (none in the plain editor) */
   const focusMeta = tools.find((t) => t.slug === focus);
+  // The editor page's tab says which tool is open: "Compress images · Image editor"
+  const baseTitle = useRef("");
+  useEffect(() => {
+    if (!editor) return;
+    baseTitle.current ||= document.title;
+    document.title = focusMeta
+      ? `${focusMeta.name} · ${baseTitle.current}`
+      : baseTitle.current;
+  }, [focus]);
   const [cut, setCut] = useState(50);
   /** Zoom factor (1 = 100%, one image pixel per screen pixel), or null to fit the view */
   const [zoom, setZoom] = useState<number | null>(null);
@@ -495,7 +504,9 @@ function ImageToolView({ tool, preset, tools, lang = "en" }: Props) {
         setOut(next);
         if (old) URL.revokeObjectURL(old.url);
         setError(null);
-      } catch {
+      } catch (e) {
+        // Keep the real reason in the console for bug reports
+        console.error("Processing failed:", e);
         if (id === reqRef.current)
           setError(
             T(
@@ -958,10 +969,8 @@ function ImageToolView({ tool, preset, tools, lang = "en" }: Props) {
       </p>
     );
 
-  /** The biggest file loaded, in KB: size targets above it would change nothing */
-  const biggestKB = items.length
-    ? Math.max(...items.map((it) => it.file.size)) / 1024
-    : Infinity;
+  /** The photo on screen, in KB: size targets above it would change nothing */
+  const biggestKB = item ? item.file.size / 1024 : Infinity;
   const targets = TARGETS.filter((v) => v < biggestKB);
   const targetCtl = (short = false) => (
     <div className="ctl">
