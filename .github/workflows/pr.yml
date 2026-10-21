@@ -68,8 +68,8 @@ jobs:
       # The video and audio test files are generated with ffmpeg on each run
       - name: ffmpeg
         run: sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg
-      - name: Browser
-        run: pnpm exec playwright install --with-deps chromium
+      - name: Browsers (Chromium for every site; Firefox and WebKit for the image tools)
+        run: pnpm exec playwright install --with-deps chromium firefox webkit
       - run: pnpm build
       - name: End to end
         run: pnpm test:e2e:only --shard=${{ matrix.shard }}/3
