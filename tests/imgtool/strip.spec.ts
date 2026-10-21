@@ -82,7 +82,7 @@ test("presets, a group and a single field decide what stays", async ({ page }) =
 
 test("a photo with nothing but a colour profile says there's nothing to remove", async ({ page }) => {
   await start(page, "/strip-metadata", gen("photo.jpg"));
-  await expect(page.locator(".meta-count")).toHaveText(/Removing 0 of 1 field/);
+  await expect(page.locator(".meta-count")).toHaveText("Removing 0 of 1 field");
   await expect(field(page, "Colour profile")).toBeVisible();
 });
 

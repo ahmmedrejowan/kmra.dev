@@ -203,6 +203,8 @@ const CHANGES = [
   "mark",
   "frame",
   "sheet",
+  "quality",
+  "format",
 ] as const;
 type ChangeId = (typeof CHANGES)[number];
 /** Each change's name in lists and the history */
@@ -223,6 +225,31 @@ const CHANGE_NAME: Record<ChangeId, string> = {
   mark: "Watermark",
   frame: "Border",
   sheet: "Print sheet",
+  quality: "Quality",
+  format: "Format",
+};
+/** The changes each Simple tool page sets with its own controls (the rest are "also applied") */
+const TOOL_CHANGES: Record<string, ChangeId[]> = {
+  compress: ["quality", "target", "format"],
+  convert: ["format", "quality"],
+  resize: ["resize", "format"],
+  crop: ["crop", "format"],
+  rotate: ["rotate", "flip", "format"],
+  "strip-metadata": [],
+  "form-size": ["resize", "target", "format", "quality"],
+  adjust: ["adjust", "format"],
+  filters: ["filter", "format"],
+  "add-text": ["text", "format"],
+  watermark: ["mark", "format"],
+  border: ["frame", "format"],
+  "extend-canvas": ["frame", "format"],
+  beautify: ["frame", "format"],
+  blur: ["regions", "faces", "format"],
+  "face-blur": ["faces", "regions", "format"],
+  signature: ["ink", "resize", "format"],
+  "remove-bg": ["bg", "format"],
+  "change-bg": ["bg", "format"],
+  "passport-photo": ["passport", "bg", "resize", "target", "quality", "format"],
 };
 /** The workspace section that sets each change */
 const CHANGE_SEC: Record<ChangeId, string> = {
@@ -242,6 +269,8 @@ const CHANGE_SEC: Record<ChangeId, string> = {
   mark: "watermark",
   frame: "frame",
   sheet: "resize",
+  quality: "compress",
+  format: "format",
 };
 function clearOf(id: ChangeId, s: Settings): Partial<Settings> | null {
   switch (id) {
@@ -289,6 +318,14 @@ function clearOf(id: ChangeId, s: Settings): Partial<Settings> | null {
       return s.frame ? { frame: null } : null;
     case "sheet":
       return s.sheet ? { sheet: null } : null;
+    // Saved lighter than near-original quality (92), in a format that has a quality
+    case "quality":
+      return !s.target && s.quality < 92 && (s.keepFormat || isLossy(s.type))
+        ? { quality: 92 }
+        : null;
+    // A chosen format instead of the file's own
+    case "format":
+      return s.keepFormat ? null : { keepFormat: true };
   }
 }
 /** The settings fields each change is made of (faces and blur areas share one) */
@@ -309,6 +346,8 @@ const CHANGE_FIELDS: Record<ChangeId, (keyof Settings)[]> = {
   mark: ["mark"],
   frame: ["frame"],
   sheet: ["sheet"],
+  quality: ["quality"],
+  format: ["type", "keepFormat"],
 };
 /** Those fields with nothing on: what a photo has when it doesn't have the change */
 const NO_CHANGE: Partial<Settings> = {
@@ -334,6 +373,9 @@ const NO_CHANGE: Partial<Settings> = {
   mark: null,
   frame: null,
   sheet: null,
+  quality: 92,
+  keepFormat: true,
+  type: "image/jpeg",
 };
 /** Faces and blur areas are one setting, so they go to "this photo" together */
 const linked = (id: ChangeId): ChangeId[] =>
@@ -939,6 +981,8 @@ function ImageToolView({ tool, preset, tools, brand, lang = "en" }: Props) {
         );
         continue;
       }
+      // Format and quality get their own wording below ("Format: PNG", "Quality 70")
+      if (id === "format" || id === "quality") continue;
       const was = clearOf(id, a.s);
       const is = clearOf(id, b.s);
       if (!was && is) out.push(T("{name} added", { name: name(id) }));
@@ -1486,9 +1530,19 @@ function ImageToolView({ tool, preset, tools, brand, lang = "en" }: Props) {
   function compare(it: Item) {
     // Show the result alone when its shape differs, or when it adds things on top (text, frames)
     // that a before/after split would only cut in half.
+    // A before/after split only helps when the look changes (compression, colour, blur, a new
+    // background); resizing, converting or removing metadata show the result on its own
+    const looks =
+      !!(eff.adjust || eff.filter || eff.redact || eff.bg) ||
+      (!!outForItem &&
+        !outForItem.kept &&
+        !outForItem.lossless &&
+        isLossy(outForItem.type as Format) &&
+        (!!eff.target || eff.quality < 92));
     const solo = outForItem
       ? Math.abs(outForItem.w / outForItem.h - it.w / it.h) > 0.01 ||
-        !!(s.text || s.mark || s.frame || s.ink || s.sheet || s.passport)
+        !!(s.text || s.mark || s.frame || s.ink || s.sheet || s.passport) ||
+        !looks
       : false;
     return (
       <div
@@ -2004,7 +2058,9 @@ function ImageToolView({ tool, preset, tools, brand, lang = "en" }: Props) {
           <span className="lbl meta-head">
             {T("Hidden data in this photo")}
             <small className="muted">
-              {T("{n} fields", { n: fields.length })}
+              {fields.length === 1
+                ? T("1 field")
+                : T("{n} fields", { n: fields.length })}
             </small>
           </span>
           {fields.length ? (
@@ -2029,10 +2085,15 @@ function ImageToolView({ tool, preset, tools, brand, lang = "en" }: Props) {
                       )}
               </small>
               <p className="meta-count">
-                {T("Removing {n} of {t} fields", {
-                  n: going.length,
-                  t: fields.length,
-                })}
+                {T(
+                  fields.length === 1
+                    ? "Removing {n} of 1 field"
+                    : "Removing {n} of {t} fields",
+                  {
+                    n: going.length,
+                    t: fields.length,
+                  },
+                )}
               </p>
               <div className="meta-groups">
                 {GROUPS.map((g) => {
@@ -2481,11 +2542,29 @@ function ImageToolView({ tool, preset, tools, brand, lang = "en" }: Props) {
         return T("Print sheet {name}", {
           name: T(SHEETS.find((x) => x.id === s.sheet)?.label ?? ""),
         });
+      case "frame":
+        return (s.frame && s.frame.chrome !== "none") || s.frame?.shadow
+          ? T("Screenshot frame")
+          : s.frame?.ratio
+            ? T("Fit to {r}", { r: s.frame.ratio })
+            : T("Border");
+      case "quality":
+        return T("Quality {n}", { n: s.quality });
+      case "format":
+        return T("Save as {f}", { f: T(FORMATS[s.type]) });
       default:
         return T(CHANGE_NAME[id]);
     }
   };
-  const changes = CHANGES.filter((id) => clearOf(id, s));
+  const srcFmt = item ? formatOf(item.file) : null;
+  // Strip metadata cutting fields out of the file saves nothing again, so quality isn't used
+  const lossless = act === "strip-metadata" && eff.keepFormat && onlyEncodes(eff);
+  const changes = CHANGES.filter(
+    (id) =>
+      clearOf(id, s) &&
+      !(id === "format" && srcFmt === s.type) &&
+      !(id === "quality" && lossless),
+  );
   function removeChange(id: ChangeId) {
     const c = clearOf(id, s);
     if (c) set(c);
@@ -2530,7 +2609,9 @@ function ImageToolView({ tool, preset, tools, brand, lang = "en" }: Props) {
    * listed here: nothing changes the file without being on screen. Undo and redo too.
    */
   function alsoApplied(): ReactNode {
-    const others = changes.filter((id) => CHANGE_SEC[id] !== SECTION[tool]);
+    // What this page's own controls set isn't "also applied"
+    const own = new Set<ChangeId>(TOOL_CHANGES[tool] ?? []);
+    const others = changes.filter((id) => !own.has(id));
     if (!others.length && !canUndo && !canRedo) return null;
     return (
       <div className="ctl also">
@@ -3392,15 +3473,17 @@ function ImageToolView({ tool, preset, tools, brand, lang = "en" }: Props) {
                             {scope.has(id) ? T("This photo") : T("All")}
                           </button>
                         )}
-                        <button
-                          type="button"
-                          className="ch-x"
-                          aria-label={T("Remove {name}", { name })}
-                          title={T("Remove")}
-                          onClick={() => removeChange(id)}
-                        >
-                          <Icon name="x" />
-                        </button>
+                        {!(id === "format" && act === "convert") && (
+                          <button
+                            type="button"
+                            className="ch-x"
+                            aria-label={T("Remove {name}", { name })}
+                            title={T("Remove")}
+                            onClick={() => removeChange(id)}
+                          >
+                            <Icon name="x" />
+                          </button>
+                        )}
                       </li>
                     );
                   })}

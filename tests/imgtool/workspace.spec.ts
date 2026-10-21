@@ -117,7 +117,8 @@ test("the editor opened for a tool goes back to that tool's page with the files"
 });
 
 test("changes can be hidden, removed, undone and redone; history jumps; a refresh keeps them", async ({ page }) => {
-  const ws = await workspace(page, "/compress", "photo.jpg");
+  // Starts from Resize, whose defaults change nothing (Compress would list its quality)
+  const ws = await workspace(page, "/resize", "photo.jpg");
   const list = ws.locator(".change-list li");
   await pick(ws, "Watermark");
   await pick(ws, "Crop");
@@ -168,7 +169,7 @@ test("changes can be hidden, removed, undone and redone; history jumps; a refres
 });
 
 test("batch: a change for one photo only, its own crop, and copying it to all", async ({ page }) => {
-  await start(page, "/compress", [gen("photo.jpg"), gen("small.jpg")]);
+  await start(page, "/resize", [gen("photo.jpg"), gen("small.jpg")]);
   await page.evaluate(() => window.dispatchEvent(new Event("kmra:advanced")));
   const ws = page.getByRole("dialog", { name: "Advanced workspace" });
   await expect(ws).toContainText("2 photos");
@@ -199,7 +200,7 @@ test("batch: a change for one photo only, its own crop, and copying it to all", 
 });
 
 test("removing the last photo clears its crop and history; Simple mode lists changes from Advanced", async ({ page }) => {
-  const ws = await workspace(page, "/compress", "photo.jpg");
+  const ws = await workspace(page, "/resize", "photo.jpg");
   await pick(ws, "Crop");
   await ws.locator(".ws-tool").getByRole("button", { name: "1:1", exact: true }).click();
   await pick(ws, "Watermark");
@@ -250,16 +251,64 @@ test("More edits: every section opens the same way, with Add or Remove", async (
   await expect(ws.locator("#ws-format").getByRole("button", { name: "Remove" })).toBeVisible();
   for (const h of await secs.filter({ hasNot: page.locator("#ws-format") }).locator("h3").all())
     if (!(await h.locator(".ed-on").count())) await expect(h.getByRole("button", { name: "Add", exact: true })).toBeVisible();
+  // Compress's own quality is a change too
+  await expect(ws.locator(".change-list li .ch-name")).toHaveText(["Quality 80"]);
   const mark = ws.locator("#ws-watermark");
   await mark.getByRole("button", { name: "Add" }).click();
   await expect(mark.locator(".ed-on")).toHaveText("On");
   await expect(mark.locator(".ed-head")).toHaveAttribute("aria-expanded", "true");
-  await expect(ws.locator(".change-list li")).toHaveText(["Watermark"]);
+  const names = ws.locator(".change-list li .ch-name");
+  await expect(names).toHaveText(["Watermark", "Quality 80"]);
   // The header folds it without removing it; Remove takes it out
   await mark.locator(".ed-head").click();
   await expect(mark.locator(".ed-head")).toHaveAttribute("aria-expanded", "false");
-  await expect(ws.locator(".change-list li")).toHaveText(["Watermark"]);
+  await expect(names).toHaveText(["Watermark", "Quality 80"]);
   await mark.getByRole("button", { name: "Remove" }).click();
-  await expect(ws.locator(".change-list li")).toHaveCount(0);
+  await expect(names).toHaveText(["Quality 80"]);
   await expect(mark.getByRole("button", { name: "Add" })).toBeVisible();
+});
+
+test("Compress's quality and a new format are changes; the split view only where the look changes", async ({ page }) => {
+  const ws = await workspace(page, "/compress", "photo.jpg");
+  const list = ws.locator(".change-list li .ch-name");
+  // A JPEG saved as JPEG isn't a format change; quality 80 is
+  await expect(list).toHaveText(["Quality 80"]);
+  await expect(ws.locator(".cmp:not(.solo)")).toBeVisible();
+  await ws.locator("#wq, #q").first().fill("70");
+  await expect(list).toHaveText(["Quality 70"]);
+  // Another tool: the quality stays listed
+  await pick(ws, "Resize");
+  await expect(list).toHaveText(["Quality 70"]);
+  await ws.locator(".hist-btn").click();
+  await expect(ws.locator(".hist-list button").last()).toHaveText("Quality 70");
+  await page.keyboard.press("Escape");
+  // Strip metadata cuts fields out without saving the picture again: quality isn't used there
+  await pick(ws, "Strip metadata");
+  await expect(list).toHaveCount(0);
+  await pick(ws, "Resize");
+  await expect(list).toHaveText(["Quality 70"]);
+  // Convert to PNG: listed, and a lossless result shows on its own
+  await pick(ws, "Convert");
+  await ws.getByRole("group", { name: "Convert to" }).getByRole("button", { name: "PNG", exact: true }).click();
+  await expect(list).toHaveText(["Save as PNG"]);
+  await expect(ws.locator(".cmp.solo")).toBeVisible();
+});
+
+test("Resize and Strip metadata show the result on its own", async ({ page }) => {
+  for (const tool of ["/resize", "/strip-metadata"]) {
+    await start(page, tool, gen("photo.jpg"));
+    await expect(page.locator(".toolcard .cmp.solo")).toBeVisible();
+    await expect(page.locator(".controls .also")).toHaveCount(0);
+  }
+});
+
+test("photo info tools can remove one photo", async ({ page }) => {
+  await page.goto("/image-info");
+  await page.locator("main input[type=file]").first().setInputFiles([gen("photo.jpg"), gen("small.jpg")]);
+  const chips = page.locator(".filebar .fchip:not(.add)");
+  await expect(chips).toHaveCount(2);
+  await page.getByRole("button", { name: "Remove photo.jpg" }).click();
+  await expect(chips).toHaveText(["small.jpg"]);
+  await page.getByRole("button", { name: "Remove small.jpg" }).click();
+  await expect(page.locator(".dropcard")).toBeVisible();
 });

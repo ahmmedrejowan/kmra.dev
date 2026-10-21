@@ -210,6 +210,14 @@ function InspectView({ mode }: { mode: Mode }) {
   const [busy, setBusy] = useState(false);
   const [channel, setChannel] = useState<"rgb" | "l" | "r" | "g" | "b">("rgb");
 
+  function remove(i: number) {
+    const it = entries[i];
+    if (it?.url) URL.revokeObjectURL(it.url);
+    setEntries((p) => p.filter((_, j) => j !== i));
+    // Keep the same photo on screen when another one goes
+    setCur((c) => (c > i ? c - 1 : c === i ? Math.max(0, Math.min(c, entries.length - 2)) : c));
+  }
+
   async function add(files: File[]) {
     setBusy(true);
     const out: Entry[] = [];
@@ -289,16 +297,27 @@ function InspectView({ mode }: { mode: Mode }) {
   const filebar = (
     <div className="filebar">
       {entries.map((it, i) => (
-        <button
-          key={it.key}
-          type="button"
-          className="fchip"
-          aria-pressed={i === cur}
-          onClick={() => setCur(i)}
-        >
-          {it.url && <img src={it.url} alt="" />}
-          <span>{it.file.name}</span>
-        </button>
+        <span key={it.key} className="fchip-wrap">
+          <button
+            type="button"
+            className="fchip"
+            aria-pressed={i === cur}
+            onClick={() => setCur(i)}
+          >
+            {it.url && <img src={it.url} alt="" />}
+            <span>{it.file.name}</span>
+          </button>
+          {/* Added the wrong photo? Take it out (the last one brings the drop box back) */}
+          <button
+            type="button"
+            className="iconbtn"
+            aria-label={T("Remove {name}", { name: it.file.name })}
+            title={T("Remove")}
+            onClick={() => remove(i)}
+          >
+            <Icon name="x" />
+          </button>
+        </span>
       ))}
       <button type="button" className="fchip add" onClick={openPicker}>
         {T("+ Add")}

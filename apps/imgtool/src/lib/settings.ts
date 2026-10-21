@@ -332,8 +332,7 @@ export function defaults(tool: string): Settings {
       };
     case "add-text":
       return {
-        ...base,
-        quality: 90,
+        ...keep,
         text: {
           top: "",
           bottom: "",
@@ -388,7 +387,7 @@ export function defaults(tool: string): Settings {
         bg: { mode: "color", color: "#ffffff", model: "person" },
       };
   }
-  if (tool === "resize") return { ...base, keepFormat: true, quality: 90 };
+  if (tool === "resize") return { ...base, keepFormat: true, quality: 92 };
   if (tool === "form-size") return applyForm(base, "job-photo");
   if (
     tool === "strip-metadata" ||

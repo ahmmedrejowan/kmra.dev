@@ -930,4 +930,10 @@ export const BN: Record<string, string> = {
   "Read again with the new settings. Your edits were replaced.": "নতুন সেটিংসে আবার পড়া হয়েছে। আপনার সম্পাদনাগুলো বদলে গেছে।",
   "Reading again with the new settings…": "নতুন সেটিংসে আবার পড়া হচ্ছে…",
   "This text was read with the earlier settings.": "এই টেক্সট আগের সেটিংসে পড়া হয়েছিল।",
+  "Save as {f}": "{f} হিসেবে সেভ",
+  "Screenshot frame": "স্ক্রিনশট ফ্রেম",
+  "Fit to {r}": "{r}-এ ফিট",
+  "1 field": "১টি তথ্য",
+  "{n} fields": "{n}টি তথ্য",
+  "Removing {n} of 1 field": "১টির মধ্যে {n}টি তথ্য সরানো হচ্ছে",
 };
