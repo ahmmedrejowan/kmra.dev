@@ -33,13 +33,30 @@ export default defineConfig({
     acceptDownloads: true,
     trace: "retain-on-failure",
   },
-  projects: APPS.map((a) => ({
-    name: a.id,
-    testDir: ".",
-    // The app's own folder, plus its hard-input specs (tests/hard/<app>-*.spec.ts)
-    testMatch: new RegExp(`/(${a.id}/.+|hard/${a.id}-[^/]+)\\.spec\\.ts$`),
-    use: { baseURL: `http://localhost:${a.port}` },
-  })),
+  projects: [
+    ...APPS.map((a) => ({
+      name: a.id,
+      testDir: ".",
+      // The app's own folder, plus its hard-input specs (tests/hard/<app>-*.spec.ts)
+      testMatch: new RegExp(`/(${a.id}/.+|hard/${a.id}-[^/]+)\\.spec\\.ts$`),
+      use: { baseURL: `http://localhost:${a.port}` },
+    })),
+    // The image tools' everyday tests again in Firefox and Safari's engine (WebKit): their
+    // decoders, encoders and canvas differ from Chromium's. Run with --project=imgtool-firefox
+    // or imgtool-webkit.
+    ...(
+      [
+        ["imgtool-firefox", "Desktop Firefox"],
+        ["imgtool-webkit", "Desktop Safari"],
+      ] as const
+    ).map(([name, device]) => ({
+      name,
+      testDir: ".",
+      testMatch:
+        /\/imgtool\/(basics|controls|effects|compress-ui|strip|workspace|tasks)\.spec\.ts$/,
+      use: { ...devices[device], baseURL: "http://localhost:4601" },
+    })),
+  ],
   webServer: APPS.map((a) => ({
     command: `node tests/serve.ts ${a.id} ${a.port}`,
     cwd: "..",

@@ -4,8 +4,9 @@
  * bigger file, a mistaken image can be removed, and 100% zoom is one image pixel per screen pixel.
  */
 import type { Page } from "@playwright/test";
-import { test, expect, gen } from "../helpers.ts";
-import { info, save, start } from "./lib.ts";
+import { hard } from "../hard/util.ts";
+import { test, expect, gen, addFiles } from "../helpers.ts";
+import { file, info, save, start } from "./lib.ts";
 
 const box = (page: Page, sel: string) =>
   page
@@ -106,14 +107,14 @@ test("size shortcuts only offer sizes below the image", async ({ page }) => {
   const kb = Number(
     (await page.locator(".controls").innerText()).match(/([\d.]+) KB to/)?.[1],
   );
+  // Safari's own JPEG of this is about 200 KB, the others' 100–150 KB
   expect(kb).toBeGreaterThan(50);
-  expect(kb).toBeLessThan(200);
+  expect(kb).toBeLessThan(250);
   const offered = await chips(page);
   expect(offered).toContain("Off");
   for (const t of offered.filter((t) => t !== "Off"))
     expect(Number(t.match(/\d+/)![0])).toBeLessThan(kb);
   expect(offered).not.toContain("Under 500 KB");
-  expect(offered).not.toContain("Under 200 KB");
 });
 
 test("compressing never makes a file bigger: an already small image is kept", async ({
@@ -121,13 +122,11 @@ test("compressing never makes a file bigger: an already small image is kept", as
 }) => {
   await page.goto("/compress");
   await page.locator(".tool-area").waitFor();
-  const original = await addMade(page, {
-    w: 400,
-    h: 300,
-    q: 0.3,
-    noise: 0,
-    name: "tiny.jpg",
-  });
+  // Made with MozJPEG, so no browser's encoder beats it (Safari's own JPEGs are big enough that
+  // a re-encode would be smaller)
+  const tiny = hard("tiny-mozjpeg-400x300.jpg");
+  const original = file(tiny).length;
+  await addFiles(page, tiny);
   const panel = page.locator(".controls");
   await expect(panel).toContainText("you get your original file");
   await expect(panel).toContainText("Already under 50 KB.");
@@ -135,7 +134,7 @@ test("compressing never makes a file bigger: an already small image is kept", as
   const { d, b } = await save(page);
   expect(b.length).toBe(original);
   expect(info(b)).toEqual({ type: "jpeg", w: 400, h: 300 });
-  expect(d.suggestedFilename()).toBe("tiny-compress-kmra.jpg");
+  expect(d.suggestedFilename()).toBe("tiny-mozjpeg-400x300-compress-kmra.jpg");
 });
 
 test("a mistaken image can be removed in Simple mode", async ({ page }) => {
@@ -155,8 +154,10 @@ test.describe("on a Retina screen", () => {
     await start(page, "/compress", gen("photo.jpg"));
     await page.locator(".zoombar").getByRole("button", { name: "Fit" }).click();
     await expect(page.locator(".zoombar")).toContainText("100%");
-    // photo.jpg is 1600 px wide: 800 CSS px at a device pixel ratio of 2
+    // photo.jpg is 1600 px wide: 800 CSS px at a device pixel ratio of 2 (Firefox ignores the
+    // emulated ratio, so read the one the page got)
+    const dpr = await page.evaluate(() => devicePixelRatio);
     const [, , w] = await box(page, ".stage .cmp img");
-    expect(w).toBe(800);
+    expect(w).toBe(Math.round(1600 / dpr));
   });
 });
