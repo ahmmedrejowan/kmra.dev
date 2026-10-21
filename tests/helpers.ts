@@ -46,7 +46,9 @@ export const test = base.extend<{ allowConsole: RegExp[] }>({
     // always works. So in Firefox each page is tried first, and swapped for a new one if stuck.
     let page = first;
     if (browserName === "firefox") {
-      for (let i = 0; i < 3 && !(await responds(page)); i++) {
+      for (let tries = 1; !(await responds(page)); tries++) {
+        if (tries === 3)
+          throw new Error("Firefox gave three pages that didn't respond");
         const fresh = await page.context().newPage();
         await page.close().catch(() => {});
         page = fresh;
@@ -86,10 +88,11 @@ export async function hydrated(page: Page) {
 
 /** Open a tool page and wait until its island has hydrated. */
 export async function openTool(page: Page, path: string) {
-  await page.goto(path);
+  // The tool and its hydration are what matter; "load" adds nothing here
+  await page.goto(path, { waitUntil: "domcontentloaded" });
   await page.locator(".tool-area").first().waitFor();
   await hydrated(page);
-  // Firefox: see the page fixture (its load and network-idle signals can go missing)
+  // Firefox's network-idle signal isn't reliable (see the page fixture); hydration is enough
   if (page.context().browser()?.browserType().name() !== "firefox")
     await page.waitForLoadState("networkidle");
 }
