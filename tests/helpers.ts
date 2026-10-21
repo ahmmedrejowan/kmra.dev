@@ -23,9 +23,37 @@ export const hasLocal = (name: string) => existsSync(local(name));
  * `page` that fails the test on uncaught page errors and console errors, so a broken island or a
  * blocked request (CSP) can't pass silently. Known harmless messages can be allowed per test.
  */
+/** A quick navigation and locator wait, to tell a working page from a stuck one */
+async function responds(page: Page): Promise<boolean> {
+  try {
+    await page.goto("/robots.txt", {
+      timeout: 10_000,
+      waitUntil: "domcontentloaded",
+    });
+    await page.locator("body").waitFor({ timeout: 5_000 });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 export const test = base.extend<{ allowConsole: RegExp[] }>({
   allowConsole: [[], { option: true }],
-  page: async ({ page, allowConsole }, use) => {
+  page: async ({ page: first, allowConsole, browserName }, use) => {
+    // Firefox on Linux (CI) now and then gives a new page whose first navigation Playwright
+    // never hears back from: the page loads and renders, but page.goto and every locator wait
+    // until the test times out (the traces show the finished page). The retry, on a fresh page,
+    // always works. So in Firefox each page is tried first, and swapped for a new one if stuck.
+    let page = first;
+    if (browserName === "firefox") {
+      for (let tries = 1; !(await responds(page)); tries++) {
+        if (tries === 3)
+          throw new Error("Firefox gave three pages that didn't respond");
+        const fresh = await page.context().newPage();
+        await page.close().catch(() => {});
+        page = fresh;
+      }
+    }
     const errors: string[] = [];
     page.on("pageerror", (e) => errors.push(`pageerror: ${e.message}`));
     page.on("console", (m) => {
@@ -50,11 +78,23 @@ export const test = base.extend<{ allowConsole: RegExp[] }>({
 });
 export { expect };
 
+/**
+ * Wait until every Astro island on the page has hydrated: an island drops its `ssr` attribute
+ * once its component is running. Before that, events and clicks meant for it are lost.
+ */
+export async function hydrated(page: Page) {
+  await expect(page.locator("astro-island[ssr]")).toHaveCount(0);
+}
+
 /** Open a tool page and wait until its island has hydrated. */
 export async function openTool(page: Page, path: string) {
-  await page.goto(path);
+  // The tool and its hydration are what matter; "load" adds nothing here
+  await page.goto(path, { waitUntil: "domcontentloaded" });
   await page.locator(".tool-area").first().waitFor();
-  await page.waitForLoadState("networkidle");
+  await hydrated(page);
+  // Firefox's network-idle signal isn't reliable (see the page fixture); hydration is enough
+  if (page.context().browser()?.browserType().name() !== "firefox")
+    await page.waitForLoadState("networkidle");
 }
 
 /** Put files into the tool's file input (the same path as choosing files or dropping them). */
