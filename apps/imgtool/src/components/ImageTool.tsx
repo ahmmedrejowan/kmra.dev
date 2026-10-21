@@ -10,6 +10,7 @@ import {
 } from "react";
 import { stripMetadata, type Removed } from "../lib/strip";
 import { readSummary, type MetaSummary } from "../lib/meta";
+import { GROUPS, listFields, type Field } from "../lib/fields";
 import { zipSync } from "fflate";
 import type { Preset } from "@kmra/registry";
 import { Icon } from "@kmra/ui/components/Icon";
@@ -411,6 +412,40 @@ function ImageToolView({ tool, preset, tools, lang = "en" }: Props) {
         }
       : undefined;
 
+  /* ---------- Strip metadata: which fields go ---------- */
+  type MetaMode = "all" | "sensitive" | "everything" | "nothing" | "custom";
+  const [metaMode, setMetaMode] = useState<MetaMode>("all");
+  /** Custom choice: the field ids to keep (anything else goes) */
+  const [metaKeep, setMetaKeep] = useState<Set<string>>(new Set());
+  const metaRef = useRef({ mode: metaMode, keep: metaKeep });
+  metaRef.current = { mode: metaMode, keep: metaKeep };
+  /** Each file's fields, read once */
+  const fieldCache = useRef(new Map<string, Promise<Field[] | null>>());
+  const fieldsOf = (it: Item) => {
+    let f = fieldCache.current.get(it.key);
+    if (!f) {
+      f = listFields(it.file);
+      fieldCache.current.set(it.key, f);
+    }
+    return f;
+  };
+  /** Whether a field goes, for a file with these fields */
+  function removes(fields: Field[] | null, mode: MetaMode, keep: Set<string>): (id: string) => boolean {
+    const by = new Map((fields ?? []).map((f) => [f.id, f]));
+    switch (mode) {
+      case "all":
+        return (id) => !by.get(id)?.display;
+      case "sensitive":
+        return (id) => by.get(id)?.sensitive ?? true;
+      case "everything":
+        return () => true;
+      case "nothing":
+        return () => false;
+      default:
+        return (id) => !keep.has(id);
+    }
+  }
+
   /* ---------- Processing ---------- */
   useEffect(() => {
     if (!item) return;
@@ -438,7 +473,7 @@ function ImageToolView({ tool, preset, tools, lang = "en" }: Props) {
       }
     }, 120);
     return () => clearTimeout(t);
-  }, [item, s]);
+  }, [item, s, metaMode, metaKeep]);
 
   /* ---------- Mode ---------- */
   function openAdvanced() {
@@ -564,7 +599,8 @@ function ImageToolView({ tool, preset, tools, lang = "en" }: Props) {
    */
   async function produce(it: Item, st: Settings): Promise<EncodeResult & Pick<Out, "kept" | "lossless" | "removed">> {
     if (tool === "strip-metadata" && st.keepFormat && onlyEncodes(st)) {
-      const r = stripMetadata(new Uint8Array(await it.file.arrayBuffer()));
+      const { mode, keep } = metaRef.current;
+      const r = stripMetadata(new Uint8Array(await it.file.arrayBuffer()), removes(await fieldsOf(it), mode, keep));
       if (r) {
         const type = formatOf(it.file) ?? it.file.type;
         return {
@@ -686,12 +722,16 @@ function ImageToolView({ tool, preset, tools, lang = "en" }: Props) {
   const outForItem = out && item && out.key === item.key ? out : null;
 
   /* ---------- Strip metadata: what's in the photo, and a check of the result ---------- */
-  const [metaIn, setMetaIn] = useState<{ key: string; sum: MetaSummary | null } | null>(null);
-  const [left, setLeft] = useState<{ blob: Blob; sum: MetaSummary | null } | null>(null);
+  const [metaIn, setMetaIn] = useState<{ key: string; fields: Field[] | null; sum: MetaSummary | null } | null>(null);
+  const [left, setLeft] = useState<{ blob: Blob; fields: Field[] | null } | null>(null);
   useEffect(() => {
     if (tool !== "strip-metadata" || !item) return;
     let live = true;
-    void readSummary(item.file).then((sum) => live && setMetaIn({ key: item.key, sum }));
+    void fieldsOf(item).then(async (fields) => {
+      // Formats read field by field get the checklist; the others a plain summary
+      const sum = fields ? null : await readSummary(item.file);
+      if (live) setMetaIn({ key: item.key, fields, sum });
+    });
     return () => {
       live = false;
     };
@@ -700,7 +740,7 @@ function ImageToolView({ tool, preset, tools, lang = "en" }: Props) {
     if (tool !== "strip-metadata" || !outForItem) return;
     let live = true;
     const blob = outForItem.blob;
-    void readSummary(blob).then((sum) => live && setLeft({ blob, sum }));
+    void listFields(blob).then((fields) => live && setLeft({ blob, fields }));
     return () => {
       live = false;
     };
@@ -1128,86 +1168,149 @@ function ImageToolView({ tool, preset, tools, lang = "en" }: Props) {
     </>
   );
 
-  /** Names for the blocks the stripper cut out */
-  const REMOVED: Record<Removed, string> = {
-    exif: "Camera data (EXIF)",
-    xmp: "Editing history (XMP)",
-    iptc: "Caption and copyright (IPTC)",
-    comment: "Comment",
-    thumbnail: "Preview copy",
-    extra: "Extra data from the camera or app",
-    text: "Text notes",
-    time: "Last-edited time",
-  };
+
 
   function metaReport(): ReactNode {
     const read = metaIn && item && metaIn.key === item.key ? metaIn : null;
-    const sum = read?.sum ?? null;
+    const fields = read?.fields ?? null;
     const done = outForItem && left && left.blob === outForItem.blob ? left : null;
-    const checked = done?.sum ?? null;
+    if (!read) return <small className="muted">{T("Reading…")}</small>;
+    // Formats that are saved again from the pixels: everything goes, listed for information
+    if (!fields) {
+      const sum = read.sum;
+      return (
+        <div className="ctl meta-report">
+          <span className="lbl">{T("Hidden data in this photo")}</span>
+          {sum?.rows.length ? (
+            <ul className="meta-rows">
+              {sum.rows.map((r) => (
+                <li key={r.label} className={r.private ? "priv" : undefined}>
+                  <span>{T(r.label)}</span>
+                  <b>{r.value}</b>
+                </li>
+              ))}
+            </ul>
+          ) : null}
+          <small className="muted">
+            {T("This kind of file is saved again from its pixels, so all of its hidden data goes.")}
+          </small>
+        </div>
+      );
+    }
+    const remove = removes(fields, metaMode, metaKeep);
+    const going = fields.filter((f) => remove(f.id));
+    const toggle = (ids: string[], on: boolean) => {
+      // Start from what's chosen now, then change these fields
+      const keep = new Set(fields.filter((f) => !remove(f.id)).map((f) => f.id));
+      for (const id of ids) {
+        if (on) keep.delete(id);
+        else keep.add(id);
+      }
+      setMetaKeep(keep);
+      setMetaMode("custom");
+    };
+    const presets: [MetaMode, string][] = [
+      ["all", T("Remove all")],
+      ["sensitive", T("Sensitive only")],
+      ["everything", T("Select all")],
+      ["nothing", T("Unselect all")],
+    ];
+    const keptAfter = done?.fields ?? null;
+    const unexpected = keptAfter ? keptAfter.filter((f) => remove(f.id)) : [];
     return (
       <>
         <div className="ctl meta-report">
-          <span className="lbl">{T("Hidden data in this photo")}</span>
-          {!read ? (
-            <small className="muted">{T("Reading…")}</small>
-          ) : !sum ? (
-            <small className="muted">
-              {T("This browser couldn't read the photo's hidden data to list it. The download is still saved without any of it.")}
-            </small>
-          ) : sum.rows.length || sum.more ? (
+          <span className="lbl meta-head">
+            {T("Hidden data in this photo")}
+            <small className="muted">{T("{n} fields", { n: fields.length })}</small>
+          </span>
+          {fields.length ? (
             <>
-              <ul className="meta-rows">
-                {sum.rows.map((r) => (
-                  <li key={r.label} className={r.private ? "priv" : undefined}>
-                    <span>{T(r.label)}</span>
-                    <b>{r.value}</b>
-                  </li>
-                ))}
-              </ul>
-              {sum.more > 0 && (
-                <small className="muted">
-                  {sum.rows.length
-                    ? T("And {n} more camera details, such as exposure and ISO.", { n: sum.more })
-                    : T("{n} camera details, such as exposure and ISO.", { n: sum.more })}
-                </small>
-              )}
+              {chipGroup<MetaMode>(presets, metaMode, setMetaMode, T("Choose fields to remove"))}
+              <small className="muted">
+                {metaMode === "all"
+                  ? T("Everything goes except the orientation and colour profile, which keep the picture looking the same.")
+                  : metaMode === "sensitive"
+                    ? T("Removes what says where, when and who: location, dates, names, serial numbers and the like.")
+                    : T("Tick what to remove; unticked fields stay in the file.")}
+              </small>
+              <p className="meta-count">
+                {T("Removing {n} of {t} fields", { n: going.length, t: fields.length })}
+              </p>
+              <div className="meta-groups">
+                {GROUPS.map((g) => {
+                  const list = fields.filter((f) => f.group === g);
+                  if (!list.length) return null;
+                  const n = list.filter((f) => remove(f.id)).length;
+                  return (
+                    <fieldset key={g} className="meta-group">
+                      <legend>
+                        <label>
+                          <input
+                            type="checkbox"
+                            checked={n === list.length}
+                            ref={(el) => {
+                              if (el) el.indeterminate = n > 0 && n < list.length;
+                            }}
+                            onChange={(e) => toggle(list.map((f) => f.id), e.target.checked)}
+                          />
+                          <span>{T(g)}</span>
+                          <small>{T("{n} of {t}", { n, t: list.length })}</small>
+                        </label>
+                      </legend>
+                      {list.map((f) => (
+                        <label key={f.id} className={`meta-field${remove(f.id) ? " off" : ""}`}>
+                          <input
+                            type="checkbox"
+                            checked={remove(f.id)}
+                            onChange={(e) => toggle([f.id], e.target.checked)}
+                          />
+                          <span className="meta-name">
+                            {T(f.label)}
+                            {f.sensitive && (
+                              <i className="meta-tag" title={T("Says where, when or who")}>
+                                {T("Sensitive")}
+                              </i>
+                            )}
+                          </span>
+                          <b className="meta-val" title={f.value}>
+                            {f.value}
+                          </b>
+                        </label>
+                      ))}
+                    </fieldset>
+                  );
+                })}
+              </div>
             </>
           ) : (
-            <small className="muted">
-              {T("No location, camera or date found. The download is still saved without any hidden data.")}
-            </small>
+            <small className="muted">{T("No hidden data in this photo. The download is the same file.")}</small>
           )}
         </div>
-        {outForItem && (
+        {outForItem && fields.length > 0 && (
           <div className="ctl meta-done">
             <span className="lbl">{T("In the download")}</span>
-            {checked && !checked.rows.length && !checked.more ? (
+            {!done ? (
+              <small className="muted">{T("Checking…")}</small>
+            ) : !keptAfter ? (
+              <small className="muted">{T("The download couldn't be read back to check it.")}</small>
+            ) : unexpected.length ? (
+              <p className="warn">
+                {T("Still in the file: {list}", { list: unexpected.map((f) => T(f.label)).join(", ") })}
+              </p>
+            ) : (
               <p className="meta-ok">
                 <Icon name="check" />
-                {T("Checked: none of it is left.")}
+                {keptAfter.length > 1
+                  ? T("Checked: only the {n} fields you kept are left.", { n: keptAfter.length })
+                  : keptAfter.length === 1
+                    ? T("Checked: only the field you kept is left.")
+                    : T("Checked: none of it is left.")}
               </p>
-            ) : done && !checked ? (
-              <small className="muted">{T("The download couldn't be read back to check it.")}</small>
-            ) : checked ? (
-              <p className="warn">
-                {T("Still in the file: {list}", { list: checked.rows.map((r) => T(r.label)).join(", ") })}
-              </p>
-            ) : (
-              <small className="muted">{T("Checking…")}</small>
             )}
-            {outForItem.lossless ? (
+            {outForItem.lossless && (
               <small className="muted">
-                {T("Cut out without re-compressing, so the picture is exactly as it was. Its colours and rotation stay.")}
-              </small>
-            ) : (
-              <small className="muted">
-                {T("Saved again from the pixels, so none of the hidden data comes along.")}
-              </small>
-            )}
-            {!!outForItem.removed?.length && (
-              <small className="muted">
-                {T("Removed: {list}", { list: outForItem.removed.map((k) => T(REMOVED[k])).join(", ") })}
+                {T("Changed without re-compressing, so the picture is exactly as it was.")}
               </small>
             )}
           </div>

@@ -2632,6 +2632,10 @@ footer.site {
     contain: size;
     overflow-y: auto;
   }
+  /* Settings scrolled into view (keyboard focus, links) stop above the pinned result */
+  .toolcard:not(.checker-card):not(.solo) > .controls:has(> .result) {
+    scroll-padding-bottom: 240px;
+  }
   /*
    * Single-preview editors: the stage is exactly the editor's height and a taller preview (a
    * PDF page) scrolls inside it. Three- and two-column editors keep their result and its
@@ -2734,6 +2738,97 @@ input[type="range"] {
 .meta-rows li.priv {
   background: color-mix(in srgb, #e5484d 8%, transparent);
 }
+.meta-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+.meta-count {
+  margin: 4px 0 0;
+  font-size: 13.5px;
+  font-weight: 600;
+}
+.meta-groups {
+  display: grid;
+  gap: 10px;
+}
+.meta-group {
+  margin: 0;
+  padding: 4px 0 2px;
+  border: 0;
+  border-top: 1px solid var(--line);
+  min-width: 0;
+}
+.meta-group legend {
+  padding: 8px 0 4px;
+  width: 100%;
+}
+.ctl .meta-group legend label {
+  display: flex;
+  justify-content: flex-start;
+  margin: 0;
+  color: var(--fg);
+  align-items: center;
+  gap: 8px;
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.meta-group legend small {
+  margin-left: auto;
+  font-weight: 400;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+.ctl label.meta-field {
+  display: grid;
+  justify-content: stretch;
+  margin: 0;
+  color: var(--fg);
+  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-areas: "box name" "box val";
+  column-gap: 8px;
+  padding: 5px 6px 5px 0;
+  border-radius: 6px;
+  font-size: 13px;
+  cursor: pointer;
+}
+.meta-field:hover {
+  background: var(--raise);
+}
+.meta-field input {
+  grid-area: box;
+  align-self: start;
+  margin-top: 2px;
+}
+.meta-name {
+  grid-area: name;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--muted);
+}
+.meta-val {
+  grid-area: val;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.meta-field.off .meta-val {
+  text-decoration: line-through;
+  text-decoration-color: color-mix(in srgb, var(--fg) 45%, transparent);
+  color: var(--muted);
+}
+.meta-tag {
+  font-style: normal;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 0 6px;
+  border-radius: 999px;
+  color: #c4363b;
+  background: color-mix(in srgb, #e5484d 12%, transparent);
+}
 .meta-done small {
   display: block;
   margin-top: 4px;
@@ -2818,6 +2913,17 @@ input[type="range"] {
   margin-top: auto;
   border-top: 1px solid var(--line);
   padding-top: 16px;
+}
+/* In a long settings panel (it scrolls inside the card), the result and Download stay in view */
+@media (min-width: 981px) {
+  .toolcard > .controls > .result {
+    position: sticky;
+    bottom: -20px;
+    margin-bottom: -20px;
+    padding-bottom: 20px;
+    background: var(--card);
+    z-index: 1;
+  }
 }
 .result .sz {
   display: flex;
