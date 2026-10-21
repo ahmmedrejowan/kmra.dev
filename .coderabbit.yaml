@@ -1,0 +1,45 @@
+# CodeRabbit reviews pull requests as advice; it never blocks a merge (the required checks are
+# GitHub Actions and CodeQL). The instructions below are the project's rules, so reviews focus
+# on what matters here.
+language: en-GB
+reviews:
+  profile: chill
+  request_changes_workflow: false
+  high_level_summary: true
+  poem: false
+  collapse_walkthrough: true
+  sequence_diagrams: false
+  changed_files_summary: true
+  auto_review:
+    enabled: true
+    drafts: false
+  path_filters:
+    - "!apps/*/public/models/**"
+    - "!apps/ocrtool/public/tesseract/**"
+    - "!pnpm-lock.yaml"
+    - "!docs/images/**"
+  path_instructions:
+    - path: "apps/**"
+      instructions: |
+        Everything must run in the browser: no servers, uploads or backend APIs, and no network
+        requests to other hosts (the Content Security Policy allows connect-src 'self' only).
+        Heavy work belongs in Web Workers, and heavy libraries (WASM codecs, ffmpeg.wasm, pdf.js,
+        AI runtimes) must be imported lazily on the page that needs them. Links to other kmra.dev
+        sites must use appUrl() from @kmra/registry, never a hard-coded URL. Flag anything that
+        could send a file's name or contents anywhere.
+    - path: "{apps,packages}/**/*.{tsx,astro}"
+      instructions: |
+        Interface text must go through T() / t() and have a Bangla translation in
+        packages/ui/src/i18n/bn.ts (or the registry's locale files). Copy style: sentence case,
+        plain verbs, no ALL-CAPS labels, no arrows in buttons, say what happens, and phrase things
+        positively ("Your files stay on your device", not "Nothing is uploaded").
+    - path: "packages/config/src/vercel.ts"
+      instructions: |
+        Security headers live here. Any loosening of the Content Security Policy (connect-src,
+        frame-ancestors, script-src) or of Permissions-Policy needs a clear reason.
+    - path: "tests/**"
+      instructions: |
+        Tests should assert real outputs (file bytes, dimensions, page counts, zip contents,
+        decoded codes), not only that a page loaded.
+chat:
+  auto_reply: true
