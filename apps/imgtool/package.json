@@ -12,6 +12,8 @@
   "dependencies": {
     "@astrojs/react": "^7.0.1",
     "@jsquash/avif": "2.1.1",
+    "@jsquash/jpeg": "1.6.0",
+    "@jsquash/webp": "1.5.0",
     "@kmra/registry": "workspace:*",
     "@kmra/ui": "workspace:*",
     "@resvg/resvg-js": "^2.6.2",
