@@ -166,10 +166,21 @@ test("metronome: keyboard shortcuts and tap", async ({ page }) => {
 test("tap tempo: BPM from taps, and into the metronome", async ({ page }) => {
   await openTool(page, "/tap-tempo");
   const pad = area(page).locator(".mt-tap-pad");
-  for (let i = 0; i < 8; i++) {
-    await pad.click();
-    await page.waitForTimeout(400);
-  }
+  await pad.waitFor();
+  // Eight taps 400 ms apart (150 BPM), timed inside the page so a slow machine doesn't stretch
+  // the gaps the way separate clicks from the test runner would
+  await pad.evaluate(async (el) => {
+    for (let i = 0; i < 8; i++) {
+      el.dispatchEvent(
+        new PointerEvent("pointerdown", {
+          bubbles: true,
+          isPrimary: true,
+          button: 0,
+        }),
+      );
+      await new Promise((r) => setTimeout(r, 400));
+    }
+  });
   const value = Number(
     await area(page).locator(".mt-tap-bpm").getAttribute("data-value"),
   );

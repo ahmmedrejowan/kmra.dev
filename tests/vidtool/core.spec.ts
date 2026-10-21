@@ -4,6 +4,7 @@
  * lossless), remove audio, video to MP3/M4A/WAV, progress, cancel, and every use-case page's
  * preset. Outputs are checked with the ffprobe command line (tests skip without it).
  */
+import { hasFastEngine } from "./fast.ts";
 import { execFileSync } from "node:child_process";
 import { mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -237,6 +238,11 @@ async function setRange(page: Page, a: string, b: string) {
 
 test("trim precisely re-encodes the chosen part", async ({ page }) => {
   await openTool(page, "/trim");
+  test.skip(
+    !(await hasFastEngine(page)),
+    "this browser can't encode H.264 and AAC",
+  );
+
   await addFiles(page, gen(VID.landscape));
   await expect(page.locator(".mp-strip")).toBeVisible({ timeout: 30_000 });
   await setRange(page, "1.2", "3.7");

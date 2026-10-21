@@ -6,6 +6,7 @@
  * location note, comparing files) and the use-case presets. Outputs are checked with the ffmpeg
  * and ffprobe command line (tests skip without them).
  */
+import { hasFastEngine } from "./fast.ts";
 import { execFileSync } from "node:child_process";
 import { mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -168,6 +169,10 @@ test("speed 2× on the fast engine halves the length, sound keeps its pitch", as
   page,
 }) => {
   await openTool(page, "/speed");
+  test.skip(
+    !(await hasFastEngine(page)),
+    "this browser can't encode H.264 and AAC",
+  );
   await addFiles(page, gen(VID.landscape));
   await expect(page.locator(".vt-plan")).toContainText("Hardware (fast)", {
     timeout: 60_000,
@@ -188,6 +193,11 @@ test("speed 0.5× on the fast engine doubles the length; tape-style sound drops 
   page,
 }) => {
   await openTool(page, "/slow-motion-video");
+  test.skip(
+    !(await hasFastEngine(page)),
+    "this browser can't encode H.264 and AAC",
+  );
+
   await addFiles(page, gen(VID.mov));
   await expect(
     page.locator(".vt-speed .chip", { hasText: /^0\.5×$/ }),
