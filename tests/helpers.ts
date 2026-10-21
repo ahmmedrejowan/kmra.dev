@@ -25,7 +25,15 @@ export const hasLocal = (name: string) => existsSync(local(name));
  */
 export const test = base.extend<{ allowConsole: RegExp[] }>({
   allowConsole: [[], { option: true }],
-  page: async ({ page, allowConsole }, use) => {
+  page: async ({ page, allowConsole, browserName }, use) => {
+    // Firefox on Linux (CI) now and then never reports "load" for a page that has fully
+    // loaded and rendered, and page.goto waits out the test's timeout. There, navigations wait
+    // for the DOM instead; tests wait for the elements they use anyway.
+    if (browserName === "firefox") {
+      const goto = page.goto.bind(page);
+      page.goto = (url, opts) =>
+        goto(url, { waitUntil: "domcontentloaded", ...opts });
+    }
     const errors: string[] = [];
     page.on("pageerror", (e) => errors.push(`pageerror: ${e.message}`));
     page.on("console", (m) => {
@@ -63,7 +71,9 @@ export async function openTool(page: Page, path: string) {
   await page.goto(path);
   await page.locator(".tool-area").first().waitFor();
   await hydrated(page);
-  await page.waitForLoadState("networkidle");
+  // Firefox: see the page fixture (its load and network-idle signals can go missing)
+  if (page.context().browser()?.browserType().name() !== "firefox")
+    await page.waitForLoadState("networkidle");
 }
 
 /** Put files into the tool's file input (the same path as choosing files or dropping them). */
