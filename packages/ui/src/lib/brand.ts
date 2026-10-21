@@ -56,6 +56,9 @@ export function markInner(appId: string): string {
             `<rect x="${x! - 2.5}" y="${y}" width="5" height="${h}" rx="2.5" fill="#fff"/>`,
         )
         .join("");
+    case "vidtool":
+      // A screen with a play button
+      return `<rect x="11" y="16" width="42" height="32" rx="7" fill="#fff"/><path d="M28 24.5v15l13-7.5z" fill="#12a594"/>`;
     case "devtool":
       // A terminal prompt and cursor: "> _"
       return `<path d="M17 22 27 32 17 42" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/><rect x="31" y="39" width="17" height="5" rx="2.5" fill="#fff"/>`;

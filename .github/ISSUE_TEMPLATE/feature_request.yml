@@ -1,0 +1,21 @@
+name: Tool or feature idea
+description: Suggest a new tool or a change to one
+labels: [idea]
+body:
+  - type: input
+    id: site
+    attributes:
+      label: Site
+      placeholder: ImgTool, PDFTool, a new site…
+  - type: textarea
+    id: job
+    attributes:
+      label: The job it does
+      description: What you're trying to get done, and who it helps
+    validations:
+      required: true
+  - type: textarea
+    id: notes
+    attributes:
+      label: Anything else
+      description: Similar tools you've used, formats, examples
