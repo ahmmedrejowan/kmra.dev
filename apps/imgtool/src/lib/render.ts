@@ -356,8 +356,11 @@ function caption(c: OffscreenCanvas, t: TextLayer) {
   draw(t.bottom, false);
 }
 
+const rgbOf = (hex: string) =>
+  [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) || 0);
+
 function isLight(hex: string): boolean {
-  const v = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) || 0);
+  const v = rgbOf(hex);
   return 0.299 * v[0]! + 0.587 * v[1]! + 0.114 * v[2]! > 150;
 }
 
@@ -371,9 +374,10 @@ function watermark(c: OffscreenCanvas, m: Watermark, logo: ImageBitmap | null) {
   let bw: number;
   let bh: number;
   let drawAt: (px: number, py: number) => void;
+  const alpha = m.opacity / 100;
   x.save();
-  x.globalAlpha = m.opacity / 100;
   if (logo) {
+    x.globalAlpha = alpha;
     bw = Math.max(8, Math.round((W * m.size) / 100));
     bh = Math.round((bw * logo.height) / logo.width);
     drawAt = (px, py) => x.drawImage(logo, px, py, bw, bh);
@@ -385,10 +389,11 @@ function watermark(c: OffscreenCanvas, m: Watermark, logo: ImageBitmap | null) {
     const size = Math.max(8, Math.round((W * m.size) / 100));
     x.font = `600 ${size}px ${FONTS.sans}`;
     x.textBaseline = "top";
-    x.fillStyle = m.color;
+    // Opacity goes in the colours: Safari ignores globalAlpha for text with a shadow
+    x.fillStyle = `rgba(${rgbOf(m.color).join(",")},${alpha})`;
     x.shadowColor = isLight(m.color)
-      ? "rgba(0,0,0,.45)"
-      : "rgba(255,255,255,.45)";
+      ? `rgba(0,0,0,${0.45 * alpha})`
+      : `rgba(255,255,255,${0.45 * alpha})`;
     x.shadowBlur = size * 0.15;
     bw = Math.ceil(x.measureText(m.text).width);
     bh = Math.round(size * 1.15);
