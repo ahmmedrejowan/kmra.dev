@@ -35,3 +35,10 @@ pnpm check
 
 Vercel, one project per app (Root Directory `apps/<app>`), connected to this repo. Settings come
 from `apps/<app>/vercel.ts`. Pushing to `main` deploys to production; other branches get previews.
+
+## License
+
+[GNU Affero General Public License v3.0](LICENSE). If you run a changed copy of these sites for
+others, you share its source under the same licence. Third-party code, AI models and fonts keep
+their own licences, listed in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). The kmra.dev name
+and logos aren't covered by the licence.
