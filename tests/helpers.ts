@@ -50,10 +50,19 @@ export const test = base.extend<{ allowConsole: RegExp[] }>({
 });
 export { expect };
 
+/**
+ * Wait until every Astro island on the page has hydrated: an island drops its `ssr` attribute
+ * once its component is running. Before that, events and clicks meant for it are lost.
+ */
+export async function hydrated(page: Page) {
+  await expect(page.locator("astro-island[ssr]")).toHaveCount(0);
+}
+
 /** Open a tool page and wait until its island has hydrated. */
 export async function openTool(page: Page, path: string) {
   await page.goto(path);
   await page.locator(".tool-area").first().waitFor();
+  await hydrated(page);
   await page.waitForLoadState("networkidle");
 }
 

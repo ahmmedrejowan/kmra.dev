@@ -5,7 +5,7 @@
  */
 import { readFileSync } from "node:fs";
 import type { Page } from "@playwright/test";
-import { test, expect, gen, download, bytes } from "../helpers.ts";
+import { test, expect, gen, download, bytes, hydrated } from "../helpers.ts";
 import { info, start, unzip } from "./lib.ts";
 
 const workspace = async (page: Page, path: string, file: string) => {
@@ -113,6 +113,8 @@ test("Advanced opens empty at /editor?t=<tool>; choices wait for the photo; Back
   page,
 }) => {
   await page.goto("/convert");
+  // The switch's event only reaches the tool once its island is running
+  await hydrated(page);
   await page.evaluate(() => window.dispatchEvent(new Event("kmra:advanced")));
   const ws = page.getByRole("dialog", { name: "Advanced workspace" });
   await expect(ws).toBeVisible();

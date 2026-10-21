@@ -18,11 +18,11 @@ permissions:
 jobs:
   types:
     name: Types and format
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
         with:
           node-version: 24
           cache: pnpm
@@ -33,16 +33,16 @@ jobs:
 
   e2e:
     name: End to end (${{ matrix.shard }} of 3)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 45
     strategy:
       fail-fast: false
       matrix:
         shard: [1, 2, 3]
     steps:
-      - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
         with:
           node-version: 24
           cache: pnpm
@@ -54,10 +54,13 @@ jobs:
       - run: pnpm build
       - name: End to end
         run: pnpm test:e2e:only --shard=${{ matrix.shard }}/3
+      # Traces and screenshots of every failed attempt, including tests that passed on retry
+      # (flaky), so a failure that doesn't repeat can still be looked at
       - name: Report
-        if: failure()
-        uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v7
         with:
           name: playwright-report-${{ matrix.shard }}
           path: test-results/
+          if-no-files-found: ignore
           retention-days: 7
