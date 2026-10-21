@@ -3,6 +3,7 @@ import type { Preset } from "@kmra/registry";
 import type { Locale } from "@kmra/ui/lib/i18n";
 import { LangProvider } from "@kmra/ui/lib/i18n-react";
 import { TOOLS } from "../tools";
+import { SourceProvider } from "../lib/kit";
 
 /** One island for every developer tool; each tool's code loads only on its own page. */
 export default function DevTool({
@@ -18,7 +19,11 @@ export default function DevTool({
   return (
     <LangProvider lang={lang}>
       <Suspense fallback={<div className="devcard dev-loading" />}>
-        {Tool && <Tool preset={preset} />}
+        {Tool && (
+          <SourceProvider slug={slug}>
+            <Tool preset={preset} />
+          </SourceProvider>
+        )}
       </Suspense>
     </LangProvider>
   );

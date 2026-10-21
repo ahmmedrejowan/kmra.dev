@@ -380,40 +380,69 @@ function ScannerView({ preset }: { preset?: Preset }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
 
+  /** Back to the empty state: no codes, no image */
+  function clearResults() {
+    setFound([]);
+    setMarks([]);
+    setDims(null);
+    setPreview((old) => {
+      if (old) URL.revokeObjectURL(old);
+      return null;
+    });
+  }
+
+  function switchMode(m: Mode) {
+    if (m === mode) return;
+    // Results belong to the mode that found them
+    clearResults();
+    setMode(m);
+  }
+
   const readImage = useCallback(async (files: File[]) => {
     setMode("image");
     stop();
     setBusy(true);
-    try {
-      const all: Found[] = [];
-      let first: Found[] = [];
-      let size: [number, number] | null = null;
-      for (const [i, f] of files.entries()) {
+    const all: Found[] = [];
+    const failed: string[] = [];
+    let shown: { file: File; codes: Found[]; size: [number, number] } | null =
+      null;
+    // Each image on its own, so one unreadable file doesn't cancel the others
+    for (const f of files) {
+      try {
         // Decode in the browser first: the reader alone can't open WebP, AVIF or SVG, and
         // ignores a phone photo's EXIF rotation
         const { canvas, pixels } = await pixelsOf(f);
         const r = await read(pixels);
-        if (i === 0) {
-          first = r;
-          size = [canvas.width, canvas.height];
-        }
+        if (!shown)
+          shown = { file: f, codes: r, size: [canvas.width, canvas.height] };
         all.push(...r);
+      } catch {
+        failed.push(f.name);
       }
-      setMarks(first.flatMap((c) => (c.corners ? [c.corners] : [])));
+    }
+    if (!shown) {
+      // Nothing readable: don't leave an earlier image's codes on screen
+      clearResults();
+    } else {
+      const first = shown;
+      setMarks(first.codes.flatMap((c) => (c.corners ? [c.corners] : [])));
       // Outlines are in the decoded image's pixels, which keep the shown image's shape
-      setDims(size);
+      setDims(first.size);
       setPreview((old) => {
         if (old) URL.revokeObjectURL(old);
-        return URL.createObjectURL(files[0]!);
+        return URL.createObjectURL(first.file);
       });
       setFound(all);
-      if (!all.length)
-        toast(T("No code found. Try a sharper or closer picture."));
-    } catch {
-      toast(T("That image couldn't be read."));
-    } finally {
-      setBusy(false);
     }
+    if (failed.length)
+      toast(
+        files.length === 1
+          ? T("That image couldn't be read.")
+          : T("Couldn't read {names}.").replace("{names}", failed.join(", ")),
+      );
+    else if (!all.length)
+      toast(T("No code found. Try a sharper or closer picture."));
+    setBusy(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   const { dragging, pickRef, pick, take } = useFiles({
@@ -428,7 +457,7 @@ function ScannerView({ preset }: { preset?: Preset }) {
 
   async function start() {
     setCamError(null);
-    setFound([]);
+    clearResults();
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
         video: {
@@ -579,7 +608,7 @@ function ScannerView({ preset }: { preset?: Preset }) {
             ["image", T("Image or screenshot")],
           ]}
           value={mode}
-          onPick={setMode}
+          onPick={switchMode}
         />
         {mode === "image" && (
           <button type="button" className="btn sm" onClick={pick}>

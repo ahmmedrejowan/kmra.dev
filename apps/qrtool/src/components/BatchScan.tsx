@@ -107,7 +107,9 @@ function BatchScanView() {
         }
         // Done with the file: let it be freed
         files.current.delete(item.id);
-        list.current[i] = next;
+        // Find it again by id: it may have been removed (or others before it) meanwhile
+        const at = list.current.findIndex((x) => x.id === item.id);
+        if (at >= 0) list.current[at] = next;
         // Redraw the table at most a few times a second
         const now = performance.now();
         if (now - last > 250) {
@@ -123,6 +125,13 @@ function BatchScanView() {
         setRunning(false);
       }
     }
+  }
+
+  /** Take one image (and its codes) off the list */
+  function remove(id: number) {
+    list.current = list.current.filter((x) => x.id !== id);
+    files.current.delete(id);
+    setItems([...list.current]);
   }
 
   function clear() {
@@ -209,6 +218,9 @@ function BatchScanView() {
                 <th>
                   <span className="sr-only">{T("Copy")}</span>
                 </th>
+                <th style={{ width: 46 }}>
+                  <span className="sr-only">{T("Remove")}</span>
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -254,13 +266,31 @@ function BatchScanView() {
                       {status(item)}
                     </td>
                   )}
+                  <td>
+                    {k === 0 && (
+                      <button
+                        type="button"
+                        className="iconbtn bs-copy bs-remove"
+                        aria-label={T("Remove {name}").replace(
+                          "{name}",
+                          item.name,
+                        )}
+                        title={T("Remove")}
+                        onClick={() => remove(item.id)}
+                      >
+                        <Icon name="x" />
+                      </button>
+                    )}
+                  </td>
                 </tr>
               ))}
             </tbody>
           </table>
           {!shown.length && (
             <p className="muted small bs-empty">
-              {T("Every image had a code.")}
+              {items.some((x) => x.state === "waiting")
+                ? T("No image without a code so far. Still reading…")
+                : T("Every image had a code.")}
             </p>
           )}
         </div>

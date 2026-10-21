@@ -97,6 +97,11 @@ export default function Merge(_: ToolProps) {
   };
   const key = `${ready.map((c) => c.key).join(",")}|${to}|${kbps}`;
   const total = ready.reduce((s, c) => s + c.info!.durationSec, 0);
+  // Files that can't be joined: unreadable, or read fine but with no sound
+  const leftOut = clips.filter((c) => c.error);
+
+  // A failed merge's message goes once the files, their order or the settings change
+  useEffect(() => setError(null), [key]);
 
   useEffect(() => {
     if (ready.length < 2 || waiting) return;
@@ -180,7 +185,12 @@ export default function Merge(_: ToolProps) {
     );
 
   const input = (
-    <MediaInput inputRef={pickRef} onFiles={take} multiple accept={AUDIO_ACCEPT} />
+    <MediaInput
+      inputRef={pickRef}
+      onFiles={take}
+      multiple
+      accept={AUDIO_ACCEPT}
+    />
   );
 
   if (!clips.length)
@@ -212,7 +222,7 @@ export default function Merge(_: ToolProps) {
           <dl className="kv">
             <div>
               <dt>{T("Files")}</dt>
-              <dd>{clips.length}</dd>
+              <dd className="vt-count">{ready.length}</dd>
             </div>
             <div>
               <dt>{T("Total length")}</dt>
@@ -224,12 +234,25 @@ export default function Merge(_: ToolProps) {
             </div>
           </dl>
         </div>
-        <FormatSeg value={to} onPick={(v) => v !== "same" && setTo(v)} only={["mp3", "m4a", "wav", "ogg", "flac"]} />
+        <FormatSeg
+          value={to}
+          onPick={(v) => v !== "same" && setTo(v)}
+          only={["mp3", "m4a", "wav", "ogg", "flac"]}
+        />
         {!LOSSLESS.has(to) && <RateSeg value={kbps} onPick={setKbps} />}
-        {clips.some((c) => c.error) && (
-          <p className="note warn">
-            {T("Files without sound, or that can't be read, are left out.")}
-          </p>
+        {leftOut.length > 0 && (
+          <div className="note warn vt-leftout">
+            <p>
+              {T("Files without sound, or that can't be read, are left out.")}
+            </p>
+            <ul>
+              {leftOut.map((c) => (
+                <li key={c.key}>
+                  {c.file.name}: {c.info ? T("no sound") : T("can't be read")}
+                </li>
+              ))}
+            </ul>
+          </div>
         )}
       </aside>
 
@@ -318,11 +341,15 @@ export default function Merge(_: ToolProps) {
                   </span>
                   <span className="vt-clip-meta muted">
                     {c.error
-                      ? T("Can't be read")
+                      ? c.info
+                        ? T("No sound, left out")
+                        : T("Can't be read")
                       : c.info
                         ? [
                             codecLabel(c.info.audio?.codec),
-                            c.info.audio?.channels === 1 ? T("mono") : T("stereo"),
+                            c.info.audio?.channels === 1
+                              ? T("mono")
+                              : T("stereo"),
                             c.info.audio?.sampleRate
                               ? `${Math.round(c.info.audio.sampleRate / 100) / 10} kHz`
                               : "",
@@ -482,7 +509,9 @@ export default function Merge(_: ToolProps) {
               onClick={() => downloadBlob(result.blob, result.name)}
             >
               <Icon name="download" />
-              {T("Download {ext}", { ext: result.name.split(".").pop()!.toUpperCase() })}
+              {T("Download {ext}", {
+                ext: result.name.split(".").pop()!.toUpperCase(),
+              })}
             </button>
           </div>
         )}

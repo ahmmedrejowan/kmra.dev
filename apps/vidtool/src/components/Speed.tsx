@@ -64,7 +64,11 @@ export default function Speed({ preset }: ToolProps) {
       suffix="speed"
       action={speed > 1 ? T("Speed up") : T("Slow down")}
       dropTitle={T("Drop a video to change its speed")}
-      idle={T("Pick a speed other than 1×.")}
+      idle={(info) =>
+        info.video
+          ? T("Pick a speed other than 1×.")
+          : T("This file has no video to change.")
+      }
       job={job}
       onFile={(_, info) =>
         setAspect(info.video ? info.video.width / info.video.height : undefined)

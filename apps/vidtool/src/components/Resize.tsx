@@ -60,7 +60,11 @@ export default function Resize({ preset }: ToolProps) {
       suffix="resize"
       action={T("Resize")}
       dropTitle={T("Drop a video to resize it")}
-      idle={T("Pick a resolution or a shape.")}
+      idle={(info) =>
+        info.video
+          ? T("Pick a resolution or a shape.")
+          : T("This file has no video to change.")
+      }
       job={job}
       settings={() => (
         <>

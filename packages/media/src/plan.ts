@@ -3,6 +3,7 @@
  * rotation and fit, bitrates for a quality or a target size, and size estimates. No browser APIs,
  * so tools can call them while rendering.
  */
+import { toolName } from "@kmra/ui/lib/files";
 import type { Container, Job, MediaInfo } from "./types";
 
 export const AUDIO_CONTAINERS = new Set<Container>([
@@ -51,18 +52,40 @@ export function isAudioOut(job: Job): boolean {
   return AUDIO_CONTAINERS.has(job.to) || !!job.video?.drop;
 }
 
-/** "Holiday clip.MOV" → "Holiday clip" */
+/**
+ * "Holiday clip.MOV" → "Holiday clip". A name that came from kmra.dev loses its "-kmra" tag
+ * ("song-trim-kmra.mp3" → "song-trim"), so the next tool's name reads "song-trim-volume".
+ */
 export function baseName(name: string): string {
-  return name.replace(/\.[^.]+$/, "") || "video";
+  return toolName(name, "") || "video";
 }
 
-/** "clip.mov" + mp4 + "compressed" → "clip-compressed.mp4" */
+/**
+ * "clip.mov" + mp4 + "compress" → "clip-compress.mp4"; an earlier tool's "-kmra" tag is dropped
+ * ("song-trim-kmra.mp3" + "volume" → "song-trim-volume.mp3"; downloads add the tag back).
+ */
 export function outputName(
   input: string,
   to: Container,
   suffix?: string,
 ): string {
-  return `${baseName(input)}${suffix ? `-${suffix}` : ""}.${to}`;
+  return `${toolName(input, suffix ?? "")}.${to}`;
+}
+
+/**
+ * Names for a batch's outputs, made unique (case-insensitive) in order: "clip.mov" and
+ * "clip.mkv" both converting give "clip-convert.mp4" and "clip-convert-2.mp4".
+ */
+export function uniqueNames(names: string[]): string[] {
+  const used = new Set<string>();
+  return names.map((name) => {
+    let out = name;
+    const m = /^(.*?)(\.[^.]+)?$/.exec(name)!;
+    for (let n = 2; used.has(out.toLowerCase()); n++)
+      out = `${m[1]}-${n}${m[2] ?? ""}`;
+    used.add(out.toLowerCase());
+    return out;
+  });
 }
 
 /** Duration of the output in seconds, after trim and speed */
@@ -206,11 +229,13 @@ export function targetPlan(
     if (job.audio?.bitrate) audio = Math.min(audio, job.audio.bitrate * 1000);
     if (job.to === "wav" || job.to === "flac") audio = 0;
   }
-  if (isAudioOut(job))
-    return {
-      videoBitrate: 0,
-      audioBitrate: Math.round(Math.min(total, 320_000)),
-    };
+  if (isAudioOut(job)) {
+    // Never above the source's sound (or the job's own cap): the file would only grow
+    let a = Math.min(total, 320_000);
+    if (job.audio?.bitrate) a = Math.min(a, job.audio.bitrate * 1000);
+    if (info.audio?.bitrate) a = Math.min(a, info.audio.bitrate);
+    return { videoBitrate: 0, audioBitrate: Math.round(Math.max(8_000, a)) };
+  }
   let video = Math.max(50_000, total - audio);
   const src = sourceVideoBitrate(info);
   // Never aim above what the source spends: the file would only grow

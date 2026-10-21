@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Icon } from "@kmra/ui/components/Icon";
 import { Seg } from "@kmra/ui/components/controls";
 import { DropCard, FileInput, useFiles } from "@kmra/ui/components/kit";
@@ -7,6 +7,7 @@ import {
   formatBytes,
   IMAGE_ACCEPT,
   isImageFile,
+  toolName,
 } from "@kmra/ui/lib/files";
 import { toast } from "@kmra/ui/lib/toast";
 import { num, type Locale } from "@kmra/ui/lib/i18n";
@@ -137,6 +138,18 @@ function ImagesToPdfView() {
   const [q, setQ] = useState<"high" | "medium" | "small">("high");
   const [busy, setBusy] = useState<string | null>(null);
   const [dragKey, setDragKey] = useState<string | null>(null);
+  // Free every preview still open when the tool goes away
+  const picsRef = useRef(pics);
+  picsRef.current = pics;
+  useEffect(
+    () => () => picsRef.current.forEach((p) => URL.revokeObjectURL(p.url)),
+    [],
+  );
+  function remove(key: string) {
+    const gone = pics.find((x) => x.key === key);
+    if (gone) URL.revokeObjectURL(gone.url);
+    setPics((l) => l.filter((x) => x.key !== key));
+  }
 
   const add = (files: File[]) =>
     setPics((p) => [
@@ -191,7 +204,7 @@ function ImagesToPdfView() {
       const blob = await save(await imagesToPdf(images, o));
       downloadBlob(
         blob,
-        `${pics[0]!.file.name.replace(/\.[^.]+$/, "")}-from-image.pdf`,
+        `${toolName(pics[0]!.file.name, "from-image")}.pdf`,
       );
       toast(
         T("Saved a {n}-page PDF, {size}.", {
@@ -270,9 +283,7 @@ function ImagesToPdfView() {
                       type="button"
                       aria-label={T("Remove")}
                       title={T("Remove")}
-                      onClick={() =>
-                        setPics((l) => l.filter((x) => x.key !== p.key))
-                      }
+                      onClick={() => remove(p.key)}
                     >
                       <Icon name="x" />
                     </button>

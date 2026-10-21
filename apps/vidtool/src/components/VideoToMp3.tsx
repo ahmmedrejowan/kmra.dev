@@ -2,10 +2,14 @@ import { useState } from "react";
 import { Mp3Credit } from "@kmra/media/components/Mp3Credit";
 import { Seg } from "@kmra/ui/components/controls";
 import { useT } from "@kmra/ui/lib/i18n-react";
-import { codecLabel } from "@kmra/media/engine";
+import { codecLabel, type MediaInfo } from "@kmra/media/engine";
 import { Workspace, type ToolProps } from "./Workspace";
 
 type To = "mp3" | "m4a" | "wav";
+
+/** AAC sound can go into an M4A as it is */
+const isAac = (info: MediaInfo) =>
+  !!info.audio && /aac/i.test(info.audio.codec);
 
 /**
  * Video to MP3: the sound as MP3 (LAME in wasm when the browser has no MP3 encoder), M4A (AAC;
@@ -32,8 +36,10 @@ export default function VideoToMp3({ preset }: ToolProps) {
       job={(info) => {
         if (!info.audio) return null;
         if (to === "wav") return { to };
-        // M4A from an AAC track: copied as it is unless a bitrate is picked
-        if (to === "m4a" && !kbps) return { to };
+        // M4A "Original": an AAC track is copied as it is; other sound is encoded at 192k, so
+        // the choice works the same for every file of a batch
+        if (to === "m4a" && !kbps)
+          return isAac(info) ? { to } : { to, audio: { bitrate: 192 } };
         return { to, audio: { bitrate: kbps || 192 } };
       }}
       settings={({ info }) => (
@@ -55,7 +61,7 @@ export default function VideoToMp3({ preset }: ToolProps) {
             <Seg
               label={T("Quality")}
               options={[
-                ...(to === "m4a" && info?.audio && /aac/i.test(info.audio.codec)
+                ...(to === "m4a"
                   ? ([[0, T("Original")]] as [number, string][])
                   : []),
                 [128, "128k"],
@@ -89,10 +95,15 @@ export default function VideoToMp3({ preset }: ToolProps) {
           )}
         </>
       )}
+      // No sound: the output column already says so (idle), so no second note here
       note={(info) =>
-        info.audio ? null : (
-          <p className="note warn">{T("This video has no sound to save.")}</p>
-        )
+        info.audio && to === "m4a" && !kbps && !isAac(info) ? (
+          <p className="note">
+            {T(
+              "This video's sound isn't AAC, so it can't be copied as it is. It's encoded at 192k instead.",
+            )}
+          </p>
+        ) : null
       }
     />
   );

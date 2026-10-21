@@ -61,9 +61,10 @@ test("base64 round-trips a binary file", async ({ page }) => {
   await expect(btn(page, "Decode")).toHaveAttribute("aria-pressed", "true");
   await expect(page.getByText("PNG image").first()).toBeVisible();
   const d = await download(page, () =>
-    btn(page, "Download decoded.png").click(),
+    btn(page, "Download dot.png").click(),
   );
-  expect(d.suggestedFilename()).toBe("decoded-kmra.png");
+  // Decoding gives the file back under its own name
+  expect(d.suggestedFilename()).toBe("dot-kmra.png");
   expect((await bytes(d)).equals(png)).toBe(true);
 });
 

@@ -16,6 +16,7 @@ import {
   BarCheck,
   BarSeg,
   Pane,
+  useOutName,
   downloadText,
   useInput,
   type PaneError,
@@ -49,6 +50,7 @@ const CONTEXT = 3;
 export default function DiffChecker({ preset }: ToolProps) {
   const T = useT();
   const [a, setA] = useInput("diff-checker");
+  const outName = useOutName();
   const [b, setB] = useState("");
   const [view, setView] = useState<View>(
     preset?.view === "inline" ? "inline" : "side",
@@ -234,7 +236,7 @@ export default function DiffChecker({ preset }: ToolProps) {
                 <button
                   type="button"
                   className="btn xs"
-                  onClick={() => downloadText(patch, "changes.patch")}
+                  onClick={() => downloadText(patch, outName("changes.patch"))}
                 >
                   <Icon name="download" />
                   {T("Download")}

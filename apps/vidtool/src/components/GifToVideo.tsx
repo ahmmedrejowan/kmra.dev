@@ -42,6 +42,7 @@ export default function GifToVideo({ preset }: ToolProps) {
       action={T("Make video")}
       dropTitle={T("Drop GIFs to turn them into videos")}
       chooseLabel={T("Choose GIFs")}
+      kind="gif"
       formats={["GIF", "WebP"]}
       accept={isAnimFile}
       inputAccept="image/gif,image/webp,.gif,.webp"

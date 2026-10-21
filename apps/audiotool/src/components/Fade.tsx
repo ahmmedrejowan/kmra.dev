@@ -16,14 +16,22 @@ export default function Fade(_: ToolProps) {
       suffix="fade"
       action={T("Add the fades")}
       dropTitle={T("Drop audio files to fade them in and out")}
-      idle={T("Set a fade longer than 0 s.")}
+      idle={(info) =>
+        info.audio
+          ? T("Set a fade longer than 0 s.")
+          : T("This file has no sound.")
+      }
       job={(info) =>
         info.audio && (fin > 0 || fout > 0)
           ? {
               to: sameAudio(info),
               audio: {
-                ...(fin > 0 ? { fadeInSec: Math.min(fin, info.durationSec / 2) } : {}),
-                ...(fout > 0 ? { fadeOutSec: Math.min(fout, info.durationSec / 2) } : {}),
+                ...(fin > 0
+                  ? { fadeInSec: Math.min(fin, info.durationSec / 2) }
+                  : {}),
+                ...(fout > 0
+                  ? { fadeOutSec: Math.min(fout, info.durationSec / 2) }
+                  : {}),
               },
             }
           : null

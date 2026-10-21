@@ -13,6 +13,7 @@ import {
   formatBytes,
   IMAGE_ACCEPT,
   isImageFile,
+  toolName,
 } from "@kmra/ui/lib/files";
 import { useT } from "@kmra/ui/lib/i18n-react";
 import type { EngineId } from "../lib/ocr/types";
@@ -56,6 +57,8 @@ interface Item {
   /** Mean confidence of the OCR'd parts; null when all text came from a PDF text layer */
   confidence: number | null;
   pages?: number;
+  /** PDF pages whose text came from the text layer */
+  layer?: number;
   error?: string;
 }
 
@@ -150,6 +153,7 @@ export default function BatchOcr({ preset }: { preset?: Preset }) {
         engine: EngineId;
         confidence: number | null;
         pages?: number;
+        layer?: number;
       };
       if (isPdf(it.file))
         out = await readPdf(it, langs, engine, signal, (p, status) =>
@@ -203,18 +207,8 @@ export default function BatchOcr({ preset }: { preset?: Preset }) {
   const done = items.filter((it) => it.state === "done");
   const reading = items.find((it) => it.state === "reading");
   const waiting = items.filter((it) => it.state === "waiting").length;
-  const base = (f: File) => f.name.replace(/\.[^.]+$/, "") || "image";
-
-  function names() {
-    // Unique .txt names, even for files with the same name
-    const seen = new Map<string, number>();
-    return done.map((it) => {
-      const b = base(it.file);
-      const n = (seen.get(b) ?? 0) + 1;
-      seen.set(b, n);
-      return n > 1 ? `${b} (${n})` : b;
-    });
-  }
+  /** "scan.png" → "scan-batch-ocr.txt"; the zip numbers files with the same name (-2, -3) */
+  const txtName = (f: File) => `${toolName(f.name, "batch-ocr")}.txt`;
   function combined(md: boolean) {
     return (
       done
@@ -250,6 +244,10 @@ export default function BatchOcr({ preset }: { preset?: Preset }) {
       ),
     );
     ctl.current?.abort();
+  }
+  /** Put a stopped or failed file back in the queue */
+  function retry(id: number) {
+    patch(id, { state: "waiting", p: 0, status: "", error: undefined });
   }
   function remove(id: number) {
     if (busy.current === id) ctl.current?.abort();
@@ -378,11 +376,13 @@ export default function BatchOcr({ preset }: { preset?: Preset }) {
                         <span className="oi-stats">
                           <span>{it.langs.map(name).join(", ")}</span>
                           <span>
-                            {it.confidence === null
-                              ? it.pages
-                                ? T("Text layer")
-                                : T("No text found")
-                              : T("Confidence {n}%", { n: it.confidence })}
+                            {!it.text.trim()
+                              ? T("No text found")
+                              : it.confidence === null
+                                ? it.layer
+                                  ? T("Text layer")
+                                  : T("No text found")
+                                : T("Confidence {n}%", { n: it.confidence })}
                           </span>
                           <span>
                             {T("{n} characters", { n: it.text.length })}
@@ -406,20 +406,31 @@ export default function BatchOcr({ preset }: { preset?: Preset }) {
                             type="button"
                             className="btn xs"
                             aria-label={T("Download {name}", {
-                              name: `${base(it.file)}-batch-ocr.txt`,
+                              name: txtName(it.file),
                             })}
                             onClick={() =>
                               downloadBlob(
                                 new Blob([it.text], {
                                   type: "text/plain;charset=utf-8",
                                 }),
-                                `${base(it.file)}-batch-ocr.txt`,
+                                txtName(it.file),
                               )
                             }
                           >
                             <Icon name="download" />
                           </button>
                         </>
+                      )}
+                      {it.state === "failed" && (
+                        <button
+                          type="button"
+                          className="btn xs"
+                          aria-label={T("Retry {name}", { name: it.file.name })}
+                          onClick={() => retry(it.id)}
+                        >
+                          <Icon name="rotate" />
+                          {T("Retry")}
+                        </button>
                       )}
                       <button
                         type="button"
@@ -463,16 +474,15 @@ export default function BatchOcr({ preset }: { preset?: Preset }) {
                 <button
                   type="button"
                   className="btn xs acc"
-                  onClick={() => {
-                    const n = names();
+                  onClick={() =>
                     void downloadZip(
-                      done.map((it, i) => ({
-                        name: `${n[i]}-batch-ocr.txt`,
+                      done.map((it) => ({
+                        name: txtName(it.file),
                         blob: new Blob([it.text], { type: "text/plain" }),
                       })),
                       "text-batch-ocr.zip",
-                    );
-                  }}
+                    )
+                  }
                 >
                   <Icon name="download" />
                   {T("Zip of .txt files")}
@@ -531,12 +541,14 @@ async function readPdf(
     const n = doc.numPages;
     const parts: string[] = [];
     const confs: number[] = [];
+    let layer = 0;
     let used: EngineId = "document";
     for (let i = 1; i <= n; i++) {
       if (signal.aborted) throw new DOMException("Aborted", "AbortError");
       const real = await pdf.realText(doc, i);
       if (real !== null) {
         parts.push(real);
+        layer++;
         onProgress(i / n, "Reading text");
         continue;
       }
@@ -560,6 +572,7 @@ async function readPdf(
         ? Math.round(confs.reduce((a, b) => a + b, 0) / confs.length)
         : null,
       pages: n,
+      layer,
     };
   } finally {
     void doc.loadingTask.destroy();

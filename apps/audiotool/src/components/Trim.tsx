@@ -19,7 +19,11 @@ export default function Trim({ preset }: ToolProps) {
   const [range, setRange] = useState<[number, number]>([0, 0]);
   const [dur, setDur] = useState(0);
   const [to, setTo] = useState<FormatPick>(
-    ringtone ? "m4a" : isFormat(preset?.to) ? (preset!.to as AudioContainer) : "same",
+    ringtone
+      ? "m4a"
+      : isFormat(preset?.to)
+        ? (preset!.to as AudioContainer)
+        : "same",
   );
   const [a, b] = range;
   const whole = dur > 0 && a <= 0.01 && b >= dur - 0.01;
@@ -41,6 +45,7 @@ export default function Trim({ preset }: ToolProps) {
         setDur(d);
         setRange([0, seconds > 0 ? Math.min(d, seconds) : d]);
       }}
+      unknownSize={T("Depends on the cut")}
       idle={T("Move a handle to choose the part to keep.")}
       job={(info) =>
         info.audio && !whole && b - a >= 0.1
@@ -64,10 +69,17 @@ export default function Trim({ preset }: ToolProps) {
         <>
           {ringtone ? (
             <p className="note">
-              {T("Saved as an M4R ringtone, up to {n} seconds.", { n: RINGTONE_MAX })}
+              {T("Saved as an M4R ringtone, up to {n} seconds.", {
+                n: RINGTONE_MAX,
+              })}
             </p>
           ) : (
-            <FormatSeg value={to} onPick={setTo} same only={["mp3", "m4a", "wav"]} />
+            <FormatSeg
+              value={to}
+              onPick={setTo}
+              same
+              only={["mp3", "m4a", "wav"]}
+            />
           )}
           {info && (
             <p className="note">

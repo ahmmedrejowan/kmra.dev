@@ -8,6 +8,8 @@
  *   </Workspace>
  */
 import {
+  createContext,
+  useContext,
   useEffect,
   useRef,
   useState,
@@ -16,11 +18,60 @@ import {
 } from "react";
 import { Icon } from "@kmra/ui/components/Icon";
 import { CopyBtn } from "@kmra/ui/components/kit";
-import { downloadBlob } from "@kmra/ui/lib/files";
+import { downloadBlob, toolName } from "@kmra/ui/lib/files";
 import { toast } from "@kmra/ui/lib/toast";
 import { useT } from "@kmra/ui/lib/i18n-react";
 import { takeText } from "./handoff";
 import { takeFiles } from "@kmra/ui/lib/handoff";
+
+/**
+ * The file the input came from, so downloads read "<your file>-<tool>-kmra.<ext>". Set by
+ * "Open file" and by files handed over from kmra.dev; typed or pasted input has none, and its
+ * downloads keep their plain names (formatted.json, query.sql…).
+ */
+interface Source {
+  slug: string;
+  name: string | null;
+  setName: (name: string | null) => void;
+}
+const SourceCtx = createContext<Source>({
+  slug: "",
+  name: null,
+  setName: () => {},
+});
+
+/** Wraps a tool (DevTool does this) so its panes share the opened file's name */
+export function SourceProvider({
+  slug,
+  children,
+}: {
+  slug: string;
+  children: ReactNode;
+}) {
+  const [name, setName] = useState<string | null>(null);
+  return (
+    <SourceCtx.Provider value={{ slug, name, setName }}>
+      {children}
+    </SourceCtx.Provider>
+  );
+}
+
+export function useSource(): Source {
+  return useContext(SourceCtx);
+}
+
+/**
+ * Download names: "formatted.json" stays as it is for typed input; for an opened "report.json"
+ * it becomes "report-json-formatter.json" (downloadBlob adds the kmra tag).
+ */
+export function useOutName(): (fixed: string) => string {
+  const { slug, name } = useSource();
+  return (fixed) => {
+    if (!name || !slug) return fixed;
+    const ext = /\.([^.]+)$/.exec(fixed)?.[1];
+    return `${toolName(name, slug)}${ext ? `.${ext}` : ""}`;
+  };
+}
 
 export function Workspace({
   bar,
@@ -63,6 +114,7 @@ export function Pane({
   error,
   file,
   download,
+  keepName = false,
   actions,
   wrap = false,
   children,
@@ -75,8 +127,10 @@ export function Pane({
   error?: PaneError | null;
   /** Show "Open file" (text files); pass an accept string to narrow it */
   file?: boolean | string;
-  /** Show "Download" with this file name (output panes) */
+  /** Show "Download" with this file name (output panes); an opened file's name replaces it */
   download?: string;
+  /** Use `download` exactly (the tool already built it from the file's name) */
+  keepName?: boolean;
   /** Extra buttons in the pane header */
   actions?: ReactNode;
   /** Wrap long lines instead of scrolling sideways */
@@ -85,6 +139,8 @@ export function Pane({
   children?: ReactNode;
 }) {
   const T = useT();
+  const source = useSource();
+  const outName = useOutName();
   const fileRef = useRef<HTMLInputElement>(null);
   const area = useRef<HTMLTextAreaElement>(null);
   const gutter = useRef<HTMLDivElement>(null);
@@ -96,7 +152,10 @@ export function Pane({
 
   async function paste() {
     try {
-      onChange?.(await navigator.clipboard.readText());
+      const text = await navigator.clipboard.readText();
+      // Pasted text has no file name: downloads go back to the plain names
+      source.setName(null);
+      onChange?.(text);
     } catch {
       toast(T("Couldn't read the clipboard. Paste with Ctrl+V or ⌘V."));
     }
@@ -126,7 +185,10 @@ export function Pane({
                 onChange={async (e) => {
                   const f = e.target.files?.[0];
                   e.target.value = "";
-                  if (f) onChange?.(await f.text());
+                  if (!f) return;
+                  const text = await f.text();
+                  source.setName(f.name);
+                  onChange?.(text);
                 }}
               />
             </>
@@ -140,7 +202,10 @@ export function Pane({
                 <button
                   type="button"
                   className="btn xs"
-                  onClick={() => onChange("")}
+                  onClick={() => {
+                    source.setName(null);
+                    onChange("");
+                  }}
                 >
                   {T("Clear")}
                 </button>
@@ -154,7 +219,9 @@ export function Pane({
                 <button
                   type="button"
                   className="btn xs"
-                  onClick={() => downloadText(value, download)}
+                  onClick={() =>
+                    downloadText(value, keepName ? download : outName(download))
+                  }
                 >
                   <Icon name="download" />
                   {T("Download")}
@@ -310,14 +377,27 @@ export function useInput(
   slug: string,
   initial = "",
 ): [string, (v: string) => void] {
+  const T = useT();
+  const { setName } = useSource();
   const [v, set] = useState(initial);
   useEffect(() => {
     const t = takeText(slug);
     if (t !== null) return set(t);
     void takeFiles().then(async (files) => {
       const f = files[0];
-      if (f && f.size < 20_000_000) set(await f.text());
+      if (!f) return;
+      if (files.length > 1)
+        toast(
+          T("Only the first file is used: {name}").replace("{name}", f.name),
+        );
+      if (f.size >= 20_000_000)
+        return toast(
+          T("{name} is too large to open here.").replace("{name}", f.name),
+        );
+      set(await f.text());
+      setName(f.name);
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [slug]);
   return [v, set];
 }

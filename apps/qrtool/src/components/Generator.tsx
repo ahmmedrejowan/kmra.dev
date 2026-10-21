@@ -297,6 +297,60 @@ function GeneratorView({ preset }: { preset?: Preset }) {
       };
     });
   const putStyle = (p: Partial<Style>) => setStyle((s) => ({ ...s, ...p }));
+
+  // Style set in Advanced that Simple mode doesn't show: listed there so nothing changes the
+  // download unseen, each with a way to take it off
+  const DOTS_NAME = {
+    rounded: "Rounded",
+    dots: "Dots",
+    fluid: "Fluid",
+  } as const;
+  const EYES_NAME = { rounded: "Rounded", circle: "Circle" } as const;
+  const ECC_SHORT = { L: "Low", M: "Medium", Q: "High", H: "Max" } as const;
+  const applied: { id: string; label: string; off: () => void }[] = [];
+  if (logo)
+    applied.push({
+      id: "logo",
+      label: T("Logo in the middle"),
+      off: () => setLogo(null),
+    });
+  if (style.dots !== DEFAULT_STYLE.dots)
+    applied.push({
+      id: "dots",
+      label: `${T("Dots")}: ${T(DOTS_NAME[style.dots as keyof typeof DOTS_NAME])}`,
+      off: () => putStyle({ dots: DEFAULT_STYLE.dots }),
+    });
+  if (style.eyes !== DEFAULT_STYLE.eyes)
+    applied.push({
+      id: "eyes",
+      label: `${T("Corners")}: ${T(EYES_NAME[style.eyes as keyof typeof EYES_NAME])}`,
+      off: () => putStyle({ eyes: DEFAULT_STYLE.eyes }),
+    });
+  if (style.bg !== DEFAULT_STYLE.bg)
+    applied.push({
+      id: "bg",
+      label: style.bg
+        ? `${T("Background")}: ${style.bg}`
+        : T("Transparent background"),
+      off: () => putStyle({ bg: DEFAULT_STYLE.bg }),
+    });
+  if (!logo && style.ecc !== DEFAULT_STYLE.ecc)
+    applied.push({
+      id: "ecc",
+      label: `${T("Error correction")}: ${T(ECC_SHORT[style.ecc])}`,
+      off: () => putStyle({ ecc: DEFAULT_STYLE.ecc }),
+    });
+  if (style.margin !== DEFAULT_STYLE.margin)
+    applied.push({
+      id: "margin",
+      label: `${T("Quiet zone")}: ${style.margin < DEFAULT_STYLE.margin ? T("Tight") : T("Wide")}`,
+      off: () => putStyle({ margin: DEFAULT_STYLE.margin }),
+    });
+  function resetStyle() {
+    // Back to a plain code; the colour is shown in Simple mode, so it stays
+    setStyle((s) => ({ ...DEFAULT_STYLE, fg: s.fg }));
+    setLogo(null);
+  }
   const name = `qr-${
     kind === "social"
       ? fields.platform || "social"
@@ -522,6 +576,28 @@ function GeneratorView({ preset }: { preset?: Preset }) {
           <>
             {colour}
             {contrastWarn}
+            {applied.length > 0 && (
+              <div className="ctl qr-applied">
+                <span className="lbl">{T("Also applied from Advanced")}</span>
+                <div className="chips">
+                  {applied.map((a) => (
+                    <button
+                      key={a.id}
+                      type="button"
+                      aria-pressed="true"
+                      aria-label={T("Remove {name}").replace("{name}", a.label)}
+                      title={T("Remove")}
+                      onClick={a.off}
+                    >
+                      {a.label} <Icon name="x" />
+                    </button>
+                  ))}
+                </div>
+                <button type="button" className="btn sm" onClick={resetStyle}>
+                  {T("Reset style")}
+                </button>
+              </div>
+            )}
           </>
         )}
       </div>
@@ -675,11 +751,18 @@ function GeneratorView({ preset }: { preset?: Preset }) {
                 e.target.value = "";
                 if (!f) return;
                 const r = new FileReader();
+                const failed = () =>
+                  toast(T("That logo couldn't be read. Try a PNG or JPG."));
+                r.onerror = failed;
                 r.onload = async () => {
                   const url = r.result as string;
                   const img = new Image();
                   img.src = url;
-                  await img.decode();
+                  try {
+                    await img.decode();
+                  } catch {
+                    return failed();
+                  }
                   setLogo({
                     url,
                     w: img.naturalWidth || 1,
@@ -691,7 +774,7 @@ function GeneratorView({ preset }: { preset?: Preset }) {
             />
             {logo && (
               <small className="muted">
-                {T("Error correction is set to High so the code still scans.")}
+                {T("Error correction is set to Max so the code still scans.")}
               </small>
             )}
           </div>

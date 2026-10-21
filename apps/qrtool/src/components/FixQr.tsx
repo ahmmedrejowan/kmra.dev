@@ -3,7 +3,7 @@ import type { Preset } from "@kmra/registry";
 import { Icon } from "@kmra/ui/components/Icon";
 import { Colors, Seg, Toggle } from "@kmra/ui/components/controls";
 import { CopyBtn, FileInput, useFiles } from "@kmra/ui/components/kit";
-import { downloadBlob, IMAGE_ACCEPT } from "@kmra/ui/lib/files";
+import { downloadBlob, IMAGE_ACCEPT, toolName } from "@kmra/ui/lib/files";
 import { toast } from "@kmra/ui/lib/toast";
 import type { Locale } from "@kmra/ui/lib/i18n";
 import { LangProvider, useLp, useT } from "@kmra/ui/lib/i18n-react";
@@ -46,6 +46,8 @@ function FixQrView() {
   const [sel, setSel] = useState(0);
   const [busy, setBusy] = useState(false);
   const [source, setSource] = useState<string | null>(null);
+  /** The opened file's name, for the downloads */
+  const [fileName, setFileName] = useState("qr-code");
   const [style, setStyle] = useState<Style>({ ...DEFAULT_STYLE, margin: 4 });
   const [px, setPx] = useState(2048);
   const urlRef = useRef<string | null>(null);
@@ -54,6 +56,10 @@ function FixQrView() {
 
   async function load(files: File[]) {
     const file = files[0]!;
+    if (files.length > 1)
+      toast(
+        T("Only the first file is used: {name}").replace("{name}", file.name),
+      );
     setBusy(true);
     try {
       const { canvas, pixels } = await pixelsOf(file);
@@ -65,12 +71,20 @@ function FixQrView() {
       if (urlRef.current) URL.revokeObjectURL(urlRef.current);
       urlRef.current = url;
       setSource(url);
+      setFileName(file.name);
       setCodes(found);
       pick0(found[0]);
       if (!found.length)
         toast(T("No code found. Try a sharper or closer picture."));
     } catch {
-      toast(T("That image couldn't be read."));
+      // Back to the empty drop box rather than an earlier image's codes
+      if (urlRef.current) URL.revokeObjectURL(urlRef.current);
+      urlRef.current = null;
+      setSource(null);
+      setSrcCanvas(null);
+      setCodes(null);
+      setSel(0);
+      toast(T("{name} couldn't be read.").replace("{name}", file.name));
     } finally {
       setBusy(false);
     }
@@ -134,7 +148,8 @@ function FixQrView() {
     return c.toDataURL("image/png");
   }, [code, srcCanvas, source]);
   const put = (p: Partial<Style>) => setStyle((s) => ({ ...s, ...p }));
-  const name = "qr-code-clean";
+  // "<your file>-fix-qr-kmra.png"
+  const name = toolName(fileName, "fix-qr");
 
   async function savePng() {
     if (!code) return;

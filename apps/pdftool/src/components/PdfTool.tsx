@@ -14,7 +14,7 @@ import {
   downloadZip,
   useFiles,
 } from "@kmra/ui/components/kit";
-import { downloadBlob, formatBytes } from "@kmra/ui/lib/files";
+import { downloadBlob, formatBytes, toolName } from "@kmra/ui/lib/files";
 import { toast } from "@kmra/ui/lib/toast";
 import { num as digits, type Locale } from "@kmra/ui/lib/i18n";
 import { LangProvider, useLang, useT } from "@kmra/ui/lib/i18n-react";
@@ -58,6 +58,13 @@ import { NumbersView, WatermarkView } from "./stages/Overlays";
 interface Out {
   name: string;
   blob: Blob;
+  /** The file it was made from (per-file tools) */
+  src?: string;
+}
+/** A file a run left out, and why */
+interface Skip {
+  name: string;
+  reason: string;
 }
 
 /** Tools whose output combines every file into one PDF */
@@ -71,7 +78,6 @@ const PICK: Record<string, string> = {
 
 const isPdf = (f: File) =>
   f.type === "application/pdf" || /\.pdf$/i.test(f.name);
-const base = (name: string) => name.replace(/\.pdf$/i, "") || "document";
 const MODE_KEY = "kmra-mode";
 /** Page-number spots, for screen readers */
 const CORNERS: Record<Corner, string> = {
@@ -81,6 +87,14 @@ const CORNERS: Record<Corner, string> = {
   bl: "Bottom left",
   bc: "Bottom centre",
   br: "Bottom right",
+};
+const META_BLANK: Meta = {
+  title: "",
+  author: "",
+  subject: "",
+  keywords: "",
+  creator: "",
+  producer: "",
 };
 const META_LABELS: Record<keyof Meta, string> = {
   title: "Title",
@@ -134,6 +148,10 @@ function PdfToolView({ tool, preset }: { tool: string; preset?: Preset }) {
   const [advanced, setAdvanced] = useState(false);
   const [busy, setBusy] = useState<string | null>(null);
   const [outs, setOuts] = useState<Out[] | null>(null);
+  /** Files the last run left out */
+  const [skipped, setSkipped] = useState<Skip[]>([]);
+  /** Download in progress (building the zip, or saving files one by one) */
+  const [saving, setSaving] = useState<string | null>(null);
   const [dragId, setDragId] = useState<string | null>(null);
   /** The file shown in per-file workspaces */
   const [activeKey, setActiveKey] = useState<string | null>(null);
@@ -171,6 +189,8 @@ function PdfToolView({ tool, preset }: { tool: string; preset?: Preset }) {
     tile: false,
   });
   const [meta, setMeta] = useState<Meta | null>(null);
+  /** The first file's document info couldn't be read */
+  const [metaFailed, setMetaFailed] = useState(false);
   const [text, setText] = useState<string | null>(null);
   /** Extracted text per file, one entry per page */
   const [pageTexts, setPageTexts] = useState<Record<string, string[]> | null>(
@@ -179,6 +199,7 @@ function PdfToolView({ tool, preset }: { tool: string; preset?: Preset }) {
 
   const reset = () => {
     setOuts(null);
+    setSkipped([]);
     setText(null);
     setPageTexts(null);
   };
@@ -260,13 +281,42 @@ function PdfToolView({ tool, preset }: { tool: string; preset?: Preset }) {
     reset();
   }
 
-  // Metadata tool: read the first file's fields
+  // Picks of pages that are gone (deleted, or their file removed) no longer count
   useEffect(() => {
-    if (tool !== "metadata" || !docs[0]) return;
-    void source(docs[0].key, docs[0].bytes)
-      .then((d) => setMeta(readMeta(d)))
-      .catch(() => setMeta(null));
-  }, [tool, docs]);
+    setPicked((s) => {
+      if (!s.size) return s;
+      const ids = new Set(pages.map((p) => p.id));
+      const next = new Set([...s].filter((id) => ids.has(id)));
+      return next.size === s.size ? s : next;
+    });
+  }, [pages]);
+
+  // Metadata tool: read the first file's fields. Only when the first file changes, so adding or
+  // removing other files keeps what the user typed.
+  const firstKey = docs[0]?.key;
+  useEffect(() => {
+    if (tool !== "metadata") return;
+    const first = docsRef.current[0];
+    if (!first) {
+      setMeta(null);
+      setMetaFailed(false);
+      return;
+    }
+    let live = true;
+    setMetaFailed(false);
+    void source(first.key, first.bytes)
+      .then((d) => {
+        if (live) setMeta(readMeta(d));
+      })
+      .catch(() => {
+        if (!live) return;
+        setMeta(null);
+        setMetaFailed(true);
+      });
+    return () => {
+      live = false;
+    };
+  }, [tool, firstKey]);
 
   /* ---------- Mode (Simple = files, Advanced = every page) ---------- */
   useEffect(() => {
@@ -399,7 +449,9 @@ function PdfToolView({ tool, preset }: { tool: string; preset?: Preset }) {
 
   async function runFor(doc: Doc): Promise<Out[]> {
     const list = docPages(doc.key);
-    const name = base(doc.file.name);
+    // "report.pdf" → "report-split"; the download adds "-kmra"
+    const name = toolName(doc.file.name, tool);
+    const src = doc.key;
     const one = async (
       refs: PageRef[],
       suffix: string,
@@ -407,7 +459,7 @@ function PdfToolView({ tool, preset }: { tool: string; preset?: Preset }) {
     ) => {
       const d = await build(refs, bytesOf);
       if (edit) await edit(d);
-      return { name: `${name}-${tool}${suffix}.pdf`, blob: await save(d) };
+      return { name: `${name}${suffix}.pdf`, blob: await save(d), src };
     };
     switch (tool) {
       case "remove-pages": {
@@ -416,7 +468,8 @@ function PdfToolView({ tool, preset }: { tool: string; preset?: Preset }) {
         const keep = list.filter(
           (p) => !drop.has(p.id) && !fromText.includes(p.index),
         );
-        if (!keep.length) throw new Error(T("That would remove every page."));
+        if (!keep.length)
+          throw new Error(T("That would remove every page of this file."));
         return [await one(keep, "")];
       }
       case "rotate":
@@ -430,7 +483,9 @@ function PdfToolView({ tool, preset }: { tool: string; preset?: Preset }) {
         if (splitMode === "each")
           return Promise.all(list.map((p, i) => one([p], `-page-${i + 1}`)));
         const chosen = list.filter((p) => picked.has(p.id));
-        if (splitMode === "extract" || (chosen.length && !ranges.trim())) {
+        // Picks in any file mean "extract" when no ranges are typed
+        const anyPicked = pages.some((p) => picked.has(p.id));
+        if (splitMode === "extract" || (anyPicked && !ranges.trim())) {
           const fromText = parseRanges(ranges, doc.pages)?.flat();
           const refs = chosen.length
             ? chosen
@@ -438,11 +493,22 @@ function PdfToolView({ tool, preset }: { tool: string; preset?: Preset }) {
               ? list.filter((p) => fromText.includes(p.index))
               : [];
           if (!refs.length)
-            throw new Error(T("Pick pages, or type them like 1-3, 5."));
+            throw new Error(
+              chosen.length || !anyPicked
+                ? T("Pick pages, or type them like 1-3, 5.")
+                : T("No pages picked in this file."),
+            );
           return [await one(refs, "-extract")];
         }
         const groups = parseRanges(ranges, doc.pages);
-        if (!groups) throw new Error(T("Type page ranges like 1-3, 4-6."));
+        if (!groups)
+          throw new Error(
+            ranges.trim()
+              ? T("Those ranges don't fit this file's {n} pages.", {
+                  n: doc.pages,
+                })
+              : T("Type page ranges like 1-3, 4-6."),
+          );
         return Promise.all(
           groups.map((g) =>
             one(
@@ -458,8 +524,9 @@ function PdfToolView({ tool, preset }: { tool: string; preset?: Preset }) {
       case "grayscale":
         return [
           {
-            name: `${name}-${tool}.pdf`,
+            name: `${name}.pdf`,
             blob: await rasterTo(doc, list, tool === "grayscale"),
+            src,
           },
         ];
       case "page-numbers":
@@ -467,10 +534,11 @@ function PdfToolView({ tool, preset }: { tool: string; preset?: Preset }) {
       case "watermark":
         return [await one(list, "", (d) => watermark(d, wm))];
       case "metadata":
+        // Never write blank fields over info that couldn't be read
+        if (!metaStrip && !meta)
+          throw new Error(T("The document info couldn't be read."));
         return [
-          await one(list, "", (d) =>
-            writeMeta(d, meta ?? readMetaBlank(), metaStrip),
-          ),
+          await one(list, "", (d) => writeMeta(d, meta ?? META_BLANK, metaStrip)),
         ];
       case "to-image": {
         const chosen = list.filter((p) => picked.has(p.id));
@@ -486,7 +554,7 @@ function PdfToolView({ tool, preset }: { tool: string; preset?: Preset }) {
             c.toBlob((b) => r(b!), imgType, 0.92),
           );
           c.width = c.height = 0;
-          outs.push({ name: `${name}-${tool}-page-${p.index + 1}.${ext}`, blob });
+          outs.push({ name: `${name}-page-${p.index + 1}.${ext}`, blob, src });
         }
         return outs;
       }
@@ -500,8 +568,9 @@ function PdfToolView({ tool, preset }: { tool: string; preset?: Preset }) {
         const all = parts.join("\n\n\f\n\n");
         return [
           {
-            name: `${name}-${tool}.txt`,
+            name: `${name}.txt`,
             blob: new Blob([all], { type: "text/plain" }),
+            src,
           },
         ];
       }
@@ -511,33 +580,71 @@ function PdfToolView({ tool, preset }: { tool: string; preset?: Preset }) {
   }
 
   const [metaStrip, setMetaStrip] = useState(false);
-  const readMetaBlank = (): Meta => ({
-    title: "",
-    author: "",
-    subject: "",
-    keywords: "",
-    creator: "",
-    producer: "",
-  });
+
+  /** A failure as a short sentence for the user */
+  const reasonOf = (err: unknown) =>
+    err instanceof LockedError
+      ? T("This PDF is password-protected and can't be changed here.")
+      : err instanceof Error && err.message.length < 120
+        ? err.message
+        : T("Something went wrong. The PDF may be damaged.");
 
   async function run() {
     setBusy(T("Working…"));
     setOuts(null);
+    setSkipped([]);
     try {
       let results: Out[];
       if (COMBINED.has(tool)) {
         if (!pages.length) throw new Error(T("There are no pages left."));
         // Named after the first file: "report.pdf" + others merged → "report-merge-kmra.pdf"
-        const name = `${base(docs[0]!.file.name)}-${tool}`;
         results = [
           {
-            name: `${name}.pdf`,
+            name: `${toolName(docs[0]!.file.name, tool)}.pdf`,
             blob: await save(await build(pages, bytesOf)),
           },
         ];
       } else {
+        // Each file on its own: one that fails is left out, the others still come out
         results = [];
-        for (const d of docs) results.push(...(await runFor(d)));
+        const skips: Skip[] = [];
+        for (const d of docs) {
+          if (!docPages(d.key).length) {
+            skips.push({
+              name: d.file.name,
+              reason: T("Every page was deleted."),
+            });
+            continue;
+          }
+          try {
+            results.push(...(await runFor(d)));
+          } catch (err) {
+            skips.push({ name: d.file.name, reason: reasonOf(err) });
+          }
+        }
+        if (!results.length) {
+          // Nothing came out: say why, as before
+          toast(
+            skips.length === 1
+              ? skips[0]!.reason
+              : T("None of the files could be done. See the notes below."),
+          );
+          if (skips.length > 1) setSkipped(skips);
+          return;
+        }
+        if (skips.length) {
+          setSkipped(skips);
+          toast(
+            skips.length === 1
+              ? T("{name} was left out: {reason}", {
+                  name: skips[0]!.name,
+                  reason: skips[0]!.reason,
+                })
+              : T("{n} files were left out. See the notes below.", {
+                  n: skips.length,
+                }),
+          );
+        }
       }
       setOuts(results);
       if (tool === "to-text")
@@ -547,26 +654,43 @@ function PdfToolView({ tool, preset }: { tool: string; preset?: Preset }) {
             .reduce(async (a, b) => (await a) + "\n\n" + (await b)),
         );
     } catch (err) {
-      toast(
-        err instanceof LockedError
-          ? T("This PDF is password-protected and can't be changed here.")
-          : err instanceof Error && err.message.length < 120
-            ? err.message
-            : T("Something went wrong. The PDF may be damaged."),
-      );
+      toast(reasonOf(err));
     } finally {
       setBusy(null);
     }
   }
 
   async function downloadAll() {
-    if (!outs) return;
-    if (outs.length === 1) downloadBlob(outs[0]!.blob, outs[0]!.name);
-    else
+    if (!outs || saving) return;
+    if (outs.length === 1) {
+      downloadBlob(outs[0]!.blob, outs[0]!.name);
+      return;
+    }
+    setSaving(T("Making the zip…"));
+    try {
       await downloadZip(
         outs,
-        `${base(docs[0]?.file.name ?? "pdf")}-${tool}.zip`,
+        `${toolName(docs[0]?.file.name ?? "pdf", tool)}.zip`,
       );
+    } catch {
+      toast(T("The zip couldn't be made. Try saving each file separately."));
+    } finally {
+      setSaving(null);
+    }
+  }
+
+  async function saveEach() {
+    if (!outs || saving) return;
+    try {
+      for (let i = 0; i < outs.length; i++) {
+        setSaving(T("Saving file {n} of {t}…", { n: i + 1, t: outs.length }));
+        downloadBlob(outs[i]!.blob, outs[i]!.name);
+        // Spaced out, so the browser doesn't drop any
+        await new Promise((r) => setTimeout(r, 300));
+      }
+    } finally {
+      setSaving(null);
+    }
   }
 
   /* ---------- Views ---------- */
@@ -600,6 +724,18 @@ function PdfToolView({ tool, preset }: { tool: string; preset?: Preset }) {
 
   const totalIn = docs.reduce((a, d) => a + d.file.size, 0);
   const totalOut = outs?.reduce((a, o) => a + o.blob.size, 0) ?? 0;
+  const sizeOf = (key?: string) =>
+    docs.find((d) => d.key === key)?.file.size ?? 0;
+  // Compress and grayscale make one file per input: compare each with its own original
+  const madeFrom = outs?.filter((o) => o.src) ?? [];
+  const madeIn = [...new Set(madeFrom.map((o) => o.src))].reduce(
+    (a, k) => a + sizeOf(k),
+    0,
+  );
+  const overLimit = target
+    ? madeFrom.filter((o) => o.blob.size > target * 1024).length
+    : 0;
+  const larger = madeFrom.filter((o) => o.blob.size > sizeOf(o.src)).length;
   const pickHint = PICK[tool] ? T(PICK[tool]) : undefined;
 
   const pageGrid = (
@@ -1083,7 +1219,7 @@ function PdfToolView({ tool, preset }: { tool: string; preset?: Preset }) {
               first={refs[0]}
               level={level}
               target={target}
-              outSize={outs?.[docs.indexOf(doc)]?.blob.size}
+              outSize={outs?.find((o) => o.src === doc.key)?.blob.size}
             />
           );
         case "grayscale":
@@ -1196,6 +1332,31 @@ function PdfToolView({ tool, preset }: { tool: string; preset?: Preset }) {
               {pickHint && <p className="pg-hint">{pickHint}</p>}
               {pageGrid}
               <div className="filebar">
+                {docs.map((d, i) => {
+                  const n = refsOf(pages, d.key).length;
+                  return (
+                    <span key={d.key} className="desk-doc">
+                      <span className="desk-doc-pick" title={d.file.name}>
+                        {docs.length > 1 && (
+                          <b className="pg-file">{String.fromCharCode(65 + i)}</b>
+                        )}
+                        <span className="nm">{d.file.name}</span>
+                        <small>
+                          {T(n === 1 ? "{n} page" : "{n} pages", { n })}
+                        </small>
+                      </span>
+                      <button
+                        type="button"
+                        className="desk-doc-x"
+                        aria-label={T("Remove {name}", { name: d.file.name })}
+                        title={T("Remove {name}", { name: d.file.name })}
+                        onClick={() => removeDoc(d.key)}
+                      >
+                        <Icon name="x" />
+                      </button>
+                    </span>
+                  );
+                })}
                 <button type="button" className="fchip add" onClick={pick}>
                   {T("+ Add PDF")}
                 </button>
@@ -1221,14 +1382,14 @@ function PdfToolView({ tool, preset }: { tool: string; preset?: Preset }) {
             {outs && (
               <div className="sz">
                 <b>{formatBytes(totalOut)}</b>
-                {(tool === "compress" || tool === "grayscale") && (
-                  <span className={`delta${totalOut > totalIn ? " up" : ""}`}>
-                    {totalOut <= totalIn
+                {(tool === "compress" || tool === "grayscale") && madeIn > 0 && (
+                  <span className={`delta${totalOut > madeIn ? " up" : ""}`}>
+                    {totalOut <= madeIn
                       ? T("{n}% smaller", {
-                          n: Math.round((1 - totalOut / totalIn) * 100),
+                          n: Math.round((1 - totalOut / madeIn) * 100),
                         })
                       : T("{n}% larger", {
-                          n: Math.round((totalOut / totalIn - 1) * 100),
+                          n: Math.round((totalOut / madeIn - 1) * 100),
                         })}
                   </span>
                 )}
@@ -1237,28 +1398,59 @@ function PdfToolView({ tool, preset }: { tool: string; preset?: Preset }) {
             {outs && outs.length > 1 && (
               <small>{T("{n} files", { n: outs.length })}</small>
             )}
-            {outs &&
-              target &&
-              tool === "compress" &&
-              totalOut > target * 1024 && (
-                <small className="warn">
-                  {T(
-                    "Couldn't get under the limit even at the lowest setting. This is the smallest version.",
-                  )}
-                </small>
-              )}
-            {outs && tool === "compress" && totalOut > totalIn && (
+            {outs && tool === "compress" && overLimit > 0 && (
               <small className="warn">
-                {T("This PDF is already well compressed. Keep your original.")}
+                {madeFrom.length === 1
+                  ? T(
+                      "Couldn't get under the limit even at the lowest setting. This is the smallest version.",
+                    )
+                  : T(
+                      "{n} of {t} files couldn't get under the limit even at the lowest setting. They're as small as they can get.",
+                      { n: overLimit, t: madeFrom.length },
+                    )}
+              </small>
+            )}
+            {outs && tool === "compress" && larger > 0 && (
+              <small className="warn">
+                {madeFrom.length === 1
+                  ? T("This PDF is already well compressed. Keep your original.")
+                  : T(
+                      "{n} of {t} files are already well compressed. Keep those originals.",
+                      { n: larger, t: madeFrom.length },
+                    )}
+              </small>
+            )}
+            {skipped.length > 0 && (
+              <>
+                {skipped.map((k, i) => (
+                  <small key={i} className="warn skipped">
+                    {T("{name} was left out: {reason}", {
+                      name: k.name,
+                      reason: k.reason,
+                    })}
+                  </small>
+                ))}
+              </>
+            )}
+            {tool === "metadata" && metaFailed && !metaStrip && (
+              <small className="warn">
+                {T(
+                  "This PDF's document info couldn't be read, so it can't be edited here. You can still remove it all.",
+                )}
               </small>
             )}
             {busy && <small>{busy}</small>}
+            {saving && <small>{saving}</small>}
             <div className="acts">
               {!outs ? (
                 <button
                   type="button"
                   className="btn acc"
-                  disabled={!!busy || !pages.length}
+                  disabled={
+                    !!busy ||
+                    !pages.length ||
+                    (tool === "metadata" && !metaStrip && !meta)
+                  }
                   onClick={() => void run()}
                 >
                   <Icon name={tool === "to-text" ? "type" : "zap"} />
@@ -1268,6 +1460,7 @@ function PdfToolView({ tool, preset }: { tool: string; preset?: Preset }) {
                 <button
                   type="button"
                   className="btn acc"
+                  disabled={!!saving}
                   onClick={() => void downloadAll()}
                 >
                   <Icon name="download" />
@@ -1280,12 +1473,8 @@ function PdfToolView({ tool, preset }: { tool: string; preset?: Preset }) {
                 <button
                   type="button"
                   className="btn sm"
-                  onClick={async () => {
-                    for (const o of outs) {
-                      downloadBlob(o.blob, o.name);
-                      await new Promise((r) => setTimeout(r, 300));
-                    }
-                  }}
+                  disabled={!!saving}
+                  onClick={() => void saveEach()}
                 >
                   {T("Save each separately")}
                 </button>

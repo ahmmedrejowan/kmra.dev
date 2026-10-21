@@ -20,6 +20,7 @@ export default function Trim(_: ToolProps) {
       suffix="trim"
       action={T("Trim")}
       dropTitle={T("Drop a video to trim it")}
+      unknownSize={T("Depends on the cut")}
       idle={T("Drag the handles under the video to choose the part to keep.")}
       onFile={(_, info) => setRange([0, info.durationSec])}
       job={(info) => {

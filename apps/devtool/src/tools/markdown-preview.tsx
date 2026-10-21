@@ -3,7 +3,14 @@ import { useT } from "@kmra/ui/lib/i18n-react";
 import { Icon } from "@kmra/ui/components/Icon";
 import { CopyBtn } from "@kmra/ui/components/kit";
 import type { ToolProps } from ".";
-import { BarSeg, Pane, Workspace, downloadText, useInput } from "../lib/kit";
+import {
+  BarSeg,
+  Pane,
+  Workspace,
+  downloadText,
+  useInput,
+  useOutName,
+} from "../lib/kit";
 import {
   applyMd,
   renderMarkdown,
@@ -49,6 +56,7 @@ const ACTIONS: [MdAction, string, string][] = [
 export default function MarkdownPreview(_: ToolProps) {
   const T = useT();
   const [input, setInput] = useInput("markdown-preview");
+  const outName = useOutName();
   const [view, setView] = useState<View>("preview");
   const area = useRef<HTMLTextAreaElement>(null);
   const preview = useRef<HTMLDivElement>(null);
@@ -178,7 +186,7 @@ export default function MarkdownPreview(_: ToolProps) {
                 type="button"
                 className="btn xs"
                 onClick={() =>
-                  downloadText(input, "document.md", "text/markdown")
+                  downloadText(input, outName("document.md"), "text/markdown")
                 }
               >
                 <Icon name="download" />
@@ -225,7 +233,7 @@ export default function MarkdownPreview(_: ToolProps) {
                 onClick={() =>
                   downloadText(
                     standaloneHtml(html, title),
-                    "document.html",
+                    outName("document.html"),
                     "text/html",
                   )
                 }

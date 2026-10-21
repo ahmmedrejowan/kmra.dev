@@ -1,9 +1,16 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useT } from "@kmra/ui/lib/i18n-react";
 import { Icon } from "@kmra/ui/components/Icon";
-import { downloadBlob, formatBytes } from "@kmra/ui/lib/files";
+import { downloadBlob, formatBytes, toolName } from "@kmra/ui/lib/files";
 import type { ToolProps } from ".";
-import { BarCheck, BarSeg, Pane, Workspace, type PaneError } from "../lib/kit";
+import {
+  BarCheck,
+  BarSeg,
+  Pane,
+  Workspace,
+  useSource,
+  type PaneError,
+} from "../lib/kit";
 import { takeText } from "../lib/handoff";
 import {
   DecodeError,
@@ -38,6 +45,8 @@ export default function Base64({ preset }: ToolProps) {
   const [dataUri, setDataUri] = useState(false);
   const [asFile, setAsFile] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
+  /** Name of the file opened to decode (the encoded file's name is in `file`) */
+  const source = useSource();
 
   // Text from the home page's smart paste is Base64 to decode
   useEffect(() => {
@@ -72,7 +81,11 @@ export default function Base64({ preset }: ToolProps) {
     if (mode === "decode") {
       setFile(null);
       setInput(new TextDecoder().decode(bytes));
-    } else setFile({ name: f.name, type: f.type, bytes });
+      source.setName(f.name);
+    } else {
+      setFile({ name: f.name, type: f.type, bytes });
+      source.setName(null);
+    }
   }
 
   const result = useMemo(() => {
@@ -133,18 +146,33 @@ export default function Base64({ preset }: ToolProps) {
     [preview],
   );
 
+  // Encoded: "<your file>-base64-kmra.txt". Decoded: the opened file's own name without its
+  // Base64 extension ("photo.jpg.b64" saves as "photo-kmra.jpg"); typed input keeps plain names.
+  const decodedStem = source.name
+    ?.replace(/\.(b64|base64|txt)$/i, "")
+    .replace(/\.[^.]+$/, "");
+  const encodedName = file
+    ? `${toolName(file.name, "base64")}.txt`
+    : source.name
+      ? `${toolName(source.name, "base64")}.txt`
+      : "base64.txt";
+  const decodedName = (ext: string) =>
+    decodedStem ? `${decodedStem}.${ext}` : `decoded.${ext}`;
+
   function saveDecoded() {
     if (!decoded) return;
     downloadBlob(
       new Blob([decoded.bytes as Uint8Array<ArrayBuffer>], {
         type: decoded.mime ?? decoded.kind.mime,
       }),
-      `decoded.${ext}`,
+      decodedName(ext),
     );
   }
 
   function swap() {
     if (encoded) {
+      // Decoding what a file became gives that file back, under its own name
+      source.setName(file ? file.name : null);
       setFile(null);
       setInput(encoded.text);
       setMode("decode");
@@ -317,7 +345,8 @@ export default function Base64({ preset }: ToolProps) {
         value={output}
         readOnly
         wrap
-        download={mode === "encode" ? "base64.txt" : "decoded.txt"}
+        download={mode === "encode" ? encodedName : decodedName("txt")}
+        keepName
         actions={
           decoded && !binary ? (
             <button type="button" className="btn xs" onClick={saveDecoded}>
@@ -345,7 +374,7 @@ export default function Base64({ preset }: ToolProps) {
             </code>
             <button type="button" className="btn acc sm" onClick={saveDecoded}>
               <Icon name="download" />
-              {T("Download")} decoded.{ext}
+              {T("Download")} {decodedName(ext)}
             </button>
           </div>
         ) : undefined}

@@ -1,10 +1,18 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useT } from "@kmra/ui/lib/i18n-react";
 import { Icon } from "@kmra/ui/components/Icon";
-import { formatBytes } from "@kmra/ui/lib/files";
+import { formatBytes, toolName } from "@kmra/ui/lib/files";
 import { toast } from "@kmra/ui/lib/toast";
 import type { ToolProps } from ".";
-import { BarCheck, BarSeg, Pane, Workspace, type PaneError } from "../lib/kit";
+import {
+  BarCheck,
+  BarSeg,
+  Pane,
+  Workspace,
+  useOutName,
+  useSource,
+  type PaneError,
+} from "../lib/kit";
 import { takeText } from "../lib/handoff";
 import { takeFiles } from "@kmra/ui/lib/handoff";
 import { lineCol } from "../lib/encode";
@@ -104,6 +112,8 @@ export default function CsvJson({ preset }: ToolProps) {
   const [infer, setInfer] = useState(true);
   const [out, setOut] = useState<Out>("json");
   const fileRef = useRef<HTMLInputElement>(null);
+  const source = useSource();
+  const outName = useOutName();
 
   function setInput(v: string) {
     setInputRaw(v);
@@ -117,7 +127,15 @@ export default function CsvJson({ preset }: ToolProps) {
   useEffect(() => {
     const t = takeText("csv-json");
     if (t !== null) return setInput(t);
-    void takeFiles().then((files) => files[0] && open(files[0]));
+    void takeFiles().then((files) => {
+      const f = files[0];
+      if (!f) return;
+      if (files.length > 1)
+        toast(
+          T("Only the first file is used: {name}").replace("{name}", f.name),
+        );
+      void open(f);
+    });
   }, []);
 
   // Files can be dropped anywhere on the page
@@ -158,6 +176,8 @@ export default function CsvJson({ preset }: ToolProps) {
         setSheet(0);
         setInputRaw("");
         setFrom("excel");
+        // The workbook's name (and sheet) names the download below
+        source.setName(null);
       } catch {
         toast(
           T("Couldn't read this spreadsheet. Try saving it as .xlsx or CSV."),
@@ -167,7 +187,18 @@ export default function CsvJson({ preset }: ToolProps) {
       }
       return;
     }
-    setInput(new TextDecoder().decode(buf));
+    const text = new TextDecoder().decode(buf);
+    if (!text.trim()) {
+      // An empty file replaces whatever was open, workbook included, and says so
+      setBook(null);
+      setInputRaw("");
+      setFrom((f) => (f === "excel" ? "csv" : f));
+      source.setName(null);
+      toast(T("{name} is empty.").replace("{name}", f.name));
+      return;
+    }
+    setInput(text);
+    source.setName(f.name);
   }
 
   const result = useMemo(() => {
@@ -249,11 +280,19 @@ export default function CsvJson({ preset }: ToolProps) {
   const error: PaneError | null = result && !result.ok ? result.error : null;
   const output = result?.ok ? result.text : "";
   const outKind: Out = from === "csv" ? "json" : from === "json" ? "csv" : out;
-  const base =
+  // "<book>-<sheet>-csv-json-kmra.json" for a workbook, "<file>-csv-json-kmra.csv" for an
+  // opened file, "data.json" for typed text
+  const outFile =
     from === "excel" && book
-      ? book.name.replace(/\.[^.]+$/, "") +
-        (sheet === -1 ? "" : `-${book.sheets[sheet]!.name}`)
-      : "data";
+      ? `${toolName(
+          // The sheet goes before the workbook's extension, which toolName drops
+          book.name.replace(
+            /(\.[^.]+)?$/,
+            (ext) => (sheet === -1 ? "" : `-${book.sheets[sheet]!.name}`) + ext,
+          ),
+          "csv-json",
+        )}.${outKind}`
+      : outName(`data.${outKind}`);
   const dataRows = result?.ok ? result.rows.length : 0;
   const cols = result?.ok
     ? Math.max(result.head?.length ?? 0, ...result.rows.map((r) => r.length))
@@ -492,7 +531,8 @@ export default function CsvJson({ preset }: ToolProps) {
         label={outKind === "json" ? "JSON" : "CSV"}
         value={output}
         readOnly
-        download={`${base}.${outKind}`}
+        download={outFile}
+        keepName
       />
       <Pane label={T("Table preview")} value="" readOnly>
         <div className="dev-table-wrap">

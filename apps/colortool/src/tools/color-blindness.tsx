@@ -2,7 +2,8 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useT } from "@kmra/ui/lib/i18n-react";
 import { Icon } from "@kmra/ui/components/Icon";
 import { Seg } from "@kmra/ui/components/controls";
-import { DropCard, FileInput, baseName, decode, useFiles } from "@kmra/ui/components/kit";
+import { DropCard, FileInput, decode, useFiles } from "@kmra/ui/components/kit";
+import { toolName } from "@kmra/ui/lib/files";
 import { toast } from "@kmra/ui/lib/toast";
 import type { ToolProps } from ".";
 import { css, textOn, toHex, tryParse, type Rgba } from "../lib/color";
@@ -15,19 +16,40 @@ const MAX_SIDE = 2400;
 
 let worker: Worker | null = null;
 let nextId = 1;
+/** Requests waiting for the worker, so a crash can fail them all instead of hanging */
+const pending = new Map<
+  number,
+  { res: (b: ArrayBuffer) => void; rej: (e: Error) => void }
+>();
 function run(buffer: ArrayBuffer, type: Cvd): Promise<ArrayBuffer> {
-  worker ??= new Worker(new URL("../lib/cvd.worker.ts", import.meta.url), {
-    type: "module",
-  });
+  if (!worker) {
+    const w = new Worker(new URL("../lib/cvd.worker.ts", import.meta.url), {
+      type: "module",
+    });
+    w.onmessage = (
+      e: MessageEvent<{ id: number; buffer?: ArrayBuffer; error?: string }>,
+    ) => {
+      const p = pending.get(e.data.id);
+      if (!p) return;
+      pending.delete(e.data.id);
+      if (e.data.buffer) p.res(e.data.buffer);
+      else p.rej(new Error(e.data.error ?? "simulation failed"));
+    };
+    const fail = () => {
+      // The worker can't be trusted after this: start a fresh one next time
+      w.terminate();
+      if (worker === w) worker = null;
+      for (const p of pending.values()) p.rej(new Error("worker failed"));
+      pending.clear();
+    };
+    w.onerror = fail;
+    w.onmessageerror = fail;
+    worker = w;
+  }
   const id = nextId++;
   const w = worker;
-  return new Promise((res) => {
-    const on = (e: MessageEvent<{ id: number; buffer: ArrayBuffer }>) => {
-      if (e.data.id !== id) return;
-      w.removeEventListener("message", on);
-      res(e.data.buffer);
-    };
-    w.addEventListener("message", on);
+  return new Promise((res, rej) => {
+    pending.set(id, { res, rej });
     w.postMessage({ id, buffer, type }, [buffer]);
   });
 }
@@ -86,7 +108,7 @@ export default function ColorBlindness(_: ToolProps) {
     o.height = data.height;
     o.getContext("2d")!.putImageData(data, 0, 0);
     setBusy(true);
-    void run(data.data.slice().buffer, type).then((buf) => {
+    run(data.data.slice().buffer, type).then((buf) => {
       if (!live) return;
       const s = sim.current!;
       s.width = data.width;
@@ -99,6 +121,10 @@ export default function ColorBlindness(_: ToolProps) {
       s.dataset.type = type;
       s.dataset.ready = "1";
       setBusy(false);
+    }, () => {
+      if (!live) return;
+      setBusy(false);
+      toast(T("Couldn't simulate this image. Try a smaller one."));
     });
     return () => {
       live = false;
@@ -153,10 +179,23 @@ export default function ColorBlindness(_: ToolProps) {
           </label>
         ) : (
           img && (
-            <button type="button" className="btn sm" onClick={files.pick}>
-              <Icon name="upload" />
-              {T("Choose another image")}
-            </button>
+            <>
+              <button type="button" className="btn sm" onClick={files.pick}>
+                <Icon name="upload" />
+                {T("Choose another image")}
+              </button>
+              <button
+                type="button"
+                className="btn sm ct-remove"
+                onClick={() => {
+                  setImg(null);
+                  setBusy(false);
+                }}
+              >
+                <Icon name="trash" />
+                {T("Remove image")}
+              </button>
+            </>
           )
         )}
         <FileInput inputRef={files.pickRef} onFiles={files.take} multiple={false} />
@@ -254,7 +293,11 @@ export default function ColorBlindness(_: ToolProps) {
                 className="btn sm ct-dl"
                 disabled={busy}
                 onClick={() =>
-                  void downloadCanvas(sim.current!, `${baseName(img.name)}-${type}.png`)
+                  void downloadCanvas(
+                    sim.current!,
+                    // "photo-color-blindness-deuteranopia-kmra.png"
+                    `${toolName(img.name, "color-blindness")}-${type}.png`,
+                  )
                 }
               >
                 <Icon name="download" />

@@ -94,6 +94,7 @@ export {
   outputName,
   outputSize,
   parseTime,
+  uniqueNames,
 } from "./plan";
 
 /** Every progress/plan string the engine emits, for translation files */
@@ -162,7 +163,9 @@ export const AUDIO_ACCEPT =
 export function isAudioFile(f: File): boolean {
   return (
     f.type.startsWith("audio/") ||
-    /\.(mp3|m4a|m4r|aac|wav|ogg|oga|opus|flac|aif|aiff|wma|amr|caf)$/i.test(f.name)
+    /\.(mp3|m4a|m4r|aac|wav|ogg|oga|opus|flac|aif|aiff|wma|amr|caf)$/i.test(
+      f.name,
+    )
   );
 }
 

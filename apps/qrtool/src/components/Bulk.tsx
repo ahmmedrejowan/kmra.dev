@@ -1,7 +1,9 @@
 import { useMemo, useState } from "react";
+import QRCode from "qrcode";
 import { Icon } from "@kmra/ui/components/Icon";
 import { Colors, Seg } from "@kmra/ui/components/controls";
 import { downloadZip } from "@kmra/ui/components/kit";
+import { toast } from "@kmra/ui/lib/toast";
 import type { Locale } from "@kmra/ui/lib/i18n";
 import { LangProvider, useT } from "@kmra/ui/lib/i18n-react";
 import { DEFAULT_STYLE, png, svg, type Style } from "../lib/qr";
@@ -30,10 +32,22 @@ function rows(text: string): Row[] {
           .replace(/[^\w.-]+/g, "-")
           .replace(/^-+|-+$/g, "")
           .slice(0, 60) || `qr-${i + 1}`;
-      while (used.has(name)) name += "-2";
-      used.add(name);
+      // Names compared ignoring case, as most file systems (and the zip) do
+      const base = name;
+      for (let n = 2; used.has(name.toLowerCase()); n++) name = `${base}-${n}`;
+      used.add(name.toLowerCase());
       return { name, value };
     });
+}
+
+/** Whether a line fits in one QR code at the style's error correction */
+function fits(value: string): boolean {
+  try {
+    QRCode.create(value, { errorCorrectionLevel: DEFAULT_STYLE.ecc });
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 const SHOWN = 48;
@@ -57,6 +71,9 @@ function BulkView() {
   const [busy, setBusy] = useState<string | null>(null);
   const [working, setWorking] = useState(false);
   const list = useMemo(() => rows(text), [text]);
+  // Only lines that fit in a QR code are made; the rest are counted, not zipped
+  const ok = useMemo(() => list.filter((r) => fits(r.value)), [list]);
+  const tooLong = list.length - ok.length;
   const style: Style = { ...DEFAULT_STYLE, fg };
   // The sheet previews the first few dozen; the zip has them all
   const arts = useMemo(
@@ -76,10 +93,10 @@ function BulkView() {
     setBusy(T("Making codes…"));
     try {
       const files: { name: string; blob: Blob }[] = [];
-      for (let i = 0; i < list.length; i++) {
-        const r = list[i]!;
+      for (let i = 0; i < ok.length; i++) {
+        const r = ok[i]!;
         if (i % 20 === 0)
-          setBusy(T("Code {i} of {n}…", { i: i + 1, n: list.length }));
+          setBusy(T("Code {i} of {n}…", { i: i + 1, n: ok.length }));
         try {
           files.push({
             name: `${r.name}.${type}`,
@@ -91,17 +108,18 @@ function BulkView() {
                   }),
           });
         } catch {
-          // Too long for a QR code: skipped, reported below
+          // Checked beforehand, so this is rare: the zip simply has one fewer
         }
       }
+      if (!files.length) {
+        toast(
+          T("None of the lines fit in a QR code. Shorten them and try again."),
+        );
+        setBusy(null);
+        return;
+      }
       await downloadZip(files, "qr-codes-bulk.zip");
-      setBusy(
-        files.length < list.length
-          ? T("{n} lines were too long and were skipped.", {
-              n: list.length - files.length,
-            })
-          : null,
-      );
+      setBusy(null);
     } catch {
       setBusy(null);
     } finally {
@@ -157,9 +175,7 @@ function BulkView() {
       <div className="stage qr-stage qr-plain bulk-stage">
         <div className="bulk-sheet">
           <p className="bulk-count">
-            {list.length === 1
-              ? T("1 code")
-              : T("{n} codes", { n: list.length })}
+            {ok.length === 1 ? T("1 code") : T("{n} codes", { n: ok.length })}
           </p>
           <div className="bulk-grid">
             {arts.map(({ r, art }) => (
@@ -181,20 +197,28 @@ function BulkView() {
         </div>
         <div className="result qr-out">
           <small>
-            {list.length === 1
-              ? T("1 code")
-              : T("{n} codes", { n: list.length })}
+            {ok.length === 1 ? T("1 code") : T("{n} codes", { n: ok.length })}
           </small>
+          {tooLong > 0 && (
+            <small className="warn bulk-long">
+              {tooLong === 1
+                ? T("1 line is too long for a QR code and will be skipped.")
+                : T(
+                    "{n} lines are too long for a QR code and will be skipped.",
+                    { n: tooLong },
+                  )}
+            </small>
+          )}
           {busy && <small>{busy}</small>}
           <div className="acts">
             <button
               type="button"
               className="btn acc"
-              disabled={!list.length || working}
+              disabled={!ok.length || working}
               onClick={() => void save()}
             >
               <Icon name="download" />
-              {T("Download {n} as zip", { n: list.length })}
+              {T("Download {n} as zip", { n: ok.length })}
             </button>
           </div>
         </div>

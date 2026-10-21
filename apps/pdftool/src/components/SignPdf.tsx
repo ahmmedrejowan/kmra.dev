@@ -3,7 +3,12 @@ import type { PDFDocumentProxy } from "pdfjs-dist";
 import { Icon } from "@kmra/ui/components/Icon";
 import { Seg } from "@kmra/ui/components/controls";
 import { DropCard, FileInput, useFiles } from "@kmra/ui/components/kit";
-import { downloadBlob, formatBytes, isImageFile } from "@kmra/ui/lib/files";
+import {
+  downloadBlob,
+  formatBytes,
+  isImageFile,
+  toolName,
+} from "@kmra/ui/lib/files";
 import { toast } from "@kmra/ui/lib/toast";
 import type { Locale } from "@kmra/ui/lib/i18n";
 import { LangProvider, useT } from "@kmra/ui/lib/i18n-react";
@@ -165,6 +170,14 @@ function SignPdfView() {
     start: Item;
   } | null>(null);
 
+  /** Drop everything placed on the pages (a new or removed PDF starts clean) */
+  function clearItems() {
+    setItems((l) => {
+      l.forEach((i) => URL.revokeObjectURL(i.url));
+      return [];
+    });
+    setSel(null);
+  }
   async function open(files: File[]) {
     const file = files[0]!;
     try {
@@ -173,7 +186,7 @@ function SignPdfView() {
       void doc?.pdf.loadingTask.destroy();
       setDoc({ key: crypto.randomUUID(), file, bytes, pdf });
       setPage(0);
-      setItems([]);
+      clearItems();
     } catch (err) {
       toast(
         err instanceof PasswordError
@@ -183,6 +196,17 @@ function SignPdfView() {
             : T("{name} couldn't be opened.", { name: file.name }),
       );
     }
+  }
+  /** Close the PDF and go back to the drop box */
+  function closeDoc() {
+    void doc?.pdf.loadingTask.destroy();
+    setDoc(null);
+    setPage(0);
+    clearItems();
+    setPageUrl((old) => {
+      if (old) URL.revokeObjectURL(old);
+      return null;
+    });
   }
   const { dragging, pickRef, pick, take } = useFiles({
     onFiles: (f) => void open(f),
@@ -380,7 +404,7 @@ function SignPdfView() {
         items.map(({ page, x, y, w, h, png }) => ({ page, x, y, w, h, png })),
       );
       const blob = await save(out);
-      downloadBlob(blob, `${doc.file.name.replace(/\.pdf$/i, "")}-sign.pdf`);
+      downloadBlob(blob, `${toolName(doc.file.name, "sign")}.pdf`);
       toast(T("Saved, {size}.", { size: formatBytes(blob.size) }));
     } catch (err) {
       toast(
@@ -456,9 +480,11 @@ function SignPdfView() {
                     className="region-x"
                     aria-label={T("Remove {name}", { name: i.label })}
                     onPointerDown={(e) => e.stopPropagation()}
-                    onClick={() =>
-                      setItems((l) => l.filter((x) => x.id !== i.id))
-                    }
+                    onClick={() => {
+                      URL.revokeObjectURL(i.url);
+                      setItems((l) => l.filter((x) => x.id !== i.id));
+                      if (sel === i.id) setSel(null);
+                    }}
                   >
                     ×
                   </button>
@@ -515,6 +541,23 @@ function SignPdfView() {
           )}
         </div>
         <div className="controls">
+          <div className="desk-bar">
+            <span className="desk-doc">
+              <span className="desk-doc-pick" title={doc.file.name}>
+                <Icon name="file" />
+                <span className="nm">{doc.file.name}</span>
+              </span>
+              <button
+                type="button"
+                className="desk-doc-x"
+                aria-label={T("Remove {name}", { name: doc.file.name })}
+                title={T("Remove {name}", { name: doc.file.name })}
+                onClick={closeDoc}
+              >
+                <Icon name="x" />
+              </button>
+            </span>
+          </div>
           <Seg<typeof mode>
             label={T("Signature")}
             options={[

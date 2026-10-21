@@ -294,8 +294,35 @@ test("color-blindness simulates colours and an image", async ({ page }) => {
   expect(Math.abs(px[6]! - 58)).toBeLessThan(4);
 
   const d = await download(page, () => page.locator(".ct-dl").click());
-  expect(d.suggestedFilename()).toBe("two-deuteranopia-kmra.png");
+  expect(d.suggestedFilename()).toBe("two-color-blindness-deuteranopia-kmra.png");
   expect(png(await bytes(d))).toEqual({ w: 64, h: 32 });
+});
+
+test("color-blindness: an image can be removed, back to the drop box", async ({ page }) => {
+  await openTool(page, "/color-blindness");
+  await page
+    .getByRole("group", { name: "Check" })
+    .getByRole("button", { name: "An image" })
+    .click();
+  const data = await page.evaluate(() => {
+    const c = document.createElement("canvas");
+    c.width = 16;
+    c.height = 16;
+    const g = c.getContext("2d")!;
+    g.fillStyle = "#3366cc";
+    g.fillRect(0, 0, 16, 16);
+    return c.toDataURL("image/png").split(",")[1]!;
+  });
+  await page
+    .locator(".tool-area input[type=file]")
+    .setInputFiles({ name: "photo-compress-kmra.png", mimeType: "image/png", buffer: Buffer.from(data, "base64") });
+  await expect(page.locator('canvas.ct-sim[data-ready="1"]')).toHaveCount(1);
+  // A file that came from kmra.dev keeps one tag, not two
+  const d = await download(page, () => page.locator(".ct-dl").click());
+  expect(d.suggestedFilename()).toBe("photo-compress-color-blindness-deuteranopia-kmra.png");
+  await page.getByRole("button", { name: "Remove image" }).click();
+  await expect(page.locator("canvas.ct-sim")).toHaveCount(0);
+  await expect(page.getByText("Drop an image here")).toBeVisible();
 });
 
 /* ---------- CSS ---------- */

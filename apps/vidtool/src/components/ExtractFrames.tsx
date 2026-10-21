@@ -186,7 +186,8 @@ export default function ExtractFrames(_: ToolProps) {
     setBusy({ ratio: 0, stage: "Saving frames" });
     const type = kind === "jpg" ? "image/jpeg" : "image/png";
     const q = quality / 100;
-    const base = baseName(file.name);
+    // "clip.mp4" → "clip-extract-frames-001.png" (an earlier "-kmra" tag is dropped)
+    const base = `${baseName(file.name)}-extract-frames`;
     const w =
       width && info.video && width < info.video.width ? width : undefined;
     try {
@@ -631,7 +632,7 @@ export default function ExtractFrames(_: ToolProps) {
                   onClick={() =>
                     void downloadZip(
                       result.files,
-                      `${baseName(file.name)}-frames.zip`,
+                      `${baseName(file.name)}-extract-frames.zip`,
                     )
                   }
                 >

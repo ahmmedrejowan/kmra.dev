@@ -20,6 +20,7 @@ import {
   type Output,
   type Plan,
   type Progress,
+  uniqueNames,
 } from "@kmra/media/engine";
 import {
   EngineBadge,
@@ -91,6 +92,8 @@ export function Workspace({
   reject,
   preview: customPreview,
   estimate,
+  unknownSize,
+  kind = "video",
 }: {
   /** Tool slug, used as a CSS hook */
   tool: string;
@@ -114,8 +117,11 @@ export function Workspace({
   onFile?: (file: File, info: MediaInfo) => void;
   /** Extra note in the output column */
   note?: (info: MediaInfo, file: File) => ReactNode;
-  /** Shown in the output column while the settings make no job (job() returns null) */
-  idle?: string;
+  /**
+   * Shown in the output column while the settings make no job (job() returns null); a function
+   * says why for this file
+   */
+  idle?: string | ((info: MediaInfo, file: File) => string | undefined);
   /** File picker filter (default: video files) */
   inputAccept?: string;
   /** Message when a dropped file isn't accepted */
@@ -130,11 +136,21 @@ export function Workspace({
    * a result for settings that changed meanwhile is dropped.
    */
   estimate?: (info: MediaInfo, file: File, job: Job) => Promise<number | null>;
+  /**
+   * The estimated size when it can't be worked out yet (e.g. Trim: "Depends on the cut");
+   * without it the row is left out
+   */
+  unknownSize?: string;
+  /** What the inputs are, for the workspace's labels ("Add GIFs" in GIF to video) */
+  kind?: "video" | "gif";
 }) {
   const T = useT();
+  const gif = kind === "gif";
   const [items, setItems] = useState<Item[]>([]);
   const [sel, setSel] = useState(0);
   const [busy, setBusy] = useState(false);
+  /** Place in the batch while running: file `i` (from 1) of `n` */
+  const [batch, setBatch] = useState<{ i: number; n: number } | null>(null);
   const [view, setView] = useState<"original" | "result">("original");
   const [time, setTime] = useState(0);
   const [seek, setSeek] = useState<{ t: number; n: number }>({ t: 0, n: 0 });
@@ -170,6 +186,8 @@ export function Workspace({
       for (const it of list) {
         try {
           const info = await probe(it.file);
+          // Nothing to play (no picture, no sound): a damaged or unrelated file
+          if (!info.video && !info.audio) throw new Error("No picture or sound found");
           patch(it.key, { info });
         } catch (e) {
           patch(it.key, {
@@ -244,13 +262,19 @@ export function Workspace({
     ctrl.current = ac;
     setBusy(true);
     let failed = 0;
+    // The files this run makes, so the batch progress can say "file 2 of 5"
+    const queue: { it: Item; j: Job; k: string }[] = [];
     for (const it of itemsRef.current) {
-      if (ac.signal.aborted) break;
       if (!it.info) continue;
       const j = jobRef.current(it.info, it.file);
       if (!j) continue;
       const k = JSON.stringify(j);
       if (it.status === "done" && it.doneKey === k) continue;
+      queue.push({ it, j, k });
+    }
+    for (const [qi, { it, j, k }] of queue.entries()) {
+      if (ac.signal.aborted) break;
+      setBatch({ i: qi + 1, n: queue.length });
       patch(it.key, {
         status: "running",
         error: undefined,
@@ -282,25 +306,55 @@ export function Workspace({
     }
     ctrl.current = null;
     setBusy(false);
+    setBatch(null);
     if (ac.signal.aborted) toast(T("Cancelled"));
     else if (failed) toast(T("Some files couldn't be processed"));
   }
 
+  /**
+   * Remove a file. The selection stays on the same file; when the selected one goes, its
+   * neighbour (the next one, or the one before at the end) is selected.
+   */
   const remove = (key: number) => {
     if (busy) return;
-    setItems((list) => list.filter((it) => it.key !== key));
-    setSel(0);
-    setView("original");
+    const list = itemsRef.current;
+    const at = list.findIndex((it) => it.key === key);
+    if (at < 0) return;
+    const selKey = (list[sel] ?? list[0])?.key;
+    const rest = list.filter((it) => it.key !== key);
+    setItems(rest);
+    if (selKey === key) {
+      const next = Math.max(0, Math.min(at, rest.length - 1));
+      setSel(next);
+      setView(rest[next]?.out ? "result" : "original");
+    } else
+      setSel(
+        Math.max(
+          0,
+          rest.findIndex((it) => it.key === selKey),
+        ),
+      );
   };
+
+  // Output names, unique in the batch: "clip.mov" and "clip.mkv" → "clip-convert.mp4",
+  // "clip-convert-2.mp4"
+  const named = items.filter((it) => it.out);
+  const outNames = new Map(
+    uniqueNames(named.map((it) => it.out!.name)).map((n, i) => [
+      named[i]!.key,
+      n,
+    ]),
+  );
+  const nameOf = (it: Item) => outNames.get(it.key) ?? it.out?.name ?? "";
 
   const saveAll = () =>
     void downloadZip(
-      done.map((it) => ({ name: it.out!.name, blob: it.out!.blob })),
+      done.map((it) => ({ name: nameOf(it), blob: it.out!.blob })),
       `videos-${suffix}.zip`,
     );
   const saveEach = () =>
     done.forEach((it, i) =>
-      setTimeout(() => downloadBlob(it.out!.blob, it.out!.name), i * 600),
+      setTimeout(() => downloadBlob(it.out!.blob, nameOf(it)), i * 600),
     );
 
   const preview =
@@ -374,8 +428,8 @@ export function Workspace({
                     <button
                       type="button"
                       className="btn xs"
-                      aria-label={T("Download {name}", { name: it.out.name })}
-                      onClick={() => downloadBlob(it.out!.blob, it.out!.name)}
+                      aria-label={T("Download {name}", { name: nameOf(it) })}
+                      onClick={() => downloadBlob(it.out!.blob, nameOf(it))}
                     >
                       <Icon name="download" />
                     </button>
@@ -399,14 +453,18 @@ export function Workspace({
               disabled={busy}
             >
               <Icon name="plus" />
-              {T("Add videos")}
+              {gif ? T("Add GIFs") : T("Add videos")}
             </button>
           </div>
         )}
         <FileDetails
           item={cur}
           onReplace={multiple ? undefined : pick}
+          onRemove={
+            multiple || items.length > 1 ? undefined : () => remove(cur.key)
+          }
           busy={busy}
+          kind={kind}
         />
         {settings({ info: cur.info ?? null, file: cur.file })}
       </aside>
@@ -414,7 +472,7 @@ export function Workspace({
       <div className="stage vt-stage">
         <div className="vt-stage-head">
           <span className="vt-name" title={cur.file.name}>
-            {view === "result" && cur.out ? cur.out.name : cur.file.name}
+            {view === "result" && cur.out ? nameOf(cur) : cur.file.name}
           </span>
           {cur.out && (
             <div className="seg sm" role="group" aria-label={T("Show")}>
@@ -490,17 +548,19 @@ export function Workspace({
                   </dd>
                 </div>
               )}
-              <div>
-                <dt>{T("Estimated size")}</dt>
-                <dd
-                  className="vt-est"
-                  data-bytes={cur.plan.estimatedBytes ?? undefined}
-                >
-                  {cur.plan.estimatedBytes !== null
-                    ? `≈ ${formatBytes(cur.plan.estimatedBytes)}`
-                    : T("Depends on the cut")}
-                </dd>
-              </div>
+              {(cur.plan.estimatedBytes !== null || unknownSize) && (
+                <div>
+                  <dt>{T("Estimated size")}</dt>
+                  <dd
+                    className="vt-est"
+                    data-bytes={cur.plan.estimatedBytes ?? undefined}
+                  >
+                    {cur.plan.estimatedBytes !== null
+                      ? `≈ ${formatBytes(cur.plan.estimatedBytes)}`
+                      : unknownSize}
+                  </dd>
+                </div>
+              )}
               <div>
                 <dt>{T("Engine")}</dt>
                 <dd>
@@ -513,16 +573,23 @@ export function Workspace({
             </dl>
           ) : cur.probeError ? null : cur.info && !j ? (
             <p className="muted vt-wait">
-              {idle ?? T("Change a setting to make a new video.")}
+              {(typeof idle === "function" ? idle(cur.info, cur.file) : idle) ??
+                T("Change a setting to make a new video.")}
             </p>
           ) : (
-            <p className="muted vt-wait">{T("Reading the video")}</p>
+            <p className="muted vt-wait">
+              {gif ? T("Reading the GIF") : T("Reading the video")}
+            </p>
           )}
         </div>
 
         {cur.probeError && (
           <p className="note warn" role="alert">
-            {T("This file couldn't be read. It may be damaged or not a video.")}
+            {gif
+              ? T("This file couldn't be read. It may be damaged or not a GIF.")
+              : T(
+                  "This file couldn't be read. It may be damaged or not a video.",
+                )}
           </p>
         )}
         {warn && <p className="note warn">{T(warn)}</p>}
@@ -530,6 +597,38 @@ export function Workspace({
 
         {busy ? (
           <div className="vt-progress" role="status">
+            {batch && batch.n > 1 && (
+              <div className="vt-batch">
+                <div className="vt-pline">
+                  <span>{T("File {i} of {n}", batch)}</span>
+                  <b>
+                    {Math.round(
+                      ((batch.i -
+                        1 +
+                        (items.find((it) => it.status === "running")?.progress
+                          ?.ratio ?? 0)) /
+                        batch.n) *
+                        100,
+                    )}
+                    %
+                  </b>
+                </div>
+                <span className="mp-bar">
+                  <i
+                    style={{
+                      width: `${Math.round(
+                        ((batch.i -
+                          1 +
+                          (items.find((it) => it.status === "running")?.progress
+                            ?.ratio ?? 0)) /
+                          batch.n) *
+                          100,
+                      )}%`,
+                    }}
+                  />
+                </span>
+              </div>
+            )}
             {items
               .filter((it) => it.status === "running")
               .map((it) => (
@@ -567,14 +666,18 @@ export function Workspace({
             onClick={() => void start()}
           >
             {pending.length > 1
-              ? T("{action} {n} videos", { action, n: pending.length })
+              ? gif
+                ? T("{action} from {n} GIFs", { action, n: pending.length })
+                : T("{action} {n} videos", { action, n: pending.length })
               : action}
           </button>
         )}
 
         {cur.status === "error" && cur.error && !cur.probeError && (
           <p className="note warn" role="alert">
-            {T("This video couldn't be processed.")}{" "}
+            {gif
+              ? T("This GIF couldn't be processed.")
+              : T("This video couldn't be processed.")}{" "}
             <span className="muted">{cur.error}</span>
           </p>
         )}
@@ -621,24 +724,25 @@ export function Workspace({
             <button
               type="button"
               className="btn primary vt-download"
-              onClick={() => downloadBlob(cur.out!.blob, cur.out!.name)}
+              onClick={() => downloadBlob(cur.out!.blob, nameOf(cur))}
             >
               <Icon name="download" />
               {T("Download {ext}", {
                 ext: cur.out.name.split(".").pop()!.toUpperCase(),
               })}
             </button>
-            {done.length > 1 && (
-              <div className="vt-all">
-                <button type="button" className="btn vt-zip" onClick={saveAll}>
-                  <Icon name="download" />
-                  {T("Download all ({n}) as zip", { n: done.length })}
-                </button>
-                <button type="button" className="btn sm" onClick={saveEach}>
-                  {T("Download each file")}
-                </button>
-              </div>
-            )}
+          </div>
+        )}
+        {done.length > 1 && (
+          // Shown whenever two or more files are done, even when the selected one failed
+          <div className="vt-all">
+            <button type="button" className="btn vt-zip" onClick={saveAll}>
+              <Icon name="download" />
+              {T("Download all ({n}) as zip", { n: done.length })}
+            </button>
+            <button type="button" className="btn sm" onClick={saveEach}>
+              {T("Download each file")}
+            </button>
           </div>
         )}
       </aside>
@@ -649,11 +753,16 @@ export function Workspace({
 export function FileDetails({
   item,
   onReplace,
+  onRemove,
   busy,
+  kind = "video",
 }: {
   item: Pick<Item, "file" | "info" | "probeError">;
   onReplace?: () => void;
+  /** Single-file tools hide the file list: this takes the file away (back to the drop box) */
+  onRemove?: () => void;
   busy: boolean;
+  kind?: "video" | "gif";
 }) {
   const T = useT();
   const i = item.info;
@@ -701,16 +810,31 @@ export function FileDetails({
   return (
     <div className="ctl vt-details">
       <span className="lbl">
-        {T("Video details")}
-        {onReplace && (
-          <button
-            type="button"
-            className="btn xs"
-            onClick={onReplace}
-            disabled={busy}
-          >
-            {T("Change video")}
-          </button>
+        {kind === "gif" ? T("GIF details") : T("Video details")}
+        {(onReplace || onRemove) && (
+          <span style={{ display: "flex", gap: 6 }}>
+            {onReplace && (
+              <button
+                type="button"
+                className="btn xs"
+                onClick={onReplace}
+                disabled={busy}
+              >
+                {T("Change video")}
+              </button>
+            )}
+            {onRemove && (
+              <button
+                type="button"
+                className="btn xs vt-remove"
+                aria-label={T("Remove {name}", { name: item.file.name })}
+                onClick={onRemove}
+                disabled={busy}
+              >
+                {T("Remove")}
+              </button>
+            )}
+          </span>
         )}
       </span>
       {i ? (
@@ -723,7 +847,9 @@ export function FileDetails({
           ))}
         </dl>
       ) : !item.probeError ? (
-        <p className="muted">{T("Reading the video")}</p>
+        <p className="muted">
+          {kind === "gif" ? T("Reading the GIF") : T("Reading the video")}
+        </p>
       ) : null}
     </div>
   );

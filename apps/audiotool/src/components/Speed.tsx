@@ -24,7 +24,11 @@ export default function Speed({ preset }: ToolProps) {
       suffix="speed"
       action={speed > 1 ? T("Speed up") : T("Slow down")}
       dropTitle={T("Drop audio files to change their speed")}
-      idle={T("Pick a speed other than 1×.")}
+      idle={(info) =>
+        info.audio
+          ? T("Pick a speed other than 1×.")
+          : T("This file has no sound.")
+      }
       job={(info) =>
         info.audio && speed !== 1
           ? {
@@ -49,9 +53,15 @@ export default function Speed({ preset }: ToolProps) {
               step={0.05}
               value={speed}
               aria-valuetext={times(speed)}
-              onChange={(e) => setSpeed(Math.round(+e.target.value * 100) / 100)}
+              onChange={(e) =>
+                setSpeed(Math.round(+e.target.value * 100) / 100)
+              }
             />
-            <div className="chips vt-chips" role="group" aria-label={T("Common speeds")}>
+            <div
+              className="chips vt-chips"
+              role="group"
+              aria-label={T("Common speeds")}
+            >
               {CHIPS.map((s) => (
                 <button
                   key={s}
@@ -66,11 +76,17 @@ export default function Speed({ preset }: ToolProps) {
             </div>
           </div>
           <div className="ctl">
-            <Toggle label={T("Keep the natural pitch")} on={pitch} onChange={setPitch} />
+            <Toggle
+              label={T("Keep the natural pitch")}
+              on={pitch}
+              onChange={setPitch}
+            />
             <p className="note">
               {pitch
                 ? T("Voices sound normal, just faster or slower.")
-                : T("The pitch follows the speed, like a tape: higher when faster, lower when slower.")}
+                : T(
+                    "The pitch follows the speed, like a tape: higher when faster, lower when slower.",
+                  )}
             </p>
           </div>
           {info && speed !== 1 && (

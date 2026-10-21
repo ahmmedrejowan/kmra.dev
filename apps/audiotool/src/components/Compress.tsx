@@ -17,9 +17,15 @@ const lossyOut = (info: MediaInfo): AudioContainer => {
   const codec = info.audio?.codec ?? "";
   if (c === "mp3") return "mp3";
   if (c === "ogg") return codec === "opus" ? "opus" : "ogg";
-  if ((c === "mp4" || c === "mov" || c === "aac") && codec === "aac") return "m4a";
+  if ((c === "mp4" || c === "mov" || c === "aac") && codec === "aac")
+    return "m4a";
   return "mp3";
 };
+
+/** The source's sound bitrate, bits/s (from the stream, else size over length; 0 = unknown) */
+const sourceBitrate = (info: MediaInfo, file: File): number =>
+  info.audio?.bitrate ||
+  (info.durationSec > 0 ? (file.size * 8) / info.durationSec : 0);
 
 /**
  * Compress: a lower bitrate (quality), or a target size the bitrate is worked out from. "Speech"
@@ -38,6 +44,16 @@ export default function Compress({ preset }: ToolProps) {
   const [mbText, setMbText] = useState(String(target > 0 ? target : 5));
   const [mono, setMono] = useState(voice);
 
+  /**
+   * Never bigger: a file already under the target size, or already at the chosen bitrate or
+   * less, isn't compressed (the run stays off and the output column says why).
+   */
+  const shrinks = (info: MediaInfo, file: File): "ok" | "under" | "rate" => {
+    if (mode === "size") return file.size <= mb * MB ? "under" : "ok";
+    const src = sourceBitrate(info, file);
+    return src > 0 && kbps * 1000 >= src * 0.9 ? "rate" : "ok";
+  };
+
   return (
     <Workspace
       tool="compress"
@@ -45,29 +61,37 @@ export default function Compress({ preset }: ToolProps) {
       action={T("Compress")}
       dropTitle={T("Drop audio files to compress them")}
       formats={["MP3", "WAV", "M4A", "FLAC", "OGG"]}
-      job={(info) =>
-        info.audio
-          ? {
-              to: lossyOut(info),
-              ...(mode === "size"
-                ? { targetBytes: Math.round(mb * MB) }
-                : {}),
-              audio: {
-                ...(mode === "quality" ? { bitrate: kbps } : {}),
-                ...(mono ? { channels: 1 as const } : {}),
+      job={(info, file) => {
+        if (!info.audio || shrinks(info, file) !== "ok") return null;
+        return {
+          to: lossyOut(info),
+          ...(mode === "size" ? { targetBytes: Math.round(mb * MB) } : {}),
+          audio: {
+            ...(mode === "quality" ? { bitrate: kbps } : {}),
+            ...(mono ? { channels: 1 as const } : {}),
+          },
+        };
+      }}
+      idle={(info, file) => {
+        const why = info.audio ? shrinks(info, file) : "silent";
+        return why === "under"
+          ? T(
+              "This file is already under {size}, so there's nothing to compress.",
+              {
+                size: `${mb} MB`,
               },
-            }
-          : null
-      }
-      idle={T("This file has no sound.")}
-      note={(info, file) =>
-        mode === "size" && file.size <= mb * MB ? (
-          <p className="note">
-            {T("This file is already under {size}.", { size: `${mb} MB` })}
-          </p>
-        ) : info.container !== "mp3" &&
-          lossyOut(info) === "mp3" &&
-          info.audio?.codec !== "mp3" ? (
+            )
+          : why === "rate"
+            ? T(
+                "This file is already at {kbps} kbps or less, so it wouldn't get smaller. Pick a lower quality.",
+                { kbps },
+              )
+            : T("This file has no sound.");
+      }}
+      note={(info) =>
+        info.container !== "mp3" &&
+        lossyOut(info) === "mp3" &&
+        info.audio?.codec !== "mp3" ? (
           <>
             <p className="note">{T("Saved as MP3, which plays everywhere.")}</p>
             <Mp3Credit />
@@ -124,10 +148,16 @@ export default function Compress({ preset }: ToolProps) {
               </div>
               {parseFloat(mbText.replace(",", ".")) < MIN_MB && (
                 <p className="note">
-                  {T("The smallest target is {size}.", { size: `${MIN_MB} MB` })}
+                  {T("The smallest target is {size}.", {
+                    size: `${MIN_MB} MB`,
+                  })}
                 </p>
               )}
-              <div className="chips vt-chips" role="group" aria-label={T("Common sizes")}>
+              <div
+                className="chips vt-chips"
+                role="group"
+                aria-label={T("Common sizes")}
+              >
                 {SIZES.map((s) => (
                   <button
                     key={s}
@@ -148,7 +178,9 @@ export default function Compress({ preset }: ToolProps) {
           <div className="ctl">
             <Toggle label={T("Speech (mono)")} on={mono} onChange={setMono} />
             <p className="note">
-              {T("For voices, one channel sounds the same and halves the size.")}
+              {T(
+                "For voices, one channel sounds the same and halves the size.",
+              )}
             </p>
           </div>
         </>

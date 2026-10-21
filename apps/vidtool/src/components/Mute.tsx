@@ -10,7 +10,11 @@ export default function Mute(_: ToolProps) {
       suffix="mute"
       action={T("Remove sound")}
       dropTitle={T("Drop videos to remove the sound")}
-      job={(info) => ({ to: sameContainer(info), audio: { drop: true } })}
+      // A video with no sound has nothing to remove: no run, no unchanged copy to download
+      job={(info) =>
+        info.audio ? { to: sameContainer(info), audio: { drop: true } } : null
+      }
+      idle={T("This video has no sound already.")}
       settings={() => (
         <p className="note">
           {T(
@@ -18,11 +22,6 @@ export default function Mute(_: ToolProps) {
           )}
         </p>
       )}
-      note={(info) =>
-        info.audio ? null : (
-          <p className="note">{T("This video has no sound already.")}</p>
-        )
-      }
     />
   );
 }

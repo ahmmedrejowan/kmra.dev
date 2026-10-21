@@ -107,6 +107,13 @@ function CheckerView() {
 
   async function load(files: File[]) {
     const file = files[0]!;
+    if (files.length > 1)
+      toast(
+        T("Only the first file is checked: {name}").replace(
+          "{name}",
+          file.name,
+        ),
+      );
     setBusy(T("Reading…"));
     setChecks(null);
     try {
@@ -125,8 +132,13 @@ function CheckerView() {
       setLoaded({ url, canvas, pixels, codes });
       if (!codes.length) setBusy(null);
     } catch {
+      // Back to the empty drop box: an earlier image without its results would mislead
+      if (urlRef.current) URL.revokeObjectURL(urlRef.current);
+      urlRef.current = null;
+      setLoaded(null);
+      setSel(0);
       setBusy(null);
-      toast(T("That image couldn't be read."));
+      toast(T("{name} couldn't be read.").replace("{name}", file.name));
     }
   }
 

@@ -3,14 +3,18 @@ import type { PDFDocumentProxy } from "pdfjs-dist";
 import type { Preset } from "@kmra/registry";
 import { Icon } from "@kmra/ui/components/Icon";
 import {
-  baseName,
   canvasBlob,
   decode,
   DropCard,
   FileInput,
   useFiles,
 } from "@kmra/ui/components/kit";
-import { downloadBlob, IMAGE_ACCEPT, isImageFile } from "@kmra/ui/lib/files";
+import {
+  downloadBlob,
+  IMAGE_ACCEPT,
+  isImageFile,
+  toolName,
+} from "@kmra/ui/lib/files";
 import { toast } from "@kmra/ui/lib/toast";
 import { useT } from "@kmra/ui/lib/i18n-react";
 import { missingLangs, recognize } from "../lib/ocr";
@@ -58,6 +62,7 @@ interface PageItem {
 }
 
 interface Source {
+  /** The (first) file's name */
   name: string;
   /** PDF bytes (null for images) */
   bytes: Uint8Array | null;
@@ -100,6 +105,10 @@ export default function SearchablePdf({ preset }: { preset?: Preset }) {
   } | null>(null);
   const abort = useRef<AbortController | null>(null);
   const autoStart = useRef(false);
+  /** Bumped by every open and close: an older opening stops when it sees a newer one */
+  const openId = useRef(0);
+  const srcRef = useRef(src);
+  srcRef.current = src;
   const { thumbs, request } = useThumbs(src?.doc ?? null);
   const [preview, setPreview] = useState<{ i: number; url: string } | null>(
     null,
@@ -115,17 +124,46 @@ export default function SearchablePdf({ preset }: { preset?: Preset }) {
   const stale = pages.some((p) => needs(p) && p.ocr && p.key !== key);
 
   /* ---------- Opening ---------- */
-  async function open(files: File[]) {
+  /** Stop whatever runs for the current files (reading, or checking pages) */
+  function stopAll() {
+    openId.current++;
+    autoStart.current = false;
     abort.current?.abort();
+    abort.current = null;
+    setRunning(false);
+    setStage(null);
+  }
+
+  async function open(files: File[]) {
+    stopAll();
+    const id = openId.current;
     setProblem(null);
     setOut(null);
     const pdf = files.find(isPdf);
     setOpening(true);
     try {
-      if (pdf) await openPdfFile(pdf);
-      else await openImages(files.filter(isImageFile));
+      if (pdf) {
+        await openPdfFile(pdf, id);
+        // A PDF opens on its own: say what else was dropped with it
+        const left = files.length - 1;
+        if (left > 0)
+          toast(
+            left === 1
+              ? T(
+                  "Only {name} was opened. A PDF opens on its own, so 1 other file was left out.",
+                  { name: pdf.name },
+                )
+              : T(
+                  "Only {name} was opened. A PDF opens on its own, so {n} other files were left out.",
+                  { name: pdf.name, n: left },
+                ),
+          );
+      } else await openImages(files.filter(isImageFile), id);
+      if (openId.current !== id) return;
       autoStart.current = true;
     } catch (err) {
+      // Replaced by a newer opening: not worth a message
+      if (openId.current !== id) return;
       const name = (pdf ?? files[0])?.name ?? "";
       const msg =
         err instanceof PasswordError
@@ -143,14 +181,20 @@ export default function SearchablePdf({ preset }: { preset?: Preset }) {
       setProblem(msg);
       toast(msg);
     } finally {
-      setOpening(false);
+      if (openId.current === id) setOpening(false);
     }
   }
 
-  async function openPdfFile(f: File) {
+  async function openPdfFile(f: File, id: number) {
+    const stale = () => openId.current !== id;
     const bytes = new Uint8Array(await f.arrayBuffer());
+    if (stale()) return;
     const d = await openPdf(bytes);
-    void src?.doc?.loadingTask.destroy();
+    if (stale()) {
+      void d.loadingTask.destroy();
+      return;
+    }
+    void srcRef.current?.doc?.loadingTask.destroy();
     revokeImages();
     const list: PageItem[] = Array.from({ length: d.numPages }, () => ({
       hasText: false,
@@ -158,13 +202,15 @@ export default function SearchablePdf({ preset }: { preset?: Preset }) {
       progress: 0,
       ratio: 0.707,
     }));
-    setSrc({ name: baseName(f.name), bytes, doc: d });
+    setSrc({ name: f.name, bytes, doc: d });
     setPages(list);
     setSel(0);
     for (let i = 0; i < d.numPages; i++) {
       const page = await d.getPage(i + 1);
       const v = page.getViewport({ scale: 1 });
       const hasText = (await realText(d, i + 1)) !== null;
+      // Another file was opened (or this one closed) meanwhile: leave its pages alone
+      if (stale()) return;
       list[i] = {
         ...list[i]!,
         hasText,
@@ -175,7 +221,7 @@ export default function SearchablePdf({ preset }: { preset?: Preset }) {
     }
   }
 
-  async function openImages(files: File[]) {
+  async function openImages(files: File[], id: number) {
     if (!files.length) throw new Error("no images");
     const list: PageItem[] = [];
     for (const file of files) {
@@ -199,10 +245,14 @@ export default function SearchablePdf({ preset }: { preset?: Preset }) {
         toast(T("{name} couldn't be opened.", { name: file.name }));
       }
     }
+    if (openId.current !== id) {
+      for (const p of list) URL.revokeObjectURL(p.image!.thumb);
+      return;
+    }
     if (!list.length) throw new Error("no images");
-    void src?.doc?.loadingTask.destroy();
+    void srcRef.current?.doc?.loadingTask.destroy();
     revokeImages();
-    setSrc({ name: baseName(files[0]!.name), bytes: null, doc: null });
+    setSrc({ name: files[0]!.name, bytes: null, doc: null });
     setPages(list);
     setSel(0);
   }
@@ -210,6 +260,35 @@ export default function SearchablePdf({ preset }: { preset?: Preset }) {
   function revokeImages() {
     for (const p of pagesRef.current)
       if (p.image) URL.revokeObjectURL(p.image.thumb);
+  }
+
+  /** Close the files and go back to the drop box */
+  function close() {
+    stopAll();
+    void srcRef.current?.doc?.loadingTask.destroy();
+    revokeImages();
+    setSrc(null);
+    setPages([]);
+    setSel(0);
+    setOut(null);
+    setPreview(null);
+    setOpening(false);
+  }
+
+  /** Take one image out of the set; the PDF is made again from the rest */
+  function removeImage(i: number) {
+    const p = pagesRef.current[i];
+    if (!p?.image || running || building) return;
+    if (pagesRef.current.length === 1) return close();
+    URL.revokeObjectURL(p.image.thumb);
+    const rest = pagesRef.current.filter((_, k) => k !== i);
+    setPages(rest);
+    // Named after the first image left
+    setSrc((s) => s && { ...s, name: rest[0]!.image!.file.name });
+    const last = pagesRef.current.length - 2;
+    setSel((s) => (s > i ? s - 1 : Math.min(s, last)));
+    setOut(null);
+    autoStart.current = true;
   }
 
   useEffect(() => {
@@ -269,6 +348,7 @@ export default function SearchablePdf({ preset }: { preset?: Preset }) {
       if (ac.signal.aborted) break;
       patch(i, { status: "read", progress: 0 });
       const missing = await missingLangs(langs).catch(() => []);
+      if (ac.signal.aborted) break;
       setStage({ page: i, s: { status: "Loading engine", p: 0, missing } });
       try {
         const canvas = await pageImage(i);
@@ -287,6 +367,7 @@ export default function SearchablePdf({ preset }: { preset?: Preset }) {
           langs,
           signal: ac.signal,
           onProgress: (p, status) => {
+            if (ac.signal.aborted) return;
             patch(i, { progress: status === "Reading text" ? p : 0 });
             setStage({ page: i, s: { status, p, missing } });
           },
@@ -302,6 +383,8 @@ export default function SearchablePdf({ preset }: { preset?: Preset }) {
       done++;
       setRun({ done, total: indexes.length });
     }
+    // Replaced by other files: their pages aren't ours to mark
+    if (ac.signal.aborted && abort.current !== ac) return;
     if (abort.current === ac) abort.current = null;
     setStage(null);
     setRunning(false);
@@ -428,7 +511,7 @@ export default function SearchablePdf({ preset }: { preset?: Preset }) {
     : preview?.i === sel
       ? preview.url
       : "";
-  const outName = `${src.name}-searchable-pdf.pdf`;
+  const outName = `${toolName(src.name, "searchable-pdf")}.pdf`;
   const outOk = out && out.key === key && out.redo === redo;
 
   return (
@@ -467,6 +550,10 @@ export default function SearchablePdf({ preset }: { preset?: Preset }) {
           <button type="button" className="btn sm" onClick={pick}>
             <Icon name="upload" />
             {T("Other files")}
+          </button>
+          <button type="button" className="btn sm" onClick={close}>
+            <Icon name="x" />
+            {src.doc ? T("Remove PDF") : T("Remove all")}
           </button>
         </div>
       </div>
@@ -511,6 +598,17 @@ export default function SearchablePdf({ preset }: { preset?: Preset }) {
                     : ""}
             </span>
             <span className="bar-push" />
+            {cur?.image && (
+              <button
+                type="button"
+                className="btn xs"
+                disabled={running || building}
+                onClick={() => removeImage(sel)}
+              >
+                <Icon name="x" />
+                {T("Remove this image")}
+              </button>
+            )}
             {curOcr && (
               <label className="bar-item bar-check">
                 <input

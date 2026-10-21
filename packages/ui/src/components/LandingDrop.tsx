@@ -74,7 +74,7 @@ export default function LandingDrop({
       toast(unavailable ?? T("This tool isn't ready yet."));
       return;
     }
-    await stashFiles(files);
+    await stashFiles(files, target);
     window.location.href = target;
   };
 

@@ -14,7 +14,11 @@ export default function Pitch(_: ToolProps) {
       suffix="pitch"
       action={semi > 0 ? T("Raise the pitch") : T("Lower the pitch")}
       dropTitle={T("Drop audio files to change their pitch")}
-      idle={T("Pick a shift other than 0.")}
+      idle={(info) =>
+        info.audio
+          ? T("Pick a shift other than 0.")
+          : T("This file has no sound.")
+      }
       job={(info) =>
         info.audio && semi !== 0
           ? { to: sameAudio(info), audio: { pitch: semi } }
@@ -37,7 +41,11 @@ export default function Pitch(_: ToolProps) {
               aria-valuetext={T("{n} semitones", { n: label(semi) })}
               onChange={(e) => setSemi(+e.target.value)}
             />
-            <div className="chips vt-chips" role="group" aria-label={T("Common shifts")}>
+            <div
+              className="chips vt-chips"
+              role="group"
+              aria-label={T("Common shifts")}
+            >
               {[-12, -5, -2, -1, 1, 2, 5, 12].map((s) => (
                 <button
                   key={s}
@@ -52,7 +60,9 @@ export default function Pitch(_: ToolProps) {
             </div>
           </div>
           <p className="note">
-            {T("12 semitones is an octave. The speed and length stay the same.")}
+            {T(
+              "12 semitones is an octave. The speed and length stay the same.",
+            )}
           </p>
         </>
       )}

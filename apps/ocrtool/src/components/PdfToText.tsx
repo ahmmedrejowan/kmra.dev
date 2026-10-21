@@ -4,13 +4,12 @@ import type { Preset } from "@kmra/registry";
 import { Icon } from "@kmra/ui/components/Icon";
 import { Toggle } from "@kmra/ui/components/controls";
 import {
-  baseName,
   CopyBtn,
   DropCard,
   FileInput,
   useFiles,
 } from "@kmra/ui/components/kit";
-import { downloadBlob } from "@kmra/ui/lib/files";
+import { downloadBlob, toolName } from "@kmra/ui/lib/files";
 import { toast } from "@kmra/ui/lib/toast";
 import { useT } from "@kmra/ui/lib/i18n-react";
 import { missingLangs, recognize } from "../lib/ocr";
@@ -83,6 +82,10 @@ export default function PdfToText({ preset }: { preset?: Preset }) {
   const [stage, setStage] = useState<{ page: number; s: Stage } | null>(null);
   const abort = useRef<AbortController | null>(null);
   const autoStart = useRef(false);
+  /** Bumped by every open and close: an older opening stops when it sees a newer one */
+  const openId = useRef(0);
+  const docRef = useRef(doc);
+  docRef.current = doc;
   const { thumbs, request } = useThumbs(doc);
 
   const patch = (i: number, p: Partial<PageItem>) =>
@@ -103,16 +106,38 @@ export default function PdfToText({ preset }: { preset?: Preset }) {
   });
 
   /* ---------- Opening ---------- */
+  /** Stop whatever runs for the current PDF (reading, or checking its pages) */
+  function stopAll() {
+    openId.current++;
+    autoStart.current = false;
+    abort.current?.abort();
+    abort.current = null;
+    setRunning(false);
+    setStage(null);
+  }
+
   async function open(files: File[]) {
     const f = files[0]!;
-    abort.current?.abort();
+    stopAll();
+    const id = openId.current;
+    const stale = () => openId.current !== id;
     setOpening(true);
     setProblem(null);
+    let d: PDFDocumentProxy | null = null;
     try {
       const bytes = new Uint8Array(await f.arrayBuffer());
-      const d = await openPdf(bytes);
-      void doc?.loadingTask.destroy();
+      if (stale()) return;
+      d = await openPdf(bytes);
+      if (stale()) {
+        void d.loadingTask.destroy();
+        return;
+      }
+      void docRef.current?.loadingTask.destroy();
       const first = await d.getPage(1);
+      if (stale()) {
+        void d.loadingTask.destroy();
+        return;
+      }
       const v = first.getViewport({ scale: 1 });
       const list: PageItem[] = Array.from({ length: d.numPages }, () => ({
         layer: null,
@@ -131,6 +156,8 @@ export default function PdfToText({ preset }: { preset?: Preset }) {
         const page = await d.getPage(i + 1);
         const pv = page.getViewport({ scale: 1 });
         const layer = await realText(d, i + 1);
+        // Another PDF was opened (or this one closed) meanwhile: leave its pages alone
+        if (stale()) return;
         list[i] = {
           ...list[i]!,
           layer,
@@ -141,6 +168,8 @@ export default function PdfToText({ preset }: { preset?: Preset }) {
       }
       autoStart.current = true;
     } catch (err) {
+      // An error from a PDF that has since been replaced isn't news
+      if (stale()) return;
       const msg =
         err instanceof PasswordError
           ? T(
@@ -154,8 +183,20 @@ export default function PdfToText({ preset }: { preset?: Preset }) {
       setProblem(msg);
       toast(msg);
     } finally {
-      setOpening(false);
+      if (!stale()) setOpening(false);
     }
+  }
+
+  /** Close the PDF and go back to the drop box */
+  function close() {
+    stopAll();
+    void docRef.current?.loadingTask.destroy();
+    setDoc(null);
+    setFile(null);
+    setPages([]);
+    setSel(0);
+    setRange("");
+    setOpening(false);
   }
 
   // Start reading once the pages have been checked
@@ -200,6 +241,7 @@ export default function PdfToText({ preset }: { preset?: Preset }) {
       if (ac.signal.aborted) break;
       patch(i, { status: "read", progress: 0 });
       const missing = await missingLangs(langs).catch(() => []);
+      if (ac.signal.aborted) break;
       setStage({ page: i, s: { status: "Loading engine", p: 0, missing } });
       try {
         const canvas = await renderPage(current, i + 1, OCR_DPI);
@@ -209,6 +251,7 @@ export default function PdfToText({ preset }: { preset?: Preset }) {
           langs,
           signal: ac.signal,
           onProgress: (p, status) => {
+            if (ac.signal.aborted) return;
             patch(i, { progress: status === "Reading text" ? p : 0 });
             setStage({ page: i, s: { status, p, missing } });
           },
@@ -230,6 +273,8 @@ export default function PdfToText({ preset }: { preset?: Preset }) {
       done++;
       setRun({ done, total: indexes.length });
     }
+    // Replaced by another PDF: its pages aren't ours to mark
+    if (ac.signal.aborted && abort.current !== ac) return;
     if (ac.signal.aborted)
       setPages((ps) =>
         ps.map((p) =>
@@ -277,13 +322,12 @@ export default function PdfToText({ preset }: { preset?: Preset }) {
     );
   }
 
-  const name = file ? baseName(file.name) : "text";
   const save = (fmt: "txt" | "md") =>
     downloadBlob(
       new Blob([combined(fmt)], {
         type: fmt === "md" ? "text/markdown" : "text/plain",
       }),
-      `${name}-pdf-to-text.${fmt}`,
+      `${toolName(file?.name ?? "text", "pdf-to-text")}.${fmt}`,
     );
 
   /* ---------- Empty ---------- */
@@ -399,6 +443,15 @@ export default function PdfToText({ preset }: { preset?: Preset }) {
           <button type="button" className="btn sm" onClick={pick}>
             <Icon name="upload" />
             {T("Another PDF")}
+          </button>
+          <button
+            type="button"
+            className="btn sm"
+            onClick={close}
+            aria-label={T("Remove {name}", { name: file?.name ?? "" })}
+          >
+            <Icon name="x" />
+            {T("Remove")}
           </button>
         </div>
       </div>

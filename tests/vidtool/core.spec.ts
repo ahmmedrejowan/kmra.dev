@@ -284,7 +284,10 @@ test("video to MP3, M4A (copied) and WAV", async ({ page }) => {
   // MP3 credits the LAME encoder (its licence asks for a link); the notice file is served
   const credit = page.locator(".mp3-credit");
   await expect(credit).toHaveText("MP3s are made with the LAME encoder.");
-  await expect(credit.getByRole("link")).toHaveAttribute("href", "https://lame.sourceforge.io/");
+  await expect(credit.getByRole("link")).toHaveAttribute(
+    "href",
+    "https://lame.sourceforge.io/",
+  );
   expect((await page.request.get("/NOTICE-mp3.txt")).ok()).toBe(true);
   const mp3 = await runJob(page);
   expect(mp3.name).toBe("vid-landscape-video-to-mp3-kmra.mp3");
@@ -310,7 +313,11 @@ test("video to MP3, M4A (copied) and WAV", async ({ page }) => {
 test("a video without sound can't be saved as MP3", async ({ page }) => {
   await openTool(page, "/video-to-mp3");
   await addFiles(page, gen(VID.webm));
-  await expect(page.locator(".vt-out .note.warn")).toContainText("no sound");
+  // Said once, in the output column
+  await expect(page.locator(".vt-wait")).toContainText("no sound");
+  await expect(page.getByText("This video has no sound to save.")).toHaveCount(
+    1,
+  );
   await expect(page.locator(".vt-run")).toBeDisabled();
 });
 

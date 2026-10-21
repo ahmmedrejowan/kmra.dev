@@ -215,9 +215,7 @@ test("GIF to MP4 on the fast engine: smaller, even size, plays, repeats", async 
   page,
 }) => {
   await openTool(page, "/gif-to-video");
-  await expect(
-    page.getByRole("button", { name: "Choose GIFs" }),
-  ).toBeVisible();
+  await expect(page.getByRole("button", { name: "Choose GIFs" })).toBeVisible();
   await addFiles(page, gen(VID.gif));
   await expect(page.locator(".vt-details")).toContainText("480 × 270", {
     timeout: 60_000,
@@ -295,7 +293,9 @@ test("extract frames: the frame on screen as PNG and JPG", async ({ page }) => {
   await saveFrames(page);
   await expect(page.locator(".vt-result img.vt-still")).toBeVisible();
   const d = await download(page, () => page.locator(".vt-download").click());
-  expect(d.suggestedFilename()).toBe("vid-colors-0m01.5s-kmra.png");
+  expect(d.suggestedFilename()).toBe(
+    "vid-colors-extract-frames-0m01.5s-kmra.png",
+  );
   const png = save(await bytes(d), "png");
   expect(colourName(rgb(png, 10, 10))).toBe("green");
   expect(
@@ -335,13 +335,13 @@ test("extract frames: every second, every 25 frames and at scene changes, in a z
   await saveFrames(page);
   await expect(page.locator(".vt-result")).toHaveAttribute("data-count", "4");
   const z = await download(page, () => page.locator(".vt-zip").click());
-  expect(z.suggestedFilename()).toBe("vid-colors-frames-kmra.zip");
+  expect(z.suggestedFilename()).toBe("vid-colors-extract-frames-kmra.zip");
   const files = unzip(await bytes(z));
   expect(files.map((f) => f.split("/").pop())).toEqual([
-    "vid-colors-001-kmra.png",
-    "vid-colors-002-kmra.png",
-    "vid-colors-003-kmra.png",
-    "vid-colors-004-kmra.png",
+    "vid-colors-extract-frames-001-kmra.png",
+    "vid-colors-extract-frames-002-kmra.png",
+    "vid-colors-extract-frames-003-kmra.png",
+    "vid-colors-extract-frames-004-kmra.png",
   ]);
   expect(colours(files)).toEqual(expected);
 
@@ -377,7 +377,9 @@ test("extract frames: contact sheet, and the limit note", async ({ page }) => {
   await expect(page.locator(".vt-run")).toHaveText("Make contact sheet");
   await saveFrames(page);
   const d = await download(page, () => page.locator(".vt-download").click());
-  expect(d.suggestedFilename()).toBe("vid-colors-contact-sheet-kmra.png");
+  expect(d.suggestedFilename()).toBe(
+    "vid-colors-extract-frames-contact-sheet-kmra.png",
+  );
   const sheet = save(await bytes(d), "png");
   // 4 tiles of 400 px, 10 px gaps, 24 px margins; one row of 225 px under a 64 px title
   expect(

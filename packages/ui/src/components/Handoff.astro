@@ -26,7 +26,9 @@
           (f): f is File => f instanceof File,
         );
         let ok = files.length > 0;
-        if (ok) await stashFiles(files).catch(() => (ok = false));
+        // Only the tool the hub opens takes them
+        const to = typeof e.data.to === "string" ? e.data.to : undefined;
+        if (ok) await stashFiles(files, to).catch(() => (ok = false));
         (e.source as Window | null)?.postMessage(
           { type: "kmra:stored", ok },
           { targetOrigin: e.origin },

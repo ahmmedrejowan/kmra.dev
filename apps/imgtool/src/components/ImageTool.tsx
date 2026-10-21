@@ -1126,7 +1126,10 @@ function ImageToolView({ tool, preset, tools, brand, lang = "en" }: Props) {
       if (focusMeta) saveEdits(to);
       void (
         focusMeta && items.length
-          ? stashFiles(items.map((it) => it.file))
+          ? stashFiles(
+              items.map((it) => it.file),
+              to,
+            )
           : Promise.resolve()
       ).finally(() => (window.location.href = to));
       return;

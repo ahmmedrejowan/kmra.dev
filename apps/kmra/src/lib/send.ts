@@ -20,7 +20,7 @@ export function sendFiles(files: File[], toolUrl: string): Promise<boolean> {
     const onMessage = (e: MessageEvent) => {
       if (e.origin !== origin || e.source !== frame.contentWindow) return;
       if (e.data?.type === "kmra:ready")
-        frame.contentWindow!.postMessage({ type: "kmra:files", files }, origin);
+        frame.contentWindow!.postMessage({ type: "kmra:files", files, to: toolUrl }, origin);
       else if (e.data?.type === "kmra:stored") done(e.data.ok === true);
     };
     const timer = setTimeout(() => done(false), 10_000);

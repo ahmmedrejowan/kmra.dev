@@ -19,7 +19,11 @@ export default function Volume({ preset }: ToolProps) {
       suffix="volume"
       action={vol > 1 ? T("Make louder") : T("Make quieter")}
       dropTitle={T("Drop audio files to change their volume")}
-      idle={T("Pick a volume other than 100%.")}
+      idle={(info) =>
+        info.audio
+          ? T("Pick a volume other than 100%.")
+          : T("This file has no sound.")
+      }
       job={(info) =>
         info.audio && vol !== 1
           ? { to: sameAudio(info), audio: { volume: vol } }
@@ -42,9 +46,15 @@ export default function Volume({ preset }: ToolProps) {
               step={0.05}
               value={Math.log2(vol)}
               aria-valuetext={`${Math.round(vol * 100)}%`}
-              onChange={(e) => setVol(Math.round(2 ** +e.target.value * 100) / 100)}
+              onChange={(e) =>
+                setVol(Math.round(2 ** +e.target.value * 100) / 100)
+              }
             />
-            <div className="chips vt-chips" role="group" aria-label={T("Common volumes")}>
+            <div
+              className="chips vt-chips"
+              role="group"
+              aria-label={T("Common volumes")}
+            >
               {CHIPS.map((v) => (
                 <button
                   key={v}
@@ -60,7 +70,9 @@ export default function Volume({ preset }: ToolProps) {
           </div>
           {vol > 2 && (
             <p className="note warn">
-              {T("Big boosts can distort loud parts. Normalize evens the loudness without that.")}
+              {T(
+                "Big boosts can distort loud parts. Normalize evens the loudness without that.",
+              )}
             </p>
           )}
         </>

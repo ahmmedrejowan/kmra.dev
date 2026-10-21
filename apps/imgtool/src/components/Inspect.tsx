@@ -357,7 +357,7 @@ function Rows({ rows }: { rows: [string, React.ReactNode][] }) {
 
 /** Open the file in another tool on this site (kept on this device) */
 async function handOff(file: File, path: string) {
-  await stashFiles([file]);
+  await stashFiles([file], path);
   location.href = path;
 }
 const cleanCopy = (file: File) => handOff(file, "/strip-metadata");

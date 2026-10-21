@@ -194,6 +194,20 @@ export function CopyBtn({
   );
 }
 
+/**
+ * A name not used yet in `taken` (compared ignoring case, as most file systems do):
+ * "photo-kmra.jpg", then "photo-2-kmra.jpg", "photo-3-kmra.jpg"…
+ */
+export function uniqueName(name: string, taken: Record<string, unknown>): string {
+  const used = new Set(Object.keys(taken).map((k) => k.toLowerCase()));
+  if (!used.has(name.toLowerCase())) return name;
+  const m = /^(.*?)(-kmra)?(\.[^.]+)?$/.exec(name)!;
+  for (let n = 2; ; n++) {
+    const next = `${m[1]}-${n}${m[2] ?? ""}${m[3] ?? ""}`;
+    if (!used.has(next.toLowerCase())) return next;
+  }
+}
+
 /** Zip files without re-compressing (images are already compressed). The zip and every file in it carry the kmra.dev tag. */
 export async function downloadZip(
   files: { name: string; blob: Blob }[],
@@ -201,14 +215,11 @@ export async function downloadZip(
   /** Files whose exact names matter (a favicon set a website looks for) keep them */
   opts: { keepNames?: boolean } = {},
 ) {
-  const entries = Object.fromEntries(
-    await Promise.all(
-      files.map(
-        async (f) =>
-          [opts.keepNames ? f.name : tagged(f.name), new Uint8Array(await f.blob.arrayBuffer())] as const,
-      ),
-    ),
-  );
+  const entries: Record<string, Uint8Array> = {};
+  for (const f of files) {
+    const name = uniqueName(opts.keepNames ? f.name : tagged(f.name), entries);
+    entries[name] = new Uint8Array(await f.blob.arrayBuffer());
+  }
   downloadBlob(
     new Blob([zipSync(entries, { level: 0 })], { type: "application/zip" }),
     zipName,

@@ -115,6 +115,11 @@ export default function Merge(_: ToolProps) {
   const total = ready.reduce((s, c) => s + c.info!.durationSec, 0);
   const sizes = new Set(ready.map((c) => sizeOf(c.info)));
   const silent = ready.filter((c) => !c.info!.audio).length;
+  // Clips that can't be joined: unreadable, or sound only
+  const leftOut = clips.filter((c) => c.error || (c.info && !c.info.video));
+
+  // A failed merge's message goes once the clips, their order or the settings change
+  useEffect(() => setError(null), [key]);
 
   useEffect(() => {
     if (ready.length < 2 || waiting) return;
@@ -230,7 +235,7 @@ export default function Merge(_: ToolProps) {
           <dl className="kv">
             <div>
               <dt>{T("Clips")}</dt>
-              <dd>{clips.length}</dd>
+              <dd className="vt-count">{ready.length}</dd>
             </div>
             <div>
               <dt>{T("Total length")}</dt>
@@ -242,6 +247,14 @@ export default function Merge(_: ToolProps) {
             </div>
           </dl>
         </div>
+        {leftOut.length > 0 && (
+          <p className="note warn vt-leftout">
+            {T(
+              "{n} left out: they can't be read or have no picture. Remove them or add other videos.",
+              { n: leftOut.length },
+            )}
+          </p>
+        )}
         {sizes.size > 1 && (
           <>
             <Seg
@@ -359,17 +372,19 @@ export default function Merge(_: ToolProps) {
                   <span className="vt-clip-meta muted">
                     {c.error
                       ? T("Can't be read")
-                      : c.info
-                        ? [
-                            sizeOf(c.info),
-                            c.info.video?.fps
-                              ? `${Math.round(c.info.video.fps)} fps`
-                              : "",
-                            codecLabel(c.info.video?.codec),
-                          ]
-                            .filter(Boolean)
-                            .join(" · ")
-                        : T("Reading the video")}
+                      : c.info && !c.info.video
+                        ? T("No picture, left out")
+                        : c.info
+                          ? [
+                              sizeOf(c.info),
+                              c.info.video?.fps
+                                ? `${Math.round(c.info.video.fps)} fps`
+                                : "",
+                              codecLabel(c.info.video?.codec),
+                            ]
+                              .filter(Boolean)
+                              .join(" · ")
+                          : T("Reading the video")}
                   </span>
                 </button>
                 <div className="vt-clip-tools">

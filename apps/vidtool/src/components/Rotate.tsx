@@ -49,7 +49,11 @@ export default function Rotate({ preset }: ToolProps) {
       suffix="rotate"
       action={flip && !turn ? T("Flip") : T("Rotate")}
       dropTitle={T("Drop a video to rotate it")}
-      idle={T("Pick a turn or a flip.")}
+      idle={(info) =>
+        info.video
+          ? T("Pick a turn or a flip.")
+          : T("This file has no video to change.")
+      }
       job={job}
       preview={(blob, which) =>
         which === "original" ? (

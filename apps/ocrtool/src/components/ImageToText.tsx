@@ -7,7 +7,12 @@ import {
   FileInput,
   useFiles,
 } from "@kmra/ui/components/kit";
-import { downloadBlob, IMAGE_ACCEPT, isImageFile } from "@kmra/ui/lib/files";
+import {
+  downloadBlob,
+  IMAGE_ACCEPT,
+  isImageFile,
+  toolName,
+} from "@kmra/ui/lib/files";
 import { stashFiles } from "@kmra/ui/lib/handoff";
 import { toast } from "@kmra/ui/lib/toast";
 import { useLp, useT } from "@kmra/ui/lib/i18n-react";
@@ -71,6 +76,10 @@ export default function ImageToText({ preset }: { preset?: Preset }) {
   const [cached, setCached] = useState<Set<string>>(new Set());
   const [format, setFormat] = useState<OutputFormat>("text");
   const [edits, setEdits] = useState<Partial<Record<OutputFormat, string>>>({});
+  const editsRef = useRef(edits);
+  editsRef.current = edits;
+  /** The text shown was read with earlier settings (a new reading is running, or failed) */
+  const [outdated, setOutdated] = useState(false);
   const [hover, setHover] = useState<number | null>(null);
   const [active, setActive] = useState<number | null>(null);
 
@@ -96,6 +105,7 @@ export default function ImageToText({ preset }: { preset?: Preset }) {
     setFile(f);
     setResult(null);
     setEdits({});
+    setOutdated(false);
     setError("");
     setActive(null);
     setAutoEngine(null);
@@ -107,6 +117,24 @@ export default function ImageToText({ preset }: { preset?: Preset }) {
     void chooseEngine(f).then(setAutoEngine);
   }
   useEffect(() => () => void (url && URL.revokeObjectURL(url)), [url]);
+
+  /** Close the image and go back to the drop box */
+  function close() {
+    setFile(null);
+    setResult(null);
+    setEdits({});
+    setOutdated(false);
+    setError("");
+    setRun(null);
+    setActive(null);
+    setHover(null);
+    setAutoEngine(null);
+    setSize(null);
+    setUrl((old) => {
+      if (old) URL.revokeObjectURL(old);
+      return "";
+    });
+  }
 
   async function pasteImage() {
     try {
@@ -138,6 +166,8 @@ export default function ImageToText({ preset }: { preset?: Preset }) {
     const ctl = new AbortController();
     let missing: string[] = [];
     setError("");
+    // A text already shown stays (with any edits) until the new one is ready, marked out of date
+    setOutdated(true);
     setRun({ p: 0, status: "Loading engine", missing });
     void (async () => {
       try {
@@ -149,10 +179,14 @@ export default function ImageToText({ preset }: { preset?: Preset }) {
           onProgress: (p, status) => setRun({ p, status, missing }),
         });
         if (ctl.signal.aborted) return;
+        const hadEdits = Object.keys(editsRef.current).length > 0;
         setResult(r);
         setEdits({});
+        setOutdated(false);
         setActive(null);
         setRun(null);
+        if (hadEdits)
+          toast(T("Read again with the new settings. Your edits were replaced."));
         if (missing.length) refreshCached();
       } catch (err) {
         if (ctl.signal.aborted) return;
@@ -171,7 +205,6 @@ export default function ImageToText({ preset }: { preset?: Preset }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [file, used, langKey, waitingForAuto]);
 
-  const base = file ? file.name.replace(/\.[^.]+$/, "") || "image" : "image";
   const formatted = useMemo(
     () => (result ? formatResult(result, format, file?.name) : null),
     [result, format, file],
@@ -188,12 +221,12 @@ export default function ImageToText({ preset }: { preset?: Preset }) {
     const [ext, mime] = FORMAT_EXT[format];
     downloadBlob(
       new Blob([value], { type: `${mime};charset=utf-8` }),
-      `${base}-image-to-text.${ext}`,
+      `${toolName(file?.name ?? "image", "image-to-text")}.${ext}`,
     );
   }
 
   async function handOff(files: File[], to: string) {
-    await stashFiles(files);
+    await stashFiles(files, L(to));
     window.location.href = L(to);
   }
 
@@ -237,6 +270,15 @@ export default function ImageToText({ preset }: { preset?: Preset }) {
           <button type="button" className="btn xs" onClick={pick}>
             <Icon name="upload" />
             {T("Open another image")}
+          </button>
+          <button
+            type="button"
+            className="btn xs"
+            onClick={close}
+            aria-label={T("Remove {name}", { name: file.name })}
+          >
+            <Icon name="x" />
+            {T("Remove")}
           </button>
         </div>
       )}
@@ -351,6 +393,16 @@ export default function ImageToText({ preset }: { preset?: Preset }) {
               ranges={mapped}
               mark={hover ?? active}
               readOnly={!result}
+              note={
+                result && outdated
+                  ? run
+                    ? { text: T("Reading again with the new settings…") }
+                    : {
+                        text: T("This text was read with the earlier settings."),
+                        bad: true,
+                      }
+                  : null
+              }
               placeholder={run ? T("The text appears here.") : ""}
               onChange={(v) => setEdits({ ...edits, [format]: v })}
               onCaret={(pos) => {
@@ -392,7 +444,11 @@ export default function ImageToText({ preset }: { preset?: Preset }) {
             />
           </div>
           <div className="dev-status" aria-live="polite">
-            {result ? (
+            {run ? (
+              <span>{stageText(run.status, run.p, run.missing)}</span>
+            ) : error ? (
+              <span className="oi-bad">{error}</span>
+            ) : result ? (
               <>
                 <span>
                   {result.engine === "photo"
@@ -425,10 +481,8 @@ export default function ImageToText({ preset }: { preset?: Preset }) {
                   <span>{T("No text found in this image.")}</span>
                 )}
               </>
-            ) : run ? (
-              <span>{stageText(run.status, run.p, run.missing)}</span>
             ) : (
-              <span>{error || T("Everything runs on your device.")}</span>
+              <span>{T("Everything runs on your device.")}</span>
             )}
           </div>
         </>
@@ -663,6 +717,7 @@ function TextPane({
   ranges,
   mark,
   readOnly,
+  note,
   placeholder,
   onChange,
   onCaret,
@@ -673,6 +728,8 @@ function TextPane({
   ranges: ([number, number] | null)[] | null;
   mark: number | null;
   readOnly: boolean;
+  /** Shown next to the label, e.g. when the text is out of date */
+  note?: { text: string; bad?: boolean } | null;
   placeholder: string;
   onChange: (v: string) => void;
   onCaret: (pos: number) => void;
@@ -684,6 +741,14 @@ function TextPane({
     <section className="pane">
       <header className="pane-head">
         <span className="pane-label">{T("Text")}</span>
+        {note && (
+          <span
+            className={note.bad ? "oi-bad small" : "muted small"}
+            role="status"
+          >
+            {note.text}
+          </span>
+        )}
         <span className="pane-acts">{actions}</span>
       </header>
       <div className="oi-text" dir={rtl ? "rtl" : undefined}>

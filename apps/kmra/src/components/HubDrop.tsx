@@ -3,6 +3,7 @@ import type { IconName } from "@kmra/registry";
 import { Icon } from "@kmra/ui/components/Icon";
 import { LangProvider, useT } from "@kmra/ui/lib/i18n-react";
 import type { Locale } from "@kmra/ui/lib/i18n";
+import { toast } from "@kmra/ui/lib/toast";
 import { sendFiles } from "../lib/send";
 
 export interface DropTool {
@@ -63,13 +64,25 @@ function Drop({
   const [more, setMore] = useState<string[]>([]);
   const [opening, setOpening] = useState<string | null>(null);
   const [failed, setFailed] = useState<DropTool | null>(null);
+  /** Counts drops and sends, so a send overtaken by a new drop doesn't navigate */
+  const sending = useRef(0);
 
   const take = (list: FileList | File[]) => {
     const all = [...list];
     if (!all.length) return;
     // Files of the first file's kind travel together (several PDFs to merge, a batch of photos)
     const k = kindOf(all[0]!, kinds);
-    setFiles(k ? all.filter((f) => kindOf(f, kinds) === k) : all.slice(0, 1));
+    const kept = k ? all.filter((f) => kindOf(f, kinds) === k) : all.slice(0, 1);
+    setFiles(kept);
+    // Say what didn't come along, rather than dropping it quietly
+    const left = all.filter((f) => !kept.includes(f));
+    if (left.length)
+      toast(
+        T("Left out {list}: one kind of file at a time.", {
+          list: left.map((f) => f.name).join(", "),
+        }),
+      );
+    sending.current++;
     setMore([]);
     setFailed(null);
     setOpening(null);
@@ -111,7 +124,10 @@ function Drop({
   async function open(t: DropTool) {
     setOpening(t.href);
     setFailed(null);
+    const mine = ++sending.current;
     const ok = await sendFiles(files, t.href);
+    // Other files were dropped meanwhile: this send is out of date
+    if (mine !== sending.current) return;
     if (ok) location.href = t.href;
     else {
       setOpening(null);
