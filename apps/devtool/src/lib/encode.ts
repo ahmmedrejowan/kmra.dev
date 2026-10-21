@@ -391,7 +391,8 @@ export function htmlEscape(
 }
 
 /**
- * Whether text is an SVG document: an optional XML declaration and comments, then <svg.
+ * Whether text is an SVG document: an optional XML declaration and comments, then <svg (or
+ * a self-closing <svg/>).
  * Skips the leading parts by hand (a single regex for this backtracks badly on long inputs).
  */
 export function looksLikeSvg(text: string): boolean {
@@ -406,7 +407,7 @@ export function looksLikeSvg(text: string): boolean {
     if (end < 0) return false;
     t = t.slice(end + 3).trimStart();
   }
-  return /^<svg[\s>]/i.test(t);
+  return /^<svg[\s/>]/i.test(t);
 }
 
 /* ---------- Unicode escapes ---------- */

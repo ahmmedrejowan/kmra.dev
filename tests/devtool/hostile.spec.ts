@@ -38,21 +38,32 @@ test("html-formatter: minify drops comments ending in --!>", async ({
   await expect(box(page, "Minified")).toHaveValue(`<p>a</p><p>b</p>`);
 });
 
-test("long comment and comma runs don't hang the tools", async ({ page }) => {
-  const comments = "<!--" + "--><!--".repeat(20_000);
+test("a long run of comments before <svg/> is read quickly, as SVG", async ({
+  page,
+}) => {
+  const comments = "<!--" + "--><!--".repeat(20_000) + "-->";
   await openTool(page, "/xml-formatter");
   const t = Date.now();
   await box(page, "XML").fill(comments + "<svg/>");
-  await expect(page.locator(".dev-status")).toBeVisible();
+  await expect(box(page, "Formatted")).toHaveValue(/<svg\/>\s*$/);
   expect(Date.now() - t).toBeLessThan(5_000);
+});
 
+test("a long run of commas isn't taken for CSV, and doesn't hang", async ({
+  page,
+}) => {
   await page.goto("/");
-  const s = Date.now();
+  const t = Date.now();
   await page
     .getByRole("textbox", { name: "Paste anything" })
     .fill('",' + ",".repeat(50_000) + "x");
   await expect(
-    page.getByRole("textbox", { name: "Paste anything" }),
-  ).not.toBeEmpty();
-  expect(Date.now() - s).toBeLessThan(5_000);
+    page.getByText("Not sure what this is. Pick a tool below.", {
+      exact: true,
+    }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: "Open the right tool" }),
+  ).toBeDisabled();
+  expect(Date.now() - t).toBeLessThan(5_000);
 });
