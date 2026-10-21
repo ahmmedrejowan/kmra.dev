@@ -22,7 +22,7 @@ each under its own licence. Packages come unmodified from npm unless noted.
 | [zxing-wasm](https://github.com/Sec-ant/zxing-wasm)                                                                | Reading and writing barcodes and 2D codes (QRTool)                                                   | MIT                                                      |
 | [DOMPurify](https://github.com/cure53/DOMPurify)                                                                   | Cleaning Markdown previews                                                                           | MPL-2.0 or Apache-2.0                                    |
 | exifr, fflate, gifenc, gifuct-js, hash-wasm, jsbarcode, marked, qrcode, sql-formatter, prettier, React, idb-keyval | Metadata, zip, GIF, hashes, barcodes, Markdown, QR, formatting, UI, storage                          | MIT / Apache-2.0                                         |
-| diff (jsdiff), terser, yaml                                                                                        | Text diff, JS minify, YAML                                                                           | BSD-3-Clause, BSD-2-Clause, ISC                          |
+| diff (jsdiff), terser, yaml, entities                                                                              | Text diff, JS minify, YAML, HTML entities                                                            | BSD-3-Clause, BSD-2-Clause, ISC, BSD-2-Clause            |
 
 ## Used at build time
 
