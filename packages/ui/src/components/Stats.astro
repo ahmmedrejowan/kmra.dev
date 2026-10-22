@@ -1,0 +1,11 @@
+---
+/**
+ * Visit counting with Medama (cookieless, open source), self-hosted at stats.kmra.dev.
+ * The script and its events go through this site's own /_a/ rewrite (appConfig in
+ * @kmra/config), so the page still talks only to its own origin. Production deploys only:
+ * local builds, previews and tests load nothing.
+ */
+const on = process.env.VERCEL_ENV === "production";
+---
+
+{on && <script is:inline defer src="/_a/script.js" />}

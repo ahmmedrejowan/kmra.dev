@@ -170,8 +170,8 @@ export const BN: Record<string, string> = {
   "kept briefly so the tool page can open them, then deleted.":
     "টুলের পাতা খোলার জন্য অল্প সময় রাখা হয়, তারপর মুছে যায়।",
   Analytics: "অ্যানালিটিক্স",
-  "We use Vercel Web Analytics to count visits: which pages are viewed, the referring site, and the country, browser and device type. It sets no cookies, doesn't identify you, and never sees your files or their names.":
-    "ভিজিট গোনার জন্য আমরা Vercel Web Analytics ব্যবহার করি: কোন পাতা দেখা হলো, কোন সাইট থেকে আসা, আর দেশ, ব্রাউজার ও ডিভাইসের ধরন। এটি কোনো কুকি রাখে না, আপনাকে শনাক্ত করে না, আর আপনার ফাইল বা ফাইলের নাম কখনো দেখে না।",
+  "We count visits with Vercel Web Analytics and with Medama, an open-source tool we run on our own server: which pages are viewed, the referring site, and the country, browser and device type. Medama works out the country from your time zone and never stores your IP address. Neither sets cookies, identifies you, or sees your files or their names.":
+    "ভিজিট গোনার জন্য আমরা Vercel Web Analytics আর Medama ব্যবহার করি; Medama একটি ওপেন-সোর্স টুল, যা আমরা নিজেদের সার্ভারে চালাই: কোন পাতা দেখা হলো, কোন সাইট থেকে আসা, আর দেশ, ব্রাউজার ও ডিভাইসের ধরন। Medama আপনার টাইম জোন থেকে দেশ বোঝে এবং আপনার IP ঠিকানা কখনো সংরক্ষণ করে না। কোনোটিই কুকি রাখে না, আপনাকে শনাক্ত করে না, আর আপনার ফাইল বা ফাইলের নাম দেখে না।",
   Hosting: "হোস্টিং",
   "The site is hosted on Vercel. Like any web host, it may keep standard request logs (such as IP address, browser and page) to keep the service running and secure. These never include your files.":
     "সাইটটি Vercel-এ হোস্ট করা। যেকোনো ওয়েব হোস্টের মতো, সেবা চালু ও নিরাপদ রাখতে সাধারণ অনুরোধের লগ (যেমন আইপি ঠিকানা, ব্রাউজার আর পাতা) রাখা হতে পারে। এতে কখনো আপনার ফাইল থাকে না।",
@@ -1001,7 +1001,7 @@ export const BN: Record<string, string> = {
   "kmra.dev is open source, so anyone can read how each tool handles files:":
     "kmra.dev ওপেন সোর্স, তাই প্রতিটি টুল ফাইল কীভাবে সামলায় তা যে কেউ পড়ে দেখতে পারেন:",
   "the code on GitHub": "GitHub-এ কোড",
-  "21 October 2026": "২১ অক্টোবর ২০২৬",
+  "23 October 2026": "২৩ অক্টোবর ২০২৬",
   "kmra.dev is open source": "kmra.dev ওপেন সোর্স",
   "Report a problem": "সমস্যা জানান",
   "Suggest a tool": "টুলের প্রস্তাব দিন",

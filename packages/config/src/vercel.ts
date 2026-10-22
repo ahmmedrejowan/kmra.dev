@@ -31,6 +31,9 @@ export function csp(
 
 export const CSP = csp();
 
+/** Self-hosted Medama (cookieless visit counts), reached through each site's /_a/ rewrite */
+export const STATS_ORIGIN = "https://stats.kmra.dev";
+
 /**
  * Each app's /handoff page may be framed by kmra.dev only: the hub stores a dropped file in the
  * app's own storage through it, then opens the tool (see apps/kmra). Nothing is uploaded.
@@ -106,6 +109,9 @@ export function appConfig(opts: AppOptions = {}): VercelConfig {
     ignoreCommand:
       '[ "$VERCEL_GIT_COMMIT_REF" != "main" ] || git diff --quiet "${VERCEL_GIT_PREVIOUS_SHA:-HEAD^}" HEAD -- . ../../packages ../../pnpm-lock.yaml',
     outputDirectory: "dist",
+    // Visit counting (Medama, self-hosted): the page loads /_a/script.js and posts to /_a/api/
+    // on its own origin, so the CSP stays 'self'. See packages/ui/src/components/Stats.astro.
+    rewrites: [routes.rewrite("/_a/(.*)", `${STATS_ORIGIN}/$1`)],
     cleanUrls: true,
     trailingSlash: false,
     headers: [
@@ -120,6 +126,11 @@ export function appConfig(opts: AppOptions = {}): VercelConfig {
       routes.header(HANDOFF_PATH, [
         { key: "Content-Security-Policy", value: CSP_HANDOFF },
         ...common,
+      ]),
+      // Medama's returning-visitor check relies on the browser cache: never let a CDN keep it.
+      routes.header("/_a/api/event/ping", [
+        { key: "CDN-Cache-Control", value: "no-store" },
+        { key: "Vercel-CDN-Cache-Control", value: "no-store" },
       ]),
       // The service worker must always be re-checked so new deploys reach offline users.
       routes.cacheControl("/sw.js", {

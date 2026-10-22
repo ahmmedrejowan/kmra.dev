@@ -13,7 +13,7 @@ interface Props {
 const { brand, ai = false } = Astro.props;
 const locale = pageLocale(Astro);
 const T = (s: string, v?: Record<string, string>) => tr(locale, s, v);
-const updated = T("21 October 2026");
+const updated = T("23 October 2026");
 ---
 
 <div class="psum">
@@ -94,7 +94,7 @@ const updated = T("21 October 2026");
     <h2>{T("Analytics")}</h2>
     <p>
       {T(
-        "We use Vercel Web Analytics to count visits: which pages are viewed, the referring site, and the country, browser and device type. It sets no cookies, doesn't identify you, and never sees your files or their names.",
+        "We count visits with Vercel Web Analytics and with Medama, an open-source tool we run on our own server: which pages are viewed, the referring site, and the country, browser and device type. Medama works out the country from your time zone and never stores your IP address. Neither sets cookies, identifies you, or sees your files or their names.",
       )}
     </p>
   </section>
