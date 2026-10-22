@@ -7,7 +7,7 @@ import { createRequire } from "node:module";
 import { dirname, join } from "node:path";
 import satori from "satori";
 import { Resvg } from "@resvg/resvg-js";
-import { brandOf, type BrandId } from "@kmra/registry";
+import { brandOf, getApp, type BrandId } from "@kmra/registry";
 import { ICONS, type IconKey } from "./icons";
 import { markSvg } from "./brand";
 
@@ -81,6 +81,14 @@ export async function ogPng({
 }: OgInput): Promise<Uint8Array> {
   const app = brandOf(appId);
   const hub = appId === "kmra";
+  // The same promise as the page's privacy card: apps without files talk about what you type
+  // or play (calculators, colours, music)
+  const { noFiles, listens } = hub ? {} : getApp(appId);
+  const stays = listens
+    ? "What you play stays on your device"
+    : noFiles
+      ? "What you type stays on your device"
+      : "Your files stay on your device";
   const acc = app.accent.light;
   const tree = h(
     "div",
@@ -217,11 +225,7 @@ export async function ogPng({
           color: "#52525b",
         },
         [
-          ...[
-            "Runs in your browser",
-            "Your files stay on your device",
-            "Free, no sign-up",
-          ].map((t) =>
+          ...["Runs in your browser", stays, "Free, no sign-up"].map((t) =>
             h("div", { display: "flex", alignItems: "center", gap: 10 }, [
               h("img", { width: 26, height: 26 }, undefined, {
                 src: dataUri(iconSvg("check", "#047857")),
