@@ -2,8 +2,9 @@ name: Pull request
 
 # The gate. Nothing reaches main without this passing, so it's the thorough one: type checks,
 # formatting, every site built, and every tool tested in a real browser against the production
-# builds with their real headers. The end-to-end tests are split across three machines so the
-# whole thing takes minutes, not half an hour.
+# builds with their real headers. The end-to-end tests are split across four machines so the
+# whole thing takes minutes, not half an hour. There is no second run after the merge: main only
+# changes through a pull request that passed this.
 #
 # Pull requests are never deployed: Vercel builds only main (see apps/<site>/vercel.json),
 # so this is where a change is proved, not on a preview site.
@@ -54,13 +55,13 @@ jobs:
           comment-summary-in-pr: on-failure
 
   e2e:
-    name: End to end (${{ matrix.shard }} of 3)
+    name: End to end (${{ matrix.shard }} of 4)
     runs-on: ubuntu-24.04
-    timeout-minutes: 45
+    timeout-minutes: 30
     strategy:
       fail-fast: false
       matrix:
-        shard: [1, 2, 3]
+        shard: [1, 2, 3, 4]
     steps:
       - uses: actions/checkout@v7
         with:
@@ -71,14 +72,37 @@ jobs:
           node-version: 24
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      # The video and audio test files are generated with ffmpeg on each run
+      # The video and audio test files are made with ffmpeg, and their outputs checked with
+      # ffprobe. Ubuntu's package mirror sometimes stalls: each try gets two minutes, three tries.
       - name: ffmpeg
-        run: sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg
+        timeout-minutes: 8
+        run: |
+          for try in 1 2 3; do
+            timeout 120 sudo apt-get update -qq -o Acquire::Retries=3 &&
+              timeout 120 sudo apt-get install -y -qq -o Acquire::Retries=3 ffmpeg && exit 0
+            echo "apt try $try failed, retrying"
+          done
+          exit 1
+      # Browsers are kept between runs (keyed by the Playwright version); only their system
+      # libraries are installed each time
+      - name: Playwright version
+        id: pw
+        run: echo "version=$(pnpm exec playwright --version | awk '{print $2}')" >> "$GITHUB_OUTPUT"
+      - uses: actions/cache@v6
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ steps.pw.outputs.version }}
       - name: Browsers (Chromium for every site; Firefox and WebKit for the image tools)
+        timeout-minutes: 8
         run: pnpm exec playwright install --with-deps chromium firefox webkit
+      # Generated test files (photos, PDFs, clips, tones) are kept until a generator changes
+      - uses: actions/cache@v6
+        with:
+          path: tests/fixtures/gen
+          key: fixtures-${{ hashFiles('tests/fixtures/*.ts', 'tests/helpers.ts') }}
       - run: pnpm build
       - name: End to end
-        run: pnpm test:e2e:only --shard=${{ matrix.shard }}/3
+        run: pnpm test:e2e:only --shard=${{ matrix.shard }}/4
       # Traces and screenshots of every failed attempt, including tests that passed on retry
       # (flaky), so a failure that doesn't repeat can still be looked at
       - name: Report

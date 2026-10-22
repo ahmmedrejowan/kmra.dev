@@ -10,7 +10,7 @@
   </p>
 
 [![License](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](LICENSE)
-[![CI](https://github.com/ahmmedrejowan/kmra.dev/actions/workflows/ci.yml/badge.svg)](https://github.com/ahmmedrejowan/kmra.dev/actions/workflows/ci.yml)
+[![Checks](https://github.com/ahmmedrejowan/kmra.dev/actions/workflows/pr.yml/badge.svg?event=pull_request)](https://github.com/ahmmedrejowan/kmra.dev/actions/workflows/pr.yml)
 [![Sites](https://img.shields.io/badge/Sites-10-18181b.svg)](https://kmra.dev)
 [![Tools](https://img.shields.io/badge/Tools-154-18181b.svg)](https://kmra.dev/tools)
 [![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178c6.svg)](https://www.typescriptlang.org/)
