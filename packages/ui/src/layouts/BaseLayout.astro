@@ -16,6 +16,7 @@ import MoreAppsCta from "../components/MoreAppsCta.astro";
 import Shortcuts from "../components/Shortcuts";
 // Cookieless page counts, served from the site's own domain on Vercel (allowed by the CSP)
 import Analytics from "@vercel/analytics/astro";
+import Stats from "../components/Stats.astro";
 import { localizeApp } from "@kmra/registry";
 import { appLink, hubLink, langLinks, pageLocale } from "../lib/locale";
 import { LOCALES, lp, t as tr } from "../lib/i18n";
@@ -282,6 +283,7 @@ const paletteItems: PaletteItem[] = [
     <CommandPalette client:idle items={paletteItems} lang={lang} />
     <Shortcuts client:idle lang={lang} />
     <Analytics />
+    <Stats />
     <script is:inline>
       // Offline support: the service worker caches every page and tool (production only)
       if (

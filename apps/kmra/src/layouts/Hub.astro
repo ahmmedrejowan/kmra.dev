@@ -8,6 +8,7 @@ import CommandPalette, {
 } from "@kmra/ui/components/CommandPalette";
 import Shortcuts from "@kmra/ui/components/Shortcuts";
 import Analytics from "@vercel/analytics/astro";
+import Stats from "@kmra/ui/components/Stats.astro";
 import { markSvg } from "@kmra/ui/lib/brand";
 import { langLinks, pageLocale } from "@kmra/ui/lib/locale";
 import { LOCALES, lp, t as tr } from "@kmra/ui/lib/i18n";
@@ -502,6 +503,7 @@ const cols = Array.from({ length: Math.ceil(apps.length / 2) }, (_, i) => [
     <CommandPalette client:idle items={palette} lang={lang} />
     <Shortcuts client:idle lang={lang} />
     <Analytics />
+    <Stats />
     <script is:inline>
       if (
         "serviceWorker" in navigator &&

@@ -51,6 +51,7 @@
 /* Drop box: the six app marks instead of one upload icon */
 .hub-kinds {
   display: flex;
+  flex-wrap: wrap;
   gap: 10px;
   justify-content: center;
   margin-bottom: 18px;
@@ -73,6 +74,17 @@
 }
 .hubdrop .dropzone strong {
   font-size: 22px;
+}
+/* Phones: smaller marks, so all of them fit in two short rows */
+@media (max-width: 520px) {
+  .hub-kinds {
+    gap: 8px;
+    max-width: 260px;
+  }
+  .hub-kinds span {
+    width: 30px;
+    height: 30px;
+  }
 }
 .hub-picked {
   padding: 18px;
@@ -490,6 +502,14 @@
 /* The brand, then columns of two apps (two tools each) */
 .hub-fgrid {
   grid-template-columns: 1.5fr repeat(var(--fcols, 4), minmax(0, 1fr)) !important;
+}
+/* Email and source code: one line each */
+.hub-fgrid .fmail {
+  display: block;
+  width: fit-content;
+}
+.hub-fgrid .fmail + .fmail {
+  margin-top: 6px;
 }
 .hub-fcol {
   display: grid;
