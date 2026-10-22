@@ -859,6 +859,8 @@ main > .screen:last-child {
   padding: 46px 20px;
   text-align: center;
   display: grid;
+  /* One column that never grows past the box: long content wraps instead of being cut off */
+  grid-template-columns: minmax(0, 1fr);
   justify-items: center;
   gap: 6px;
   transition:
@@ -1196,6 +1198,8 @@ a:hover .feat-body > .ico.go {
   width: 360px;
   flex: none;
   display: grid;
+  /* The picture and text fit the card even when the card is narrower than they'd like */
+  grid-template-columns: minmax(0, 1fr);
   background: var(--card);
   border: 1px solid var(--line);
   border-radius: 16px;
@@ -2327,6 +2331,8 @@ footer.site {
 .fbottom a {
   color: var(--fg);
   font-weight: 500;
+  /* "Report a problem" wraps as a whole, never mid-phrase */
+  white-space: nowrap;
 }
 .fbottom a:hover {
   color: var(--acc);
@@ -3268,6 +3274,15 @@ textarea.num {
 .ws-top .title small {
   color: var(--muted);
   font-weight: 400;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+/* Tablets and phones: the photo count gives way to the buttons rather than being cut mid-word */
+@media (max-width: 900px) {
+  .ws-top .title small {
+    display: none;
+  }
 }
 .ws-top .right {
   margin-left: auto;
@@ -3668,6 +3683,10 @@ textarea.num {
   .fgrid {
     grid-template-columns: 1fr 1fr;
   }
+  /* The footer's brand blurb gets the full width above the link columns */
+  .fgrid .fbrand {
+    grid-column: 1 / -1;
+  }
   .dir-cols,
   .content,
   .info-steps,
@@ -3697,7 +3716,7 @@ textarea.num {
     padding-block: 32px;
   }
   .toolcard {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
   .controls {
     border-left: 0;
@@ -7070,7 +7089,8 @@ button.sp-face[aria-pressed="true"] .thumb {
 }
 /* Single-column editor (before a file is added): the drop area uses the full width */
 .toolcard.solo {
-  grid-template-columns: 1fr;
+  /* minmax(0, ...): the column never grows past the card for a wide child */
+  grid-template-columns: minmax(0, 1fr);
 }
 .toolcard.solo .stage {
   background: var(--card);
@@ -7121,9 +7141,17 @@ button.sp-face[aria-pressed="true"] .thumb {
 }
 .bar-item {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 8px;
   font-size: 13.5px;
+  max-width: 100%;
+}
+/* Narrow screens: a long choice row scrolls sideways instead of running off the card */
+.bar-item .seg {
+  max-width: 100%;
+  overflow-x: auto;
+  scrollbar-width: none;
 }
 .bar-label {
   color: var(--muted);
