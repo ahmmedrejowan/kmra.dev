@@ -33,7 +33,10 @@ const others = apps
       )
       .slice(0, 8);
     return (
-      <section class="more-app" style={`--app:${a.accent.light}`}>
+      <section
+        class="more-app"
+        style={`--app:${a.accent.light};--app-d:${a.accent.dark}`}
+      >
         <header>
           <span
             class="app-mark"
@@ -42,7 +45,7 @@ const others = apps
           />
           <div>
             <h2
-              set:html={`<span style="color:var(--app)">${a.brand[0]}</span>${a.brand[1]}`}
+              set:html={`<span class="app-fg">${a.brand[0]}</span>${a.brand[1]}`}
             />
             <p>{a.tagline}</p>
           </div>

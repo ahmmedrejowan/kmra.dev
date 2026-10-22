@@ -9,7 +9,7 @@ export const BN_KMRA: Record<string, string> = {
   "Open it and add the file there": "টুলটি খুলে সেখানে ফাইলটি দিন",
   "There's no kmra tool for this kind of file yet. Try an image, a PDF, a video, an audio file, a GIF, or a JSON, CSV, YAML, XML, SQL, Markdown, HTML, CSS, JavaScript or text file.":
     "এই ধরনের ফাইলের জন্য এখনো কোনো kmra টুল নেই। ছবি, পিডিএফ, ভিডিও, অডিও, GIF, অথবা JSON, CSV, YAML, XML, SQL, Markdown, HTML, CSS, JavaScript বা টেক্সট ফাইল দিয়ে দেখুন।",
-  "{n} free tools for images, PDFs, video, audio, QR codes, text in pictures, code, colours, calculations and music. Everything runs in your browser, so your files stay on your device.":
+  "{n} free tools for images, PDFs, video, audio, QR codes, code, colours, sums and music. Everything runs in your browser, so your files stay on your device.":
     "ছবি, পিডিএফ, ভিডিও, অডিও, QR কোড, ছবির লেখা, কোড, রং, হিসাব আর সংগীতের জন্য {n}টি ফ্রি টুল। সব কাজ হয় আপনার ব্রাউজারে, তাই ফাইল থাকে আপনার ডিভাইসেই।",
   "kmra.dev home": "kmra.dev হোম",
   "All {n} in {app}": "{app}-এর সব {n}টি",
@@ -50,7 +50,6 @@ export const BN_KMRA: Record<string, string> = {
   video: "ভিডিও",
   PDF: "পিডিএফ",
   "Every app on kmra.dev": "kmra.dev-এ সব অ্যাপ",
-  "More coming soon": "আরও আসছে",
   "Drop any file on kmra.dev to see every tool that opens it":
     "kmra.dev-এ যেকোনো ফাইল ছেড়ে দিন, যে টুলগুলো সেটি খোলে সব দেখুন",
 };

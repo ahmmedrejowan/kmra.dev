@@ -52,7 +52,20 @@ const alternates = langLinks(Astro, app);
 const brand = brandName(app);
 const dev = import.meta.env.DEV;
 const site = Astro.site ?? new URL(appOrigin(appId));
-const pageDescription = description ?? app.tagline;
+// Short descriptions get the app's promise added, so search results and link previews have a
+// full sentence or two (about 100–160 characters)
+const baseDescription = description ?? app.tagline;
+const promise = T(
+  app.listens
+    ? "Free, runs in your browser, and what you play stays on your device."
+    : app.noFiles
+      ? "Free, runs in your browser, and what you type stays on your device."
+      : "Free, runs in your browser, and your files stay on your device.",
+);
+const pageDescription =
+  baseDescription.length < 100
+    ? `${baseDescription}${/[.!?।]$/.test(baseDescription) ? "" : lang === "bn" ? "।" : "."} ${promise}`
+    : baseDescription;
 // Clean URL (no .html / trailing slash) to match Vercel cleanUrls + trailingSlash: false
 const path = Astro.url.pathname
   .replace(/(index)?\.html$/, "")

@@ -1029,4 +1029,10 @@ export const BN: Record<string, string> = {
   "Report a security issue": "নিরাপত্তা সমস্যা জানান",
   "Privately, so it can be fixed before anyone else knows.":
     "গোপনে, যাতে অন্য কেউ জানার আগেই ঠিক করা যায়।",
+  "Free, runs in your browser, and your files stay on your device.":
+    "বিনামূল্যে, আপনার ব্রাউজারেই চলে, আর ফাইল থাকে আপনার ডিভাইসেই।",
+  "Free, runs in your browser, and what you type stays on your device.":
+    "বিনামূল্যে, আপনার ব্রাউজারেই চলে, আর আপনি যা লেখেন তা থাকে আপনার ডিভাইসেই।",
+  "Free, runs in your browser, and what you play stays on your device.":
+    "বিনামূল্যে, আপনার ব্রাউজারেই চলে, আর আপনি যা বাজান তা থাকে আপনার ডিভাইসেই।",
 };

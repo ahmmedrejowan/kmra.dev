@@ -28,7 +28,7 @@ const shown = ctaApps(appId).map((a) => localizeApp(a, locale));
         <a
           class="cta-more-app"
           href={appLink(appId, locale, a.id as AppId, "/", dev)}
-          style={`--app:${a.accent.light}`}
+          style={`--app:${a.accent.light};--app-d:${a.accent.dark}`}
         >
           <span
             class="app-mark"
@@ -37,7 +37,7 @@ const shown = ctaApps(appId).map((a) => localizeApp(a, locale));
           />
           <span class="cta-more-text">
             <strong
-              set:html={`<span style="color:var(--app)">${a.brand[0]}</span>${a.brand[1]}`}
+              set:html={`<span class="app-fg">${a.brand[0]}</span>${a.brand[1]}`}
             />
             <small>{a.tagline.split(/(?<=[.।])\s/)[0]}</small>
           </span>

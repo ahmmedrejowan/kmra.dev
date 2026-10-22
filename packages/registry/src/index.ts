@@ -1084,7 +1084,7 @@ export const apps = [
     tagline:
       "Merge, split, compress and sign PDFs. Everything runs on your device.",
     accent: {
-      light: "#e5484d",
+      light: "#df2026",
       dark: "#ff6b6f",
       softLight: "#fdecec",
       softDark: "#3a1618",
@@ -1456,7 +1456,7 @@ export const apps = [
     tagline:
       "Compress, convert, trim and record videos in your browser. Everything runs on your device.",
     accent: {
-      light: "#12a594",
+      light: "#0e8073",
       dark: "#2ebfae",
       softLight: "#e2f6f3",
       softDark: "#0f2a27",
@@ -1895,7 +1895,7 @@ export const apps = [
     tagline:
       "Convert, cut, join and clean up audio in your browser. Everything runs on your device.",
     accent: {
-      light: "#d6409f",
+      light: "#cd2c92",
       dark: "#e66bb5",
       softLight: "#fcebf6",
       softDark: "#2e1526",
@@ -2341,7 +2341,7 @@ export const apps = [
     tagline:
       "Percentages, loans, dates, units and everyday sums, worked out in your browser. Free, with no sign-up.",
     accent: {
-      light: "#0a85ad",
+      light: "#097ba0",
       dark: "#38b6e0",
       softLight: "#e3f4fa",
       softDark: "#0f2630",
@@ -2815,7 +2815,7 @@ export const apps = [
     tagline:
       "Pick, convert, mix and check colours, and make palettes and gradients. Everything runs in your browser.",
     accent: {
-      light: "#c27a00",
+      light: "#a06500",
       dark: "#f2b53c",
       softLight: "#fdf3df",
       softDark: "#2e2310",
@@ -4243,7 +4243,7 @@ export const apps = [
     tagline:
       "Make and scan QR codes and barcodes in your browser. No sign-up, no tracking links.",
     accent: {
-      light: "#f76b15",
+      light: "#c14e07",
       dark: "#ff8b3e",
       softLight: "#feeee3",
       softDark: "#3a2312",
@@ -4727,7 +4727,7 @@ export const apps = [
     tagline:
       "Copy text from images, screenshots and scanned PDFs. Everything runs on your device.",
     accent: {
-      light: "#30a46c",
+      light: "#268155",
       dark: "#3dd68c",
       softLight: "#e6f6eb",
       softDark: "#132d21",

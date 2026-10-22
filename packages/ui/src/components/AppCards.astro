@@ -20,7 +20,7 @@ const list = apps
 
 <div class="apps">
   {list.map((a) => {
-    const style = `--app:${a.accent.light}`;
+    const style = `--app:${a.accent.light};--app-d:${a.accent.dark}`;
     const body = (
       <>
         <span
@@ -31,7 +31,7 @@ const list = apps
         <span class="app-text">
           <strong>
             <span
-              set:html={`<span style="color:var(--app)">${a.brand[0]}</span>${a.brand[1]}`}
+              set:html={`<span class="app-fg">${a.brand[0]}</span>${a.brand[1]}`}
             />
             {!a.live && <span class="soon">Soon</span>}
           </strong>

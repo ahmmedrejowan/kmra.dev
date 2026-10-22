@@ -13,3 +13,10 @@ allowBuilds:
 # root keeps a stray ~/node_modules/cookie (outside the repo) from being picked up instead.
 publicHoistPattern:
   - cookie
+
+# Security fixes inside exact pins of build-time tools (nothing here ships to the browser):
+# satori pins fflate 0.7.3 (GHSA-px8p-9vwx-vf98, fixed in 0.7.5) and @vercel/routing-utils pins
+# path-to-regexp 6.1.0 (GHSA-9wv6-86v2-598j, fixed in 6.3.0). Drop these once they update.
+overrides:
+  fflate@<0.7.5: 0.7.5
+  path-to-regexp@>=4.0.0 <6.3.0: 6.3.0

@@ -408,7 +408,7 @@ a.wm-dom:hover {
   font-size: 11px;
   font-weight: 500;
   letter-spacing: 0;
-  color: var(--app);
+  color: var(--app-fg);
   background: color-mix(in srgb, var(--app) 12%, transparent);
   border-radius: 999px;
   padding: 1px 8px;
@@ -1160,6 +1160,23 @@ a:hover .feat-body > .ico.go {
   }
 }
 /* An element in another app's colour (set --acc-l/-d and --acc-soft-l/-d on it) */
+/* Text in another app's colour (--app, with --app-d for dark mode): the light accents are too
+   dark to read on the dark background, so text switches to the dark-mode accent */
+[style*="--app-d"] {
+  --app-fg: var(--app);
+}
+:root[data-theme="dark"] [style*="--app-d"] {
+  --app-fg: var(--app-d);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) [style*="--app-d"] {
+    --app-fg: var(--app-d);
+  }
+}
+.app-fg {
+  color: var(--app-fg, var(--app));
+}
+
 .hue {
   --acc: var(--acc-l);
   --acc-soft: var(--acc-soft-l);
@@ -1707,7 +1724,7 @@ a:hover .feat-body > .ico.go {
   font-size: 13px;
 }
 .cta-more-app .go {
-  color: var(--app);
+  color: var(--app-fg);
   transition: transform 0.15s;
 }
 .cta-more-app:hover .go {
@@ -1802,7 +1819,7 @@ a:hover .feat-body > .ico.go {
 .more-tools .tile {
   width: 34px;
   height: 34px;
-  color: var(--app);
+  color: var(--app-fg);
   background: color-mix(in srgb, var(--app) 12%, var(--card));
 }
 .more-tools strong {
@@ -1821,7 +1838,7 @@ a:hover .feat-body > .ico.go {
   align-items: center;
   font-size: 14px;
   font-weight: 500;
-  color: var(--app);
+  color: var(--app-fg);
 }
 .more-all .ico {
   width: 15px;
@@ -5094,7 +5111,8 @@ footer.site .fmore {
 .art-wifi-card b {
   font-size: 12px;
   font-weight: 700;
-  color: var(--acc);
+  /* on white paper in both themes: the light-mode accent reads there */
+  color: var(--acc-l, var(--acc));
 }
 .art-wifi-card span {
   width: 54px;
@@ -9062,7 +9080,8 @@ select.bar-input {
 .art-ocr-out b {
   font-size: 22px;
   font-weight: 700;
-  color: var(--acc);
+  /* on white paper in both themes: the light-mode accent reads there */
+  color: var(--acc-l, var(--acc));
   line-height: 1;
 }
 .art-ocr-out i {
