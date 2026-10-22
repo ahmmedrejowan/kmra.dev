@@ -21,11 +21,18 @@ export function localizeApp(app: App, locale: string): App {
     short: c.short ?? app.short,
     tagline: c.tagline ?? app.tagline,
     toolGroups: app.toolGroups?.map(g),
-    tools: app.tools.map((t) => ({
-      ...t,
-      ...c.tools?.[t.slug],
-      group: g(t.group),
-    })),
+    tools: app.tools.map((t) => {
+      const tr = c.tools?.[t.slug];
+      return {
+        ...t,
+        ...tr,
+        // A translated name with no title of its own: when the English title is just the name,
+        // the page title follows the translated name (not the English one)
+        title:
+          tr?.title ?? (tr?.name && t.title === t.name ? tr.name : t.title),
+        group: g(t.group),
+      };
+    }),
     tasks: app.tasks.map((t) => ({
       ...t,
       ...c.tasks?.[t.slug],

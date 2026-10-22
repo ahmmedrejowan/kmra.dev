@@ -183,7 +183,7 @@ const appHref = (a: App) =>
                   class:list={["app-item", { here }]}
                   href={appHref(a)}
                   aria-current={here ? "true" : undefined}
-                  style={`--app:${a.accent.light}`}
+                  style={`--app:${a.accent.light};--app-d:${a.accent.dark}`}
                 >
                   <span
                     class="app-item-mark"
@@ -193,7 +193,7 @@ const appHref = (a: App) =>
                   <span class="app-item-text">
                     <span class="app-item-name">
                       <span
-                        set:html={`<span style="color:var(--app)">${a.brand[0]}</span>${a.brand[1]}`}
+                        set:html={`<span class="app-fg">${a.brand[0]}</span>${a.brand[1]}`}
                       />
                       {here && <span class="here-tag">{T("You're here")}</span>}
                     </span>

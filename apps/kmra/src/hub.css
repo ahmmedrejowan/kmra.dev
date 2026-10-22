@@ -140,7 +140,7 @@
   border-color: var(--app);
 }
 .hub-match-tools a svg {
-  color: var(--app);
+  color: var(--app-fg, var(--app));
   width: 18px;
   height: 18px;
   flex: none;
@@ -498,10 +498,6 @@
 }
 .hub-fapp ul {
   margin-top: 10px;
-}
-.hub-fsoon strong {
-  color: var(--muted);
-  font-weight: 500;
 }
 .fapp-title {
   color: inherit;

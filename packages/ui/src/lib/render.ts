@@ -83,10 +83,10 @@ export async function ogPng({
   const hub = appId === "kmra";
   // The same promise as the page's privacy card: apps without files talk about what you type
   // or play (calculators, colours, music)
-  const { noFiles, listens } = hub ? {} : getApp(appId);
-  const stays = listens
+  const settings = appId === "kmra" ? undefined : getApp(appId);
+  const stays = settings?.listens
     ? "What you play stays on your device"
-    : noFiles
+    : settings?.noFiles
       ? "What you type stays on your device"
       : "Your files stay on your device";
   const acc = app.accent.light;

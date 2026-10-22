@@ -35,7 +35,7 @@ const site = Astro.site ?? new URL("https://kmra.dev");
 const desc =
   description ??
   T(
-    "{n} free tools for images, PDFs, video, audio, QR codes, text in pictures, code, colours, calculations and music. Everything runs in your browser, so your files stay on your device.",
+    "{n} free tools for images, PDFs, video, audio, QR codes, code, colours, sums and music. Everything runs in your browser, so your files stay on your device.",
     { n: totalTools },
   );
 const path = Astro.url.pathname
@@ -260,7 +260,7 @@ const cols = Array.from({ length: Math.ceil(apps.length / 2) }, (_, i) => [
                   <a
                     class="app-item"
                     href={link(a.id, "/", lang)}
-                    style={`--app:${a.accent.light}`}
+                    style={`--app:${a.accent.light};--app-d:${a.accent.dark}`}
                   >
                     <span
                       class="app-item-mark"
@@ -270,7 +270,7 @@ const cols = Array.from({ length: Math.ceil(apps.length / 2) }, (_, i) => [
                     <span class="app-item-text">
                       <span class="app-item-name">
                         <span
-                          set:html={`<span style="color:var(--app)">${a.brand[0]}</span>${a.brand[1]}`}
+                          set:html={`<span class="app-fg">${a.brand[0]}</span>${a.brand[1]}`}
                         />
                       </span>
                       <small>
@@ -445,7 +445,8 @@ const cols = Array.from({ length: Math.ceil(apps.length / 2) }, (_, i) => [
                       <a
                         class="fapp-title"
                         href={link(a.id, "/", lang)}
-                        set:html={`<span style="color:${a.accent.light}">${a.brand[0]}</span>${a.brand[1]}`}
+                        style={`--app:${a.accent.light};--app-d:${a.accent.dark}`}
+                        set:html={`<span class="app-fg">${a.brand[0]}</span>${a.brand[1]}`}
                       />
                     </strong>
                     <ul>
@@ -458,11 +459,7 @@ const cols = Array.from({ length: Math.ceil(apps.length / 2) }, (_, i) => [
                         ))}
                     </ul>
                   </div>
-                ) : (
-                  <div class="hub-fapp hub-fsoon">
-                    <strong>{T("More coming soon")}</strong>
-                  </div>
-                ),
+                ) : null,
               )}
             </div>
           ))}
