@@ -151,7 +151,8 @@ export const BN: Record<string, string> = {
   "No accounts": "কোনো অ্যাকাউন্ট নেই",
   "Nothing to sign up for.": "সাইন-আপ করার কিছু নেই।",
   "No cookies": "কোনো কুকি নেই",
-  "No ads, no tracking scripts.": "কোনো বিজ্ঞাপন বা ট্র্যাকিং স্ক্রিপ্ট নেই।",
+  "No ads, no cross-site tracking.":
+    "কোনো বিজ্ঞাপন নেই, ক্রস-সাইট ট্র্যাকিংও নেই।",
   "Anonymous page counts": "নাম-পরিচয়হীন পেজ গণনা",
   "Visits only, never your files.": "শুধু ভিজিট, আপনার ফাইল কখনো নয়।",
   "Your files": "আপনার ফাইল",

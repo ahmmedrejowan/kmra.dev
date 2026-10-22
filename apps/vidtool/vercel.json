@@ -17,7 +17,14 @@
   "ignoreCommand": "[ \"$VERCEL_GIT_COMMIT_REF\" != \"main\" ] || git diff --quiet \"${VERCEL_GIT_PREVIOUS_SHA:-HEAD^}\" HEAD -- . ../../packages ../../pnpm-lock.yaml",
   "outputDirectory": "dist",
   "rewrites": [
-    { "source": "/_a/(.*)", "destination": "https://stats.kmra.dev/$1" }
+    {
+      "source": "/_a/script.js",
+      "destination": "https://stats.kmra.dev/script.js"
+    },
+    {
+      "source": "/_a/api/event/(ping|hit)",
+      "destination": "https://stats.kmra.dev/api/event/$1"
+    }
   ],
   "cleanUrls": true,
   "trailingSlash": false,

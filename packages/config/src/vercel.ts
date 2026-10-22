@@ -110,8 +110,15 @@ export function appConfig(opts: AppOptions = {}): VercelConfig {
       '[ "$VERCEL_GIT_COMMIT_REF" != "main" ] || git diff --quiet "${VERCEL_GIT_PREVIOUS_SHA:-HEAD^}" HEAD -- . ../../packages ../../pnpm-lock.yaml',
     outputDirectory: "dist",
     // Visit counting (Medama, self-hosted): the page loads /_a/script.js and posts to /_a/api/
-    // on its own origin, so the CSP stays 'self'. See packages/ui/src/components/Stats.astro.
-    rewrites: [routes.rewrite("/_a/(.*)", `${STATS_ORIGIN}/$1`)],
+    // on its own origin, so the CSP stays 'self'. Only the tracker's own paths are forwarded,
+    // never Medama's dashboard API. See packages/ui/src/components/Stats.astro.
+    rewrites: [
+      routes.rewrite("/_a/script.js", `${STATS_ORIGIN}/script.js`),
+      routes.rewrite(
+        "/_a/api/event/(ping|hit)",
+        `${STATS_ORIGIN}/api/event/$1`,
+      ),
+    ],
     cleanUrls: true,
     trailingSlash: false,
     headers: [
