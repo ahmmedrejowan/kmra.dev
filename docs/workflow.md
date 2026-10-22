@@ -25,15 +25,18 @@ branches with them (see below), so pushing a branch costs nothing.
 
 [`.github/workflows/pr.yml`](../.github/workflows/pr.yml) runs on every pull request:
 
-| Check                               | What it does                                                                                                  |
-| ----------------------------------- | ------------------------------------------------------------------------------------------------------------- |
-| Types and format                    | `pnpm check` (astro check + tsc in every package) and `pnpm format:check` (Prettier)                          |
-| Dependency review                   | Fails if the pull request adds or upgrades a package with a known vulnerability (moderate or worse)           |
-| End to end (1 of 3, 2 of 3, 3 of 3) | Builds every site, then runs the Playwright tests against the builds, split across three machines             |
-| CodeQL                              | GitHub's code scanning for security problems in the TypeScript (cross-site scripting, unsafe HTML, injection) |
+| Check                        | What it does                                                                                                  |
+| ---------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| Types and format             | `pnpm check` (astro check + tsc in every package) and `pnpm format:check` (Prettier)                          |
+| Dependency review            | Fails if the pull request adds or upgrades a package with a known vulnerability (moderate or worse)           |
+| End to end (1 of 4 … 4 of 4) | Builds every site, then runs the Playwright tests against the builds, split across four machines              |
+| CodeQL                       | GitHub's code scanning for security problems in the TypeScript (cross-site scripting, unsafe HTML, injection) |
 
-The end-to-end jobs install `ffmpeg` (the video and audio test files are generated with it) and
-Chromium. If a job fails, its `test-results/` (traces and screenshots) is attached to the run.
+The end-to-end jobs install `ffmpeg` (the video and audio test files are generated with it, and
+outputs checked with `ffprobe`; each apt try is capped at two minutes, three tries) and the
+browsers. The browsers and the generated test files are cached between runs, so a run downloads
+or makes them only after Playwright or a fixture generator changes. If a job fails, its
+`test-results/` (traces and screenshots) is attached to the run.
 
 Merge with **squash and merge**, so `main` gets one commit per change. GitHub signs the squash
 commit, which keeps every commit on `main` verified.
@@ -49,12 +52,6 @@ translated, heavy work in workers, the copy style.
   `dependabot/…` branches aren't deployed). Routine version bumps aren't opened.
 - **CodeQL** scans every pull request and `main`; high-severity findings block a merge.
 - **Private vulnerability reporting:** see [SECURITY.md](../SECURITY.md).
-
-## After a merge
-
-[`.github/workflows/ci.yml`](../.github/workflows/ci.yml) runs the same checks on `main` itself.
-Two branches that each passed can still be wrong together; this is where that shows up. It also
-drives the CI badge in the README.
 
 ## Deployment
 
