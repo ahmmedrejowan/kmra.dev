@@ -97,8 +97,17 @@ jobs:
       - run: |
           echo "$HOME/ffmpeg" >> "$GITHUB_PATH"
           ~/ffmpeg/ffmpeg -hide_banner -version | head -1
-      # Browsers are kept between runs (keyed by the Playwright version); only their system
-      # libraries are installed each time
+      # Ubuntu's Azure mirror is sometimes unreachable from a runner, which hangs apt. Check it
+      # quickly and fall back to Ubuntu's main archive.
+      - name: apt mirror
+        run: |
+          if ! curl -fsS -m 15 -o /dev/null http://azure.archive.ubuntu.com/ubuntu/dists/noble/InRelease; then
+            echo "Azure mirror unreachable, using archive.ubuntu.com"
+            sudo sed -i 's#http://azure.archive.ubuntu.com/ubuntu#http://archive.ubuntu.com/ubuntu#g' \
+              /etc/apt/sources.list.d/*.sources /etc/apt/sources.list 2>/dev/null || true
+          fi
+      # Browsers come from Playwright's own servers and are kept between runs (keyed by the
+      # Playwright version); only their system libraries come from apt
       - name: Playwright version
         id: pw
         run: echo "version=$(pnpm exec playwright --version | awk '{print $2}')" >> "$GITHUB_OUTPUT"
@@ -107,8 +116,16 @@ jobs:
           path: ~/.cache/ms-playwright
           key: playwright-${{ runner.os }}-${{ steps.pw.outputs.version }}
       - name: Browsers (Chromium for every site; Firefox and WebKit for the image tools)
-        timeout-minutes: 8
-        run: pnpm exec playwright install --with-deps chromium firefox webkit
+        timeout-minutes: 5
+        run: pnpm exec playwright install chromium firefox webkit
+      - name: Browser system libraries
+        timeout-minutes: 10
+        run: |
+          for try in 1 2; do
+            timeout --kill-after=15 240 pnpm exec playwright install-deps chromium firefox webkit && exit 0
+            echo "try $try failed, retrying"
+          done
+          exit 1
       # Generated test files (photos, PDFs, clips, tones) are kept until a generator changes
       - uses: actions/cache@v6
         with:
