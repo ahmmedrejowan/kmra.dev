@@ -32,10 +32,11 @@ branches with them (see below), so pushing a branch costs nothing.
 | End to end (1 of 4 … 4 of 4) | Builds every site, then runs the Playwright tests against the builds, split across four machines              |
 | CodeQL                       | GitHub's code scanning for security problems in the TypeScript (cross-site scripting, unsafe HTML, injection) |
 
-The end-to-end jobs install `ffmpeg` (the video and audio test files are generated with it, and
-outputs checked with `ffprobe`; each apt try is capped at two minutes, three tries) and the
-browsers. The browsers and the generated test files are cached between runs, so a run downloads
-or makes them only after Playwright or a fixture generator changes. If a job fails, its
+The end-to-end jobs set up `ffmpeg` (the video and audio test files are generated with it, and
+outputs checked with `ffprobe`) from a pinned static build on GitHub rather than apt, whose mirror
+stalled on some runners, and install the browsers (downloaded from Playwright; only their system
+libraries come from apt, after a quick mirror check that falls back to Ubuntu's main archive). ffmpeg, the browsers and the generated test files are cached between runs, so a run
+downloads or makes them only after a version or a fixture generator changes. If a job fails, its
 `test-results/` (traces and screenshots) is attached to the run.
 
 Merge with **squash and merge**, so `main` gets one commit per change. GitHub signs the squash

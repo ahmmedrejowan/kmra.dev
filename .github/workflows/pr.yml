@@ -73,18 +73,41 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       # The video and audio test files are made with ffmpeg, and their outputs checked with
-      # ffprobe. Ubuntu's package mirror sometimes stalls: each try gets two minutes, three tries.
+      # ffprobe. A static build (7.0.2, from the ffmpeg-static project's GitHub release) instead
+      # of apt: Ubuntu's mirror stalled or was unreachable on some runners. Fetched once, then
+      # restored from the cache on every shard; the checksums pin the exact files.
+      - uses: actions/cache@v6
+        id: ffmpeg
+        with:
+          path: ~/ffmpeg
+          key: ffmpeg-static-b6.1.1
       - name: ffmpeg
-        timeout-minutes: 8
+        if: steps.ffmpeg.outputs.cache-hit != 'true'
+        timeout-minutes: 5
         run: |
-          for try in 1 2 3; do
-            timeout 120 sudo apt-get update -qq -o Acquire::Retries=3 &&
-              timeout 120 sudo apt-get install -y -qq -o Acquire::Retries=3 ffmpeg && exit 0
-            echo "apt try $try failed, retrying"
-          done
-          exit 1
-      # Browsers are kept between runs (keyed by the Playwright version); only their system
-      # libraries are installed each time
+          mkdir -p ~/ffmpeg
+          base=https://github.com/eugeneware/ffmpeg-static/releases/download/b6.1.1
+          curl -fsSL --retry 3 -o /tmp/ffmpeg.gz "$base/ffmpeg-linux-x64.gz"
+          curl -fsSL --retry 3 -o /tmp/ffprobe.gz "$base/ffprobe-linux-x64.gz"
+          echo "bfe8a8fc511530457b528c48d77b5737527b504a3797a9bc4866aeca69c2dffa  /tmp/ffmpeg.gz" | sha256sum -c
+          echo "25d9b6ccb05e3d9de9e04e31e2506d8dd7f9f0418981965ac6df12e8d3afd067  /tmp/ffprobe.gz" | sha256sum -c
+          gzip -dc /tmp/ffmpeg.gz > ~/ffmpeg/ffmpeg
+          gzip -dc /tmp/ffprobe.gz > ~/ffmpeg/ffprobe
+          chmod +x ~/ffmpeg/ffmpeg ~/ffmpeg/ffprobe
+      - run: |
+          echo "$HOME/ffmpeg" >> "$GITHUB_PATH"
+          ~/ffmpeg/ffmpeg -hide_banner -version | head -1
+      # Ubuntu's Azure mirror is sometimes unreachable from a runner, which hangs apt. Check it
+      # quickly and fall back to Ubuntu's main archive.
+      - name: apt mirror
+        run: |
+          if ! curl -fsS -m 15 -o /dev/null http://azure.archive.ubuntu.com/ubuntu/dists/noble/InRelease; then
+            echo "Azure mirror unreachable, using archive.ubuntu.com"
+            sudo sed -i 's#http://azure.archive.ubuntu.com/ubuntu#http://archive.ubuntu.com/ubuntu#g' \
+              /etc/apt/sources.list.d/*.sources /etc/apt/sources.list 2>/dev/null || true
+          fi
+      # Browsers come from Playwright's own servers and are kept between runs (keyed by the
+      # Playwright version); only their system libraries come from apt
       - name: Playwright version
         id: pw
         run: echo "version=$(pnpm exec playwright --version | awk '{print $2}')" >> "$GITHUB_OUTPUT"
@@ -93,8 +116,16 @@ jobs:
           path: ~/.cache/ms-playwright
           key: playwright-${{ runner.os }}-${{ steps.pw.outputs.version }}
       - name: Browsers (Chromium for every site; Firefox and WebKit for the image tools)
-        timeout-minutes: 8
-        run: pnpm exec playwright install --with-deps chromium firefox webkit
+        timeout-minutes: 5
+        run: pnpm exec playwright install chromium firefox webkit
+      - name: Browser system libraries
+        timeout-minutes: 10
+        run: |
+          for try in 1 2; do
+            timeout --kill-after=15 240 pnpm exec playwright install-deps chromium firefox webkit && exit 0
+            echo "try $try failed, retrying"
+          done
+          exit 1
       # Generated test files (photos, PDFs, clips, tones) are kept until a generator changes
       - uses: actions/cache@v6
         with:
